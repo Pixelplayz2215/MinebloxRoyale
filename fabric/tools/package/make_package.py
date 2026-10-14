@@ -23,14 +23,18 @@ FAPI = glob.glob(os.path.join(HOME, ".gradle", "caches", "modules-2", "files-2.1
 E4MC = glob.glob(os.path.join(HOME, ".gradle", "caches", "**", "e4mc-AouleFRY.jar"), recursive=True)[0]
 FF = os.path.join(ROOT, ".tools", "ffmpeg", "ffmpeg-n9.0-latest-win64-lgpl-shared-9.0")
 PRISM = os.path.join(ROOT, ".tools", "prism")
-MODS = {f"minebloxroyale-{VER}.jar": JAR, "fabric-api-0.161.0+26.3.jar": FAPI, "e4mc-6.2.2.jar": E4MC}
+# Prism's Windows build needs Microsoft's Visual C++ runtime, which not every PC has (Melty's check): its DLLs go
+# beside prismlauncher.exe (Microsoft lets programs carry them).
+VCRT = {n: os.path.join(os.environ["SystemRoot"], "System32", n)
+        for n in ("vcruntime140.dll", "vcruntime140_1.dll", "msvcp140.dll", "msvcp140_1.dll", "msvcp140_2.dll")}
+MODS ={f"minebloxroyale-{VER}.jar": JAR, "fabric-api-0.161.0+26.3.jar": FAPI, "e4mc-6.2.2.jar": E4MC}
 FFMPEG = {"ffmpeg.exe": os.path.join(FF, "bin", "ffmpeg.exe"), "LICENSE.txt": os.path.join(FF, "LICENSE.txt")}
 FFMPEG.update({os.path.basename(p): p for p in glob.glob(os.path.join(FF, "bin", "*.dll"))})
 DOCS = {n: os.path.join(SP, "pkg", n) for n in ("HOW TO PLAY.txt", "THIRD-PARTY NOTICES.txt")}
 # The modpack's picture (creator: the high-res Mineblox Royale icon, fabric/tools/branding/make_icon.py), inside every
 # pack for the launchers that pick one up by themselves, and beside it for setting by hand.
 ICON = os.path.join(ROOT, "Branding", "Mineblox Royale icon 1024.png")
-for p in [JAR, FAPI, E4MC, PRISM, ICON, *FFMPEG.values(), *DOCS.values()]:
+for p in [JAR, FAPI, E4MC, PRISM, ICON, *VCRT.values(), *FFMPEG.values(), *DOCS.values()]:
     if not os.path.exists(p):
         sys.exit("missing: " + p)
 
@@ -165,6 +169,7 @@ for d, _, fs in os.walk(PRISM):
         if rel.split("/")[0] in ("instances", "logs", "accounts.json", "prismlauncher.cfg", "cache", "meta", "libraries", "assets"):
             continue
         prism[f"{NAME}/Prism Launcher/{rel}"] = os.path.join(d, f)
+prism.update({f"{NAME}/Prism Launcher/{n}": p for n, p in VCRT.items()})
 prism[f"{NAME}/Prism Launcher/icons/minebloxroyale.png"] = ICON  # the instance's icon (iconKey)
 pi = f"{NAME}/Prism Launcher/instances/Mineblox Royale"
 prism[f"{pi}/instance.cfg"] = INSTANCE_CFG
