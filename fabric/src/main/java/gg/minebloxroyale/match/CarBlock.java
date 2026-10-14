@@ -31,7 +31,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * A parked car's body (creator: smooth models like the reboot van and Battle Bus, but cars break for metal). The car is
  * a block of these invisible blocks (full, or half height over a low bonnet or bed) that you bump into and stand on; one
  * of them, the core, keeps the car's type, colours and facing (CarBlockEntity) and every player's game draws the smooth
- * car there (CarRenderer, CarModel). A car has a durability (match sheet carDurability, 600): every pickaxe hit on any
+ * car there (CarRenderer: its Blender model). A car has a durability (match sheet carDurability, 600): every pickaxe hit on any
  * part and every gun shot that hits it adds damage, which stays (creator: it adds up between hits), the car looks more
  * and more damaged as it goes, and when the damage reaches the durability the whole car is wrecked. Pickaxe hits also
  * give metal (harvest sheet h_car: perBlock = metal a hit, maxBlocks = hits a new car takes from the pickaxe alone).

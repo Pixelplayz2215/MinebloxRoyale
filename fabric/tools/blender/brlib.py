@@ -319,6 +319,97 @@ def subdivide(part, levels=1):
     return part
 
 
+def mesh_from(verts, faces, material, bevel=0.0, seg=2, smooth=True, angle=35):
+    """A part from corners [(x, y, z), ...] (Minecraft coordinates) and faces [(i, j, k, ...), ...]."""
+    bm = bmesh.new()
+    vs = [bm.verts.new(P(*v)) for v in verts]
+    for f in faces:
+        bm.faces.new([vs[i] for i in f])
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    return _finish(bm, "mesh", material, bevel=bevel, seg=seg, smooth=smooth, angle=angle)
+
+
+def quad(a, b, c, d, material, lift=0.0, center=None):
+    """A flat four-cornered piece (decals: windows, panel lines, number plates), pushed `lift` off its surface away
+    from `center` (Minecraft coordinates)."""
+    va, vb, vc_, vd = (Vector(p) for p in (a, b, c, d))
+    n = (vb - va).cross(vd - va).normalized()
+    if center is not None and n.dot((va + vb + vc_ + vd) / 4 - Vector(center)) < 0:
+        n = -n
+        va, vb, vc_, vd = va, vd, vc_, vb
+    pts = [tuple(p + n * lift) for p in (va, vb, vc_, vd)]
+    return mesh_from(pts, [(0, 1, 2, 3)], material, smooth=False)
+
+
+def cutter(part):
+    """Makes a part a cutting tool only: not drawn, not exported."""
+    part.obj.hide_render = True
+    part.obj.display_type = "WIRE"
+    return part
+
+
+def cut(part, tool):
+    """Cuts tool's shape out of part (an exact boolean), before part's own bevels and normals."""
+    m = part.obj.modifiers.new("cut", "BOOLEAN")
+    m.operation = "DIFFERENCE"
+    m.solver = "EXACT"
+    m.object = cutter(tool).obj
+    names = [x.name for x in part.obj.modifiers]
+    first = min(names.index(k) for k in ("bevel", "weighted", m.name) if k in names)
+    part.obj.modifiers.move(names.index(m.name), first)
+    return part
+
+
+def apply_modifiers(part):
+    """Bakes a part's modifiers into its mesh (so it can be bent, dented...)."""
+    dg = bpy.context.evaluated_depsgraph_get()
+    eo = part.obj.evaluated_get(dg)
+    me = bpy.data.meshes.new_from_object(eo)
+    part.obj.modifiers.clear()
+    part.obj.data = me
+    for f in me.polygons:
+        f.use_smooth = True
+    return part
+
+
+def dent(part, center, radius, depth, inward, seed=1, wobble=0.25):
+    """A dent pressed into a part's surface: within radius of center (Minecraft coordinates), pushed `depth` along
+    `inward` (a Minecraft direction into the body) with a smooth falloff and a slightly irregular outline. The area is
+    subdivided first, so the dent is round."""
+    apply_modifiers(part)
+    obj = part.obj
+    inv = obj.matrix_world.inverted()
+    c = inv @ P(*center)
+    d = (inv.to_3x3() @ P(*inward)).normalized()
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    edges = [e for e in bm.edges if min((v.co - c).length for v in e.verts) < radius * 1.1]
+    if edges:
+        bmesh.ops.subdivide_edges(bm, edges=edges, cuts=3, use_grid_fill=True)
+    bmesh.ops.triangulate(bm, faces=[f for f in bm.faces if len(f.verts) > 4])
+    rnd = random.Random(seed)
+    lobes = [1 + wobble * (rnd.random() * 2 - 1) for _ in range(8)]
+    up = Vector((0, 0, 1)) if abs(d.z) < 0.9 else Vector((1, 0, 0))
+    u = d.cross(up).normalized()
+    w = d.cross(u)
+    for v in bm.verts:
+        r = v.co - c
+        if r.dot(d) < -radius * 0.5:  # (the far side of a thin part)
+            continue
+        flat = r - d * r.dot(d)
+        ang = math.atan2(flat.dot(w), flat.dot(u))
+        k = lobes[int((ang + math.pi) / (2 * math.pi) * 8) % 8]
+        t = flat.length / (radius * k)
+        if t < 1:
+            v.co += d * depth * (1 - t * t) ** 2
+    bm.to_mesh(obj.data)
+    bm.free()
+    obj.data.update()
+    wn = obj.modifiers.new("weighted", "WEIGHTED_NORMAL")
+    wn.keep_sharp = True
+    return part
+
+
 def mirror_x(part, about=0.0):
     """A copy mirrored left/right about x = about (Minecraft x)."""
     obj = part.obj.copy()
@@ -403,9 +494,17 @@ def bake_ao(tris, distance, rays=24, seed=3):
     return out
 
 
+def decimated(ratio):
+    """For a far-away copy: every part cut down to `ratio` of its triangles."""
+    for obj in bpy.context.scene.objects:
+        if obj.type == "MESH" and not obj.hide_render:
+            m = obj.modifiers.new("lod", "DECIMATE")
+            m.ratio = ratio
+
+
 def export(path, scale=1.0, origin=(0, 0, 0), ao_distance=1.0, ao_strength=0.5):
     """Writes the scene for the game: Minecraft coordinates, minus origin, times scale (an item model's 0..16 units
-    -> blocks: scale 1/16). Returns the triangle count."""
+    -> blocks: scale 1/16). Returns the triangle count and the bounds."""
     tris = triangles()
     ao = bake_ao(tris, ao_distance)
     ox, oy, oz = origin
@@ -467,14 +566,19 @@ def _lights():
     s.world = w
 
 
-def render_views(out_dir, stem, views, size=640, elevation=12.0, margin=1.12):
+def render_views(out_dir, stem, views, size=640, elevation=12.0, margin=1.12, focus=None):
     """Orthographic renders of the scene from compass directions (degrees round the vertical axis, 0 = looking from
-    +z, Minecraft south, towards the model; 90 = from +x). views: {label: yaw}. Returns {label: path}."""
+    +z, Minecraft south, towards the model; 90 = from +x). views: {label: yaw}. focus: a Minecraft box ((x0, y0, z0),
+    (x1, y1, z1)) to fit instead of the whole model (a close-up). Returns {label: path}."""
     s = bpy.context.scene
     if not any(o.type == "LIGHT" for o in s.objects):
         _lights()
     s.render.resolution_x = s.render.resolution_y = size
-    lo, hi = bounds()
+    if focus:
+        a, b = P(*focus[0]), P(*focus[1])
+        lo, hi = Vector(map(min, a, b)), Vector(map(max, a, b))
+    else:
+        lo, hi = bounds()
     c = (lo + hi) / 2
     radius = (hi - lo).length / 2
     cam_data = bpy.data.cameras.new("cam")

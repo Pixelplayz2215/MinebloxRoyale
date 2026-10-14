@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import gg.minebloxroyale.MinebloxRoyale;
 import gg.minebloxroyale.client.media.FortniteMedia;
+import gg.minebloxroyale.client.mesh.Mesh;
 import gg.minebloxroyale.hub.HubBuilder;
 import gg.minebloxroyale.sheets.HubPieceDef;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
@@ -22,7 +23,7 @@ import net.minecraft.world.phys.Vec3;
  * loot beams over guns on the ground, waypoint beacons and Build mode's ghost piece.
  */
 public final class WorldVisuals {
-	private static final int FULL_BRIGHT = 0xF000F0;
+	private static final int FULL_BRIGHT = 0xF000F0, READY = 0x4CD964, RECHARGING = 0xE03A3A;
 	private static Identifier white;
 
 	private WorldVisuals() {
@@ -41,7 +42,7 @@ public final class WorldVisuals {
 				ps.pushPose();
 				ps.translate(bx - cam.x, by - cam.y + 0.1, bz - cam.z);
 				ps.rotate(Axis.YP.rotationDegrees(switch (bus.facing()) { case "east" -> 90; case "west" -> -90; case "north" -> 180; default -> 0; }));
-				out.submitCustomGeometry(ps, RenderTypes.entityCutout(white()), (pose, vc) -> BusModel.draw(pose, vc, FULL_BRIGHT));
+				out.submitCustomGeometry(ps, RenderTypes.entityCutout(white()), (pose, vc) -> Mesh.get("battle_bus").draw(pose, null, vc, FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0xFFFFFF, 0xFFFFFF));
 				ps.popPose();
 			}
 			Identifier splash = FortniteMedia.billboard();
@@ -55,7 +56,7 @@ public final class WorldVisuals {
 		}
 	}
 
-	/** Team modes: the reboot vans within 200 blocks (VanModel), glowing green when ready and red while recharging. */
+	/** Team modes: the reboot vans within 200 blocks (their Blender model), glowing green when ready and red while recharging. */
 	private static void vans(Minecraft mc, PoseStack ps, SubmitNodeCollector out, Vec3 cam) {
 		if (!ClientState.teamMatch()) return;
 		for (var v : ClientState.squad.vans()) {
@@ -64,7 +65,7 @@ public final class WorldVisuals {
 			ps.pushPose();
 			ps.translate(v.x() - cam.x, v.y() - cam.y, v.z() - cam.z);
 			ps.rotate(Axis.YP.rotationDegrees(v.yaw()));
-			out.submitCustomGeometry(ps, RenderTypes.entityCutout(white()), (pose, vc) -> VanModel.draw(pose, vc, FULL_BRIGHT, ready));
+			out.submitCustomGeometry(ps, RenderTypes.entityCutout(white()), (pose, vc) -> Mesh.get("reboot_van").draw(pose, null, vc, FULL_BRIGHT, OverlayTexture.NO_OVERLAY, ready ? READY : RECHARGING, 0xFFFFFF));
 			ps.popPose();
 		}
 	}

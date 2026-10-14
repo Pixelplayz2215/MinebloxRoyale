@@ -370,7 +370,7 @@ public final class CustomStructures {
 	 * A parked car, nose to `front` (creator: smooth models like the reboot van and Battle Bus, other types and colours,
 	 * and they still break for metal): a sedan, sports car, pickup, SUV, hatchback, police car or taxi. The server only
 	 * puts down its invisible body (CarBlock, 3 wide and 5 long, a second layer where the cabin is); every player's game
-	 * draws the car itself (CarModel), from the type, colours and facing kept in the core block.
+	 * draws the car itself (CarRenderer), from the type, colours and facing kept in the core block.
 	 */
 	private static void car(ServerLevel level, BlockPos c, RandomSource rnd, Direction front) {
 		CarBlockEntity.Kind kind = pickKind(rnd);

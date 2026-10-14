@@ -34,6 +34,9 @@ for mid, spec in module.ITEMS.items():
         brlib.tint_previews(tints)
         stem = mid + ("_" + vname if vname else "")
         entry["variants"].append({"variant": vname, "views": brlib.render_views(RAW, stem, opts.get("views", VIEWS))})
+        if "focus" in opts:  # a close-up of part of it (the bus under its balloon)
+            label, box = opts["focus"]
+            entry["variants"].append({"variant": label, "views": brlib.render_views(RAW, stem + "_focus", opts.get("views", VIEWS), focus=box)})
     if "icon" in opts:
         yaw, pitch = opts["icon"]
         brlib.tint_previews({1: "#E1E1E6"})
@@ -42,6 +45,9 @@ for mid, spec in module.ITEMS.items():
         if opts.get("tinted"):
             entry["icon_mask"] = os.path.join(RAW, mid + "_iconmask.png")
             brlib.render_icon(entry["icon_mask"], yaw, pitch, mask=True)
-    print(f"BUILT {mid}: {n} triangles", flush=True)
+    if "lod" in opts:  # a lighter copy for far away (the renderer picks it by distance)
+        brlib.decimated(opts["lod"])
+        entry["far_tris"] = brlib.export(os.path.join(ASSETS, "meshes", mid + "_far.brm"), scale=scale, origin=origin, ao_distance=opts.get("ao", 1.5))[0]
+    print(f"BUILT {mid}: {n} triangles" + (f" ({entry['far_tris']} far)" if "far_tris" in entry else ""), flush=True)
     manifest.append(entry)
 brlib.write_manifest(os.path.join(RAW, f"manifest_{SET}.json"), manifest)
