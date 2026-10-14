@@ -1,9 +1,0 @@
-allprojects {
-    afterEvaluate {
-        tasks.register("printClientCp") {
-            doLast {
-                new File(System.getProperty("cpOut")).text = sourceSets.client.runtimeClasspath.files.collect { it.absolutePath }.join(File.pathSeparator)
-            }
-        }
-    }
-}

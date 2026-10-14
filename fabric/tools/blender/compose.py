@@ -60,7 +60,7 @@ def main():
         for v in e["variants"]:
             variant = v["variant"]
             title = f"{variant} {e['name']}" if e.get("variant_first") and variant else (f"{e['name']} - {variant}" if variant else e["name"])
-            folder = os.path.join(out_dir, safe(e.get("folder", "")), safe(e["name"]) if per_variant and len(e["variants"]) > 1 else "")
+            folder = os.path.join(out_dir, *[safe(p) for p in e.get("folder", "").split("/") if p], safe(e["name"]) if per_variant and len(e["variants"]) > 1 else "")
             sheet(title, e.get("unlock"), v["views"], os.path.join(folder, safe(title) + ".png"))
             n += 1
     print("wrote", n, "pictures to", out_dir)

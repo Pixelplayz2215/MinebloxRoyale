@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import org.joml.Matrix4f;
 
 /**
  * The 46 gliders (gliders sheet), each a Blender model (fabric/tools/blender/gliders.py: nine shapes, each glider's own
@@ -17,10 +16,6 @@ import org.joml.Matrix4f;
  * (RobloxAvatarRenderer), in the glider's two colours; the lighter copy far away.
  */
 final class Gliders {
-	/** Roblox root space (studs, y up from the hips) -> the avatar's model space, as the body meshes are drawn. */
-	private static final Matrix4f ROOT = new Matrix4f().translate(0, 1.501F - RobloxAvatarRenderer.HIP * RobloxAvatarRenderer.S, 0)
-		.scale(-RobloxAvatarRenderer.S, -RobloxAvatarRenderer.S, RobloxAvatarRenderer.S);
-
 	private Gliders() {
 	}
 
@@ -37,6 +32,6 @@ final class Gliders {
 	static void submit(SubmitNodeCollector collector, PoseStack poseStack, GliderDef g, boolean far, int light, int overlay) {
 		Mesh mesh = Mesh.get(g.id() + (far ? "_far" : ""));
 		collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(WorldVisuals.white()),
-			(pose, vc) -> mesh.draw(pose, ROOT, vc, light, overlay, g.color() & 0xFFFFFF, g.color2() & 0xFFFFFF));
+			(pose, vc) -> mesh.draw(pose, RobloxAvatarRenderer.ROOT, vc, light, overlay, g.color() & 0xFFFFFF, g.color2() & 0xFFFFFF));
 	}
 }

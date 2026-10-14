@@ -52,6 +52,8 @@ public final class RobloxAvatarRenderer {
 	/** Blocks per stud: 5.2 studs tall -> about 1.87 blocks. */
 	static final float S = 0.36F;
 	static final float HIP = 2F; // studs from feet to the root (hips)
+	/** Roblox root space (studs, y up from the hips) -> the avatar's model space, as the body meshes are drawn. */
+	static final Matrix4f ROOT = new Matrix4f().translate(0, 1.501F - HIP * S, 0).scale(-S, -S, S);
 
 	private RobloxAvatarRenderer() {
 	}
@@ -96,14 +98,10 @@ public final class RobloxAvatarRenderer {
 				Matrix4f m = partMatrix(part, state, emote, swing, aiming);
 				drawMesh(vc, pose, m, mesh, part.faceDecal(), color, light, overlay);
 			}
-			// Accessories and gliders far away are drawn with fewer pieces (lots of gliding bots at once stay smooth).
-			Smooth.detail = state.distanceToCameraSq < 20 * 20 ? 1F : state.distanceToCameraSq < 48 * 48 ? 0.5F : 0.25F;
-			try {
-				if (outfit != null && !outfit.isEmpty()) Cosmetics.draw(vc, pose, state, outfit, emote, swing, aiming, light, overlay);
-			} finally {
-				Smooth.detail = 1F;
-			}
 		});
+		// Hats, hair, face accessories, back bling and shoes (Blender models; the lighter copies far away, so lots of
+		// bots at once stay smooth).
+		if (outfit != null && !outfit.isEmpty()) Cosmetics.submit(collector, poseStack, state, outfit, emote, swing, aiming, state.distanceToCameraSq > 24 * 24, light, overlay);
 		// The glider (gliders sheet) above a gliding player, in root space.
 		if (state.getDataOrDefault(GLIDING, false)) Gliders.submit(collector, poseStack, Gliders.of(outfit, entityId), state.distanceToCameraSq > 32 * 32, light, overlay);
 		// Shirt and pants designs: painted pictures wrapped round the torso and legs (their own texture).

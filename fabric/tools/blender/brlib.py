@@ -7,21 +7,20 @@ back, so the model scripts read like the Java that draws them. Every part has a 
 optionally a tint channel (1 = the item's main colour: a gun's rarity, a car's paint, a hat's first colour; 2 = its
 second colour) or glow (drawn full bright: headlights, lenses).
 
-The game's mesh file (.brm, gzip): "BRM1", int vertex count, then per vertex (three per triangle) x, y, z (float),
-normal x, y, z (signed bytes), colour r, g, b (bytes: the material colour with the baked shadow), flags (byte: bits
-0-1 the tint channel, bit 2 glow), little-endian. Read by gg.minebloxroyale.client.mesh.Mesh.
+The game's mesh file (.brm, written by brm.py): per corner (three per triangle) its place, normal, colour (the
+material colour with the baked shadow) and flags (the tint channel, glow). Read by gg.minebloxroyale.client.mesh.Mesh.
 """
-import gzip
 import json
 import math
 import os
 import random
-import struct
 
 import bmesh
 import bpy
 from mathutils import Matrix, Vector
 from mathutils.bvhtree import BVHTree
+
+import brm
 
 
 def P(x, y, z):
@@ -432,10 +431,16 @@ def mirror_z(part, about=0.0):
 
 # ---------------------------------------------------------------- triangles, shadows and the game's file
 
+STATS = {}
+
+
 def triangles():
-    """Every triangle of every object in the scene, world space: [(corners[3], normals[3], material, twosided)]."""
+    """Every triangle of every object in the scene, world space: [(corners[3], normals[3], material, twosided)]. A closed
+    part made inside out (its faces wound inwards: the game lights a face by its normal, and its baked shadow looks
+    along it) is turned the right way out, and an open sheet gets a back (each side lit for itself); STATS counts both."""
     dg = bpy.context.evaluated_depsgraph_get()
     out = []
+    STATS.update(turned=0, open=[])
     for obj in bpy.context.scene.objects:
         if obj.type != "MESH" or obj.hide_render or obj.get("br_preview"):
             continue
@@ -448,6 +453,12 @@ def triangles():
         cn = me.corner_normals
         mats = [s.material for s in eo.material_slots]
         two = bool(obj.get("br_twosided"))
+        uses = {}
+        for poly in me.polygons:
+            for k in poly.edge_keys:
+                uses[k] = uses.get(k, 0) + 1
+        closed = bool(uses) and all(n == 2 for n in uses.values())
+        mine = []
         for lt in me.loop_triangles:
             loops = list(lt.loops)
             if flip:
@@ -455,15 +466,23 @@ def triangles():
             cs = [mw @ me.vertices[me.loops[li].vertex_index].co for li in loops]
             ns = [(nm @ cn[li].vector).normalized() for li in loops]
             m = mats[lt.material_index] if lt.material_index < len(mats) else mats[0]
-            out.append((cs, ns, m, two))
+            mine.append((cs, ns, m, two))
+        if closed and not two and sum(c[0].dot(c[1].cross(c[2])) for c, _, _, _ in mine) < 0:
+            mine = [([c[0], c[2], c[1]], [-n[0], -n[2], -n[1]], m, t) for c, n, m, t in mine]
+            STATS["turned"] += 1
+        elif not closed and not two and mine:  # an open sheet: give it its back too (it may be seen from either side)
+            mine = [(c, n, m, True) for c, n, m, _ in mine]
+            STATS["open"].append(obj.name)
+        out += mine
         eo.to_mesh_clear()
     return out
 
 
-def bake_ao(tris, distance, rays=24, seed=3):
-    """Soft shadow per corner (1 open .. 0 shut in), from rays into the half-space over it."""
+def bake_ao(tris, distance, rays=24, seed=3, occluders=None):
+    """Soft shadow per corner (1 open .. 0 shut in), from rays into the half-space over it (what's in the way:
+    occluders' triangles, or tris')."""
     verts, polys = [], []
-    for cs, _, _, _ in tris:
+    for cs, _, _, _ in occluders or tris:
         i = len(verts)
         verts += [tuple(c) for c in cs]
         polys.append((i, i + 1, i + 2))
@@ -506,32 +525,32 @@ def export(path, scale=1.0, origin=(0, 0, 0), ao_distance=1.0, ao_strength=0.5):
     """Writes the scene for the game: Minecraft coordinates, minus origin, times scale (an item model's 0..16 units
     -> blocks: scale 1/16). Returns the triangle count and the bounds."""
     tris = triangles()
-    ao = bake_ao(tris, ao_distance)
+    sided = []
+    for cs, ns, m, two in tris:
+        sided.append((cs, ns, m, two))
+        if two:  # the back, a hair behind the front (no culling in the game: each side then shows with its own light)
+            eps = 0.0025 / scale
+            sided.append(([cs[0] - ns[0] * eps, cs[2] - ns[2] * eps, cs[1] - ns[1] * eps], [-ns[0], -ns[2], -ns[1]], m, two))
+    ao = bake_ao(sided, ao_distance, occluders=tris)
     ox, oy, oz = origin
-    buf = bytearray()
+    corners = []
     count = 0
     lo = [1e9] * 3
     hi = [-1e9] * 3
-    for (cs, ns, m, two), shade in zip(tris, ao):
+    for (cs, ns, m, _), shade in zip(sided, ao):
         col = hexrgb(m["br_col"])
         flags = (m["br_ch"] & 3) | (4 if m["br_glow"] else 0)
-        sides = [(cs, ns, shade)]
-        if two:
-            sides.append(([cs[0], cs[2], cs[1]], [-ns[0], -ns[2], -ns[1]], [shade[0], shade[2], shade[1]]))
-        for corners, normals, sh in sides:
-            for c, n, a in zip(corners, normals, sh):
-                x, y, z = (c.x - ox) * scale, (c.z - oy) * scale, (-c.y - oz) * scale
-                k = 1.0 if m["br_glow"] else (1 - ao_strength) + ao_strength * a
-                r, g, b = (max(0, min(255, round(v * 255 * k))) for v in col)
-                nx, ny, nz = n.x, n.z, -n.y
-                buf += struct.pack("<fffbbbBBBB", x, y, z, round(nx * 127), round(ny * 127), round(nz * 127), r, g, b, flags)
-                for i, v in enumerate((x, y, z)):
-                    lo[i] = min(lo[i], v)
-                    hi[i] = max(hi[i], v)
-            count += 1
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    with gzip.open(path, "wb", compresslevel=9) as f:
-        f.write(b"BRM1" + struct.pack("<i", count * 3) + bytes(buf))
+        for c, n, a in zip(cs, ns, shade):
+            x, y, z = (c.x - ox) * scale, (c.z - oy) * scale, (-c.y - oz) * scale
+            k = 1.0 if m["br_glow"] else (1 - ao_strength) + ao_strength * a
+            r, g, b = (max(0, min(255, round(v * 255 * k))) for v in col)
+            nx, ny, nz = n.x, n.z, -n.y
+            corners.append((x, y, z, round(nx * 127), round(ny * 127), round(nz * 127), r, g, b, flags))
+            for i, v in enumerate((x, y, z)):
+                lo[i] = min(lo[i], v)
+                hi[i] = max(hi[i], v)
+        count += 1
+    brm.write(path, corners)
     return count, lo, hi
 
 
