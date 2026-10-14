@@ -28,6 +28,9 @@ for mid, spec in module.ITEMS.items():
     scale = opts.get("scale", 1 / 16)
     origin = opts.get("origin", (0, 0, 0))
     n, lo, hi = brlib.export(os.path.join(ASSETS, "meshes", mid + ".brm"), scale=scale, origin=origin, ao_distance=opts.get("ao", 1.5))
+    if opts.get("avatar"):  # a stand-in avatar in the renders, for size (not exported)
+        import avatar
+        avatar.build(opts["avatar"])
     entry = {"id": mid, "name": name, "tris": n, "bounds": [lo, hi], "variants": [], "folder": opts.get("folder", ""),
              "variant_first": opts.get("variant_first", False), "unlock": opts.get("unlock")}
     for vname, tints in opts.get("variants", {"": {}}).items():

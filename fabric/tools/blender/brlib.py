@@ -437,7 +437,7 @@ def triangles():
     dg = bpy.context.evaluated_depsgraph_get()
     out = []
     for obj in bpy.context.scene.objects:
-        if obj.type != "MESH" or obj.hide_render:
+        if obj.type != "MESH" or obj.hide_render or obj.get("br_preview"):
             continue
         eo = obj.evaluated_get(dg)
         me = eo.to_mesh()
@@ -497,7 +497,7 @@ def bake_ao(tris, distance, rays=24, seed=3):
 def decimated(ratio):
     """For a far-away copy: every part cut down to `ratio` of its triangles."""
     for obj in bpy.context.scene.objects:
-        if obj.type == "MESH" and not obj.hide_render:
+        if obj.type == "MESH" and not obj.hide_render and not obj.get("br_preview"):
             m = obj.modifiers.new("lod", "DECIMATE")
             m.ratio = ratio
 

@@ -100,12 +100,12 @@ public final class RobloxAvatarRenderer {
 			Smooth.detail = state.distanceToCameraSq < 20 * 20 ? 1F : state.distanceToCameraSq < 48 * 48 ? 0.5F : 0.25F;
 			try {
 				if (outfit != null && !outfit.isEmpty()) Cosmetics.draw(vc, pose, state, outfit, emote, swing, aiming, light, overlay);
-				// The glider (gliders sheet) above a gliding player, in root space.
-				if (state.getDataOrDefault(GLIDING, false)) Gliders.draw(new Smooth(vc, pose, new Matrix4f(), light, overlay), Gliders.of(outfit, entityId));
 			} finally {
 				Smooth.detail = 1F;
 			}
 		});
+		// The glider (gliders sheet) above a gliding player, in root space.
+		if (state.getDataOrDefault(GLIDING, false)) Gliders.submit(collector, poseStack, Gliders.of(outfit, entityId), state.distanceToCameraSq > 32 * 32, light, overlay);
 		// Shirt and pants designs: painted pictures wrapped round the torso and legs (their own texture).
 		if (outfit != null && !outfit.isEmpty()) Cosmetics.submitClothes(collector, poseStack, state, outfit, emote, swing, aiming, light, overlay);
 		return true;
