@@ -113,6 +113,13 @@ public class BotEntity extends PathfinderMob {
 	private String finishedBy;
 	/** Ticks spent searching the chest it stands at (chestSearchSeconds, like a player holding F). */
 	private int searchTicks;
+	/** The player who last hurt it, and when: it may always fight them back. */
+	private UUID provokedBy;
+	private int provokedAt = -1000;
+	/** How long a hit lets it fight back against anyone (a player with no gun, a player others already chase). */
+	private static final int PROVOKED_TICKS = 20 * 20;
+	/** Bots chasing one player at once (creator: they ganged up on a player who had just landed). */
+	private static final int MAX_CHASERS = 2;
 
 	public BotEntity(EntityType<? extends BotEntity> type, Level level) {
 		super(type, level);
@@ -692,30 +699,51 @@ public class BotEntity extends PathfinderMob {
 	private void pickTarget(ServerLevel level) {
 		// (A player who switched to creative is dropped too, like one in creative is never picked.)
 		if (target != null && (!target.isAlive() || target.isSpectator() || target instanceof Player tp && tp.isCreative() || Teams.sameTeam(this, target)
-			|| distanceTo(target) > 64 || !hasLineOfSight(target))) target = null;
+			|| distanceTo(target) > 64 || !hasLineOfSight(target) || target instanceof Player p && !mayChase(level, p))) target = null;
 		// A visible player within botPlayerRange can be picked at any time, even while this bot is fighting another
 		// bot.
 		float playerRange = MinebloxRoyale.setting("botPlayerRange");
 		if (target instanceof BotEntity && getRandom().nextFloat() < MinebloxRoyale.setting("botPlayerSwitchChance")) {
-			Player p = level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(playerRange),
-					e -> e.isAlive() && !e.isSpectator() && !e.isCreative() && !Teams.sameTeam(this, e) && distanceTo(e) <= playerRange && hasLineOfSight(e))
-				.stream().min(Comparator.comparingDouble(this::distanceToSqr)).orElse(null);
+			Player p = nearestPlayer(level, playerRange);
 			if (p != null) target = p;
 		}
 		if (target != null) return;
-		// The nearest visible fighter, players first: a player within botPlayerRange is always chased, armed or not (an
-		// unarmed bot runs in with its pickaxe); without a gun, other bots only up close.
-		Player near = level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(playerRange),
-				e -> e.isAlive() && !e.isSpectator() && !e.isCreative() && !Teams.sameTeam(this, e) && distanceTo(e) <= playerRange && hasLineOfSight(e))
-			.stream().min(Comparator.comparingDouble(this::distanceToSqr)).orElse(null);
+		// The nearest visible fighter, players first (a player within botPlayerRange is chased when that's fair:
+		// mayChase); without a gun, other bots only up close.
+		Player near = nearestPlayer(level, playerRange);
 		if (near != null) {
 			target = near;
 			return;
 		}
 		double reach = armed() ? 48 : 6;
 		target = level.getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(reach),
-				e -> e != this && e.isAlive() && !e.isSpectator() && !Teams.sameTeam(this, e) && (e instanceof BotEntity || (e instanceof Player p && !p.isCreative())) && hasLineOfSight(e))
+				e -> e != this && e.isAlive() && !e.isSpectator() && !Teams.sameTeam(this, e) && (e instanceof BotEntity || (e instanceof Player p && !p.isCreative() && mayChase(level, p))) && hasLineOfSight(e))
 			.stream().min(Comparator.comparingDouble(e -> distanceToSqr(e) * (e instanceof Player && distanceTo(e) <= playerRange ? 0.5 : 1.0))).orElse(null);
+	}
+
+	private Player nearestPlayer(ServerLevel level, float range) {
+		return level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(range),
+				e -> e.isAlive() && !e.isSpectator() && !e.isCreative() && !Teams.sameTeam(this, e) && distanceTo(e) <= range && hasLineOfSight(e) && mayChase(level, e))
+			.stream().min(Comparator.comparingDouble(this::distanceToSqr)).orElse(null);
+	}
+
+	/**
+	 * Fair to go after this player (creator: bots ganged up on a player who had just landed, before they had a gun)? A
+	 * player who hit it lately, always. Otherwise only with a gun of its own (it loots first after landing), only a
+	 * player who has a gun too, and only while fewer than MAX_CHASERS bots closer to them are on them already.
+	 */
+	private boolean mayChase(ServerLevel level, Player p) {
+		if (p.getUUID().equals(provokedBy) && tickCount - provokedAt < PROVOKED_TICKS) return true;
+		if (!armed() || !hasGun(p)) return false;
+		double mine = distanceToSqr(p);
+		return level.getEntitiesOfClass(BotEntity.class, p.getBoundingBox().inflate(64),
+			b -> b != this && b.target == p && b.isAlive() && b.distanceToSqr(p) < mine).size() < MAX_CHASERS;
+	}
+
+	private static boolean hasGun(Player p) {
+		for (int i = 0; i < p.getInventory().getContainerSize(); i++)
+			if (p.getInventory().getItem(i).getItem() instanceof WeaponItem) return true;
+		return false;
 	}
 
 	/** Knocked: crawl towards the nearest teammate who is standing (or stay put). */
@@ -834,6 +862,10 @@ public class BotEntity extends PathfinderMob {
 		Entity by = source.getEntity();
 		if (hurt && by instanceof LivingEntity le && le != this && !Teams.sameTeam(this, le) && !Knocked.is(this)) {
 			lastHurt = tickCount;
+			if (le instanceof Player) {
+				provokedBy = le.getUUID();
+				provokedAt = tickCount;
+			}
 			if (target == null || getRandom().nextFloat() < 0.5F) target = le;
 			if (caring) { // shot while drinking: stop and fight back (out of its box's wall on the shooter's side)
 				stopUsingItem();

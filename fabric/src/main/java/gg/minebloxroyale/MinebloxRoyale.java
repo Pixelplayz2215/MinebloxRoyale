@@ -58,14 +58,15 @@ public final class MinebloxRoyale implements ModInitializer {
 	}
 
 	/**
-	 * The version as players see it (the main board in the hub): still in development testing, so a test build is
-	 * "PRE-ALPHA - TEST 12" (creator: "you can name the version since this is still in dev testing"); any other build
-	 * "v" and its number.
+	 * The version as players see it (the main board in the hub): a release is "v" and its number; a test build of one
+	 * is "v1.0.1 - TEST 1", and the test builds before 1.0.0 were "PRE-ALPHA - TEST 12" (creator: "you can name the
+	 * version since this is still in dev testing").
 	 */
 	public static String versionName() {
 		String v = version();
 		int test = v.indexOf("-test");
-		return test >= 0 ? "PRE-ALPHA - TEST " + v.substring(test + 5) : "v" + v;
+		if (test < 0) return "v" + v;
+		return (v.startsWith("0.") ? "PRE-ALPHA" : "v" + v.substring(0, test)) + " - TEST " + v.substring(test + 5);
 	}
 
 	/** A number from the match sheet. */

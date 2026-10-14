@@ -158,6 +158,15 @@ def _(x, y):  # tinted with the rarity colour: light, with a brighter top edge
     return (255, 255, 255, 255) if y < 2 else (226, 226, 226, 255)
 
 
+@tile("paint")
+def _(x, y):  # a gun's body, tinted with the rarity colour (creator: rarity should stand out more than a stripe)
+    if y == 0:
+        return (255, 255, 255, 255)
+    if y == TILE - 1:
+        return (196, 196, 196, 255)
+    return noise((236, 236, 236, 255), 0.03)
+
+
 @tile("dark")
 def _(x, y):
     return hexc("#0E0F12")
@@ -340,13 +349,12 @@ def zc(depth, mid=16.0):
 def gun_pistol():
     b = []
     z0, z1 = zc(3)
-    b += [box(8, 9, z0, 24, 13, z1, "metal_light", faces={"down": "metal_mid"})]  # slide
+    b += [box(8, 9, z0, 24, 13, z1, "paint", faces={"down": "metal_mid"}, tint=True)]  # slide, in the rarity colour
     b += [box(8.5, 9.6, z0 - 0.05, 12, 12.4, z0, "vents"), box(8.5, 9.6, z1, 12, 12.4, z1 + 0.05, "vents")]  # serrations
     b += [box(22, 8, 15.4, 23, 9, 16.6, "dark"), box(9, 8, 14.9, 10.5, 9, 17.1, "dark")]  # sights
     b += [box(24, 10, 15, 25, 12.5, 17, "bore", faces={"north": "metal_dark", "south": "metal_dark", "up": "metal_dark", "down": "metal_dark"})]
     zz0, zz1 = zc(2.6)
     b += [box(8, 13, zz0, 22, 15, zz1, "polymer")]  # frame
-    b += [box(13, 11.4, z0 - 0.08, 21, 12.2, z0, "accent", tint=True, glow=6), box(13, 11.4, z1, 21, 12.2, z1 + 0.08, "accent", tint=True, glow=6)]
     b += [box(15, 15, 15.5, 19, 16, 16.5, "polymer"), box(18, 13.5, 15.5, 19, 16, 16.5, "polymer"), box(15.6, 14.6, 15.7, 16.4, 16, 16.3, "metal_mid")]
     gz0, gz1 = zc(3.2)
     b += [box(8.4, 14, gz0, 14, 23.5, gz1, "grip", faces={"up": "polymer", "down": "rubber"}, rot=("z", -18, (11, 14.5, 16)))]
@@ -357,14 +365,13 @@ def gun_pistol():
 def gun_smg():
     b = []
     z0, z1 = zc(5)
-    b += [box(9, 11, z0, 22, 16, z1, "metal_dark")]  # receiver
+    b += [box(9, 11, z0, 22, 16, z1, "paint", tint=True)]  # receiver, in the rarity colour
     b += [box(11, 9.6, 14.8, 19, 11, 17.2, "metal_mid"), box(12, 8, 15.4, 13, 9.6, 16.6, "dark"), box(17.5, 8.4, 15.4, 18.5, 9.6, 16.6, "dark")]
     s0, s1 = zc(3.4)
     b += [box(22, 12, s0, 29.5, 15, s1, "vents", faces={"up": "metal_mid", "down": "metal_mid", "east": "metal_mid", "west": "metal_mid"})]
     b += [box(29.5, 12.4, 15, 32, 14.6, 17, "bore", faces={"north": "metal_dark", "south": "metal_dark", "up": "metal_dark", "down": "metal_dark"})]
     # Folding wire stock.
     b += [box(3, 11.4, 15.2, 9, 12.4, 16.8, "metal_mid"), box(3, 14.6, 15.2, 9, 15.6, 16.8, "metal_mid"), box(2, 11, 14.6, 3.2, 16, 17.4, "rubber")]
-    b += [box(12, 13.2, z0 - 0.08, 21, 14, z0, "accent", tint=True, glow=6), box(12, 13.2, z1, 21, 14, z1 + 0.08, "accent", tint=True, glow=6)]
     gz0, gz1 = zc(3.2)
     b += [box(10, 15.5, gz0, 13.4, 22.5, gz1, "grip", faces={"down": "rubber"}, rot=("z", -15, (11.7, 16, 16)))]
     b += [box(15, 15.8, 15, 18.2, 25, 17, "metal_mid", faces={"down": "dark"})]  # magazine
@@ -375,7 +382,7 @@ def gun_smg():
 def gun_assault_rifle():
     b = []
     z0, z1 = zc(5)
-    b += [box(7, 11, z0, 21, 16, z1, "metal_dark")]  # receiver
+    b += [box(7, 11, z0, 21, 16, z1, "paint", tint=True)]  # receiver, in the rarity colour
     b += [box(9, 9.4, 14.6, 18, 11, 17.4, "metal_mid")]  # top rail
     for x in range(10, 18, 2):
         b += [box(x, 9.0, 14.8, x + 1, 9.4, 17.2, "metal_dark")]
@@ -385,9 +392,7 @@ def gun_assault_rifle():
     b += [box(27.5, 12.5, 15.2, 31, 14.1, 16.8, "metal_mid")]
     b += [box(31, 12, 14.8, 32.4, 14.6, 17.2, "bore", faces={"north": "metal_dark", "south": "metal_dark", "up": "metal_dark", "down": "metal_dark"})]
     s0, s1 = zc(4)
-    b += [box(1, 11.8, s0, 7.2, 14.4, s1, "polymer"), box(1, 14.4, s0 + 0.2, 5.4, 17, s1 - 0.2, "polymer"), box(0, 11.4, s0 - 0.2, 1.2, 17.4, s1 + 0.2, "rubber")]
-    b += [box(8, 13.4, z0 - 0.08, 20, 14.2, z0, "accent", tint=True, glow=6), box(8, 13.4, z1, 20, 14.2, z1 + 0.08, "accent", tint=True, glow=6)]
-    b += [box(1.6, 12.6, s0 - 0.08, 6.6, 13.2, s0, "accent", tint=True, glow=4), box(1.6, 12.6, s1, 6.6, 13.2, s1 + 0.08, "accent", tint=True, glow=4)]
+    b += [box(1, 11.8, s0, 7.2, 14.4, s1, "paint", tint=True), box(1, 14.4, s0 + 0.2, 5.4, 17, s1 - 0.2, "paint", tint=True), box(0, 11.4, s0 - 0.2, 1.2, 17.4, s1 + 0.2, "rubber")]
     gz0, gz1 = zc(3.2)
     b += [box(9, 15.5, gz0, 12.4, 22.5, gz1, "grip", faces={"down": "rubber"}, rot=("z", -15, (10.7, 16, 16)))]
     m0, m1 = zc(3)
@@ -399,7 +404,7 @@ def gun_assault_rifle():
 def gun_pump_shotgun():
     b = []
     z0, z1 = zc(4.4)
-    b += [box(8, 11.6, z0, 17.5, 16, z1, "metal_dark")]  # receiver
+    b += [box(8, 11.6, z0, 17.5, 16, z1, "paint", tint=True)]  # receiver, in the rarity colour
     b += [box(17.5, 11, 14.9, 31, 13, 17.1, "metal_mid")]  # barrel
     b += [box(31, 11, 14.9, 31.6, 13, 17.1, "bore", faces={"north": "metal_dark", "south": "metal_dark", "up": "metal_dark", "down": "metal_dark"})]
     b += [box(17.5, 13, 15.1, 28, 14.4, 16.9, "metal_dark")]  # tube magazine
@@ -411,7 +416,6 @@ def gun_pump_shotgun():
     s0, s1 = zc(3.6)
     b += [box(1, 12, s0, 8.4, 15.2, s1, "wood"), box(1, 15.2, s0 + 0.2, 6, 17.4, s1 - 0.2, "wood"), box(0, 11.6, s0 - 0.2, 1.2, 17.8, s1 + 0.2, "rubber")]
     b += [box(7.4, 15, s0 + 0.3, 11.4, 19.4, s1 - 0.3, "wood_dark", rot=("z", -22.5, (9.4, 15.5, 16)))]  # grip wrist
-    b += [box(9, 13.3, z0 - 0.08, 17, 14.1, z0, "accent", tint=True, glow=6), box(9, 13.3, z1, 17, 14.1, z1 + 0.08, "accent", tint=True, glow=6)]
     b += [box(11, 16, 15.6, 15.4, 16.8, 16.4, "metal_mid"), box(14.6, 16, 15.6, 15.4, 17.6, 16.4, "metal_mid")]
     return b
 
@@ -419,11 +423,10 @@ def gun_pump_shotgun():
 def gun_sniper():
     b = []
     s0, s1 = zc(4)
-    b += [box(1, 12.2, s0, 11, 15.4, s1, "olive"), box(1, 15.4, s0 + 0.3, 6.4, 17.6, s1 - 0.3, "olive"), box(0, 11.8, s0 - 0.2, 1.2, 18, s1 + 0.2, "rubber")]
-    b += [box(2, 13.2, s0 - 0.08, 10, 14, s0, "accent", tint=True, glow=4), box(2, 13.2, s1, 10, 14, s1 + 0.08, "accent", tint=True, glow=4)]
+    b += [box(1, 12.2, s0, 11, 15.4, s1, "paint", tint=True), box(1, 15.4, s0 + 0.3, 6.4, 17.6, s1 - 0.3, "paint", tint=True), box(0, 11.8, s0 - 0.2, 1.2, 18, s1 + 0.2, "rubber")]
     z0, z1 = zc(4.4)
     b += [box(10, 12, z0, 22, 16, z1, "metal_dark")]  # receiver
-    b += [box(22, 12.6, z0 + 0.6, 26, 15.4, z1 - 0.6, "olive")]  # fore-end
+    b += [box(22, 12.6, z0 + 0.6, 26, 15.4, z1 - 0.6, "paint", tint=True)]  # fore-end, in the rarity colour
     b += [box(26, 12.9, 15.25, 31, 14.2, 16.75, "metal_mid")]
     b += [box(31, 12.5, 14.9, 32.6, 14.6, 17.1, "bore", faces={"north": "metal_dark", "south": "metal_dark", "up": "metal_dark", "down": "metal_dark"})]
     # Scope: tube, bells with lenses, mounts.
@@ -433,7 +436,7 @@ def gun_sniper():
     b += [box(15.5, 8.6, 14.7, 16.5, 10, 17.3, "polymer")]  # turret
     b += [box(18.6, 14.8, z1, 19.6, 15.8, 19.6, "metal_light"), box(18.2, 14.6, 19.2, 20, 16.2, 20.4, "metal_light")]  # bolt handle
     gz0, gz1 = zc(3.2)
-    b += [box(11, 15.6, gz0, 14.2, 21, gz1, "olive", faces={"down": "rubber"}, rot=("z", -15, (12.6, 16, 16)))]
+    b += [box(11, 15.6, gz0, 14.2, 21, gz1, "polymer", faces={"down": "rubber"}, rot=("z", -15, (12.6, 16, 16)))]
     b += [box(15, 15.8, 15.2, 18, 17.8, 16.8, "metal_mid"), box(14.2, 16, 15.6, 14.9, 18.6, 16.4, "polymer"), box(14.2, 18, 15.6, 15.8, 18.7, 16.4, "polymer")]
     return b
 

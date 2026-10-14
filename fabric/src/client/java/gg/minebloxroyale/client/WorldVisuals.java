@@ -19,7 +19,7 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * Hub: the parked Battle Bus and the Fortnite splash billboard. Match: the storm wall (StormVisuals), reboot vans,
- * waypoint beacons and Build mode's ghost piece.
+ * loot beams over guns on the ground, waypoint beacons and Build mode's ghost piece.
  */
 public final class WorldVisuals {
 	private static final int FULL_BRIGHT = 0xF000F0;
@@ -49,6 +49,7 @@ public final class WorldVisuals {
 		} else {
 			if (ClientState.hud.phase().equals("LIVE")) StormVisuals.draw(ps, out, cam);
 			vans(mc, ps, out, cam);
+			LootBeams.draw(ps, out, cam);
 			Waypoint.beacon(ps, out, cam);
 			BuildMode.preview(ps, out, cam);
 		}

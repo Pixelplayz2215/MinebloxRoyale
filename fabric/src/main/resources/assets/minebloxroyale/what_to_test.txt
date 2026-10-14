@@ -1,12 +1,7 @@
-Sniper: scoping in eases in with the scope fading in; leaving it snaps out
-Sniper: you stay scoped after a shot, the view kicks up and settles
-Sniper: the hotbar hides while scoped; a hit marker shows when you hit (gold for a headshot, with its own sound)
-Options > Controls > Mouse Settings: Scoped Sensitivity (50% by default)
-Every island: about 20 buildings, at least 2 of each kind and 3 parking lots
-Hub: the shooting range on its own deck off the west edge, by the obby; the Battle Bus where the range was
-Hub: the main board shows the version next to MINEBLOX ROYALE (PRE-ALPHA - TEST 12)
-No "press Enter to enable the narrator" at start
-Bots: swim (fast when going far), get out of trees, farm wood, brick and metal
-Bots: build cover when shot, ramp up to you or do 90s when you're above them, box up to heal
-Bots: none stand stuck for long (they get themselves unstuck)
-Dev account: /br give, /br tp, /br start, /br storm; the Mineblox Royale creative tab next to Spawn Eggs
+Guns: the whole body is in the rarity colour (Common grey, Uncommon green, Rare blue, Epic purple, Legendary gold), in your hand, on the ground and in the hotbar
+Guns on the ground: a short beam of light in their rarity colour above them
+Bots: after landing they loot first; no bot comes after you while you have no gun, unless you hit it
+Bots: at most 2 bots chase you at once (one you shoot still fights back)
+Close the game while riding the Battle Bus, open it again: you're in the hub
+Close the game mid-match, open it again: no crash, and the island is put back
+Hub: the main board shows v1.0.1 - TEST 1 next to MINEBLOX ROYALE
