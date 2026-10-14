@@ -88,7 +88,7 @@ public final class Cosmetics {
 
 	/** The head, leg and torso the Blender models were made on (fabric/tools/blender: cosmetics.py, backbling.py), in joint space. */
 	private static final float[] HEAD = { -0.5989F, -0.0012F, -0.5989F, 0.5989F, 1.2012F, 0.5989F }, LEG = { -0.5F, -2, -0.5F, 0.5F, 0, 0.5F },
-		TORSO = { -1, -1, -0.5F, 1, 1, 0.5F };
+		TORSO = { -1, -1, -0.5F, 1, 1, 0.5F }, ARM = { -0.5F, -1.5F, -0.5F, 0.5F, 0.5F, 0.5F };
 	/** Hats worn over the hair rather than on the head: the haircut stays whole (over an afro they have their own, bigger model). */
 	private static final List<String> OVER_HAIR = List.of("headphones", "halo", "bunny", "cat", "tiara");
 
@@ -96,26 +96,35 @@ public final class Cosmetics {
 	}
 
 	/**
-	 * Every worn accessory (hats, hair, face, back bling, shoes): Blender models (fabric/tools/blender/cosmetic_meshes.py,
-	 * restyled like real Roblox catalog items), each on its body part's joint so it moves with it, in the item's two
-	 * colours; the lighter copies far away.
+	 * Every worn accessory (hats, hair, face, back bling, shoes) and the 3D parts of shirts and pants (collars, cuffs,
+	 * belts, pockets, straps... over their painted designs): Blender models (fabric/tools/blender/cosmetic_meshes.py),
+	 * each on its body part's joint so it moves with it, in the item's two colours; the lighter copies far away.
 	 */
 	static void submit(SubmitNodeCollector collector, PoseStack poseStack, LivingEntityRenderState state, Map<String, String> outfit,
 		RobloxAvatarRenderer.Pose emote, float swing, boolean aiming, boolean far, int light, int overlay) {
 		CosmeticDef hat = worn(outfit, "hat"), hair = worn(outfit, "hair"), face = worn(outfit, "face"), back = worn(outfit, "back"),
-			shoes = worn(outfit, "shoes");
+			shoes = worn(outfit, "shoes"), shirt = worn(outfit, "shirt"), pants = worn(outfit, "pants");
 		// Full masks and helmets hide the haircut.
 		if (hat != null && hat.hideHair() || face != null && face.hideHair()) hair = null;
 		List<Piece> pieces = new ArrayList<>();
 		for (AvatarPartDef part : Sheets.AVATAR_PARTS) {
-			boolean isHead = part.id().equals("head"), isLeg = part.swing().equals("leg"), isTorso = part.id().equals("torso");
+			boolean isHead = part.id().equals("head"), isLeg = part.swing().equals("leg"), isTorso = part.id().equals("torso"), isArm = part.swing().equals("arm");
+			String side = part.centerX() > 0 ? "r" : "l";
 			if (isHead && (hat != null || hair != null || face != null)) {
 				Matrix4f m = place(part, state, emote, swing, aiming, HEAD);
 				if (hair != null) pieces.add(new Piece(hairMesh(hair, hat), m, hair));
 				if (hat != null) pieces.add(new Piece("hat_" + hat.shape() + (hair != null && hair.shape().equals("afro") && OVER_HAIR.contains(hat.shape()) ? "_afro" : ""), m, hat));
 				if (face != null) pieces.add(new Piece("face_" + face.shape(), m, face));
-			} else if (isLeg && shoes != null) pieces.add(new Piece("shoes_" + shoes.shape(), place(part, state, emote, swing, aiming, LEG), shoes));
-			else if (isTorso && back != null) pieces.add(new Piece(back.id(), place(part, state, emote, swing, aiming, TORSO), back));
+			} else if (isLeg && (shoes != null || pants != null)) {
+				Matrix4f m = place(part, state, emote, swing, aiming, LEG);
+				if (shoes != null) pieces.add(new Piece("shoes_" + shoes.shape(), m, shoes));
+				if (pants != null) pieces.add(new Piece("pants_" + pants.shape() + "_" + side + "leg", m, pants));
+			} else if (isTorso && (back != null || shirt != null || pants != null)) {
+				Matrix4f m = place(part, state, emote, swing, aiming, TORSO);
+				if (back != null) pieces.add(new Piece(back.id(), m, back));
+				if (shirt != null) pieces.add(new Piece("shirt_" + shirt.shape() + "_torso", m, shirt));
+				if (pants != null) pieces.add(new Piece("pants_" + pants.shape() + "_hips", m, pants));
+			} else if (isArm && shirt != null) pieces.add(new Piece("shirt_" + shirt.shape() + "_" + side + "arm", place(part, state, emote, swing, aiming, ARM), shirt));
 		}
 		if (pieces.isEmpty()) return;
 		String lod = far ? "_far" : "";

@@ -29,6 +29,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 /**
@@ -64,8 +65,7 @@ public final class Reboot {
 
 	/** A reboot van on the island: where it stands, which way it faces, and when it can be used again. */
 	public static final class Van {
-		public final double x, z;
-		public double y;
+		public double x, z, y;
 		public final float yaw;
 		public long readyAt;
 		boolean placed;
@@ -109,30 +109,73 @@ public final class Reboot {
 		return VANS;
 	}
 
+	/** How far a van may move from its planned spot to stand in the open. */
+	private static final int SEARCH = 16;
+
 	/**
-	 * Vans whose chunks have loaded go on the ground: invisible barrier blocks give the van its body (the island puts
-	 * the spot back after the match); the van itself is drawn by each player's game.
+	 * Vans whose chunks have loaded go on the ground, in the open near their planned spot (creator: not in trees):
+	 * invisible barrier blocks give the van its body (the island puts the spot back after the match); the van itself
+	 * is drawn by each player's game.
 	 */
 	static void prepare(ServerLevel level) {
 		for (Van v : VANS) {
 			if (v.placed) continue;
-			int bx = (int) Math.floor(v.x), bz = (int) Math.floor(v.z);
-			if (!level.hasChunk((bx - 3) >> 4, (bz - 3) >> 4) || !level.hasChunk((bx + 3) >> 4, (bz + 3) >> 4)
-				|| !level.hasChunk((bx - 3) >> 4, (bz + 3) >> 4) || !level.hasChunk((bx + 3) >> 4, (bz - 3) >> 4)) continue;
-			int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, bx, bz);
-			v.y = y;
-			v.placed = true;
+			int bx = (int) Math.floor(v.x), bz = (int) Math.floor(v.z), r = SEARCH + 3;
+			if (!level.hasChunk((bx - r) >> 4, (bz - r) >> 4) || !level.hasChunk((bx + r) >> 4, (bz + r) >> 4)
+				|| !level.hasChunk((bx - r) >> 4, (bz + r) >> 4) || !level.hasChunk((bx + r) >> 4, (bz - r) >> 4)) continue;
 			boolean alongX = Math.round(v.yaw / 90F) % 2 == 1;
+			BlockPos at = openSpot(level, bx, bz, alongX);
+			if (at == null) at = new BlockPos(bx, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, bx, bz), bz); // (none near: as planned)
+			v.x = at.getX() + 0.5;
+			v.z = at.getZ() + 0.5;
+			v.y = at.getY();
+			v.placed = true;
 			for (int a = -2; a <= 2; a++)
 				for (int b = -1; b <= 1; b++)
 					for (int h = 0; h < 3; h++) {
-						BlockPos p = new BlockPos(bx + (alongX ? a : b), y + h, bz + (alongX ? b : a));
-						if (!level.getBlockState(p).isAir()) continue;
+						BlockPos p = at.offset(alongX ? a : b, h, alongX ? b : a);
+						BlockState s = level.getBlockState(p);
+						if (!s.isAir() && !s.canBeReplaced()) continue; // (grass and flowers make way)
 						IslandRestore.remember(level, p);
 						level.setBlock(p, Blocks.BARRIER.defaultBlockState(), 2);
 					}
-			MinebloxRoyale.LOG.info("BR: reboot van at {} {} {}", bx, y, bz);
+			MinebloxRoyale.LOG.info("BR: reboot van at {} {} {}", at.getX(), at.getY(), at.getZ());
 		}
+	}
+
+	/** The nearest spot to (bx, bz), spiralling out, where a van fits (fits()), or null. */
+	private static BlockPos openSpot(ServerLevel level, int bx, int bz, boolean alongX) {
+		for (int r = 0; r <= SEARCH; r++)
+			for (int dx = -r; dx <= r; dx++)
+				for (int dz = -r; dz <= r; dz++) {
+					if (Math.max(Math.abs(dx), Math.abs(dz)) != r) continue;
+					BlockPos p = fits(level, bx + dx, bz + dz, alongX);
+					if (p != null) return p;
+				}
+		return null;
+	}
+
+	/**
+	 * Where a van centred on column (x, z) stands, if it fits there: dry ground, flat to a block, under its whole body
+	 * (5 x 3), and nothing but air or plants a block round it and up to the treetops (no trunk, no leaves: it isn't in a
+	 * tree or under one), outside the island's buildings. Else null.
+	 */
+	private static BlockPos fits(ServerLevel level, int x, int z, boolean alongX) {
+		int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+		for (int a = -3; a <= 3; a++)
+			for (int b = -2; b <= 2; b++) {
+				int cx = x + (alongX ? a : b), cz = z + (alongX ? b : a);
+				if (!level.hasChunk(cx >> 4, cz >> 4) || CustomStructures.contains(new BlockPos(cx, y, cz))) return null;
+				if (Math.abs(a) <= 2 && Math.abs(b) <= 1) {
+					int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, cx, cz);
+					if (ground < y - 1 || !level.getBlockState(new BlockPos(cx, ground - 1, cz)).getFluidState().isEmpty()) return null;
+				}
+				for (int h = 0; h <= 8; h++) {
+					BlockState s = level.getBlockState(new BlockPos(cx, y + h, cz));
+					if (!s.isAir() && !s.canBeReplaced()) return null;
+				}
+			}
+		return new BlockPos(x, y, z);
 	}
 
 	/** The van this fighter stands at (within rebootRange of its middle), or null. */

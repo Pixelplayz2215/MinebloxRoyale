@@ -50,7 +50,6 @@ public final class WorldVisuals {
 		} else {
 			if (ClientState.hud.phase().equals("LIVE")) StormVisuals.draw(ps, out, cam);
 			vans(mc, ps, out, cam);
-			LootBeams.draw(ps, out, cam);
 			Waypoint.beacon(ps, out, cam);
 			BuildMode.preview(ps, out, cam);
 		}

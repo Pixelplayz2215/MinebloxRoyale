@@ -129,6 +129,10 @@ def main():
         want += [f"hair_{r}_{c}" for c in ("full", "b0", "b2", "b4", "b6", "top")]
     want += ["hair_curly_tiara"] + ["face_" + f for f in shapes["face"]] + ["shoes_" + s for s in shapes["shoes"]]
     want += [r["id"] for r in rows if r["slot"] == "back"]
+    for sh in sorted({r["shape"] for r in rows if r["slot"] == "shirt"}):
+        want += [f"shirt_{sh}_{p}" for p in ("torso", "rarm", "larm")]
+    for sh in sorted({r["shape"] for r in rows if r["slot"] == "pants"}):
+        want += [f"pants_{sh}_{p}" for p in ("hips", "rleg", "lleg")]
     want += [g["id"] for g in json.load(open(os.path.join(DESIGN, "gliders.json"), encoding="utf-8"))["rows"]]
     for kind in sorted({f.split("_")[1] for f in files if f.startswith("car_")}):
         want += [f"car_{kind}_{s}" for s in (1, 2, 3, 4)]

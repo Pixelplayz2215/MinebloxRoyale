@@ -10,6 +10,7 @@ import gg.minebloxroyale.sheets.EmoteDef;
 import gg.minebloxroyale.sheets.EmoteKeyDef;
 import gg.minebloxroyale.sheets.Sheets;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -58,8 +59,13 @@ public final class RobloxAvatarRenderer {
 	private RobloxAvatarRenderer() {
 	}
 
-	/** The emote pose at this moment, or null. Angles in degrees. */
-	record Pose(float rightArmX, float rightArmZ, float leftArmX, float leftArmZ, float rightLegX, float leftLegX, float bodyYaw, float bounce) {
+	/**
+	 * The emote pose at this moment, or null (emote_keys sheet: angles in degrees, bounce in studs). Above the hips the
+	 * body can twist (to its right), lean (forward) and tilt (to its right); the head nods (down), turns (to its right)
+	 * and tilts (to its right); legs swing out to the side (legZ, like armZ).
+	 */
+	record Pose(float rightArmX, float rightArmZ, float leftArmX, float leftArmZ, float rightLegX, float leftLegX, float bodyYaw, float bounce,
+		float rightLegZ, float leftLegZ, float headX, float headY, float headZ, float lean, float tilt, float twist) {
 	}
 
 	public static boolean submit(LivingEntityRenderState state, PoseStack poseStack, SubmitNodeCollector collector, int light, int overlay) {
@@ -80,7 +86,7 @@ public final class RobloxAvatarRenderer {
 		AvatarColorDef colors = Sheets.AVATAR_COLORS_BY_ID.getOrDefault(state.getDataOrDefault(COLORS, "classic"), Sheets.AVATAR_COLORS.get(0));
 		int entityId = state.getDataOrDefault(ENTITY_ID, -1);
 		boolean aiming = state.getDataOrDefault(AIMING, false);
-		Pose emote = emotePose(entityId, state.walkAnimationSpeed);
+		Pose emote = state.getDataOrDefault(KNOCKED, false) ? crawlPose(state) : emotePose(entityId, state.walkAnimationSpeed);
 		String uuid = state.getDataOrDefault(PLAYER_UUID, "");
 		Map<String, String> outfit = uuid.isEmpty() ? null : Cosmetics.OUTFITS.get(UUID.fromString(uuid));
 		CosmeticDef shirt = Cosmetics.worn(outfit, "shirt"), pants = Cosmetics.worn(outfit, "pants");
@@ -138,6 +144,9 @@ public final class RobloxAvatarRenderer {
 		float bounce = emote == null ? 0 : emote.bounce();
 		float bodyYaw = emote == null ? 0 : emote.bodyYaw();
 		m.translate(0, bounce, 0).rotateY((float) Math.toRadians(bodyYaw));
+		// Everything above the hips (the root) twists, leans and tilts together; the legs stay planted.
+		if (emote != null && !part.swing().equals("leg"))
+			m.rotateY((float) Math.toRadians(-emote.twist())).rotateX((float) Math.toRadians(-emote.lean())).rotateZ((float) Math.toRadians(-emote.tilt()));
 		m.translate(part.pivotX(), part.pivotY(), part.pivotZ());
 		boolean right = part.centerX() > 0;
 		switch (part.swing()) {
@@ -165,9 +174,14 @@ public final class RobloxAvatarRenderer {
 			}
 			case "leg" -> {
 				float x = emote != null ? (right ? emote.rightLegX() : emote.leftLegX()) : (float) Math.toDegrees(swing * part.swingSign());
-				m.rotateX((float) Math.toRadians(x));
+				float z = emote != null ? (right ? emote.rightLegZ() : emote.leftLegZ()) : 0;
+				m.rotateX((float) Math.toRadians(x)).rotateZ((float) Math.toRadians(right ? z : -z));
 			}
-			case "head" -> m.rotateY((float) Math.toRadians(-state.yRot)).rotateX((float) Math.toRadians(-state.xRot));
+			case "head" -> {
+				if (emote != null)
+					m.rotateX((float) Math.toRadians(-emote.headX())).rotateY((float) Math.toRadians(-emote.headY())).rotateZ((float) Math.toRadians(-emote.headZ()));
+				m.rotateY((float) Math.toRadians(-state.yRot)).rotateX((float) Math.toRadians(-state.xRot));
+			}
 			default -> {
 			}
 		}
@@ -211,7 +225,29 @@ public final class RobloxAvatarRenderer {
 		}
 	}
 
-	/** Interpolates the emote_keys sheet for an entity currently emoting. Moving cancels the emote. */
+	/**
+	 * Knocked down: crawling on the belly (creator: "a better crawling animation"). Angles as an emote's, in the
+	 * standing body, which is laid flat round them: the arms reach ahead over the head and pull in turn, the legs push
+	 * off one after the other, the body rolls a little with each pull; lying still, both hands rest ahead on the
+	 * ground and the arms rise and fall with breathing.
+	 */
+	static Pose crawlPose(LivingEntityRenderState state) {
+		float move = Math.min(1F, state.walkAnimationSpeed * 2.5F);
+		double ph = state.walkAnimationPos * 0.45F;
+		float s = (float) Math.sin(ph) * move, c = (float) Math.cos(ph) * move;
+		float breathe = (float) Math.sin(state.ageInTicks * 0.08F) * 3F;
+		// (headX -55: the head lifted to look ahead along the ground instead of down into it)
+		return new Pose(150 + 38 * s + breathe, 18 - 8 * c, 150 - 38 * s + breathe, 18 + 8 * c, -8 - 8 * s, -8 + 8 * s, 7 * s, 0, 0, 0, -55, 0, 0, 0, 0, 0);
+	}
+
+	/** Each emote's keyframes in order (emote_keys sheet), sorted once. */
+	private static final Map<String, List<EmoteKeyDef>> KEYS = new HashMap<>();
+
+	/**
+	 * Interpolates the emote_keys sheet for an entity currently emoting. Moving cancels the emote. (The keys are the
+	 * Blender animation sampled finely, fabric/tools/blender/emote_video.py, so straight lines between them follow its
+	 * curves.)
+	 */
 	static Pose emotePose(int entityId, float walkSpeed) {
 		Map.Entry<String, Long> e = ClientState.EMOTES.get(entityId);
 		if (e == null) return null;
@@ -221,8 +257,10 @@ public final class RobloxAvatarRenderer {
 		}
 		EmoteDef def = Sheets.EMOTES_BY_ID.get(e.getKey());
 		if (def == null) return null;
+		List<EmoteKeyDef> keys = KEYS.computeIfAbsent(def.id(),
+			id -> Sheets.EMOTE_KEYS.stream().filter(k -> k.emote().equals(id)).sorted(Comparator.comparingDouble(EmoteKeyDef::t)).toList());
+		if (keys.isEmpty()) return null;
 		float t = ((System.currentTimeMillis() - e.getValue()) / 1000F / def.loopSeconds()) % 1F;
-		List<EmoteKeyDef> keys = Sheets.EMOTE_KEYS.stream().filter(k -> k.emote().equals(def.id())).sorted(Comparator.comparingDouble(EmoteKeyDef::t)).toList();
 		EmoteKeyDef a = keys.get(0), b = keys.get(keys.size() - 1);
 		for (int i = 0; i + 1 < keys.size(); i++)
 			if (t >= keys.get(i).t() && t <= keys.get(i + 1).t()) {
@@ -232,7 +270,9 @@ public final class RobloxAvatarRenderer {
 			}
 		float f = b.t() > a.t() ? (t - a.t()) / (b.t() - a.t()) : 0;
 		return new Pose(l(a.rightArmX(), b.rightArmX(), f), l(a.rightArmZ(), b.rightArmZ(), f), l(a.leftArmX(), b.leftArmX(), f), l(a.leftArmZ(), b.leftArmZ(), f),
-			l(a.rightLegX(), b.rightLegX(), f), l(a.leftLegX(), b.leftLegX(), f), l(a.bodyYaw(), b.bodyYaw(), f), l(a.bounce(), b.bounce(), f));
+			l(a.rightLegX(), b.rightLegX(), f), l(a.leftLegX(), b.leftLegX(), f), l(a.bodyYaw(), b.bodyYaw(), f), l(a.bounce(), b.bounce(), f),
+			l(a.rightLegZ(), b.rightLegZ(), f), l(a.leftLegZ(), b.leftLegZ(), f), l(a.headX(), b.headX(), f), l(a.headY(), b.headY(), f), l(a.headZ(), b.headZ(), f),
+			l(a.lean(), b.lean(), f), l(a.tilt(), b.tilt(), f), l(a.twist(), b.twist(), f));
 	}
 
 	private static float l(float a, float b, float f) {

@@ -22,24 +22,32 @@ def _rot(axis, deg):
     return Matrix.Rotation(math.radians(deg), 4, axis)
 
 
-def joints(emote=None, gliding=False):
-    """Root space -> each part's joint (Minecraft-style space), as RobloxAvatarRenderer.jointMatrix: emote = a pose
-    {rightArmX, rightArmZ, leftArmX, leftArmZ, rightLegX, leftLegX, bodyYaw, bounce} (the emote_keys sheet's columns)."""
+def joints(emote=None, gliding=False, lying=None):
+    """Root space -> each part's joint (Minecraft-style space), exactly as RobloxAvatarRenderer.jointMatrix: emote = a
+    pose with the emote_keys sheet's columns (rightArmX ... twist; missing ones 0). lying: a matrix put before it all
+    (the knocked crawl lays the body flat)."""
     e = emote or {}
+    g = lambda k: e.get(k, 0.0)
     out = {}
     for part, pv in PIVOT.items():
-        m = Matrix.Translation((0, e.get("bounce", 0), 0)) @ _rot("Y", e.get("bodyYaw", 0)) @ Matrix.Translation(pv)
+        m = (lying or Matrix.Identity(4)) @ Matrix.Translation((0, g("bounce"), 0)) @ _rot("Y", g("bodyYaw"))
         right = pv[0] > 0
+        if not part.endswith("leg"):  # everything above the hips twists, leans and tilts together
+            m = m @ _rot("Y", -g("twist")) @ _rot("X", -g("lean")) @ _rot("Z", -g("tilt"))
+        m = m @ Matrix.Translation(pv)
         if part.endswith("arm"):
             if emote:
-                x, z = (e["rightArmX"], e["rightArmZ"]) if right else (e["leftArmX"], e["leftArmZ"])
+                x, z = (g("rightArmX"), g("rightArmZ")) if right else (g("leftArmX"), g("leftArmZ"))
             elif gliding:  # both hands up on the glider's grips
                 x, z = 170, -15
             else:
                 x, z = 0, 0
             m = m @ _rot("X", x) @ _rot("Z", z if right else -z)
-        elif part.endswith("leg") and emote:
-            m = m @ _rot("X", e["rightLegX"] if right else e["leftLegX"])
+        elif part.endswith("leg"):
+            x, z = (g("rightLegX"), g("rightLegZ")) if right else (g("leftLegX"), g("leftLegZ"))
+            m = m @ _rot("X", x) @ _rot("Z", z if right else -z)
+        elif part == "head":
+            m = m @ _rot("X", -g("headX")) @ _rot("Y", -g("headY")) @ _rot("Z", -g("headZ"))
         out[part] = m
     return out
 
@@ -54,8 +62,9 @@ def build(pose="standing", face=True, emote=None, colors=None):
     """The avatar; returns its joints. pose: standing or gliding. colors: head, torso, arms, legs ('#rrggbb')."""
     col = {**CLASSIC, **(colors or {})}
     js = joints(emote, pose == "gliding")
+    global BUILT
     if ROBLOX:
-        roblox_body.build(ROBLOX, js, col)
+        BUILT = {k: [v] for k, v in roblox_body.build(ROBLOX, js, col).items()}
         return js
     skin = mat("av_head", col["head"], rough=0.6)
     arms = mat("av_arms", col["arms"], rough=0.6)
@@ -75,4 +84,15 @@ def build(pose="standing", face=True, emote=None, colors=None):
         place(ps, js[part])
         for p in ps:
             p.obj["br_preview"] = 1
+    BUILT = {k: [p.obj for p in v] for k, v in made.items()}
     return js
+
+
+BUILT = {}  # the last avatar built: {part: [objects]}, each made in its joint's space
+
+
+def repose(js):
+    """Moves the last avatar built to new joints (an emote's next frame)."""
+    for part, objs in BUILT.items():
+        for o in objs:
+            o.matrix_world = C @ js[part] @ C.inverted()

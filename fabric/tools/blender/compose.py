@@ -24,6 +24,22 @@ def font(size):
 
 
 def sheet(title, unlock, views, out):
+    if len(views) == 1:  # one view (back bling: only its back): one big picture
+        label, path = next(iter(views.items()))
+        cell, pad = 900, 24
+        top = 120 + (56 if unlock else 0)
+        img = Image.new("RGB", (cell + 2 * pad, top + cell + 44 + pad), BG)
+        d = ImageDraw.Draw(img)
+        d.text((pad, 28), title, font=font(64), fill=TEXT)
+        if unlock:
+            d.text((pad, 112), "Unlock: " + unlock, font=font(40), fill=SUB)
+        d.rounded_rectangle((pad, top, pad + cell, top + cell + 44), radius=18, fill=PANEL)
+        v = Image.open(path).convert("RGBA").resize((cell, cell), Image.LANCZOS)
+        img.paste(v, (pad, top), v)
+        d.text((pad + cell / 2, top + cell + 22), label, font=font(30), fill=LABEL, anchor="mm")
+        os.makedirs(os.path.dirname(out), exist_ok=True)
+        img.save(out, optimize=True)
+        return
     cell = 640
     pad = 24
     top = 120 + (56 if unlock else 0)

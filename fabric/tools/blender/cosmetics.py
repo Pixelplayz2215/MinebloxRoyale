@@ -283,7 +283,7 @@ def hair_cap(s, h, grow, front_y, back_y, y1, rc, color):
             r = (grow - rr) * (1 - (v - 0.85) / 0.15)
             y = y1
         return (h.cx + c * h.hw * r, y, h.cz + sn * h.hd * r)
-    s.at(0, 0, 0).color(color).surface(fn, 48, 24)
+    s.at(0, 0, 0).color(color).surface(fn, 48, 24, one_sided=True)  # (the head fills it)
 
 
 def hair(s, shape, h, hat_shape=None, a="a", b="b"):
@@ -461,7 +461,7 @@ def shoe_shell(s, e, grow, y0, y1, toe, color):
         f = (y - y0) / (y1 - y0)
         fr = 1 + (toe - 1) * (1 - f * f) if pz < 0 else 1
         return (cx + px * hx * r, y, cz + pz * hz * r * fr)
-    s.at(0, 0, 0).color(color).surface(fn, 40, 14)
+    s.at(0, 0, 0).color(color).surface(fn, 40, 14, one_sided=True)  # (the leg fills it)
 
 
 def shoes(s, shape, e=LEG, a="a", b="b"):

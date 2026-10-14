@@ -1,55 +1,335 @@
 {
-  "sheet": "emotes",
-  "class": "EmoteDef",
-  "about": "40 emotes played on the Roblox avatar; each player picks 8 for their emote wheel (B) in the Locker. unlock: default = everyone has it (the first 7); obby = finish the obby; victory = win a Victory Royale; kills = lifetime eliminations reach 'need' (150 unlocks the last one); wins = Victory Royales reach 'need'; range = score 'need' in one shooting-range round (match.rangeRoundSeconds); bullseyes = hit 'need' bullseyes at the range in all. Fairer since test9 (creator): nothing needs more than 150 kills or 8 wins, and the range unlocks only took over items that needed 100+ kills, so nobody lost one. Each loops over 'loopSeconds' through its keyframes (emote_keys).",
-  "columns": {
-    "id": "string",
-    "name": "string",
-    "unlock": "enum:default|obby|victory|kills|wins|range|bullseyes",
-    "need": "int",
-    "loopSeconds": "float",
-    "note": "string"
+ "sheet": "emotes",
+ "class": "EmoteDef",
+ "about": "40 emotes played on the Roblox avatar; each player picks 8 for their emote wheel (B) in the Locker. unlock: default = everyone has it (the first 7); obby = finish the obby; victory = win a Victory Royale; kills = lifetime eliminations reach 'need' (150 unlocks the last one); wins = Victory Royales reach 'need'; range = score 'need' in one shooting-range round (match.rangeRoundSeconds); bullseyes = hit 'need' bullseyes at the range in all. Fairer since test9 (creator): nothing needs more than 150 kills or 8 wins, and the range unlocks only took over items that needed 100+ kills, so nobody lost one. Each loops over 'loopSeconds' through its keyframes (emote_keys).",
+ "columns": {
+  "id": "string",
+  "name": "string",
+  "unlock": "enum:default|obby|victory|kills|wins|range|bullseyes",
+  "need": "int",
+  "loopSeconds": "float",
+  "note": "string"
+ },
+ "rows": [
+  {
+   "id": "wave",
+   "name": "Wave",
+   "unlock": "default",
+   "need": 0,
+   "loopSeconds": 1.0,
+   "note": "right arm up, waving, head tilted with a smile"
   },
-  "rows": [
-    { "id": "wave", "name": "Wave", "unlock": "default", "need": 0, "loopSeconds": 1.0, "note": "right arm up, waving" },
-    { "id": "swing", "name": "Arm Swing", "unlock": "default", "need": 0, "loopSeconds": 0.8, "note": "both arms swing side to side, hips opposite" },
-    { "id": "robot", "name": "Robot", "unlock": "default", "need": 0, "loopSeconds": 1.6, "note": "stiff 90 degree arm moves" },
-    { "id": "floss", "name": "Floss", "unlock": "default", "need": 0, "loopSeconds": 0.7, "note": "straight arms swing across the body while the hips go the other way" },
-    { "id": "dab", "name": "Dab", "unlock": "default", "need": 0, "loopSeconds": 1.2, "note": "one arm up and out, the other across the face, held" },
-    { "id": "jumping_jacks", "name": "Jumping Jacks", "unlock": "default", "need": 0, "loopSeconds": 0.8, "note": "arms up and legs out, then back, with a hop" },
-    { "id": "twist", "name": "Twist", "unlock": "default", "need": 0, "loopSeconds": 0.6, "note": "body twists left and right with bent arms" },
-    { "id": "obby_hop", "name": "Obby Hop", "unlock": "obby", "need": 0, "loopSeconds": 0.8, "note": "parkour hop from platform to platform - the obby reward" },
-    { "id": "victory_dance", "name": "Victory Dance", "unlock": "victory", "need": 0, "loopSeconds": 0.6, "note": "the Victory Royale emote: arms up, bouncing" },
-    { "id": "clap", "name": "Clap", "unlock": "kills", "need": 3, "loopSeconds": 0.4, "note": "hands meet in front (5 kills)" },
-    { "id": "salute", "name": "Salute", "unlock": "kills", "need": 5, "loopSeconds": 1.6, "note": "right hand to the forehead (10 kills)" },
-    { "id": "shrug", "name": "Shrug", "unlock": "kills", "need": 8, "loopSeconds": 1.2, "note": "both arms out, palms up (15 kills)" },
-    { "id": "chicken", "name": "Chicken Dance", "unlock": "kills", "need": 10, "loopSeconds": 0.6, "note": "elbows flapping (20 kills)" },
-    { "id": "disco", "name": "Disco Point", "unlock": "kills", "need": 12, "loopSeconds": 0.9, "note": "point up, point down, hips swing (25 kills)" },
-    { "id": "running_man", "name": "Running Man", "unlock": "kills", "need": 15, "loopSeconds": 0.7, "note": "running on the spot (30 kills)" },
-    { "id": "karate", "name": "Karate Chop", "unlock": "kills", "need": 20, "loopSeconds": 1.0, "note": "chop, chop (40 kills)" },
-    { "id": "air_guitar", "name": "Air Guitar", "unlock": "kills", "need": 25, "loopSeconds": 0.5, "note": "strumming a guitar that isn't there (50 kills)" },
-    { "id": "drum", "name": "Drum Solo", "unlock": "kills", "need": 30, "loopSeconds": 0.35, "note": "drumming fast (60 kills)" },
-    { "id": "boxing", "name": "Boxing", "unlock": "kills", "need": 40, "loopSeconds": 0.6, "note": "left, right, left (75 kills)" },
-    { "id": "spin", "name": "Spin", "unlock": "kills", "need": 50, "loopSeconds": 1.2, "note": "a full turn with arms out (90 kills)" },
-    { "id": "helicopter", "name": "Helicopter", "unlock": "range", "need": 15, "loopSeconds": 0.6, "note": "arms out, spinning fast (100 kills)" },
-    { "id": "hip_shake", "name": "Hip Shake", "unlock": "bullseyes", "need": 5, "loopSeconds": 0.5, "note": "arms forward, hips side to side (125 kills)" },
-    { "id": "swim", "name": "Swim", "unlock": "kills", "need": 60, "loopSeconds": 1.0, "note": "front crawl in the air (150 kills)" },
-    { "id": "zombie", "name": "Zombie Walk", "unlock": "wins", "need": 2, "loopSeconds": 1.2, "note": "arms out, shuffling (175 kills)" },
-    { "id": "flex", "name": "Flex", "unlock": "range", "need": 25, "loopSeconds": 1.0, "note": "showing off (200 kills)" },
-    { "id": "bow", "name": "Bow", "unlock": "bullseyes", "need": 10, "loopSeconds": 1.8, "note": "a polite bow (250 kills)" },
-    { "id": "cheer", "name": "Cheer", "unlock": "kills", "need": 75, "loopSeconds": 0.5, "note": "arms up in turns (300 kills)" },
-    { "id": "raise_roof", "name": "Raise the Roof", "unlock": "range", "need": 35, "loopSeconds": 0.5, "note": "pushing the roof up (350 kills)" },
-    { "id": "penguin", "name": "Penguin Waddle", "unlock": "wins", "need": 3, "loopSeconds": 0.5, "note": "little flaps and a waddle (400 kills)" },
-    { "id": "slide", "name": "Smooth Slide", "unlock": "bullseyes", "need": 20, "loopSeconds": 0.8, "note": "sliding feet (450 kills)" },
-    { "id": "fly_pose", "name": "Hero Fly", "unlock": "kills", "need": 90, "loopSeconds": 1.5, "note": "one fist up, hovering (500 kills)" },
-    { "id": "star_jump", "name": "Star Jump", "unlock": "range", "need": 45, "loopSeconds": 0.9, "note": "big jumping star (550 kills)" },
-    { "id": "hula", "name": "Hula", "unlock": "bullseyes", "need": 35, "loopSeconds": 0.6, "note": "waving arms, swaying hips (600 kills)" },
-    { "id": "wave_both", "name": "Double Wave", "unlock": "wins", "need": 5, "loopSeconds": 0.8, "note": "waving with both hands (650 kills)" },
-    { "id": "rock_out", "name": "Rock Out", "unlock": "kills", "need": 100, "loopSeconds": 0.4, "note": "fist pumping (700 kills)" },
-    { "id": "tap_dance", "name": "Tap Dance", "unlock": "range", "need": 60, "loopSeconds": 0.4, "note": "quick feet (750 kills)" },
-    { "id": "lasso", "name": "Lasso Twirl", "unlock": "bullseyes", "need": 50, "loopSeconds": 0.6, "note": "twirling a rope overhead (800 kills)" },
-    { "id": "breakdance", "name": "Breakdance Spin", "unlock": "wins", "need": 8, "loopSeconds": 0.8, "note": "low spin with arms out (850 kills)" },
-    { "id": "ripple", "name": "Wave Ripple", "unlock": "range", "need": 80, "loopSeconds": 0.8, "note": "a wave through both arms (900 kills)" },
-    { "id": "legendary", "name": "Legendary Royale", "unlock": "kills", "need": 150, "loopSeconds": 1.6, "note": "the 1000-kill emote: spin, jump and arms up (1000 kills)" }
-  ]
+  {
+   "id": "swing",
+   "name": "Arm Swing",
+   "unlock": "default",
+   "need": 0,
+   "loopSeconds": 0.8,
+   "note": "both arms swing side to side, dipping in the middle"
+  },
+  {
+   "id": "robot",
+   "name": "Robot",
+   "unlock": "default",
+   "need": 0,
+   "loopSeconds": 1.6,
+   "note": "stiff, snapping 90 degree moves with holds"
+  },
+  {
+   "id": "floss",
+   "name": "Floss",
+   "unlock": "default",
+   "need": 0,
+   "loopSeconds": 0.7,
+   "note": "straight arms swing across the body, front and back in turn, hips the other way"
+  },
+  {
+   "id": "dab",
+   "name": "Dab",
+   "unlock": "default",
+   "need": 0,
+   "loopSeconds": 1.6,
+   "note": "a wind-up, then the dab snapped and held"
+  },
+  {
+   "id": "jumping_jacks",
+   "name": "Jumping Jacks",
+   "unlock": "default",
+   "need": 0,
+   "loopSeconds": 0.8,
+   "note": "arms up and legs out, then back, hopping"
+  },
+  {
+   "id": "twist",
+   "name": "Twist",
+   "unlock": "default",
+   "need": 0,
+   "loopSeconds": 0.6,
+   "note": "the body twists left and right, bent arms, low bounce"
+  },
+  {
+   "id": "obby_hop",
+   "name": "Obby Hop",
+   "unlock": "obby",
+   "need": 0,
+   "loopSeconds": 1.0,
+   "note": "crouch, a big parkour hop with arms swinging, a soft landing"
+  },
+  {
+   "id": "victory_dance",
+   "name": "Victory Dance",
+   "unlock": "victory",
+   "need": 0,
+   "loopSeconds": 0.6,
+   "note": "arms up in a V, pumping, bouncing, looking up"
+  },
+  {
+   "id": "clap",
+   "name": "Clap",
+   "unlock": "kills",
+   "need": 3,
+   "loopSeconds": 0.45,
+   "note": "hands meet in front with a little nod"
+  },
+  {
+   "id": "salute",
+   "name": "Salute",
+   "unlock": "kills",
+   "need": 5,
+   "loopSeconds": 1.8,
+   "note": "snaps the right hand to the forehead, chest out, holds, then away"
+  },
+  {
+   "id": "shrug",
+   "name": "Shrug",
+   "unlock": "kills",
+   "need": 8,
+   "loopSeconds": 1.4,
+   "note": "arms out, palms up, shoulders up, head tilted"
+  },
+  {
+   "id": "chicken",
+   "name": "Chicken Dance",
+   "unlock": "kills",
+   "need": 10,
+   "loopSeconds": 0.6,
+   "note": "elbows flapping, pecking head, knees up in turns"
+  },
+  {
+   "id": "disco",
+   "name": "Disco Point",
+   "unlock": "kills",
+   "need": 12,
+   "loopSeconds": 0.9,
+   "note": "point up, point down across, hips swinging, eyes on the finger"
+  },
+  {
+   "id": "running_man",
+   "name": "Running Man",
+   "unlock": "kills",
+   "need": 15,
+   "loopSeconds": 0.7,
+   "note": "running on the spot, knees high, arms pumping"
+  },
+  {
+   "id": "karate",
+   "name": "Karate Chop",
+   "unlock": "kills",
+   "need": 20,
+   "loopSeconds": 1.2,
+   "note": "horse stance, wind up high, chop, then the other hand"
+  },
+  {
+   "id": "air_guitar",
+   "name": "Air Guitar",
+   "unlock": "kills",
+   "need": 25,
+   "loopSeconds": 0.5,
+   "note": "one hand on the neck, strumming, head banging, leaning back"
+  },
+  {
+   "id": "drum",
+   "name": "Drum Solo",
+   "unlock": "kills",
+   "need": 30,
+   "loopSeconds": 0.4,
+   "note": "drumming fast, sticks in turn, head bobbing"
+  },
+  {
+   "id": "boxing",
+   "name": "Boxing",
+   "unlock": "kills",
+   "need": 40,
+   "loopSeconds": 0.7,
+   "note": "guard up, jab, cross with the hips behind it, jab, light on the feet"
+  },
+  {
+   "id": "spin",
+   "name": "Spin",
+   "unlock": "kills",
+   "need": 50,
+   "loopSeconds": 1.2,
+   "note": "a full turn with arms out"
+  },
+  {
+   "id": "helicopter",
+   "name": "Helicopter",
+   "unlock": "range",
+   "need": 15,
+   "loopSeconds": 0.6,
+   "note": "arms out, spinning fast, lifting off"
+  },
+  {
+   "id": "hip_shake",
+   "name": "Hip Shake",
+   "unlock": "bullseyes",
+   "need": 5,
+   "loopSeconds": 0.5,
+   "note": "arms forward, hips side to side"
+  },
+  {
+   "id": "swim",
+   "name": "Swim",
+   "unlock": "kills",
+   "need": 60,
+   "loopSeconds": 1.0,
+   "note": "front crawl in the air: windmill arms, turning to breathe, legs fluttering"
+  },
+  {
+   "id": "zombie",
+   "name": "Zombie Walk",
+   "unlock": "wins",
+   "need": 2,
+   "loopSeconds": 1.4,
+   "note": "arms out, head lolling, shuffling"
+  },
+  {
+   "id": "flex",
+   "name": "Flex",
+   "unlock": "range",
+   "need": 25,
+   "loopSeconds": 1.2,
+   "note": "double biceps, then the most-muscular crunch"
+  },
+  {
+   "id": "bow",
+   "name": "Bow",
+   "unlock": "bullseyes",
+   "need": 10,
+   "loopSeconds": 2.0,
+   "note": "hand on the heart, a deep polite bow"
+  },
+  {
+   "id": "cheer",
+   "name": "Cheer",
+   "unlock": "kills",
+   "need": 75,
+   "loopSeconds": 0.5,
+   "note": "arms up in turns, bouncing"
+  },
+  {
+   "id": "raise_roof",
+   "name": "Raise the Roof",
+   "unlock": "range",
+   "need": 35,
+   "loopSeconds": 0.5,
+   "note": "pushing the roof up, bouncing"
+  },
+  {
+   "id": "penguin",
+   "name": "Penguin Waddle",
+   "unlock": "wins",
+   "need": 3,
+   "loopSeconds": 0.5,
+   "note": "little flaps and a waddle"
+  },
+  {
+   "id": "slide",
+   "name": "Smooth Slide",
+   "unlock": "bullseyes",
+   "need": 20,
+   "loopSeconds": 0.9,
+   "note": "smooth sliding feet, arms easing back and forth"
+  },
+  {
+   "id": "fly_pose",
+   "name": "Hero Fly",
+   "unlock": "kills",
+   "need": 90,
+   "loopSeconds": 1.5,
+   "note": "one fist up, hovering"
+  },
+  {
+   "id": "star_jump",
+   "name": "Star Jump",
+   "unlock": "range",
+   "need": 45,
+   "loopSeconds": 1.0,
+   "note": "crouch, a big jumping star, land"
+  },
+  {
+   "id": "hula",
+   "name": "Hula",
+   "unlock": "bullseyes",
+   "need": 35,
+   "loopSeconds": 0.8,
+   "note": "arms flowing side to side, hips swaying"
+  },
+  {
+   "id": "wave_both",
+   "name": "Double Wave",
+   "unlock": "wins",
+   "need": 5,
+   "loopSeconds": 0.8,
+   "note": "waving with both hands, swaying"
+  },
+  {
+   "id": "rock_out",
+   "name": "Rock Out",
+   "unlock": "kills",
+   "need": 100,
+   "loopSeconds": 0.45,
+   "note": "fist pumping, head banging"
+  },
+  {
+   "id": "tap_dance",
+   "name": "Tap Dance",
+   "unlock": "range",
+   "need": 60,
+   "loopSeconds": 0.5,
+   "note": "quick feet, arms out for balance"
+  },
+  {
+   "id": "lasso",
+   "name": "Lasso Twirl",
+   "unlock": "bullseyes",
+   "need": 50,
+   "loopSeconds": 0.6,
+   "note": "a rope twirled overhead, the other hand on the hip"
+  },
+  {
+   "id": "breakdance",
+   "name": "Breakdance Spin",
+   "unlock": "wins",
+   "need": 8,
+   "loopSeconds": 0.9,
+   "note": "low spin, arms out, legs kicking out in turn"
+  },
+  {
+   "id": "ripple",
+   "name": "Wave Ripple",
+   "unlock": "range",
+   "need": 80,
+   "loopSeconds": 0.9,
+   "note": "a wave rolling through both arms and the body"
+  },
+  {
+   "id": "legendary",
+   "name": "Legendary Royale",
+   "unlock": "kills",
+   "need": 150,
+   "loopSeconds": 2.0,
+   "note": "the 1000-kill emote: crouch, a spinning jump with arms up, land, victory pose"
+  }
+ ]
 }

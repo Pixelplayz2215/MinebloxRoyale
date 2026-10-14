@@ -50,6 +50,10 @@ public final class Harvest {
 	 * The harvest-sheet row for a block, or null when it can't be broken. inStructure: null = unknown (client side).
 	 */
 	static HarvestRuleDef rule(BlockState state, Boolean inStructure) {
+		// Any part of a parked car: a hit on the car, for metal (creator: cars break for metal). The sheet's "@car" row
+		// isn't a block name, so the car is recognised here, on both sides (each player's game decides whether a hit
+		// can start at all).
+		if (state.getBlock() instanceof CarBlock) return Sheets.HARVEST_BY_ID.get("h_car");
 		HarvestRuleDef r = row(state, inStructure);
 		return r == null || r.collapse().equals("none") || r.collapse().equals("attached") ? null : r;
 	}
@@ -93,7 +97,6 @@ public final class Harvest {
 	 */
 	public static HarvestRuleDef quickRule(BlockState s) {
 		if (s.is(Blocks.BARRIER)) return null;
-		if (s.getBlock() instanceof CarBlock) return Sheets.HARVEST_BY_ID.get("h_car");
 		return QUICK.computeIfAbsent(s, k -> Optional.ofNullable(rule(k, false))).orElse(null);
 	}
 
@@ -101,8 +104,6 @@ public final class Harvest {
 		BlockState s = level.getBlockState(pos);
 		// Reboot vans (invisible barrier blocks) never break (creator), even inside a village.
 		if (s.is(Blocks.BARRIER)) return null;
-		// Any part of a parked car: a hit on the car, for metal (creator: cars break for metal).
-		if (s.getBlock() instanceof CarBlock) return Sheets.HARVEST_BY_ID.get("h_car");
 		HarvestRuleDef r = rule(s, false);
 		if (r != null && !r.collapse().equals("single")) return r;
 		// In a building: its own rows (a stone wall falls as a wall, not one block at a time).

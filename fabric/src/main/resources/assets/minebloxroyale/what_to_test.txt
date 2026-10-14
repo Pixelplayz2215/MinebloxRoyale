@@ -1,12 +1,9 @@
-Guns (new Blender models): the body is in the rarity colour (Common grey, Uncommon green, Rare blue, Epic purple, Legendary gold), in your hand, on the ground and in the hotbar
-Heals, shields and the pickaxe (new Blender models): in your hand, on the ground and in the hotbar
-Cars in the parking lots (new Blender models): all 7 kinds; hit one with the pickaxe to see the damage stages
-Battle Bus and reboot van (new Blender models): the bus in the hub and in a match; a van green when ready, red when recharging
-Gliders (new Blender models, bigger): glide after the bus drop; try a few in the Locker
-Locker (new Blender cosmetics): hats, hair, faces, back bling and shoes; a hat with each haircut (no gaps, nothing poking through)
-Guns on the ground: a short beam of light in their rarity colour above them
-Bots: after landing they loot first; no bot comes after you while you have no gun, unless you hit it
-Bots: at most 2 bots chase you at once (one you shoot still fights back)
-Close the game while riding the Battle Bus, open it again: you're in the hub
-Close the game mid-match, open it again: no crash, and the island is put back
-Hub: the main board shows v1.0.1 - TEST 1 next to MINEBLOX ROYALE
+Cars: hit a parked car with the pickaxe: it clanks, gives metal, goes through its damage stages and breaks
+Guns on the ground: no light beam above them any more
+Reboot vans (Duos, Trios, Squads): out in the open, never inside or under a tree
+Emotes (new Blender animations): try them all in the emote wheel (B); smooth, with head, body and leg moves
+Knocked down (team modes): the new crawl: arms reach ahead and pull in turn, head up, body rolling a little
+Locker hair (remade): sculpted locks; try each hair with a cap, a fedora and a top hat (cut cleanly under the hat)
+Locker hats, shoes and back bling (remade, smoother): seams, stitching, laces, soles, buckles, pompoms
+Locker shirts and pants: 3D collars, cuffs, belts, pockets, straps, ties, badges, knee pads over the designs
+Hub: the main board shows v1.0.1 - TEST 2 next to MINEBLOX ROYALE

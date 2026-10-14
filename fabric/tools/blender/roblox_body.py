@@ -96,12 +96,14 @@ def _mat(name, color, face=None):
 
 
 def build(root, joints, colors):
-    """The body parts, each through its joint (avatar.joints) and its offset from it; colors: head, torso, arms, legs."""
+    """The body parts, each made in its joint's space (offset from the joint as the sheet says) and put where its joint
+    is (avatar.joints; moving the object moves the part: emote_video.py); colors: head, torso, arms, legs. Returns
+    {part id: object}."""
     face_png = os.path.join(root, "textures", "face.png")
-    objs = []
+    objs = {}
     for part in PARTS:
         pos, nrm, tris = parse(open(os.path.join(root, part["mesh"]), "rb").read())
-        m = C @ joints[part["id"]] @ Matrix.Translation((part["centerX"] - part["pivotX"], part["centerY"] - part["pivotY"], part["centerZ"] - part["pivotZ"]))
+        m = C @ Matrix.Translation((part["centerX"] - part["pivotX"], part["centerY"] - part["pivotY"], part["centerZ"] - part["pivotZ"]))
         nm = m.to_3x3().inverted_safe().transposed()
         slot = {"arms": "arms", "legs": "legs", "torso": "torso"}.get(part["colorSlot"], "head")
         verts, faces, normals, uvs, mats = [], [], [], [], []
@@ -128,6 +130,7 @@ def build(root, joints, colors):
             me.materials.append(_mat(part["id"] + "_face", colors[slot], face_png if os.path.isfile(face_png) else None))
         obj = bpy.data.objects.new(part["id"], me)
         obj["br_preview"] = 1
+        obj.matrix_world = C @ joints[part["id"]] @ C.inverted()
         bpy.context.scene.collection.objects.link(obj)
-        objs.append(obj)
+        objs[part["id"]] = obj
     return objs

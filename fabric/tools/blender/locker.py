@@ -15,12 +15,13 @@ from mathutils import Matrix, Vector
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DESIGN = os.path.join(HERE, "..", "..", "..", "design")
-MESHES = os.path.join(HERE, "..", "..", "src", "main", "resources", "assets", "minebloxroyale", "meshes")
+MESHES = os.environ.get("BR_MESHES", os.path.join(HERE, "..", "..", "src", "main", "resources", "assets", "minebloxroyale", "meshes"))
 CLOTHES = os.environ.get("BR_CLOTHES", os.path.join(HERE, "clothes"))  # (paint_clothes.py's pictures)
 ROWS = json.load(open(os.path.join(DESIGN, "cosmetics.json"), encoding="utf-8"))["rows"]
 BY_ID = {r["id"]: r for r in ROWS}
 VIEWS = {"Front": 180, "Left": 270, "Back": 0, "Right": 90}
-FOLDER = {"hat": "Hats", "hair": "Hair", "face": "Face", "back": "Back Bling", "shoes": "Shoes", "shirt": "Shirts", "pants": "Pants"}
+# (creator: Locker Items v1.0.1 \ "New Hat", "New Pants", "New Back", "New Shoes", "New Shirt", "New Presets", "New Emotes"; hair beside them)
+FOLDER = {"hat": "New Hat", "hair": "New Hair", "back": "New Back", "shoes": "New Shoes", "shirt": "New Shirt", "pants": "New Pants"}
 OVER_HAIR = ("headphones", "halo", "bunny", "cat", "tiara")
 CUT = {**{s: "b0" for s in ("cap", "backcap", "viking", "beanie", "army", "tricorne")}, **{s: "b2" for s in ("police", "fire_helmet")},
        **{s: "b4" for s in ("chef", "pith", "fedora", "cowboy")}, "witch": "b6"}
@@ -43,7 +44,7 @@ def hair_mesh(hair, hat):
 
 def pieces(worn):
     """Cosmetics.submit's choice of models for an outfit {slot: row}: [(mesh id, body part, row)]."""
-    hat, hair, face, back, shoes = (worn.get(s) for s in ("hat", "hair", "face", "back", "shoes"))
+    hat, hair, face, back, shoes, shirt, pants = (worn.get(s) for s in ("hat", "hair", "face", "back", "shoes", "shirt", "pants"))
     if hat and hat["hideHair"] or face and face["hideHair"]:
         hair = None
     out = []
@@ -57,6 +58,10 @@ def pieces(worn):
         out.append((back["id"], "torso", back))
     if shoes:
         out += [("shoes_" + shoes["shape"], "left_leg", shoes), ("shoes_" + shoes["shape"], "right_leg", shoes)]
+    if shirt:  # 3D parts over the painted design
+        out += [(f"shirt_{shirt['shape']}_torso", "torso", shirt), (f"shirt_{shirt['shape']}_rarm", "right_arm", shirt), (f"shirt_{shirt['shape']}_larm", "left_arm", shirt)]
+    if pants:
+        out += [(f"pants_{pants['shape']}_hips", "torso", pants), (f"pants_{pants['shape']}_rleg", "right_leg", pants), (f"pants_{pants['shape']}_lleg", "left_leg", pants)]
     return out
 
 
@@ -141,7 +146,8 @@ def cosmetic(row):
         if row["slot"] == "shoes":
             return {"frame": frame(objs, Matrix.Translation((0, 0, 0)), (-1.2, -2.0, -0.5, 1.2, -0.3, 0.5))}
         return {}
-    return (row["name"], fn, {"export": False, "folder": "New Cosmetics/" + FOLDER[row["slot"]], "unlock": unlock_text(row), "views": VIEWS})
+    views = {"Back": 0} if row["slot"] == "back" else VIEWS  # (creator: back bling only needs the back)
+    return (row["name"], fn, {"export": False, "folder": FOLDER[row["slot"]], "unlock": unlock_text(row), "views": views})
 
 
 def pose_of(emote):

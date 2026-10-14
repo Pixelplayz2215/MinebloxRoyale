@@ -44,7 +44,7 @@ def shade(c, k):
     return r << 16 | g << 8 | b
 
 
-def _mesh(verts, faces, m, smooth=True, two_sided=False):
+def _mesh(verts, faces, m, smooth=True, two_sided=False, one_sided=False):
     bm = bmesh.new()
     vs = [bm.verts.new(v) for v in verts]
     for f in faces:
@@ -55,9 +55,18 @@ def _mesh(verts, faces, m, smooth=True, two_sided=False):
                 pass
     bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-6)
     part = brlib._finish(bm, "s", m, smooth=smooth)
-    if two_sided:
+    if two_sided and not one_sided:
         part.obj["br_twosided"] = 1
+    if one_sided:  # (open, but only ever seen from outside: no back; brlib turns it to face out)
+        part.obj["br_oneside"] = 1
     return part
+
+
+DETAIL = 1.0  # more pieces round every curve (creator: "smoothing"); counts under 8 are shapes (3 = triangle, 4 = diamond) and stay
+
+
+def seg(n):
+    return n if n < 8 else max(n, round(n * DETAIL))
 
 
 class S:
@@ -114,7 +123,10 @@ class S:
         """Placement (Minecraft) then into Blender."""
         return [tuple(C @ (self.local @ Vector(p))) for p in pts]
 
-    def lathe(self, r, y, seg, a0=0.0, a1=360.0):
+    def lathe(self, r, y, n, a0=0.0, a1=360.0):
+        return self._lathe(r, y, seg(n), a0, a1)
+
+    def _lathe(self, r, y, seg, a0=0.0, a1=360.0):
         full = abs(a1 - a0) >= 360
         cols = seg if full else seg + 1
         verts, faces = [], []
@@ -130,15 +142,16 @@ class S:
         closed = r[0] < 1e-6 and r[-1] < 1e-6 and full
         return _mesh(self._out(verts), faces, material(self.col, self.glow), two_sided=not closed)
 
-    def sphere(self, lat0, lat1, seg, a0=0.0, a1=360.0):
-        rings = max(3, round((lat1 - lat0) / 180 * seg))
+    def sphere(self, lat0, lat1, n, a0=0.0, a1=360.0):
+        n = seg(n)
+        rings = max(3, round((lat1 - lat0) / 180 * n))
         r = [math.cos(math.radians(lat0 + (lat1 - lat0) * i / rings)) for i in range(rings + 1)]
         y = [math.sin(math.radians(lat0 + (lat1 - lat0) * i / rings)) for i in range(rings + 1)]
-        return self.lathe(r, y, seg, a0, a1)
+        return self._lathe(r, y, n, a0, a1)
 
     def blob(self, rx, ry, rz):
         self.scale(rx, ry, rz)
-        return self.sphere(-90, 90, 12)
+        return self.sphere(-90, 90, 10)
 
     def lens(self, rx, rz, h):
         self.scale(rx, 1, rz)
@@ -155,11 +168,11 @@ class S:
 
     def ellipsoid(self, rx, ry, rz):
         self.scale(rx, ry, rz)
-        return self.sphere(-90, 90, 24)
+        return self.sphere(-90, 90, 20)
 
     def torus(self, R, t, a0, a1):
-        seg_u = max(6, round(abs(a1 - a0) / 360 * 32))
-        seg_v = 10
+        seg_u = max(6, round(abs(a1 - a0) / 360 * seg(32)))
+        seg_v = seg(10)
         full = abs(a1 - a0) >= 360
         cols = seg_u if full else seg_u + 1
         verts, faces = [], []
@@ -179,7 +192,7 @@ class S:
         if not isinstance(radii, (list, tuple)):
             radii = [radii] * len(pts)
         thickest = max(radii)
-        sides = sides or (6 if thickest < 0.03 else 10)
+        sides = sides or seg(6 if thickest < 0.03 else 10)
         n = len(pts)
         P_ = [Vector(p) for p in pts]
         t, nn, bb = [], [], []
@@ -199,7 +212,7 @@ class S:
         for i in range(n - 1):
             for j in range(sides):
                 faces.append((i * sides + j, (i + 1) * sides + j, (i + 1) * sides + (j + 1) % sides, i * sides + (j + 1) % sides))
-        part = _mesh(self._out(verts), faces, material(self.col, self.glow), two_sided=True)
+        part = _mesh(self._out(verts), faces, material(self.col, self.glow), one_sided=True)  # (its inside never shows)
         if caps:
             keep = self.local.copy()
             for end in (0, n - 1):
@@ -209,7 +222,8 @@ class S:
             self.local = keep
         return part
 
-    def surface(self, fn, nu, nv):
+    def surface(self, fn, nu, nv, one_sided=False):
+        nu, nv = seg(nu), seg(nv)
         verts, faces = [], []
         for i in range(nu + 1):
             for j in range(nv + 1):
@@ -217,4 +231,4 @@ class S:
         for i in range(nu):
             for j in range(nv):
                 faces.append((i * (nv + 1) + j, (i + 1) * (nv + 1) + j, (i + 1) * (nv + 1) + j + 1, i * (nv + 1) + j + 1))
-        return _mesh(self._out(verts), faces, material(self.col, self.glow), two_sided=True)
+        return _mesh(self._out(verts), faces, material(self.col, self.glow), two_sided=True, one_sided=one_sided)

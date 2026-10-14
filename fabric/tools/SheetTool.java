@@ -132,14 +132,27 @@ public class SheetTool {
 			rec.append(String.join(", ", fields)).append(") {}\n");
 			Files.writeString(pkg.resolve(s.cls + ".java"), rec.toString());
 			String constant = s.name.toUpperCase();
-			all.append("\n\tpublic static final List<").append(s.cls).append("> ").append(constant).append(" = List.of(\n");
-			List<String> rows = new ArrayList<>();
-			for (var r : s.rows) {
-				List<String> vals = new ArrayList<>();
-				for (var c : s.columns.entrySet()) vals.add(literal(c.getValue(), r.get(c.getKey())));
-				rows.add("\t\tnew " + s.cls + "(" + String.join(", ", vals) + ")");
+			// Each sheet's rows are made by its own class, a few hundred rows a method: Java caps a method's code (and a
+			// class's constants), and one class making every sheet's rows ran out (the Blender emote curves).
+			String holder = s.cls + "Rows";
+			StringBuilder h = new StringBuilder("package gg.minebloxroyale.sheets;\n\nimport java.util.ArrayList;\nimport java.util.List;\n\n/** Generated from design/" + s.name
+				+ ".json: its rows. Do not edit. */\nfinal class " + holder + " {\n\tprivate " + holder + "() {}\n");
+			int per = 250, parts = Math.max(1, (s.rows.size() + per - 1) / per);
+			h.append("\n\tstatic List<").append(s.cls).append("> all() {\n\t\tList<").append(s.cls).append("> out = new ArrayList<>(").append(s.rows.size()).append(");\n");
+			for (int i = 0; i < parts; i++) h.append("\t\tpart").append(i).append("(out);\n");
+			h.append("\t\treturn List.copyOf(out);\n\t}\n");
+			for (int i = 0; i < parts; i++) {
+				h.append("\n\tprivate static void part").append(i).append("(List<").append(s.cls).append("> out) {\n");
+				for (var r : s.rows.subList(i * per, Math.min(s.rows.size(), (i + 1) * per))) {
+					List<String> vals = new ArrayList<>();
+					for (var c : s.columns.entrySet()) vals.add(literal(c.getValue(), r.get(c.getKey())));
+					h.append("\t\tout.add(new ").append(s.cls).append("(").append(String.join(", ", vals)).append("));\n");
+				}
+				h.append("\t}\n");
 			}
-			all.append(String.join(",\n", rows)).append("\n\t);\n");
+			h.append("}\n");
+			Files.writeString(pkg.resolve(holder + ".java"), h.toString());
+			all.append("\n\tpublic static final List<").append(s.cls).append("> ").append(constant).append(" = ").append(holder).append(".all();\n");
 			all.append("\tpublic static final Map<String, ").append(s.cls).append("> ").append(constant).append("_BY_ID = ")
 				.append(constant).append(".stream().collect(Collectors.toUnmodifiableMap(").append(s.cls).append("::id, Function.identity()));\n");
 		}

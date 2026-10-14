@@ -467,7 +467,14 @@ def triangles():
             ns = [(nm @ cn[li].vector).normalized() for li in loops]
             m = mats[lt.material_index] if lt.material_index < len(mats) else mats[0]
             mine.append((cs, ns, m, two))
-        if closed and not two and sum(c[0].dot(c[1].cross(c[2])) for c, _, _, _ in mine) < 0:
+        if obj.get("br_oneside") and mine:
+            # Open, seen from outside only (a tube, a shell round the head): face out from its middle.
+            mid = sum((c[0] + c[1] + c[2] for c, _, _, _ in mine), Vector()) / (3 * len(mine))
+            if sum((c[1] - c[0]).cross(c[2] - c[0]).dot((c[0] + c[1] + c[2]) / 3 - mid) for c, _, _, _ in mine) < 0:
+                mine = [([c[0], c[2], c[1]], [-n[0], -n[2], -n[1]], m, False) for c, n, m, _ in mine]
+                STATS["turned"] += 1
+            mine = [(c, n, m, False) for c, n, m, _ in mine]
+        elif closed and not two and sum(c[0].dot(c[1].cross(c[2])) for c, _, _, _ in mine) < 0:
             mine = [([c[0], c[2], c[1]], [-n[0], -n[2], -n[1]], m, t) for c, n, m, t in mine]
             STATS["turned"] += 1
         elif not closed and not two and mine:  # an open sheet: give it its back too (it may be seen from either side)
