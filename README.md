@@ -63,15 +63,15 @@ Every file is on the [latest release](../../releases/latest) page. Pick the one 
 
 | Launcher | File | How |
 |---|---|---|
-| **Prism Launcher** (easiest, nothing to install) | `(Prism Launcher, ready to play).zip` | Unzip, run `Prism Launcher\prismlauncher.exe`, add your Microsoft account, double-click *Mineblox Royale*. |
-| Prism Launcher (already installed) | `(Prism Launcher import).zip` | Add Instance > Import > choose the file. |
-| **CurseForge** | `(CurseForge).zip` | Minecraft > My Modpacks > Import > *Import Profile .zip*. |
-| **Modrinth App** | `(Modrinth App).mrpack` | "+" > From file. |
-| **Lunar Client** | `(Lunar Client).mrpack` | Import it as a modpack profile. |
-| ATLauncher | `(ATLauncher).mrpack` | Import > choose the file. |
-| GDLauncher | `(GDLauncher).mrpack` | Add instance > Import. |
-| MultiMC | `(MultiMC import).zip` | Add Instance > Import from zip. |
-| **Minecraft Launcher** (Mojang's) or any other | `(Minecraft Launcher).zip` | Install [Fabric](https://fabricmc.net/use/installer/) for 26.3, give that installation its own game folder, and copy the zip's `mods` and `minebloxroyale` folders into it. |
+| **Prism Launcher** (easiest, nothing to install) | [`MinebloxRoyale-1.0.0.Prism.Launcher.ready.to.play.zip`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.0.Prism.Launcher.ready.to.play.zip) | Unzip, run `Prism Launcher\prismlauncher.exe`, add your Microsoft account, double-click *Mineblox Royale*. |
+| Prism Launcher (already installed) | [`MinebloxRoyale-1.0.0.Prism.Launcher.import.zip`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.0.Prism.Launcher.import.zip) | Add Instance > Import > choose the file. |
+| **CurseForge** | [`MinebloxRoyale-1.0.0.CurseForge.zip`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.0.CurseForge.zip) | Minecraft > My Modpacks > Import > *Import Profile .zip*. |
+| **Modrinth App** | [`MinebloxRoyale-1.0.0.Modrinth.App.mrpack`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.0.Modrinth.App.mrpack) | "+" > From file. |
+| **Lunar Client** | [`MinebloxRoyale-1.0.0.Lunar.Client.mrpack`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.0.Lunar.Client.mrpack) | Import it as a modpack profile. |
+| ATLauncher | [`MinebloxRoyale-1.0.0.ATLauncher.mrpack`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.0.ATLauncher.mrpack) | Import > choose the file. |
+| GDLauncher | [`MinebloxRoyale-1.0.0.GDLauncher.mrpack`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.0.GDLauncher.mrpack) | Add instance > Import. |
+| MultiMC | [`MinebloxRoyale-1.0.0.MultiMC.import.zip`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.0.MultiMC.import.zip) | Add Instance > Import from zip. |
+| **Minecraft Launcher** (Mojang's) or any other | [`MinebloxRoyale-1.0.0.Minecraft.Launcher.zip`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.0.Minecraft.Launcher.zip) | Install [Fabric](https://fabricmc.net/use/installer/) for 26.3, give that installation its own game folder, and copy the zip's `mods` and `minebloxroyale` folders into it. |
 
 - **Downloads:** the `.mrpack` files download Fabric API and e4mc from Modrinth while they import, so be online.
 - **First start:** the game opens straight into your own Mineblox Royale world. Making the first island takes about 2 minutes; try the obby or the shooting range meanwhile.
