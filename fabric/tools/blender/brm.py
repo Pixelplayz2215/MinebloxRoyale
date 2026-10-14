@@ -44,7 +44,7 @@ def write(path, corners):
         buf += struct.pack(f"<{len(vals)}{kind}", *vals)
     buf += struct.pack(f"<{len(codes)}{'H' if len(order) <= 65535 else 'i'}", *codes)
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    with gzip.open(path, "wb", compresslevel=9) as f:
+    with open(path, "wb") as raw, gzip.GzipFile(fileobj=raw, mode="wb", compresslevel=9, mtime=0) as f:  # (no time stamp: the same model, the same file)
         f.write(bytes(buf))
 
 
