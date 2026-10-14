@@ -1,4 +1,9 @@
-Guns: the whole body is in the rarity colour (Common grey, Uncommon green, Rare blue, Epic purple, Legendary gold), in your hand, on the ground and in the hotbar
+Guns (new Blender models): the body is in the rarity colour (Common grey, Uncommon green, Rare blue, Epic purple, Legendary gold), in your hand, on the ground and in the hotbar
+Heals, shields and the pickaxe (new Blender models): in your hand, on the ground and in the hotbar
+Cars in the parking lots (new Blender models): all 7 kinds; hit one with the pickaxe to see the damage stages
+Battle Bus and reboot van (new Blender models): the bus in the hub and in a match; a van green when ready, red when recharging
+Gliders (new Blender models, bigger): glide after the bus drop; try a few in the Locker
+Locker (new Blender cosmetics): hats, hair, faces, back bling and shoes; a hat with each haircut (no gaps, nothing poking through)
 Guns on the ground: a short beam of light in their rarity colour above them
 Bots: after landing they loot first; no bot comes after you while you have no gun, unless you hit it
 Bots: at most 2 bots chase you at once (one you shoot still fights back)
