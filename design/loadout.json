@@ -1,0 +1,23 @@
+{
+  "sheet": "loadout",
+  "class": "LoadoutDef",
+  "about": "Fortnite inventory rules. Hotbar slot 1 is the pickaxe, slots 2-6 are the 5 item slots, slots 7-9 are locked. The rest of the inventory holds only ammo and materials (Wood/Brick/Metal). Items that don't fit are dropped at your feet; ammo is moved out of the hotbar.",
+  "columns": {
+    "id": "string",
+    "slot": "int",
+    "role": "enum:pickaxe|item|locked",
+    "item": "string",
+    "note": "string"
+  },
+  "rows": [
+    { "id": "slot1", "slot": 0, "role": "pickaxe", "item": "minecraft:iron_pickaxe", "note": "harvesting tool, never breaks (unbreakable), always there in a match" },
+    { "id": "slot2", "slot": 1, "role": "item", "item": "-", "note": "weapon / heal / shield" },
+    { "id": "slot3", "slot": 2, "role": "item", "item": "-", "note": "weapon / heal / shield" },
+    { "id": "slot4", "slot": 3, "role": "item", "item": "-", "note": "weapon / heal / shield" },
+    { "id": "slot5", "slot": 4, "role": "item", "item": "-", "note": "weapon / heal / shield" },
+    { "id": "slot6", "slot": 5, "role": "item", "item": "-", "note": "weapon / heal / shield" },
+    { "id": "slot7", "slot": 6, "role": "locked", "item": "-", "note": "locked (Fortnite has 5 item slots)" },
+    { "id": "slot8", "slot": 7, "role": "locked", "item": "-", "note": "locked" },
+    { "id": "slot9", "slot": 8, "role": "locked", "item": "-", "note": "locked" }
+  ]
+}

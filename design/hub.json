@@ -1,0 +1,35 @@
+{
+  "sheet": "hub",
+  "class": "HubPieceDef",
+  "about": "The Roblox-style lobby floating at match.hubY over spawn (creator: things to do while the next island is made, kept clean and tidy: plain grey floor, each activity in its own purple-and-blue bordered zone with one small sign: a shooting range and the Sky Tower). shooting_range: facing = the way you shoot; a light-blue firing line on the near side (stand there for a practice rifle with endless ammo), a black back wall on the far side where targets pop up (width = across, along the back wall; height = from the firing line to the back wall). Where it reaches past the hub's floor it lays its own (creator: on a deck off the hub's west edge, by the obby). tower_obby: a quartz pillar with purple and blue platforms spiralling up to a gold top, height = top in blocks. Coordinates relative to (0, hubY, 0). facing: the direction the piece's front looks. No cinematics in the hub (creator request); music is the mod's own looping hub track (sounds/music/hub_loop.ogg). text_board: a black board with big readable text in front (label; ' | ' starts a new line). The leaderboard board shows its label as the title and header; the game writes the top 10 under it: this room (world) only, everyone who has played a match in it, never a worldwide board (creator). rarity_board / heals_board: boards filled from the rarities and consumables sheets, one row per entry with the item's picture beside it (label: title | line above the rows | notes under them).",
+  "columns": {
+    "id": "string",
+    "kind": "enum:baseplate|spawn|bus_display|billboard|text_board|rarity_board|heals_board|portal|obby_start|shooting_range|tower_obby",
+    "x": "float",
+    "y": "float",
+    "z": "float",
+    "width": "float",
+    "height": "float",
+    "facing": "enum:north|south|east|west|up",
+    "block": "string",
+    "label": "string"
+  },
+  "rows": [
+    { "id": "baseplate", "kind": "baseplate", "x": 0, "y": 0, "z": 0, "width": 72, "height": 72, "facing": "up", "block": "minecraft:light_gray_concrete", "label": "-" },
+    { "id": "spawn", "kind": "spawn", "x": 0, "y": 1, "z": 16, "width": 6, "height": 6, "facing": "north", "block": "minecraft:white_concrete", "label": "-" },
+    { "id": "parked_bus", "kind": "bus_display", "x": 20, "y": 1, "z": 24, "width": 10, "height": 4, "facing": "east", "block": "minecraft:smooth_stone", "label": "The Battle Bus" },
+    { "id": "rules_board", "kind": "text_board", "x": 0, "y": 11, "z": -34, "width": 30, "height": 14, "facing": "south", "block": "minecraft:black_concrete", "label": "MINEBLOX ROYALE | 1. All stand on one portal: Solo/Duos/Trios/Squads | 2. Ride the Battle Bus - SPACE jumps out | 3. SPACE while skydiving opens your glider | 4. Loot chests for guns, heals, shields and ammo | 5. Stay inside the storm circle - the purple hurts | 6. Teams: revive (hold F), reboot cards at vans | 7. Last one (or team) standing wins!" },
+    { "id": "rarity_board", "kind": "rarity_board", "x": -26, "y": 10, "z": -34, "width": 14, "height": 14, "facing": "south", "block": "minecraft:black_concrete", "label": "GUN RARITY | Better rarity = more damage, faster reloads | Mythic guns are only in the rare blue chests | Walk over a better copy of your gun to swap | The stripe on each gun shows its rarity" },
+    { "id": "heals_board", "kind": "heals_board", "x": 26, "y": 10, "z": -34, "width": 14, "height": 14, "facing": "south", "block": "minecraft:black_concrete", "label": "HEALS & SHIELDS | Hold right mouse to use | Most you can have: 100 health, 100 shield | Mini Shields: 2 until your shield breaks | Slurp Juice: again at 25 shield or less" },
+    { "id": "controls_board", "kind": "text_board", "x": 33, "y": 9, "z": 0, "width": 14, "height": 12, "facing": "west", "block": "minecraft:black_concrete", "label": "CONTROLS | Left mouse: shoot / swing | Right mouse: aim, drink, heal | R: reload    G: build mode | TAB: map + waypoint | B: emotes   K: locker   Q: drop | F (hold): search chests, revive, reboot | Pickaxe: trees, walls, cars = materials" },
+    { "id": "commands_board", "kind": "text_board", "x": 33, "y": 9, "z": 20, "width": 14, "height": 12, "facing": "west", "block": "minecraft:black_concrete", "label": "COMMANDS | /rc or /roomcode: this room's code | /rc <code>: join a friend's room | /leave: back to your own world | /party invite <name>: ask to team up | /party accept: join after an invite | /party leave: leave your party | /party: who's in your party | Parties: up to 4, same room only | Your party = your team in team modes | Party not full? Bots fill the empty spots" },
+    { "id": "leaderboard", "kind": "text_board", "x": 33, "y": 9, "z": -20, "width": 14, "height": 12, "facing": "west", "block": "minecraft:black_concrete", "label": "THIS ROOM'S TOP 10 | Name - W:L - Avg kills - Best" },
+    { "id": "portal_solo", "kind": "portal", "x": -4, "y": 0, "z": -12, "width": 7, "height": 7, "facing": "up", "block": "minecraft:purple_stained_glass", "label": "SOLO | Every fighter for themselves" },
+    { "id": "portal_duos", "kind": "portal", "x": 4, "y": 0, "z": -12, "width": 7, "height": 7, "facing": "up", "block": "minecraft:light_blue_stained_glass", "label": "DUOS | Teams of 2" },
+    { "id": "portal_trios", "kind": "portal", "x": -4, "y": 0, "z": -4, "width": 7, "height": 7, "facing": "up", "block": "minecraft:orange_stained_glass", "label": "TRIOS | Teams of 3" },
+    { "id": "portal_squads", "kind": "portal", "x": 4, "y": 0, "z": -4, "width": 7, "height": 7, "facing": "up", "block": "minecraft:magenta_stained_glass", "label": "SQUADS | Teams of 4" },
+    { "id": "shooting_range", "kind": "shooting_range", "x": -46, "y": 1, "z": -12, "width": 24, "height": 16, "facing": "west", "block": "minecraft:lime_concrete", "label": "SHOOTING RANGE" },
+    { "id": "sky_tower", "kind": "tower_obby", "x": -20, "y": 1, "z": 26, "width": 9, "height": 30, "facing": "north", "block": "minecraft:quartz_block", "label": "SKY TOWER" },
+    { "id": "obby_entry", "kind": "obby_start", "x": -28, "y": 1, "z": 12, "width": 5, "height": 5, "facing": "west", "block": "minecraft:light_blue_concrete", "label": "OBBY START | Reach the gold platform to unlock an emote" }
+  ]
+}

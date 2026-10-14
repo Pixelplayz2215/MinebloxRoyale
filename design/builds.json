@@ -1,0 +1,17 @@
+{
+  "sheet": "builds",
+  "class": "BuildPieceDef",
+  "about": "Fortnite build pieces (build mode, key G). Pieces snap to a world grid of match.buildTile blocks across and match.buildHeight blocks high. slot: the number key that picks the piece while building (1-3). wall: on the edge of your tile that you face; floor: one tile, under your feet level, in front of you (or under you when looking down); ramp: the tile in front, rising the way you face. cost: materials of the selected kind per piece. Left mouse places, right mouse switches Wood / Brick / Metal. Pieces only fill air (and grass/flowers); guns damage them (materials.pieceHealth); the pickaxe breaks a whole piece. All built pieces disappear when the match ends.",
+  "columns": {
+    "id": "string",
+    "name": "string",
+    "kind": "enum:wall|floor|ramp",
+    "slot": "int",
+    "cost": "int"
+  },
+  "rows": [
+    { "id": "wall", "name": "Wall", "kind": "wall", "slot": 1, "cost": 10 },
+    { "id": "floor", "name": "Floor", "kind": "floor", "slot": 2, "cost": 10 },
+    { "id": "ramp", "name": "Ramp", "kind": "ramp", "slot": 3, "cost": 10 }
+  ]
+}

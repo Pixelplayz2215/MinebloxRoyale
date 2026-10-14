@@ -1,0 +1,7 @@
+{
+ "parent": "minebloxroyale:block/chest_open",
+ "textures": {
+  "chest": "minebloxroyale:block/rare_chest",
+  "particle": "minebloxroyale:block/rare_chest"
+ }
+}

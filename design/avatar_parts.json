@@ -1,0 +1,27 @@
+{
+  "sheet": "avatar_parts",
+  "class": "AvatarPartDef",
+  "about": "The classic blocky Roblox (R6) body, built at runtime from the mesh files in the player's own Roblox install (content/<mesh>). Positions in Roblox studs, Y up, character facing -Z, root at the hips. colorSlot picks the player's colour for that part (bots vary torso/legs).",
+  "columns": {
+    "id": "string",
+    "mesh": "string",
+    "centerX": "float",
+    "centerY": "float",
+    "centerZ": "float",
+    "pivotX": "float",
+    "pivotY": "float",
+    "pivotZ": "float",
+    "swing": "enum:none|arm|leg|head",
+    "swingSign": "float",
+    "colorSlot": "enum:head|torso|arms|legs",
+    "faceDecal": "bool"
+  },
+  "rows": [
+    { "id": "torso", "mesh": "avatar/meshes/torso.mesh", "centerX": 0, "centerY": 1, "centerZ": 0, "pivotX": 0, "pivotY": 1, "pivotZ": 0, "swing": "none", "swingSign": 0, "colorSlot": "torso", "faceDecal": false },
+    { "id": "head", "mesh": "avatar/heads/head.mesh", "centerX": 0, "centerY": 2.6, "centerZ": 0, "pivotX": 0, "pivotY": 2.0, "pivotZ": 0, "swing": "head", "swingSign": 1, "colorSlot": "head", "faceDecal": true },
+    { "id": "left_arm", "mesh": "avatar/meshes/leftarm.mesh", "centerX": -1.5, "centerY": 1, "centerZ": 0, "pivotX": -1.5, "pivotY": 1.5, "pivotZ": 0, "swing": "arm", "swingSign": -1, "colorSlot": "arms", "faceDecal": false },
+    { "id": "right_arm", "mesh": "avatar/meshes/rightarm.mesh", "centerX": 1.5, "centerY": 1, "centerZ": 0, "pivotX": 1.5, "pivotY": 1.5, "pivotZ": 0, "swing": "arm", "swingSign": 1, "colorSlot": "arms", "faceDecal": false },
+    { "id": "left_leg", "mesh": "avatar/meshes/leftleg.mesh", "centerX": -0.5, "centerY": -1, "centerZ": 0, "pivotX": -0.5, "pivotY": 0, "pivotZ": 0, "swing": "leg", "swingSign": 1, "colorSlot": "legs", "faceDecal": false },
+    { "id": "right_leg", "mesh": "avatar/meshes/rightleg.mesh", "centerX": 0.5, "centerY": -1, "centerZ": 0, "pivotX": 0.5, "pivotY": 0, "pivotZ": 0, "swing": "leg", "swingSign": -1, "colorSlot": "legs", "faceDecal": false }
+  ]
+}

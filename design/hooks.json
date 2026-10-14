@@ -1,0 +1,36 @@
+{
+  "sheet": "hooks",
+  "class": "HookDef",
+  "about": "Every game system the mashup touches, where it hooks in, and which code owns it.",
+  "columns": {
+    "id": "string",
+    "system": "string",
+    "side": "enum:server|client|both",
+    "hook": "string",
+    "owner": "string"
+  },
+  "rows": [
+    { "id": "h_world", "system": "World open/create on launch, join friend", "side": "client", "hook": "ClientTickEvents.END_CLIENT_TICK + TitleScreen", "owner": "client.AutoWorld" },
+    { "id": "h_lan", "system": "Open to LAN on load (e4mc link), Melty join/host log lines", "side": "client", "hook": "ClientPlayConnectionEvents.JOIN", "owner": "client.AutoWorld" },
+    { "id": "h_hub", "system": "Hub + obby build, spawn point, game rules", "side": "server", "hook": "ServerLifecycleEvents.SERVER_STARTED", "owner": "hub.HubBuilder" },
+    { "id": "h_match", "system": "Match state machine, storm, bots fill, victory", "side": "server", "hook": "ServerTickEvents.END_SERVER_TICK", "owner": "match.MatchManager" },
+    { "id": "h_damage", "system": "Shield absorbs damage; storm damage", "side": "server", "hook": "ServerLivingEntityEvents.ALLOW_DAMAGE", "owner": "match.Combat" },
+    { "id": "h_death", "system": "Elimination instead of death in a match / hub", "side": "server", "hook": "ServerLivingEntityEvents.ALLOW_DEATH", "owner": "match.Combat" },
+    { "id": "h_items", "system": "Guns and consumables", "side": "both", "hook": "Item.use / onUseTick / finishUsingItem", "owner": "item.WeaponItem, item.ConsumableItem" },
+    { "id": "h_bot", "system": "Bot entity and AI", "side": "server", "hook": "EntityType registration + goals", "owner": "bot.BotEntity" },
+    { "id": "h_net", "system": "Server to client state (storm, shield, media, sounds, emotes)", "side": "both", "hook": "PayloadTypeRegistry + ClientPlayNetworking", "owner": "net.Net" },
+    { "id": "h_avatar", "system": "Players and bots drawn as Roblox R6 avatars", "side": "client", "hook": "Mixin LivingEntityRenderer.submit -> submitModel", "owner": "client.avatar.RobloxAvatarRenderer" },
+    { "id": "h_hud", "system": "Fortnite-style HUD: minimap, stats row, storm banner, HP/shield, ammo + reserve, bus prompt, locked slots", "side": "client", "hook": "HudElementRegistry", "owner": "client.BRHud" },
+    { "id": "h_world_render", "system": "Parked Battle Bus + splash billboard in the hub, storm wall in matches (no cinematics)", "side": "client", "hook": "LevelRenderEvents.COLLECT_SUBMITS", "owner": "client.WorldVisuals" },
+    { "id": "h_sound", "system": "Roblox sounds and Fortnite soundtracks (hub music, storm music) streamed from memory", "side": "client", "hook": "FabricSoundInstance.getAudioStream", "owner": "client.media.PcmSound" },
+    { "id": "h_steps", "system": "Roblox jump/land/footstep sounds", "side": "client", "hook": "ClientTickEvents.END_CLIENT_TICK", "owner": "client.RobloxSfx" },
+    { "id": "h_camera", "system": "Camera always third person over the right shoulder, like Fortnite; F5 cannot switch it (scoped sniper looks through the scope)", "side": "client", "hook": "ClientTickEvents.END_CLIENT_TICK -> options.setCameraType + Mixin Camera.alignWithEntity (shoulder offset)", "owner": "client.MinebloxRoyaleClient" },
+    { "id": "h_drop", "system": "Battle Bus jump (Space), skydive and glider physics", "side": "both", "hook": "BattleBusEntity + client tick (DropControl) + Net.Action bus_jump", "owner": "match.MatchManager, client.DropControl" },
+    { "id": "h_loadout", "system": "Pickaxe + 5 item slots, ammo-only inventory, locked hotbar slots", "side": "both", "hook": "server tick (Loadout.enforce) + client selected-slot clamp", "owner": "match.Loadout, client.DropControl" },
+    { "id": "h_loot_tables", "system": "Structure chests (villages, ruined portals, ...) roll Fortnite loot", "side": "server", "hook": "LootTableEvents.MODIFY_DROPS for chests/*", "owner": "match.Loot" },
+    { "id": "h_window", "system": "Game always starts borderless fullscreen", "side": "client", "hook": "ClientLifecycleEvents.CLIENT_STARTED -> options fullscreen on, exclusive off", "owner": "client.MinebloxRoyaleClient" },
+    { "id": "h_harvest", "system": "Fortnite harvesting: ground unbreakable, trees fall whole, house walls/roofs fall by section, materials", "side": "both", "hook": "AttackBlockCallback (stop mining unbreakables) + PlayerBlockBreakEvents.BEFORE (collapse) + pickaxe Tool component", "owner": "match.Harvest" },
+    { "id": "h_crafting", "system": "Crafting disabled", "side": "server", "hook": "gamerule limited_crafting + all recipes removed from players", "owner": "hub.HubBuilder, match.MatchManager" },
+    { "id": "h_keys", "system": "Reload, emote menu, back to hub", "side": "client", "hook": "KeyMappingHelper", "owner": "client.Keys" }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "sheet": "ammo",
+  "class": "AmmoDef",
+  "about": "Fortnite's four ammo types. Ammo lives in the inventory (not the hotbar). Reloading takes from it; a gun with an empty magazine and no ammo cannot shoot. pickup: how much one ammo box / chest drop gives.",
+  "columns": {
+    "id": "string",
+    "name": "string",
+    "pickup": "int",
+    "botDrop": "int",
+    "color": "color"
+  },
+  "rows": [
+    { "id": "light", "name": "Light Bullets", "pickup": 18, "botDrop": 30, "color": "#8FB5D9" },
+    { "id": "medium", "name": "Medium Bullets", "pickup": 10, "botDrop": 30, "color": "#5E8F4E" },
+    { "id": "heavy", "name": "Heavy Bullets", "pickup": 6, "botDrop": 6, "color": "#4C4A8A" },
+    { "id": "shells", "name": "Shells", "pickup": 4, "botDrop": 10, "color": "#C9A23C" }
+  ]
+}

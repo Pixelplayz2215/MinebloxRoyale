@@ -1,0 +1,10 @@
+{
+ "variants": {
+  "low=false": {
+   "model": "minebloxroyale:block/car"
+  },
+  "low=true": {
+   "model": "minebloxroyale:block/car"
+  }
+ }
+}

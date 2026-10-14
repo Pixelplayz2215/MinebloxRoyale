@@ -1,0 +1,7 @@
+{
+ "parent": "minebloxroyale:block/chest_closed",
+ "textures": {
+  "chest": "minebloxroyale:block/loot_chest",
+  "particle": "minebloxroyale:block/loot_chest"
+ }
+}

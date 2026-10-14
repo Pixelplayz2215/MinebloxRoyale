@@ -1,0 +1,96 @@
+MINEBLOX ROYALE v1.0.0
+======================
+
+What you need
+  - Windows PC, about 2 GB free disk space and 8 GB RAM or more.
+  - Your own Minecraft: Java Edition account (the Microsoft account you play Minecraft with).
+  - Optional: Roblox installed (players get the Roblox avatar look, outfits, emotes and sounds; the
+    roblox.com version is checked to work, the Microsoft Store version and Bloxstrap-style launchers are
+    looked for too) and
+    Fortnite installed (a splash poster in the hub). Without them the game still works:
+    players keep the normal Minecraft look. Mineblox Royale only READS a few files from
+    those games; it never changes, starts or connects to them.
+
+First time
+  1. Install it with your launcher: open PICK YOUR LAUNCHER.txt (next to the launcher folders), go into your
+     launcher's folder and follow its HOW TO INSTALL.txt (Prism Launcher, CurseForge, Modrinth App, Lunar Client,
+     ATLauncher, GDLauncher, MultiMC, or Mojang's Minecraft Launcher).
+  2. Start it: the game opens straight into your own Mineblox Royale world.
+  3. Your world's first island takes about 2 minutes to make (the hub banner counts down; try the
+     obby or the shooting range meanwhile). After that, each next island is made during the match.
+     Tip: keep the game on an SSD rather than a USB or external hard drive; islands are made much faster.
+
+Playing together
+  - Everyone starts in their own world (their own private room).
+  - The host types /rc in chat: it shows an 8-digit room code (also on the hub banner).
+  - Friends type /rc 12345678 (the host's code) and are taken into the host's room.
+  - /leave takes you back to your own world.
+  - A room holds up to 16 players.
+
+Modes and parties (Solo, Duos, Trios, Squads)
+  - The hub has four portals: Solo, Duos, Trios and Squads. The match starts in the mode everyone
+    is standing on (everyone in the hub has to stand on the same portal).
+  - Team up with a party: /party invite <name> asks a player in your room; they type
+    /party accept. /party leave leaves it, /party shows who's in it. Up to 4 players; anyone in
+    the party can invite. Leaving the room (/rc to another room, /leave) leaves the party.
+  - Your party is your team in Duos, Trios and Squads (a party bigger than the mode is split into
+    teams). Empty places in a team are filled with bot teammates, and the bots play in teams too.
+  - Teammates each have their own colour: their name over their head, in chat (on your screen),
+    their dot on the map and minimap, and their waypoint (map, beam in the world, compass bar).
+    Their health and shield are in the top-left corner. No friendly fire.
+  - Knocked, not out: at 0 health with a teammate still standing you're knocked. Crawl to cover;
+    a teammate holds F next to you for 5 seconds to revive you. You bleed out in about 30 seconds
+    (faster each time). If your whole team is down, you're out.
+  - Reboot: when you're eliminated your teammates can pick up your reboot card (it goes in their
+    offhand, even with a full inventory) and hold F at a reboot van for 10 seconds to bring you
+    back. A card lasts 90 seconds. While you wait you watch a teammate (sneak to look around).
+  - Last team standing wins: everyone in it gets the Victory Royale.
+
+Commands (also on the COMMANDS board in the hub)
+  /rc or /roomcode        show this room's code
+  /rc <code>              join a friend's room
+  /leave                  back to your own world
+  /party invite <name>    ask someone in this room to team up
+  /party accept           join the party you were invited to
+  /party leave            leave your party
+  /party                  see who's in your party
+  Those are the only commands: no cheats or creative, in your own world or a friend's.
+  - Everyone who plays together must be on the same version (this one is v1.0.0).
+
+Your unlocks and outfit
+  - Emotes and gliders unlock with eliminations (150 at most), Victory Royales (10 at most), the obby, and the
+    shooting range (on its own deck off the hub's west side, by the obby). A range round lasts 60 seconds
+    from your first hit: a hit scores 1 and a
+    bullseye 2. When time's up, step off the range and back on for another round. Some items need a round score (your best counts), others a number of bullseyes in total.
+    In the Locker (K) a locked item shows only what unlocks it; hover over it to see how close you are.
+  - The six Dominus sets unlock together, each with its own challenge: hat, back bling, shirt, pants,
+    shoes, preset and glider. Every other Locker item is free.
+  - Emotes and gliders you unlock, and your Locker outfit, belong to your Minecraft account: they come with
+    you into every world (a friend's too) and into every new version. They're kept on your PC in
+    %APPDATA%\MinebloxRoyale, so deleting the game folder doesn't lose them.
+  - Unlocks from earlier versions are picked up automatically the first time this version starts.
+
+Updating to a new version
+  - Easiest: import the new version's file the same way as the first time. It's a new profile with a new world
+    (new room code); your unlocks and outfit come along.
+  - To keep your world too (room code, leaderboard): open your existing Mineblox Royale instance's folder,
+    and in "mods" replace the old minebloxroyale-....jar with the new one.
+
+Controls (also on the board in the hub)
+  K = Locker (outfits)   B = Emotes   G = Build mode   R = Reload   H = Back to hub when eliminated
+  Tab = Map   Left mouse = shoot / pickaxe   Right mouse = aim
+  F (hold) = search a chest / revive a knocked teammate / reboot teammates at a reboot van
+  Sniper scope too fast or slow? Options > Controls > Mouse Settings > Scoped Sensitivity (50% at first).
+
+Loot and materials
+  - Chests glitter and chime. Walk up to one and hold F to search it: the lid opens and the loot pops
+    out onto the ground. Gold chests hold normal loot; the rare blue chests hold the best guns
+    (legendary and mythic) and often a Chug Jug.
+  - Break things with the pickaxe for materials: trees for wood, stone and bricks for brick, and for
+    metal the cars in parking lots (every hit gives metal; six hits wreck a car), shipping containers,
+    iron and copper. Reboot vans and the Battle Bus can't be broken.
+
+Something wrong?
+  Send the game's log to the creator: logs\latest.log in your Mineblox Royale profile's folder (most launchers
+  have "Open folder" on the profile; with the ready-to-play Prism it's
+  Prism Launcher\instances\Mineblox Royale\minecraft\logs\latest.log).

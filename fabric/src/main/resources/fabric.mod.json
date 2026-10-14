@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "minebloxroyale",
+  "version": "${version}",
+  "name": "Mineblox Royale",
+  "description": "A Minecraft battle royale with a Roblox-style hub: Roblox avatars and sounds and Fortnite's splash art, read from your installed copies, with Fortnite's storm and Victory Royale rules.",
+  "authors": [
+    "Mineblox Royale creator"
+  ],
+  "license": "MIT",
+  "icon": "assets/minebloxroyale/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "gg.minebloxroyale.MinebloxRoyale"
+    ],
+    "client": [
+      "gg.minebloxroyale.client.MinebloxRoyaleClient"
+    ]
+  },
+  "mixins": [
+    "minebloxroyale.mixins.json",
+    {
+      "config": "minebloxroyale.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.5",
+    "minecraft": "~26.3",
+    "java": ">=25",
+    "fabric-api": "*"
+  },
+  "breaks": {
+    "blockroyale": "*"
+  }
+}

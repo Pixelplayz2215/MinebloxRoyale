@@ -1,0 +1,16 @@
+{
+  "sheet": "keybinds",
+  "class": "KeybindDef",
+  "about": "Keys the mashup adds or takes over. Left mouse fires the held gun, right mouse aims (sniper: scope). Q (Minecraft's drop key) drops the held item, e.g. to free a slot.",
+  "columns": { "id": "string", "key": "string", "action": "string" },
+  "rows": [
+    { "id": "reload", "key": "R", "action": "reload the held gun" },
+    { "id": "emote", "key": "B", "action": "open the emote menu" },
+    { "id": "hub", "key": "H", "action": "when eliminated/spectating: go back to the hub early" },
+    { "id": "map", "key": "TAB", "action": "toggle the full island map (Minecraft's player list key; the player list is gone). On the map: left-click places your waypoint, right-click removes it" },
+    { "id": "build", "key": "G", "action": "toggle build mode (uses Wood/Brick/Metal); press again to go back to weapons" },
+    { "id": "locker", "key": "K", "action": "outside matches: open the Locker (hats, shirts, pants, shoes, particle effects; cosmetic only)" },
+    { "id": "glider", "key": "SPACE", "action": "during the drop: open or close the glider (it opens by itself at the glider height if never opened)" },
+    { "id": "interact", "key": "F", "action": "hold next to a knocked teammate to revive them, or at a reboot van with reboot cards to bring teammates back (F no longer swaps your offhand)" }
+  ]
+}

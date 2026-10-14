@@ -1,0 +1,37 @@
+{
+  "sheet": "hud",
+  "class": "HudElementDef",
+  "about": "Fortnite-style HUD over Minecraft (polished per creator request). scale: each panel is drawn at this size around its anchor (so the bottom panels never overlap the hotbar). anchor: screen corner; x/y: offset in GUI pixels from it; size: width (or diameter) in GUI pixels. 'when': hub, match or always.",
+  "columns": {
+    "id": "string",
+    "anchor": "enum:top_left|top_right|bottom_left|bottom_right|top_center|bottom_center|center",
+    "x": "int",
+    "y": "int",
+    "size": "int",
+    "scale": "float",
+    "when": "enum:hub|match|always",
+    "shows": "string"
+  },
+  "rows": [
+    { "id": "minimap", "anchor": "top_right", "x": -8, "y": 8, "size": 84, "scale": 1, "when": "match", "shows": "terrain map (north up, no letters: the compass bar shows direction); smooth anti-aliased storm area (purple), black storm edge and next circle, dashed black path to the safe zone, smooth yellow arrow with a dark outline, all drawn in real screen pixels" },
+    { "id": "stats_row", "anchor": "top_right", "x": -8, "y": 95, "size": 84, "scale": 1, "when": "match", "shows": "one Fortnite-style row under the map, joined to the minimap frame with no gap, exactly its width (size = minimap size): storm icon + phase timer, person icon + players left, crosshair icon + your eliminations" },
+    { "id": "storm_banner", "anchor": "top_center", "x": 0, "y": 26, "size": 220, "scale": 1.15, "when": "match", "shows": "'STORM EYE SHRINKING' / 'STORM EYE SHRINKS IN m:ss' banner for the first seconds of each phase" },
+    { "id": "health_shield", "anchor": "bottom_left", "x": 8, "y": -24, "size": 110, "scale": 1.25, "when": "always", "shows": "shield bar (blue) above health bar (green) with icons and numbers, Fortnite style" },
+    { "id": "ammo", "anchor": "bottom_right", "x": -8, "y": -28, "size": 100, "scale": 1.25, "when": "match", "shows": "held gun: rarity-coloured name plate, big ammo / magazine, RELOADING bar" },
+    { "id": "materials", "anchor": "bottom_right", "x": -8, "y": -50, "size": 100, "scale": 1.25, "when": "match", "shows": "Fortnite materials row: Wood / Brick / Metal counts with coloured icons, above the ammo panel" },
+    { "id": "bus_hint", "anchor": "bottom_center", "x": 0, "y": -70, "size": 200, "scale": 1.15, "when": "match", "shows": "'PRESS SPACE TO JUMP' while riding the Battle Bus; 'SKYDIVING' / 'GLIDER DEPLOYED' + height while dropping" },
+    { "id": "hub_hint", "anchor": "top_center", "x": 0, "y": 8, "size": 200, "scale": 1.1, "when": "hub", "shows": "what to do in the hub (portal, obby, B for emotes) and how many are on the portal" },
+    { "id": "squad", "anchor": "top_left", "x": 6, "y": 6, "size": 96, "scale": 1, "when": "match", "shows": "team modes: each teammate's name in their colour with their shield and health bars; KNOCKED with the bleed-out time, or the reboot card's time left, or OUT" },
+    { "id": "interact", "anchor": "center", "x": 0, "y": 30, "size": 120, "scale": 1, "when": "match", "shows": "'Hold F to revive <name>' / 'Hold F to reboot <names>' near a knocked teammate or a reboot van, and the progress bar while held; 'KNOCKED - bleeding out' with the time left while you are down" },
+    { "id": "party", "anchor": "top_center", "x": 0, "y": 52, "size": 200, "scale": 1, "when": "hub", "shows": "your party (names in their teammate colours) under the hub banner; /party invite <name> to start one" },
+    { "id": "crosshair", "anchor": "center", "x": 0, "y": 0, "size": 5, "scale": 1, "when": "always", "shows": "small Fortnite-style crosshair drawn in real screen pixels (size = line length in screen px, 2 px thick), 4 lines around a dot; the gap follows the held gun's spread and tightens while aiming; just a dot without a gun" },
+    { "id": "hotbar", "anchor": "bottom_center", "x": 0, "y": 0, "size": 182, "scale": 1.25, "when": "always", "shows": "Minecraft hotbar shrunk to Fortnite size (pickaxe + 5 item slots, 3 locked), anchored to the bottom centre; no XP bar" },
+    { "id": "chat", "anchor": "bottom_left", "x": 0, "y": 0, "size": 200, "scale": 0.7, "when": "always", "shows": "chat locked (creator): text size 70% (scale), width 200 px (size); every chat slider in Chat Settings is greyed out" },
+    { "id": "gui_scale", "anchor": "center", "x": 0, "y": 0, "size": 0, "scale": 3, "when": "always", "shows": "Minecraft GUI Scale locked at this value (3); its button in Video Settings is greyed out" },
+    { "id": "fov", "anchor": "center", "x": 0, "y": 0, "size": 0, "scale": 60, "when": "always", "shows": "field of view locked at this value (60); the FOV slider is greyed out" },
+    { "id": "compass", "anchor": "top_center", "x": 0, "y": 3, "size": 200, "scale": 1, "when": "match", "shows": "Fortnite compass bar: N/NE/E... letters and 15-degree ticks slide past as you turn; the direction you face is under the centre marker" },
+    { "id": "full_map", "anchor": "center", "x": 0, "y": 0, "size": 0, "scale": 1, "when": "match", "shows": "Tab: the whole island as one picture made by the server, almost full screen with a margin; A-J / 1-10 grid, storm, black rings, you, your red waypoint" },
+    { "id": "waypoint", "anchor": "center", "x": 0, "y": 0, "size": 0, "scale": 1, "when": "match", "shows": "your own waypoint: red beacon beam in the world, red mark on the compass bar, on-screen red diamond with the distance in metres; in team modes your teammates see it in your colour (Solo: private)" },
+    { "id": "storm_tint", "anchor": "center", "x": 0, "y": 0, "size": 0, "scale": 1, "when": "match", "shows": "strong purple screen tint + vignette while you are outside the circle" }
+  ]
+}

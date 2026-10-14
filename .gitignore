@@ -1,0 +1,28 @@
+# Only what's listed here is shared; everything else in this folder (tools, game runs, builds, packages, renders and
+# working notes) stays on this PC.
+/*
+!/.gitignore
+!/README.md
+!/LICENSE
+!/Branding/
+!/screenshots/
+!/Mockups/
+!/design/
+!/fabric/
+
+# In fabric/: only the source, the build files and the tools.
+/fabric/*
+!/fabric/src/
+!/fabric/tools/
+!/fabric/gradle/
+!/fabric/build.gradle
+!/fabric/settings.gradle
+!/fabric/gradle.properties
+!/fabric/gradlew
+!/fabric/gradlew.bat
+!/fabric/.gitattributes
+
+__pycache__/
+*.pyc
+*.class
+logs/

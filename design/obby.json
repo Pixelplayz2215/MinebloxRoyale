@@ -1,0 +1,32 @@
+{
+  "sheet": "obby",
+  "class": "ObbyStageDef",
+  "about": "Gap between platforms = -dx - previous sizeX (preflight keeps it <= 3, or <= 2 when climbing). Roblox-style rainbow course built out over the void from hub.obby_entry heading -X: every green (lime) platform is a checkpoint - exactly 3 - and nothing else is green; normal stages cycle red-orange-yellow-blue-purple-pink with a glow underneath. The gold platform is the finish: it unlocks the obby emote, sends you back to the hub spawn and resets your checkpoints. Falling below match.obbyFallY returns you to your last checkpoint.",
+  "columns": { "id": "string", "index": "int", "dx": "int", "dy": "int", "dz": "int", "sizeX": "int", "sizeZ": "int", "block": "string", "checkpoint": "bool", "finish": "bool" },
+  "rows": [
+    { "id": "s1", "index": 1, "dx": -5, "dy": 0, "dz": 2, "sizeX": 2, "sizeZ": 2, "block": "minecraft:red_concrete", "checkpoint": false, "finish": false },
+    { "id": "s2", "index": 2, "dx": -4, "dy": 1, "dz": 1, "sizeX": 1, "sizeZ": 1, "block": "minecraft:orange_concrete", "checkpoint": false, "finish": false },
+    { "id": "s3", "index": 3, "dx": -4, "dy": 0, "dz": -2, "sizeX": 1, "sizeZ": 1, "block": "minecraft:yellow_concrete", "checkpoint": false, "finish": false },
+    { "id": "s4", "index": 4, "dx": -3, "dy": 1, "dz": 0, "sizeX": 1, "sizeZ": 1, "block": "minecraft:light_blue_concrete", "checkpoint": false, "finish": false },
+    { "id": "s5", "index": 5, "dx": -4, "dy": 0, "dz": 2, "sizeX": 1, "sizeZ": 1, "block": "minecraft:blue_concrete", "checkpoint": false, "finish": false },
+    { "id": "s6", "index": 6, "dx": -4, "dy": 0, "dz": 0, "sizeX": 3, "sizeZ": 3, "block": "minecraft:lime_concrete", "checkpoint": true, "finish": false },
+    { "id": "s7", "index": 7, "dx": -6, "dy": 0, "dz": -1, "sizeX": 1, "sizeZ": 1, "block": "minecraft:purple_concrete", "checkpoint": false, "finish": false },
+    { "id": "s8", "index": 8, "dx": -3, "dy": 1, "dz": 2, "sizeX": 1, "sizeZ": 1, "block": "minecraft:magenta_concrete", "checkpoint": false, "finish": false },
+    { "id": "s9", "index": 9, "dx": -3, "dy": 1, "dz": 2, "sizeX": 1, "sizeZ": 1, "block": "minecraft:pink_concrete", "checkpoint": false, "finish": false },
+    { "id": "s10", "index": 10, "dx": -4, "dy": -1, "dz": 0, "sizeX": 1, "sizeZ": 1, "block": "minecraft:red_concrete", "checkpoint": false, "finish": false },
+    { "id": "s11", "index": 11, "dx": -4, "dy": 0, "dz": -1, "sizeX": 1, "sizeZ": 1, "block": "minecraft:orange_concrete", "checkpoint": false, "finish": false },
+    { "id": "s12", "index": 12, "dx": -4, "dy": 0, "dz": 0, "sizeX": 3, "sizeZ": 3, "block": "minecraft:lime_concrete", "checkpoint": true, "finish": false },
+    { "id": "s13", "index": 13, "dx": -5, "dy": 1, "dz": 1, "sizeX": 1, "sizeZ": 1, "block": "minecraft:yellow_concrete", "checkpoint": false, "finish": false },
+    { "id": "s14", "index": 14, "dx": -3, "dy": 1, "dz": -2, "sizeX": 1, "sizeZ": 1, "block": "minecraft:light_blue_concrete", "checkpoint": false, "finish": false },
+    { "id": "s15", "index": 15, "dx": -3, "dy": 1, "dz": 2, "sizeX": 1, "sizeZ": 1, "block": "minecraft:blue_concrete", "checkpoint": false, "finish": false },
+    { "id": "s16", "index": 16, "dx": -4, "dy": 0, "dz": -2, "sizeX": 1, "sizeZ": 1, "block": "minecraft:purple_concrete", "checkpoint": false, "finish": false },
+    { "id": "s17", "index": 17, "dx": -4, "dy": -1, "dz": 2, "sizeX": 1, "sizeZ": 1, "block": "minecraft:magenta_concrete", "checkpoint": false, "finish": false },
+    { "id": "s18", "index": 18, "dx": -4, "dy": 0, "dz": 0, "sizeX": 3, "sizeZ": 3, "block": "minecraft:lime_concrete", "checkpoint": true, "finish": false },
+    { "id": "s19", "index": 19, "dx": -6, "dy": 0, "dz": 0, "sizeX": 1, "sizeZ": 1, "block": "minecraft:pink_concrete", "checkpoint": false, "finish": false },
+    { "id": "s20", "index": 20, "dx": -3, "dy": 1, "dz": -2, "sizeX": 1, "sizeZ": 1, "block": "minecraft:red_concrete", "checkpoint": false, "finish": false },
+    { "id": "s21", "index": 21, "dx": -3, "dy": 1, "dz": 2, "sizeX": 1, "sizeZ": 1, "block": "minecraft:orange_concrete", "checkpoint": false, "finish": false },
+    { "id": "s22", "index": 22, "dx": -3, "dy": 1, "dz": -2, "sizeX": 1, "sizeZ": 1, "block": "minecraft:yellow_concrete", "checkpoint": false, "finish": false },
+    { "id": "s23", "index": 23, "dx": -4, "dy": 0, "dz": 2, "sizeX": 1, "sizeZ": 1, "block": "minecraft:light_blue_concrete", "checkpoint": false, "finish": false },
+    { "id": "s24", "index": 24, "dx": -4, "dy": 0, "dz": 0, "sizeX": 5, "sizeZ": 5, "block": "minecraft:gold_block", "checkpoint": true, "finish": true }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "sheet": "rarities",
+  "class": "RarityDef",
+  "about": "Fortnite's loot rarity rule: grey < green < blue < purple < gold < mythic (mythic only from the rare blue chests: lootWeight 0 keeps it out of the gold ones). Higher rarity = more damage, rarer drops.",
+  "columns": {
+    "id": "string",
+    "name": "string",
+    "color": "color",
+    "damageMult": "float",
+    "reloadMult": "float",
+    "lootWeight": "int",
+    "tier": "int"
+  },
+  "rows": [
+    { "id": "common", "name": "Common", "color": "#B0B0B0", "damageMult": 1.0, "reloadMult": 1.0, "lootWeight": 40, "tier": 0 },
+    { "id": "uncommon", "name": "Uncommon", "color": "#5DBB2C", "damageMult": 1.05, "reloadMult": 0.95, "lootWeight": 30, "tier": 1 },
+    { "id": "rare", "name": "Rare", "color": "#3C9BE8", "damageMult": 1.1, "reloadMult": 0.9, "lootWeight": 18, "tier": 2 },
+    { "id": "epic", "name": "Epic", "color": "#B44CE8", "damageMult": 1.15, "reloadMult": 0.85, "lootWeight": 9, "tier": 3 },
+    { "id": "legendary", "name": "Legendary", "color": "#F0A626", "damageMult": 1.2, "reloadMult": 0.8, "lootWeight": 3, "tier": 4 },
+    { "id": "mythic", "name": "Mythic", "color": "#FFD84A", "damageMult": 1.3, "reloadMult": 0.7, "lootWeight": 0, "tier": 5 }
+  ]
+}

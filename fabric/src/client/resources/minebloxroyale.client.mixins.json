@@ -1,0 +1,28 @@
+{
+  "required": true,
+  "package": "gg.minebloxroyale.client.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "LivingEntityRendererMixin",
+    "MinecraftAttackMixin",
+    "CameraFovMixin",
+    "CameraShoulderMixin",
+    "ItemInHandLayerMixin",
+    "OptionsSubScreenAccessor",
+    "ContainerScreenAccessor",
+    "LocalPlayerPickMixin",
+    "ChatComponentMixin",
+    "IntegratedServerWritesMixin",
+    "SpectatorPlayersMixin",
+    "SpectatorRootMixin",
+    "IntegratedServerPlayersMixin",
+    "FirstPersonHandsMixin",
+    "CameraRecoilMixin",
+    "MouseScopedMixin",
+    "MouseSettingsScreenMixin",
+    "OnboardingSkipMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

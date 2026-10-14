@@ -1,0 +1,33 @@
+{
+  "sheet": "sounds",
+  "class": "SoundDef",
+  "about": "Every sound the mashup plays. game=roblox: read from the player's own Roblox install (content/sounds/<file>) at runtime, decoded in memory. game=minecraft: a vanilla sound event. Fortnite audio comes only from its unencrypted movies (media sheet).",
+  "columns": { "id": "string", "game": "enum:roblox|minecraft", "file": "string", "volume": "float", "pitch": "float", "use": "string" },
+  "rows": [
+    { "id": "oof", "game": "roblox", "file": "sounds/oof.ogg", "volume": 1.0, "pitch": 1.0, "use": "a player or bot is eliminated" },
+    { "id": "jump", "game": "roblox", "file": "sounds/action_jump.mp3", "volume": 0.6, "pitch": 1.0, "use": "any avatar jumps" },
+    { "id": "land", "game": "roblox", "file": "sounds/action_jump_land.mp3", "volume": 0.5, "pitch": 1.0, "use": "any avatar lands from a jump" },
+    { "id": "step", "game": "roblox", "file": "sounds/action_footsteps_plastic.mp3", "volume": 0.35, "pitch": 1.0, "use": "footsteps in the hub and on the obby" },
+    { "id": "getup", "game": "roblox", "file": "sounds/action_get_up.mp3", "volume": 0.8, "pitch": 1.0, "use": "respawn at an obby checkpoint" },
+    { "id": "falling", "game": "roblox", "file": "sounds/action_falling.ogg", "volume": 0.7, "pitch": 1.0, "use": "falling off the obby or skydiving" },
+    { "id": "ui_click", "game": "roblox", "file": "sounds/volume_slider.ogg", "volume": 0.8, "pitch": 1.0, "use": "emote menu clicks, checkpoint reached" },
+    { "id": "fire_rifle", "game": "minecraft", "file": "entity.firework_rocket.blast", "volume": 0.9, "pitch": 1.6, "use": "assault rifle shot" },
+    { "id": "fire_shotgun", "game": "minecraft", "file": "entity.generic.explode", "volume": 0.5, "pitch": 1.9, "use": "pump shotgun shot" },
+    { "id": "fire_smg", "game": "minecraft", "file": "entity.firework_rocket.blast", "volume": 0.7, "pitch": 1.9, "use": "SMG shot" },
+    { "id": "fire_pistol", "game": "minecraft", "file": "entity.firework_rocket.blast", "volume": 0.8, "pitch": 1.4, "use": "pistol shot" },
+    { "id": "fire_sniper", "game": "minecraft", "file": "entity.firework_rocket.large_blast", "volume": 1.0, "pitch": 0.8, "use": "sniper shot" },
+    { "id": "dry_fire", "game": "minecraft", "file": "block.dispenser.fail", "volume": 0.7, "pitch": 1.6, "use": "trigger pulled with no ammo" },
+    { "id": "reload", "game": "minecraft", "file": "item.crossbow.loading_middle", "volume": 0.8, "pitch": 1.2, "use": "reloading" },
+    { "id": "use_heal", "game": "minecraft", "file": "entity.generic.eat", "volume": 0.5, "pitch": 1.0, "use": "bandages / med kit: Minecraft eating sound while used" },
+    { "id": "use_shield", "game": "minecraft", "file": "entity.generic.drink", "volume": 0.8, "pitch": 1.0, "use": "shields and Chug Jug: Minecraft drinking sound while used" },
+    { "id": "storm_warning", "game": "minecraft", "file": "block.note_block.bell", "volume": 0.9, "pitch": 0.6, "use": "plays once, briefly, each time the storm starts shrinking (no storm music)" },
+    { "id": "hit_marker", "game": "minecraft", "file": "entity.arrow.hit_player", "volume": 0.6, "pitch": 1.3, "use": "your shot hit someone" },
+    { "id": "headshot", "game": "minecraft", "file": "block.note_block.bell", "volume": 0.9, "pitch": 1.75, "use": "your shot hit someone in the head (instead of hit_marker)" },
+    { "id": "glider", "game": "minecraft", "file": "item.elytra.flying", "volume": 0.4, "pitch": 1.2, "use": "glider deploys during the drop" },
+    { "id": "chest_open", "game": "minecraft", "file": "block.chest.open", "volume": 0.8, "pitch": 1.0, "use": "loot chest opened" },
+    { "id": "knocked", "game": "minecraft", "file": "entity.player.hurt_sweet_berry_bush", "volume": 0.9, "pitch": 0.7, "use": "you or a teammate were knocked down" },
+    { "id": "revived", "game": "minecraft", "file": "block.amethyst_block.chime", "volume": 1.0, "pitch": 1.2, "use": "a knocked teammate is back on their feet" },
+    { "id": "card_pickup", "game": "minecraft", "file": "item.book.page_turn", "volume": 1.0, "pitch": 1.0, "use": "you picked up a teammate's reboot card" },
+    { "id": "rebooted", "game": "minecraft", "file": "block.beacon.activate", "volume": 0.9, "pitch": 1.4, "use": "a reboot van brought teammates back" }
+  ]
+}

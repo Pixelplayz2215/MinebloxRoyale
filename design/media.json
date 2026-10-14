@@ -1,0 +1,21 @@
+{
+  "sheet": "media",
+  "class": "MediaDef",
+  "about": "Fortnite content read at runtime from the player's own Fortnite install (unencrypted files only; never copied). No cinematics are shown (creator request): movies are used for their soundtrack only. The hub plays the mod's own looping track (assets/minebloxroyale/sounds/music/hub_loop.ogg) instead of trailer soundtracks (creator: they sounded odd and had gaps). Paths are relative to {game:fortnite}.",
+  "columns": {
+    "id": "string",
+    "kind": "enum:audio|image",
+    "file": "string",
+    "use": "enum:billboard",
+    "volume": "float"
+  },
+  "rows": [
+    {
+      "id": "splash",
+      "kind": "image",
+      "file": "FortniteGame/Content/Splash/Splash.bmp",
+      "use": "billboard",
+      "volume": 0
+    }
+  ]
+}

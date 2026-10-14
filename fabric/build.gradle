@@ -1,0 +1,88 @@
+plugins {
+	id 'net.fabricmc.fabric-loom' version "${loom_version}"
+}
+
+repositories {
+	// Modrinth maven: e4mc (Open to LAN gives a link friends can join over the internet).
+	maven {
+		url = "https://api.modrinth.com/maven"
+		content { includeGroup "maven.modrinth" }
+	}
+}
+
+loom {
+	splitEnvironmentSourceSets()
+	runs {
+		client {
+			programArgs "--username", "MinebloxDev"
+			vmArgs "--enable-native-access=ALL-UNNAMED"
+		}
+		// Second copy for the local multiplayer test: its own folder (run2) and name; joins the address in
+		// run2/minebloxroyale/melty.properties.
+		client2 {
+			client()
+			configName = "Minecraft Client 2"
+			runDir "run2"
+			programArgs "--username", "BRFriend"
+			vmArgs "--enable-native-access=ALL-UNNAMED"
+		}
+	}
+	mods {
+		"minebloxroyale" {
+			sourceSet sourceSets.main
+			sourceSet sourceSets.client
+		}
+	}
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+	// e4mc 6.2.2 (Fabric, 26.1-26.3)
+	runtimeOnly "maven.modrinth:e4mc:AouleFRY"
+}
+
+// ---- Design sheets (../design/*.json) are the source of truth. ----
+def sheetsDir = file("../design")
+def genDir = layout.buildDirectory.dir("generated/sheets/java")
+sourceSets.main.java.srcDir(genDir)
+
+tasks.register("preflight", JavaExec) {
+	group = "minebloxroyale"
+	description = "Lists unfilled cells and unresolved references in the design sheets."
+	classpath = files("tools")
+	mainClass = "SheetTool"
+	args "preflight", sheetsDir.absolutePath
+	dependsOn "compileSheetTool"
+}
+
+tasks.register("compileSheetTool", Exec) {
+	commandLine "${System.getProperty('java.home')}/bin/javac", "-d", "tools", "tools/SheetTool.java"
+	inputs.file("tools/SheetTool.java")
+	outputs.dir("tools")
+}
+
+tasks.register("genSheets", JavaExec) {
+	group = "minebloxroyale"
+	classpath = files("tools")
+	mainClass = "SheetTool"
+	args "gen", sheetsDir.absolutePath, genDir.get().asFile.absolutePath
+	inputs.dir(sheetsDir)
+	outputs.dir(genDir)
+	dependsOn "preflight"
+}
+tasks.named("compileJava") { dependsOn "genSheets" }
+
+processResources {
+	def version = project.version
+	inputs.property "version", version
+	filesMatching("fabric.mod.json") { expand "version": version }
+}
+
+tasks.withType(JavaCompile).configureEach { it.options.release = 25 }
+
+java {
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
+}

@@ -1,0 +1,12 @@
+{
+  "sheet": "team_colors",
+  "class": "TeamColorDef",
+  "about": "Teammate colours (creator's rules: every teammate has their own colour on the map, minimap, waypoints and name; they must stand out against every biome; never white, green or the blue of real players' names). Slot 1 is the first player in the team, and so on. Red stays for your own waypoint, purple for your own name and the storm (creator: 'Those colors are good').",
+  "columns": { "id": "string", "slot": "int", "name": "string", "color": "color" },
+  "rows": [
+    { "id": "yellow", "slot": 1, "name": "Yellow", "color": "#FFD21F" },
+    { "id": "orange", "slot": 2, "name": "Orange", "color": "#FF8A1F" },
+    { "id": "pink", "slot": 3, "name": "Hot pink", "color": "#FF4FD8" },
+    { "id": "cyan", "slot": 4, "name": "Bright cyan", "color": "#29E3FF" }
+  ]
+}

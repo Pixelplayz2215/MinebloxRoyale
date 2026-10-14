@@ -1,0 +1,31 @@
+{
+  "sheet": "loot",
+  "class": "LootDef",
+  "about": "What a chest can roll. Each chest rolls 'chestRolls' (match sheet) entries by weight; every weapon rolled also brings one box of its own ammo (Fortnite chests always do). Weapons roll a rarity by rarities.lootWeight. Chug Jugs are kept rare (creator): weight 1 out of ~265, about 2-3 per match across all chests.",
+  "columns": {
+    "id": "string",
+    "kind": "enum:weapon|consumable|ammo",
+    "weapon": "ref:weapons?",
+    "consumable": "ref:consumables?",
+    "ammo": "ref:ammo?",
+    "weight": "int",
+    "count": "int"
+  },
+  "rows": [
+    { "id": "l_ar", "kind": "weapon", "weapon": "assault_rifle", "consumable": "-", "ammo": "-", "weight": 36, "count": 1 },
+    { "id": "l_shotgun", "kind": "weapon", "weapon": "pump_shotgun", "consumable": "-", "ammo": "-", "weight": 32, "count": 1 },
+    { "id": "l_smg", "kind": "weapon", "weapon": "smg", "consumable": "-", "ammo": "-", "weight": 26, "count": 1 },
+    { "id": "l_pistol", "kind": "weapon", "weapon": "pistol", "consumable": "-", "ammo": "-", "weight": 24, "count": 1 },
+    { "id": "l_sniper", "kind": "weapon", "weapon": "sniper", "consumable": "-", "ammo": "-", "weight": 8, "count": 1 },
+    { "id": "l_bandages", "kind": "consumable", "weapon": "-", "consumable": "bandages", "ammo": "-", "weight": 20, "count": 4 },
+    { "id": "l_medkit", "kind": "consumable", "weapon": "-", "consumable": "medkit", "ammo": "-", "weight": 8, "count": 1 },
+    { "id": "l_mini", "kind": "consumable", "weapon": "-", "consumable": "small_shield", "ammo": "-", "weight": 20, "count": 3 },
+    { "id": "l_shield_potion", "kind": "consumable", "weapon": "-", "consumable": "shield_potion", "ammo": "-", "weight": 12, "count": 1 },
+    { "id": "l_chug", "kind": "consumable", "weapon": "-", "consumable": "chug_jug", "ammo": "-", "weight": 1, "count": 1 },
+    { "id": "l_slurp", "kind": "consumable", "weapon": "-", "consumable": "slurp_juice", "ammo": "-", "weight": 6, "count": 1 },
+    { "id": "l_light", "kind": "ammo", "weapon": "-", "consumable": "-", "ammo": "light", "weight": 16, "count": 1 },
+    { "id": "l_medium", "kind": "ammo", "weapon": "-", "consumable": "-", "ammo": "medium", "weight": 16, "count": 1 },
+    { "id": "l_heavy", "kind": "ammo", "weapon": "-", "consumable": "-", "ammo": "heavy", "weight": 6, "count": 1 },
+    { "id": "l_shells", "kind": "ammo", "weapon": "-", "consumable": "-", "ammo": "shells", "weight": 12, "count": 1 }
+  ]
+}

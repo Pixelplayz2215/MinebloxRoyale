@@ -1,0 +1,33 @@
+{
+  "sheet": "weapons",
+  "class": "WeaponDef",
+  "about": "Guns with Fortnite (Chapter 1) numbers: common damage, fire rate, magazine and reload time converted to ticks. Damage is per bullet (or per pellet) at Common rarity; rarity multiplies it. Health is Fortnite's 100 HP + 100 shield. Fortnite controls: left mouse fires, right mouse aims down sights (adsZoom = FOV zoom, adsSpreadMult = spread while aiming; scope = full-screen sniper scope).",
+  "columns": {
+    "id": "string",
+    "name": "string",
+    "damage": "float",
+    "headshotMult": "float",
+    "fireIntervalTicks": "int",
+    "magazine": "int",
+    "ammo": "ref:ammo",
+    "reloadTicks": "int",
+    "rangeBlocks": "float",
+    "spreadDeg": "float",
+    "pellets": "int",
+    "adsZoom": "float",
+    "adsSpreadMult": "float",
+    "scope": "bool",
+    "automatic": "bool",
+    "fireSound": "ref:sounds",
+    "reloadSound": "ref:sounds",
+    "botPreferredRange": "float",
+    "color": "color"
+  },
+  "rows": [
+    { "id": "assault_rifle", "name": "Assault Rifle", "damage": 30, "headshotMult": 1.5, "fireIntervalTicks": 4, "magazine": 30, "ammo": "medium", "reloadTicks": 46, "rangeBlocks": 80, "spreadDeg": 1.6, "pellets": 1, "adsZoom": 1.35, "adsSpreadMult": 0.5, "scope": false, "automatic": true, "fireSound": "fire_rifle", "reloadSound": "reload", "botPreferredRange": 18, "color": "#6B6F78" },
+    { "id": "pump_shotgun", "name": "Pump Shotgun", "damage": 9, "headshotMult": 2.0, "fireIntervalTicks": 28, "magazine": 5, "ammo": "shells", "reloadTicks": 96, "rangeBlocks": 22, "spreadDeg": 7.5, "pellets": 10, "adsZoom": 1.15, "adsSpreadMult": 0.8, "scope": false, "automatic": false, "fireSound": "fire_shotgun", "reloadSound": "reload", "botPreferredRange": 5, "color": "#8A5A2B" },
+    { "id": "smg", "name": "SMG", "damage": 18, "headshotMult": 1.75, "fireIntervalTicks": 2, "magazine": 30, "ammo": "light", "reloadTicks": 40, "rangeBlocks": 45, "spreadDeg": 3.2, "pellets": 1, "adsZoom": 1.25, "adsSpreadMult": 0.6, "scope": false, "automatic": true, "fireSound": "fire_smg", "reloadSound": "reload", "botPreferredRange": 9, "color": "#3E4A57" },
+    { "id": "pistol", "name": "Pistol", "damage": 24, "headshotMult": 2.0, "fireIntervalTicks": 3, "magazine": 16, "ammo": "light", "reloadTicks": 30, "rangeBlocks": 50, "spreadDeg": 2.0, "pellets": 1, "adsZoom": 1.25, "adsSpreadMult": 0.55, "scope": false, "automatic": false, "fireSound": "fire_pistol", "reloadSound": "reload", "botPreferredRange": 12, "color": "#4B4B4B" },
+    { "id": "sniper", "name": "Bolt-Action Sniper", "damage": 105, "headshotMult": 2.5, "fireIntervalTicks": 60, "magazine": 1, "ammo": "heavy", "reloadTicks": 60, "rangeBlocks": 160, "spreadDeg": 0.1, "pellets": 1, "adsZoom": 4.0, "adsSpreadMult": 0.05, "scope": true, "automatic": false, "fireSound": "fire_sniper", "reloadSound": "reload", "botPreferredRange": 40, "color": "#2F3B2A" }
+  ]
+}

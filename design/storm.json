@@ -1,0 +1,23 @@
+{
+  "sheet": "storm",
+  "class": "StormPhaseDef",
+  "about": "Fortnite's storm on a 600-block-radius island; a full round lasts about 23-24 minutes like a normal Fortnite match (sum of waits 630 s + shrinks 795 s). Each phase: the next safe circle (white) shows on the map while the storm waits, then the wall closes in to it. The next circle is a random circle fully inside the current one. The first shrink starts 60 s after the bus leaves (creator request). Damage per second outside, ignoring shields: Fortnite's 1/1/2/5/8/10/10/10.",
+  "columns": {
+    "id": "string",
+    "index": "int",
+    "waitSeconds": "int",
+    "shrinkSeconds": "int",
+    "endRadius": "float",
+    "damagePerSecond": "float"
+  },
+  "rows": [
+    { "id": "p1", "index": 0, "waitSeconds": 60, "shrinkSeconds": 210, "endRadius": 380, "damagePerSecond": 1 },
+    { "id": "p2", "index": 1, "waitSeconds": 150, "shrinkSeconds": 150, "endRadius": 220, "damagePerSecond": 1 },
+    { "id": "p3", "index": 2, "waitSeconds": 120, "shrinkSeconds": 120, "endRadius": 130, "damagePerSecond": 2 },
+    { "id": "p4", "index": 3, "waitSeconds": 90, "shrinkSeconds": 90, "endRadius": 75, "damagePerSecond": 5 },
+    { "id": "p5", "index": 4, "waitSeconds": 75, "shrinkSeconds": 75, "endRadius": 40, "damagePerSecond": 8 },
+    { "id": "p6", "index": 5, "waitSeconds": 60, "shrinkSeconds": 60, "endRadius": 20, "damagePerSecond": 10 },
+    { "id": "p7", "index": 6, "waitSeconds": 45, "shrinkSeconds": 45, "endRadius": 8, "damagePerSecond": 10 },
+    { "id": "p8", "index": 7, "waitSeconds": 30, "shrinkSeconds": 45, "endRadius": 0, "damagePerSecond": 10 }
+  ]
+}

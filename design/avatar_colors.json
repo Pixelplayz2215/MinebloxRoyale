@@ -1,0 +1,21 @@
+{
+  "sheet": "avatar_colors",
+  "class": "AvatarColorDef",
+  "about": "Body colour sets (Roblox BrickColor values). 'classic' is every player's look; bots pick from the rest.",
+  "columns": {
+    "id": "string",
+    "head": "color",
+    "torso": "color",
+    "arms": "color",
+    "legs": "color",
+    "forBots": "bool"
+  },
+  "rows": [
+    { "id": "classic", "head": "#F5CD30", "torso": "#0D69AC", "arms": "#F5CD30", "legs": "#A4BD47", "forBots": false },
+    { "id": "red_team", "head": "#F5CD30", "torso": "#C4281C", "arms": "#F5CD30", "legs": "#1B2A35", "forBots": true },
+    { "id": "lime", "head": "#F5CD30", "torso": "#00FF00", "arms": "#F5CD30", "legs": "#0D69AC", "forBots": true },
+    { "id": "noob_purple", "head": "#F5CD30", "torso": "#6B327C", "arms": "#F5CD30", "legs": "#A4BD47", "forBots": true },
+    { "id": "orange", "head": "#CC8E69", "torso": "#DA8541", "arms": "#CC8E69", "legs": "#635F62", "forBots": true },
+    { "id": "white", "head": "#F5CD30", "torso": "#F2F3F3", "arms": "#F5CD30", "legs": "#1B2A35", "forBots": true }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "sheet": "materials",
+  "class": "MaterialDef",
+  "about": "Fortnite's three harvesting materials. They go straight into their own inventory slot (after the ammo slots) when you break a tree or a house wall/roof, and show on the HUD. maxCarry: the most you can hold (creator: 99, one slot, never a second stack; harvesting at the cap gives no more). Build mode (G) spends them: block / stairs are what a built piece is made of; pieceHealth is how much gun damage a built piece takes before it breaks.",
+  "columns": {
+    "id": "string",
+    "name": "string",
+    "color": "color",
+    "maxCarry": "int",
+    "block": "string",
+    "stairs": "string",
+    "pieceHealth": "float"
+  },
+  "rows": [
+    { "id": "wood", "name": "Wood", "color": "#B0793F", "maxCarry": 99, "block": "minecraft:oak_planks", "stairs": "minecraft:oak_stairs", "pieceHealth": 150 },
+    { "id": "brick", "name": "Brick", "color": "#B8483A", "maxCarry": 99, "block": "minecraft:bricks", "stairs": "minecraft:brick_stairs", "pieceHealth": 250 },
+    { "id": "metal", "name": "Metal", "color": "#9AA3AD", "maxCarry": 99, "block": "minecraft:polished_andesite", "stairs": "minecraft:polished_andesite_stairs", "pieceHealth": 400 }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "sheet": "grants",
+  "class": "GrantDef",
+  "about": "Players the creator gives every unlockable emote and glider, whatever their stats (creator: 'give my friend (creaper89O1) every single unlockable'). Matched by Minecraft account id, or by name in offline test worlds, where the id differs. Works in any world running this build: their own or a friend's.",
+  "columns": {
+    "id": "string",
+    "name": "string",
+    "uuid": "string"
+  },
+  "rows": [
+    { "id": "grant_creaper89o1", "name": "creaper89O1", "uuid": "a2c12583-c477-4cad-8225-7d564f57f5b6" },
+    { "id": "grant_pixel2215yt", "name": "Pixel2215YT", "uuid": "88b71548-93e1-47c7-9805-971881a9ed9a" }
+  ]
+}

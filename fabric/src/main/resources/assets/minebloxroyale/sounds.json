@@ -1,0 +1,18 @@
+{
+  "stream": {
+    "sounds": [
+      {
+        "name": "fabric-sound-api-v1:empty",
+        "stream": true
+      }
+    ]
+  },
+  "music.hub_loop": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:music/hub_loop",
+        "stream": true
+      }
+    ]
+  }
+}

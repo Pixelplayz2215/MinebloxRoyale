@@ -1,0 +1,12 @@
+{
+  "sheet": "modes",
+  "class": "ModeDef",
+  "about": "Match modes (creator: Solo, Duos, Trios and Squads, each with its own portal in the hub; the match starts in the mode everyone is standing on). teamSize = fighters per team; bots play in teams of the same size and fill a short party. portal = its hub piece, which fills one floor square in the mode's colour: edge = its rim block, the hub row's block = its glass (creator: match the hologram's colour).",
+  "columns": { "id": "string", "name": "string", "teamSize": "int", "portal": "ref:hub", "color": "color", "edge": "string" },
+  "rows": [
+    { "id": "solo", "name": "Solo", "teamSize": 1, "portal": "portal_solo", "color": "#C77DFF", "edge": "minecraft:purple_concrete" },
+    { "id": "duos", "name": "Duos", "teamSize": 2, "portal": "portal_duos", "color": "#5AA9FF", "edge": "minecraft:light_blue_concrete" },
+    { "id": "trios", "name": "Trios", "teamSize": 3, "portal": "portal_trios", "color": "#FF9A1F", "edge": "minecraft:orange_concrete" },
+    { "id": "squads", "name": "Squads", "teamSize": 4, "portal": "portal_squads", "color": "#FF4FD8", "edge": "minecraft:magenta_concrete" }
+  ]
+}
