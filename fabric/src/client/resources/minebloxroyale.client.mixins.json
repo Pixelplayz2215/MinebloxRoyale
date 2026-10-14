@@ -20,7 +20,8 @@
     "CameraRecoilMixin",
     "MouseScopedMixin",
     "MouseSettingsScreenMixin",
-    "OnboardingSkipMixin"
+    "OnboardingSkipMixin",
+    "SpecialModelRenderersAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

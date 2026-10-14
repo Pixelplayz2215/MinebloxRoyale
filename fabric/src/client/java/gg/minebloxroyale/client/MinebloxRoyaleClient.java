@@ -8,6 +8,8 @@ import gg.minebloxroyale.bot.BotEntity;
 import gg.minebloxroyale.client.avatar.Cosmetics;
 import gg.minebloxroyale.client.media.FortniteMedia;
 import gg.minebloxroyale.client.media.SfxBank;
+import gg.minebloxroyale.client.mesh.MeshItemRenderer;
+import gg.minebloxroyale.client.mixin.SpecialModelRenderersAccessor;
 import gg.minebloxroyale.match.BattleBusEntity;
 import gg.minebloxroyale.match.Knocked;
 import gg.minebloxroyale.net.Net;
@@ -48,6 +50,8 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
+		// Items drawn from Blender meshes (items/*.json "minebloxroyale:mesh"), registered before the item models load.
+		SpecialModelRenderersAccessor.minebloxroyale$types().put(MinebloxRoyale.id("mesh"), MeshItemRenderer.Unbaked.MAP_CODEC);
 		// Renamed from Block Royale: the game folder's files, the world and the account record come across first.
 		Path game = FabricLoader.getInstance().getGameDir();
 		Legacy.migrateFolder(game.resolve(Legacy.OLD_FOLDER), game.resolve(Legacy.NEW_FOLDER), false);

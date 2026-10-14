@@ -285,6 +285,13 @@ def walk_item(node, where):
         bad(f"{where}: unknown item model type {t}")
     if t == "minecraft:model":
         check_model(node["model"], where)
+    if t == "minecraft:special":
+        # A special renderer draws it (ours: a Blender mesh); the base model gives the hold in each hand.
+        check_model(node["base"], where)
+        spec = node.get("model", {})
+        if spec.get("type") == f"{NS}:mesh" and not os.path.exists(os.path.join(A, "meshes", spec.get("mesh", "") + ".brm")):
+            bad(f"{where}: no mesh meshes/{spec.get('mesh')}.brm")
+        return
     for k in ("fallback", "on_true", "on_false", "model"):
         if isinstance(node.get(k), dict):
             walk_item(node[k], where)
@@ -296,6 +303,10 @@ item_defs = sorted(f[:-5] for f in os.listdir(os.path.join(A, "items")))
 for f in item_defs:
     d = jsons[os.path.join(A, "items", f + ".json")]
     walk_item((d or {}).get("model"), f"items/{f}.json")
+# Minecraft's own items the mod draws its way (the harvesting pickaxe is an iron pickaxe).
+mc_items = os.path.join(FAB, "src/main/resources/assets/minecraft/items")
+for f in sorted(os.listdir(mc_items)) if os.path.isdir(mc_items) else []:
+    walk_item(load(os.path.join(mc_items, f)).get("model"), f"assets/minecraft/items/{f}")
 
 # Items the code registers: the ids in the design sheets the registration reads, plus the reboot card and the
 # creative tab's icon.

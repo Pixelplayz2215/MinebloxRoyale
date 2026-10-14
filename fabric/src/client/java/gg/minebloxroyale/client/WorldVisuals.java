@@ -107,7 +107,7 @@ public final class WorldVisuals {
 			.setOverlay(OverlayTexture.NO_OVERLAY).setLight(FULL_BRIGHT).setNormal(pose, nx, 0, nz);
 	}
 
-	static Identifier white() {
+	public static Identifier white() {
 		if (white == null) {
 			NativeImage img = new NativeImage(4, 4, false);
 			img.fillRect(0, 0, 4, 4, 0xFFFFFFFF);
