@@ -40,6 +40,17 @@ class Scalp:
         n = n.normalized() if n.length > 1e-9 else Vector((0, 1, 0))
         return p + n * off, n
 
+    def ray(self, d, off=0.0):
+        """Where the ray from the head's middle along d meets this shape (pushed off it by off), and the outward
+        normal there."""
+        dx, dy, dz = d.x / self.a, d.y / self.b, d.z / self.d
+        t = (math.hypot(dx, dz) ** 4 + dy ** 4) ** -0.25
+        p = Vector((self.h.cx + d.x * t, self.cy + d.y * t, self.h.cz + d.z * t))
+        x, y, z = p.x - self.h.cx, p.y - self.cy, p.z - self.h.cz
+        q = (x / self.a) ** 2 + (z / self.d) ** 2
+        n = Vector((q * x / self.a ** 2, (y / self.b) ** 3 / self.b, q * z / self.d ** 2)).normalized()
+        return p + n * off, n
+
     def lat_of(self, y):
         """The latitude of height y (on the side)."""
         t = max(-1.0, min(1.0, (y - self.cy) / self.b))
@@ -69,9 +80,10 @@ class Hair:
     def shade(self):
         return (self.color, 0.86 + 0.2 * self.rnd.random()) if self.color in ("a", "b") else self.color
 
-    def lock(self, pts, ups, width, thick, color=None, sides=6, n=12, taper=1.6, root_cap=True):
+    def lock(self, pts, ups, width, thick, color=None, sides=6, n=12, taper=1.6, root_cap=True, ends="tip"):
         """A lock along pts (a few points, smoothed), lying with its flat side on 'ups' (the outward directions at
-        those points), width x thick at the root, tapering to a point at the tip."""
+        those points), width x thick at the root, tapering to a point at the tip (ends="both": thin at both ends, a
+        combed strand)."""
         path = spline(pts, n)
         upn = spline(ups, n)
         verts, faces = [], []
@@ -81,7 +93,7 @@ class Hair:
             up = upn[i] - t * upn[i].dot(t)
             up = up.normalized() if up.length > 1e-6 else Vector((0, 1, 0))
             side = t.cross(up).normalized()
-            k = max(0.0, 1 - f ** taper)
+            k = math.sin(math.pi * f) ** 0.5 if ends == "both" else max(0.0, 1 - f ** taper)
             for j in range(sides):
                 a = 2 * math.pi * j / sides
                 verts.append(tuple(p + side * math.cos(a) * width * k + up * math.sin(a) * thick * k))
@@ -148,13 +160,105 @@ def cover(hr, n, front_y, side_y, back_y, width=0.12, thick=0.045, swirl=0.35, f
         hr.surface_lock(th, 89.5, th + 1.1, 74, width * 0.9, thick, lift=lift + 0.012, bulge=0.02)
 
 
-def base(hr, front_y, back_y, grow=1.035, y1=None):
-    """The darker layer under the locks, so no scalp shows between them, and a tuft over the crown where the locks
-    start."""
+def base(hr, front_y, back_y, grow=1.035, y1=None, shade=0.62, tuft=True):
+    """The layer under the locks (darker: shadow between them), so no scalp shows between them, and a tuft over the
+    crown where the locks start."""
     s = __import__("shapes").S()
     y1 = y1 if y1 is not None else hr.h.top + 0.04
-    hair_cap(s, hr.h, grow, front_y, back_y, y1, 0.4, (hr.color, 0.62))
-    s.at(hr.h.cx, y1 + 0.035, hr.h.cz).color((hr.color, 0.9)).ellipsoid(0.2, 0.05, 0.2)
+    hair_cap(s, hr.h, grow, front_y, back_y, y1, 0.4, (hr.color, shade))
+    if tuft:
+        s.at(hr.h.cx, y1 + 0.035, hr.h.cz).color((hr.color, 0.9)).ellipsoid(0.2, 0.05, 0.2)
+
+
+def combed(hr, start, knot, width=0.042, thick=0.013, steps=9):
+    """A fine strand combed over the head from start to knot (along the head's curve, over the top when that's the
+    way), thin at both ends, lying on the smooth base."""
+    c = Vector((hr.h.cx, hr.sc.cy, hr.h.cz))
+    d0, d1 = (start - c).normalized(), (knot - c).normalized()
+    ang = math.acos(max(-1.0, min(1.0, d0.dot(d1))))
+    pts, ups = [], []
+    for i in range(steps):
+        f = i / (steps - 1)
+        if ang < 1e-4:
+            d = d0
+        else:
+            d = (d0 * math.sin((1 - f) * ang) + d1 * math.sin(f * ang)) / math.sin(ang)
+        p, n = hr.sc.ray(d, 0.006 + 0.012 * math.sin(math.pi * f))
+        pts.append(p)
+        ups.append(n)
+    return hr.lock(pts, ups, width * hr.rnd.uniform(0.85, 1.15), thick, n=2 * steps, ends="both")
+
+
+def tail(hr, knot, path, radii, locks=12, spread=1.0):
+    """A ponytail or pigtail: a full core along path (from the tie), wrapped in locks that fan out a little at the
+    ends."""
+    s = __import__("shapes").S()
+    s.at(0, 0, 0).color((hr.color, 0.88)).tube(path, radii)
+    for i in range(locks):
+        a = TAU * i / locks + hr.rnd.uniform(-0.15, 0.15)
+        pts, ups = [], []
+        for k, (p, r) in enumerate(zip(path, radii)):
+            f = k / (len(path) - 1)
+            t = (Vector(path[min(len(path) - 1, k + 1)]) - Vector(path[max(0, k - 1)])).normalized()
+            side = t.cross(Vector((1, 0, 0)) if abs(t.x) < 0.9 else Vector((0, 1, 0))).normalized()
+            up = t.cross(side).normalized()
+            aa = a + 0.5 * f  # (a slight twist down the tail)
+            out = side * math.cos(aa) + up * math.sin(aa)
+            pts.append(Vector(p) + out * r * (0.8 + 0.35 * spread * f ** 2))
+            ups.append(out)
+        hr.lock(pts, ups, 0.075, 0.04, n=16, taper=2.2)
+
+
+def sleek(hr, shape, h, tie):
+    """Hair pulled back smooth to a tie (ponytail), a bun, or parted down the middle to two ties (pigtails): a smooth
+    base in the hair's own colour and fine combed strands over it, all running to the tie(s)."""
+    top, cy = h.top, h.cy
+    base(hr, top - 0.13, cy - 0.3, grow=1.04, shade=0.93, tuft=False)
+    s = __import__("shapes").S()
+
+    def hairline(th):
+        p, _ = hr.on(th, hr.line_lat(th, top - 0.12, cy + 0.02, cy - 0.28) + 3, 0.0)
+        return p
+
+    if shape in ("ponytail", "bun"):
+        knot = Vector((h.cx, top - 0.22, h.cz + h.hd * 1.1)) if shape == "ponytail" else Vector((h.cx, top + 0.02, h.cz + h.hd * 0.55))
+        for i in range(84):
+            combed(hr, hairline(TAU * i / 84 + hr.rnd.uniform(-0.02, 0.02)), knot)
+        if shape == "ponytail":
+            s.at(knot.x, knot.y, knot.z - 0.02).color((hr.color, 0.95)).ellipsoid(0.15, 0.13, 0.1)  # gathered at the tie
+            path = [tuple(knot + Vector(v)) for v in ((0, 0, 0.06), (0, -0.06, 0.2), (0, -0.3, 0.33), (0, -0.62, 0.32), (0, -0.88, 0.22))]
+            s.at(*path[0]).align(0, -0.25, 1).color(tie).torus(0.105, 0.035, 0, 360)
+            tail(hr, knot, path, [0.11, 0.13, 0.12, 0.09, 0.03])
+        else:
+            s.at(knot.x, knot.y + 0.1, knot.z).color((hr.color, 0.9)).ellipsoid(0.24, 0.19, 0.24)  # the bun
+            for k in range(3):  # wound round itself
+                pts, ups = [], []
+                for j in range(22):
+                    a = TAU * j / 14 + k * 2.1
+                    el = math.radians(-35 + 70 * j / 21)
+                    out = Vector((math.cos(a) * math.cos(el), math.sin(el) * 0.85, math.sin(a) * math.cos(el)))
+                    pts.append(knot + Vector((0, 0.1, 0)) + Vector((out.x * 0.25, out.y * 0.2, out.z * 0.25)))
+                    ups.append(out)
+                hr.lock(pts, ups, 0.08, 0.05, n=44, ends="both")
+            s.at(knot.x, knot.y - 0.04, knot.z).color(tie).torus(0.2, 0.03, 0, 360)
+    else:  # pigtails
+        knots = {side: Vector((h.cx + side * 1.1 * h.hw, cy + 0.14, h.cz + 0.12)) for side in (-1, 1)}
+        for i in range(84):
+            th = TAU * i / 84
+            side = 1 if math.cos(th) >= 0 else -1
+            combed(hr, hairline(th), knots[side])
+        for side in (-1, 1):
+            for j in range(16):  # from the parting over the top, down to each tie
+                phi = math.radians(-70 + 140 * j / 15)  # front to back along the part
+                p, _ = hr.sc.ray(Vector((side * 0.04, math.cos(phi), math.sin(phi))), 0.0)
+                combed(hr, p, knots[side])
+            k = knots[side]
+            s.at(k.x, k.y, k.z).color((hr.color, 0.95)).ellipsoid(0.08, 0.12, 0.12)
+            path = [tuple(k + Vector(v)) for v in ((side * 0.06, 0, 0), (side * 0.2, -0.08, 0.02), (side * 0.3, -0.36, 0.04), (side * 0.27, -0.68, 0.02))]
+            s.at(*path[0]).align(side, -0.3, 0).color(tie).torus(0.09, 0.032, 0, 360)
+            tail(hr, k, path, [0.09, 0.1, 0.08, 0.025], locks=10)
+        pts = [hr.sc.ray(Vector((0, math.cos(math.radians(a)), math.sin(math.radians(a)))), 0.004)[0] for a in range(-75, 80, 15)]
+        s.at(0, 0, 0).color((hr.color, 0.6)).tube(pts, [0.012] * len(pts), caps=False, sides=6)
 
 
 def build(shape, h, color="a", tie="b", tiara=False):
@@ -162,11 +266,14 @@ def build(shape, h, color="a", tie="b", tiara=False):
     hr = Hair(h, seed=shape)
     top, cy, brow = h.top, h.cy, h.brow
     if shape == "buzz":
-        base(hr, top - 0.13, cy - 0.05, grow=1.02, y1=top + 0.02)
+        base(hr, top - 0.13, cy - 0.05, grow=1.02, y1=top + 0.02, shade=0.82, tuft=False)
         for i in range(90):
             th = TAU * i / 90
             lat1 = hr.line_lat(th, top - 0.13, cy + 0.02, cy - 0.05)
             hr.surface_lock(th + 0.2, 84, th, lat1 + 4, 0.07, 0.014, lift=0.012, bulge=0.004)
+        for i in range(14):  # the crown, where they all start
+            th = TAU * i / 14
+            hr.surface_lock(th, 89.8, th + 0.9, 74, 0.07, 0.014, lift=0.016, bulge=0.004)
         return hr
     if shape == "afro":
         base(hr, top - 0.13, cy - 0.32)
@@ -182,6 +289,9 @@ def build(shape, h, color="a", tie="b", tiara=False):
                 continue
             r = hr.rnd.uniform(0.14, 0.2)
             s.at(x, y, z).color(hr.shade()).scale(r, r, r).sphere(-90, 90, 8)
+        return hr
+    if shape in ("ponytail", "bun", "pigtails"):
+        sleek(hr, shape, h, tie)
         return hr
     base(hr, top - 0.13, cy - 0.32)
     if shape == "short":
@@ -247,52 +357,6 @@ def build(shape, h, color="a", tie="b", tiara=False):
             if math.sin(th) < -0.65:
                 continue
             hr.surface_lock(th + 0.1, 80, th, hr.sc.lat_of(cy - 0.15), 0.16, 0.06, hang=(0.95 + 0.25 * max(0.0, math.sin(th)), 0.12))
-    elif shape in ("ponytail", "bun"):
-        knot_y = top - 0.22 if shape == "ponytail" else top - 0.02
-        knot = Vector((h.cx, knot_y, h.cz + h.hd * (1.08 if shape == "ponytail" else 0.62)))
-        for i in range(52):  # sleek, every lock pulled back to the tie
-            th = TAU * i / 52
-            p0, n0 = hr.on(th, hr.line_lat(th, top - 0.12, cy + 0.02, cy - 0.28), 0.02)
-            mid, nm = hr.on(th + (math.pi / 2 - th) * 0.4, 72, 0.06)
-            hr.lock([p0, mid, knot + (p0 - knot) * 0.08], [n0, nm, nm], 0.11, 0.04, n=12, taper=4.0)
-        s = __import__("shapes").S()
-        if shape == "ponytail":
-            s.at(knot.x, knot.y, knot.z + 0.02).rotX(70).color(tie).torus(0.09, 0.035, 0, 360)
-            for i in range(8):  # the tail: a bundle of locks swinging out, then down
-                a = TAU * i / 8
-                o = Vector((math.cos(a) * 0.05, math.sin(a) * 0.04, 0))
-                pts = [knot + o + Vector((0, 0, 0.04)), knot + o * 1.5 + Vector((0, -0.12, 0.2)), knot + o * 1.8 + Vector((0, -0.5, 0.3)),
-                       knot + o * 1.2 + Vector((0, -0.85, 0.22))]
-                hr.lock(pts, [Vector((0, 0.2, 1))] * 4, 0.07, 0.05, n=14)
-        else:
-            for k in range(3):  # the bun: a coil round itself
-                pts, ups = [], []
-                for j in range(13):
-                    a = TAU * j / 12 + k * 0.7
-                    rr = 0.2 - 0.05 * k
-                    pts.append(knot + Vector((math.cos(a) * rr, 0.06 + 0.07 * k + 0.02 * math.sin(a * 2), math.sin(a) * rr * 0.9 + 0.08)))
-                    ups.append(Vector((math.cos(a), 0.5, math.sin(a))).normalized())
-                hr.lock(pts, ups, 0.1, 0.07, n=26, taper=6.0)
-            s.at(knot.x, knot.y + 0.02, knot.z + 0.08).color(tie).torus(0.17, 0.03, 0, 360)
-    elif shape == "pigtails":
-        for i in range(50):  # parted down the middle, combed to each side
-            th = TAU * i / 50
-            side = 1 if math.cos(th) >= 0 else -1
-            p0, n0 = hr.on(th, hr.line_lat(th, top - 0.12, cy + 0.02, cy - 0.28), 0.02)
-            mid, nm = hr.on(th, 70, 0.06)
-            part, npart = hr.on(math.pi / 2 if math.sin(th) > 0 else FRONT, 88, 0.04)
-            part = Vector((h.cx + side * 0.02, part.y, mid.z))
-            hr.lock([part, mid, p0], [npart, nm, n0], 0.11, 0.04, n=12)
-        s = __import__("shapes").S()
-        for side in (-1, 1):
-            knot = Vector((h.cx + side * 1.12 * h.hw, cy + 0.12, h.cz + 0.15))
-            s.at(knot.x, knot.y, knot.z).rotZ(90).color(tie).torus(0.09, 0.035, 0, 360)
-            for i in range(7):
-                a = TAU * i / 7
-                o = Vector((0, math.cos(a) * 0.05, math.sin(a) * 0.05))
-                pts = [knot + o, knot + o * 1.6 + Vector((side * 0.22, -0.1, 0)), knot + o * 1.4 + Vector((side * 0.32, -0.45, 0.02)),
-                       knot + o + Vector((side * 0.26, -0.7, 0))]
-                hr.lock(pts, [Vector((side, 0.3, 0)).normalized()] * 4, 0.07, 0.05, n=12)
     elif shape == "curly":
         cover(hr, 40, top - 0.1, cy + 0.02, cy - 0.28, width=0.13)
         for i in range(34):  # tight curls lying over the top
