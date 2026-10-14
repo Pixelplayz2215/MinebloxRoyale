@@ -6,7 +6,8 @@ A battle royale in Minecraft with a Roblox-style hub and Fortnite's rules. Drop 
 
 A Minecraft × Roblox × Fortnite mashup for **Minecraft: Java Edition 26.3** (Fabric).
 
-**Download:** pick your launcher's file from the [latest release](../../releases/latest) (see *Install* below).  
+**Play on Melty:** [Mineblox Royale on Melty](https://melty.gg/m/mineblox-royale) installs and starts it in one click.  
+**Download:** or pick your launcher's file from the [latest release](../../releases/latest) (see *Install* below).  
 **More from me:** [YouTube @Pixelplayz2215](https://www.youtube.com/@Pixelplayz2215)
 
 ![The hub](screenshots/hub.jpg)
@@ -59,7 +60,9 @@ A Minecraft × Roblox × Fortnite mashup for **Minecraft: Java Edition 26.3** (F
 
 ## Install
 
-Every file is on the [latest release](../../releases/latest) page. Pick the one for your launcher:
+The easiest way is [Melty](https://melty.gg/m/mineblox-royale): it installs Mineblox Royale and starts it in one click.
+
+Or get a file from the [latest release](../../releases/latest) page. Pick the one for your launcher:
 
 | Launcher | File | How |
 |---|---|---|
