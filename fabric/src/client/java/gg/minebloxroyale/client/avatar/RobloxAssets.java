@@ -40,7 +40,17 @@ public final class RobloxAssets {
 			return;
 		}
 		try {
-			for (AvatarPartDef part : Sheets.AVATAR_PARTS) MESHES.put(part.id(), RobloxMesh.parse(Files.readAllBytes(content.resolve(part.mesh()))));
+			for (AvatarPartDef part : Sheets.AVATAR_PARTS) {
+				RobloxMesh mesh = RobloxMesh.parse(Files.readAllBytes(content.resolve(part.mesh())));
+				// Arms and legs: cut across the elbow / knee (joint space -> the mesh's own, centred on the part).
+				boolean arm = part.swing().equals("arm");
+				if (arm || part.swing().equals("leg")) {
+					float[] planes = Bend.cuts(arm);
+					for (int i = 0; i < planes.length; i++) planes[i] -= part.centerY() - part.pivotY();
+					mesh = mesh.cut(planes);
+				}
+				MESHES.put(part.id(), mesh);
+			}
 			// One 128x128 texture: Roblox's face decal over white (tinted by the head colour at draw time); the corner
 			// stays white for body parts.
 			NativeImage img = new NativeImage(128, 128, false);

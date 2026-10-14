@@ -26,7 +26,7 @@ import org.jspecify.annotations.Nullable;
  */
 public final class Mesh {
 	public static final int FULL_BRIGHT = 0xF000F0;
-	private static final Map<String, Mesh> CACHE = new ConcurrentHashMap<>();
+	private static final Map<String, Mesh> CACHE = new ConcurrentHashMap<>(), CUT = new ConcurrentHashMap<>();
 
 	private final int count;
 	private final float[] pos;
@@ -147,6 +147,73 @@ public final class Mesh {
 					local.transformPosition(p);
 					nm.transform(n).normalize();
 				}
+				int f = flags[i];
+				int c = rgb[i];
+				if ((f & 3) == 1) c = multiply(c, tintA);
+				else if ((f & 3) == 2) c = multiply(c, tintB);
+				vc.addVertex(pose, p.x, p.y, p.z).setColor(0xFF000000 | c).setUv(0.5F, 0.5F).setOverlay(overlay).setLight((f & 4) != 0 ? FULL_BRIGHT : light)
+					.setNormal(pose, n.x, n.y, n.z);
+			}
+	}
+
+	/**
+	 * This mesh cut across planes y = planes[i] (its own space), so a limb's bend (Bend) shows smoothly on it; made once
+	 * per key.
+	 */
+	public Mesh cut(String key, float[] planes) {
+		return CUT.computeIfAbsent(key, k -> {
+			float[] soup = new float[count * 10];
+			for (int i = 0; i < count; i++) {
+				for (int c = 0; c < 3; c++) {
+					soup[i * 10 + c] = pos[i * 3 + c];
+					soup[i * 10 + 3 + c] = nrm[i * 3 + c] / 127F;
+				}
+				soup[i * 10 + 6] = rgb[i] >> 16 & 0xFF;
+				soup[i * 10 + 7] = rgb[i] >> 8 & 0xFF;
+				soup[i * 10 + 8] = rgb[i] & 0xFF;
+				soup[i * 10 + 9] = flags[i];
+			}
+			soup = gg.minebloxroyale.client.avatar.Bend.cutSoup(soup, 10, planes);
+			int n = soup.length / 10;
+			float[] p = new float[n * 3];
+			byte[] nr = new byte[n * 3], fl = new byte[n];
+			int[] col = new int[n];
+			for (int i = 0; i < n; i++) {
+				float nx = soup[i * 10 + 3], ny = soup[i * 10 + 4], nz = soup[i * 10 + 5];
+				float len = Math.max(1e-6F, (float) Math.sqrt(nx * nx + ny * ny + nz * nz));
+				for (int c = 0; c < 3; c++) {
+					p[i * 3 + c] = soup[i * 10 + c];
+					nr[i * 3 + c] = (byte) Math.round(soup[i * 10 + 3 + c] / len * 127F);
+				}
+				col[i] = Math.round(soup[i * 10 + 6]) << 16 | Math.round(soup[i * 10 + 7]) << 8 | Math.round(soup[i * 10 + 8]);
+				fl[i] = (byte) Math.round(soup[i * 10 + 9]);
+			}
+			return new Mesh(n, p, nr, col, fl);
+		});
+	}
+
+	/** A bend of the limb a mesh is worn on: applied in that limb's joint space. */
+	public interface Deform {
+		void apply(Vector3f p, Vector3f n);
+	}
+
+	/**
+	 * Draws it on a bending limb: each corner through `fit` (into the limb's joint space), bent there, then through
+	 * `joint` (the limb's joint, in model space).
+	 */
+	public void drawBent(PoseStack.Pose pose, Matrix4f fit, Deform bend, Matrix4f joint, VertexConsumer vc, int light, int overlay, int tintA, int tintB) {
+		Matrix3f nf = new Matrix3f(fit).invert().transpose(), nj = new Matrix3f(joint).invert().transpose();
+		Vector3f p = new Vector3f(), n = new Vector3f();
+		for (int t = 0; t < count; t += 3)
+			for (int k = 0; k < 4; k++) {
+				int i = t + Math.min(k, 2);
+				p.set(pos[i * 3], pos[i * 3 + 1], pos[i * 3 + 2]);
+				n.set(nrm[i * 3] / 127F, nrm[i * 3 + 1] / 127F, nrm[i * 3 + 2] / 127F);
+				fit.transformPosition(p);
+				nf.transform(n).normalize();
+				bend.apply(p, n);
+				joint.transformPosition(p);
+				nj.transform(n).normalize();
 				int f = flags[i];
 				int c = rgb[i];
 				if ((f & 3) == 1) c = multiply(c, tintA);

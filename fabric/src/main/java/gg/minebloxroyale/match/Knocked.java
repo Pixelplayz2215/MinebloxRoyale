@@ -85,7 +85,18 @@ public final class Knocked {
 		return out.stream().mapToInt(Integer::intValue).toArray();
 	}
 
-	private static Entity find(MinecraftServer server, UUID id) {
+	/** Entity ids of everyone reviving someone right now (held this tick or the one before). */
+	static int[] reviverIds(MinecraftServer server) {
+		long now = server.overworld().getGameTime();
+		List<Integer> out = new ArrayList<>();
+		for (Revive r : REVIVING.values()) {
+			Entity e = r.lastTick() >= now - 1 ? find(server, r.by()) : null;
+			if (e != null) out.add(e.getId());
+		}
+		return out.stream().mapToInt(Integer::intValue).toArray();
+	}
+
+	static Entity find(MinecraftServer server, UUID id) {
 		ServerPlayer p = server.getPlayerList().getPlayer(id);
 		return p != null ? p : server.overworld().getEntity(id);
 	}

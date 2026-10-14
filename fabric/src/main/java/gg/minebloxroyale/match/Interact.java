@@ -1,9 +1,12 @@
 package gg.minebloxroyale.match;
 
 import gg.minebloxroyale.MinebloxRoyale;
+import gg.minebloxroyale.bot.BotEntity;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -47,6 +50,24 @@ public final class Interact {
 		REBOOTING.clear();
 		SEARCHING.clear();
 		NOW.clear();
+	}
+
+	/**
+	 * Entity ids of everyone rebooting at a van (players holding F, bots waiting there) and of players searching a
+	 * chest, right now: { rebooting, searching } (everyone's game shows them at it).
+	 */
+	static int[][] busy(MinecraftServer server) {
+		List<Integer> reboot = new ArrayList<>(), search = new ArrayList<>();
+		for (UUID id : REBOOTING.keySet()) {
+			ServerPlayer p = server.getPlayerList().getPlayer(id);
+			if (p != null) reboot.add(p.getId());
+		}
+		for (BotEntity b : server.overworld().getEntities(BotEntity.TYPE, BotEntity::rebooting)) reboot.add(b.getId());
+		for (UUID id : SEARCHING.keySet()) {
+			ServerPlayer p = server.getPlayerList().getPlayer(id);
+			if (p != null) search.add(p.getId());
+		}
+		return new int[][] { reboot.stream().mapToInt(Integer::intValue).toArray(), search.stream().mapToInt(Integer::intValue).toArray() };
 	}
 
 	/** The action this player is holding F for: {label, progress}, or null. */

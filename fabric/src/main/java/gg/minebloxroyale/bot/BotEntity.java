@@ -762,6 +762,11 @@ public class BotEntity extends PathfinderMob {
 			.stream().min(Comparator.comparingDouble(this::distanceToSqr)).orElse(null);
 	}
 
+	/** Waiting at a reboot van to bring teammates back (everyone's game shows it at the van's screen). */
+	public boolean rebooting() {
+		return rebootTicks > 0;
+	}
+
 	/** A knocked teammate within 32 blocks: go to them and revive them (reviveSeconds standing next to them). */
 	private boolean reviveTick(ServerLevel level) {
 		if (!Teams.teamMode()) return false;

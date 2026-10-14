@@ -148,8 +148,21 @@ public final class MatchManager {
 		Locker.onJoin(player); // outfits: theirs to everyone, everyone's to them
 		RoomCode.sendTo(player, RoomCode.of(player.level().getServer())); // the room's 8-digit code (/rc)
 		Parties.sendTo(player.level().getServer(), player);
-		ServerPlayNetworking.send(player, new Net.Knocks(Knocked.ids(player.level().getServer())));
+		ServerPlayNetworking.send(player, knocks(player.level().getServer()));
 		if (!alivePlayers.contains(player.getUUID())) sendToHub(player);
+	}
+
+	/** Who is knocked, and who is reviving, rebooting or searching a chest (everyone's game shows it). */
+	private static Net.Knocks knocks(MinecraftServer server) {
+		int[][] busy = Interact.busy(server);
+		return new Net.Knocks(Knocked.ids(server), Knocked.reviverIds(server), busy[0], busy[1]);
+	}
+
+	private Net.Knocks lastKnocks;
+
+	private static boolean sameBusy(Net.Knocks a, Net.Knocks b) {
+		return b != null && java.util.Arrays.equals(a.reviving(), b.reviving()) && java.util.Arrays.equals(a.rebooting(), b.rebooting())
+			&& java.util.Arrays.equals(a.searching(), b.searching());
 	}
 
 	public void onLeave(ServerPlayer player) {
@@ -1038,8 +1051,9 @@ public final class MatchManager {
 			}
 		}
 		if (level.getGameTime() % 10 == 0) sendHud(server);
-		if (Knocked.takeChanged() || level.getGameTime() % 40 == 0) {
-			Net.Knocks knocks = new Net.Knocks(Knocked.ids(server));
+		Net.Knocks knocks = knocks(server);
+		if (Knocked.takeChanged() || level.getGameTime() % 40 == 0 || !sameBusy(knocks, lastKnocks)) {
+			lastKnocks = knocks;
 			for (ServerPlayer p : server.getPlayerList().getPlayers()) ServerPlayNetworking.send(p, knocks);
 		}
 		// Anyone in the hub (not in a match) who drops below it goes back to their obby checkpoint, or the spawn pad if

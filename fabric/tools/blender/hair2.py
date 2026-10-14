@@ -245,11 +245,13 @@ def sleek(hr, shape, h, tie):
         knots = {side: Vector((h.cx + side * 1.1 * h.hw, cy + 0.14, h.cz + 0.12)) for side in (-1, 1)}
         for i in range(84):
             th = TAU * i / 84
+            if math.sin(th) < -0.35:  # (over the forehead the hair comes from the parting instead: no strands across the temples)
+                continue
             side = 1 if math.cos(th) >= 0 else -1
             combed(hr, hairline(th), knots[side])
         for side in (-1, 1):
-            for j in range(16):  # from the parting over the top, down to each tie
-                phi = math.radians(-70 + 140 * j / 15)  # front to back along the part
+            for j in range(26):  # from the parting over the top, down to each tie
+                phi = math.radians(-60 + 132 * j / 25)  # front to back along the part (from a little behind the hairline: clear of glasses)
                 p, _ = hr.sc.ray(Vector((side * 0.04, math.cos(phi), math.sin(phi))), 0.0)
                 combed(hr, p, knots[side])
             k = knots[side]
@@ -293,7 +295,10 @@ def build(shape, h, color="a", tie="b", tiara=False):
     if shape in ("ponytail", "bun", "pigtails"):
         sleek(hr, shape, h, tie)
         return hr
-    base(hr, top - 0.13, cy - 0.32)
+    if shape == "mohawk":  # (shaved sides: light, low on top, no crown tuft under the crest)
+        base(hr, top - 0.13, cy - 0.32, y1=top + 0.02, shade=0.8, tuft=False)
+    else:
+        base(hr, top - 0.13, cy - 0.32)
     if shape == "short":
         cover(hr, 60, top - 0.12, cy + 0.02, cy - 0.3)
         for i in range(7):  # the fringe, swept to its left
@@ -322,7 +327,10 @@ def build(shape, h, color="a", tie="b", tiara=False):
             th = TAU * i / 40
             if abs(math.cos(th)) < 0.25:
                 continue
-            hr.surface_lock(th, 70, th, hr.line_lat(th, top - 0.1, cy + 0.02, cy - 0.3), 0.08, 0.015, lift=0.012, bulge=0.004)
+            hr.surface_lock(th, 86, th, hr.line_lat(th, top - 0.1, cy + 0.02, cy - 0.3), 0.08, 0.015, lift=0.012, bulge=0.004)
+        for i in range(14):  # the crown, where the short locks start, under the crest (no bare top)
+            th = TAU * i / 14
+            hr.surface_lock(th, 89.8, th + 0.9, 76, 0.08, 0.015, lift=0.016, bulge=0.004)
         for i in range(15):  # the crest, front to back along the middle of the head
             f = i / 14
             z = h.cz + (-0.92 + 1.84 * f) * h.hd
@@ -330,7 +338,8 @@ def build(shape, h, color="a", tie="b", tiara=False):
             p = Vector((h.cx, hr.sc.cy + hr.sc.b * (1 - rz ** 4) ** 0.25 - 0.02, z))
             ln = 0.34 + 0.2 * math.sin(math.pi * f)
             d = Vector((0, 1, -0.45 + 0.9 * f)).normalized()
-            hr.lock([p, p + d * ln * 0.5, p + d * ln], [Vector((1, 0, 0))] * 3, 0.085, 0.19, n=8, taper=1.0)
+            # (flat side facing sideways: a thin fin along the middle of the head, wide front to back)
+            hr.lock([p, p + d * ln * 0.5, p + d * ln], [Vector((1, 0, 0))] * 3, 0.17, 0.055, n=8, taper=1.0)
     elif shape == "swoop":
         cover(hr, 56, top - 0.1, cy + 0.02, cy - 0.3)
         for i in range(6):  # the big side-swept fringe, right to left over the forehead

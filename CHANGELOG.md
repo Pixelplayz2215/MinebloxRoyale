@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.1 (in testing: 1.0.1-test2, not released yet)
+## v1.0.1 (in testing: 1.0.1-test3, not released yet)
 
 A graphics update: almost everything you see in a match was remade in Blender.
 
@@ -16,12 +16,28 @@ A graphics update: almost everything you see in a match was remade in Blender.
 - **Hats:** smoother, with the details real ones have: cap seams and stitching, knitted beanies with ribbed cuffs and pompoms, buckles, bands and brim binding, crown cushions and pearls, rivets and straps on helmets.
 - **Shoes:** proper soles with tread, toe bumpers, laces and tongues on sneakers; lug soles, heels and hooks on boots; straps and tassels on loafers.
 - **Back bling:** all 37 remade smoother.
+- **Fixes found checking every new picture:** the army helmet's camo is painted flat on the helmet; the mohawk's crest is a thin fin and its crown has no bare disc; cap stitching sits on the brim; the halo has no stray sparkles; bunny and cat ears have one headband, and the bunny's pink insides no longer flicker; boot and loafer heels sit under the sole; pigtails no longer have strands like eyebrows over the temples; the Battle Bus door no longer covers the front wheel; the bandages' loose end is a flat strip; wrecked car bonnets buckle up into a peak.
 - **Shirts and pants:** 3D collars, cuffs, belts and buckles, pockets, overall straps, suit lapels and ties, badges, sashes with medals, knee pads and side piping, on top of their printed designs.
 - Cars, gliders and cosmetics use lighter models far away, so lots of bots on screen stay smooth.
 
 ### Animations
-- **Emotes:** all 40 animated again in Blender: smoother, with the head nodding, turning and tilting, the body leaning, twisting and bouncing, and legs stepping out.
-- **Knocked down:** a new crawl: the arms reach ahead and pull in turn, the head looks up, the body rolls a little.
+- **Knees and elbows:** every avatar's arms and legs now bend in the middle. The bend is smooth on the outside and keeps the limb the same length, so feet stay on the ground. Shirts, pants, shoes and their stripes, cuffs and knee pads bend with them. A held gun or pickaxe follows the forearm.
+- **New moves, all animated in Blender:**
+  - Walking heel to toe with soft knees, arms swinging.
+  - Running: leaning in, knees up, heels kicking back, arms pumping with bent elbows.
+  - Sneaking: low on bent knees, leaning in.
+  - Jumping and falling: knees tuck on the way up, legs reach for the ground coming down, arms and legs spread when falling fast.
+  - Aiming: the forearm holding the gun follows exactly where you look, whether you look up or down, while standing, walking or sprinting.
+  - Pickaxe: a big over-the-shoulder chop on every hit.
+  - Healing: bandages and med kits are wrapped in front of you; shield potions, Slurp Juice and the Chug Jug are drunk at the mouth.
+  - Reviving: down on one knee next to your teammate, both hands working.
+  - Rebooting: typing on the Reboot Van's screen.
+  - Searching a chest: bent over it, rummaging.
+  - Swimming front crawl, treading water, climbing ladders hand over hand, gliding with the legs dangling.
+  - Changing from one move to another blends smoothly.
+- **Everyone sees it:** you can see other players and bots reviving and rebooting, and other players searching chests.
+- **Emotes:** all 40 animated again in Blender, now with elbows and knees: waving from the elbow, robot arms at 90 degrees, a boxing guard, double biceps, hands on hips, knees tucked in jumps. They're smoother, with the head nodding, turning and tilting and the body leaning, twisting and bouncing. Hands never go through the body, and dips bend the knees instead of sinking the feet into the floor.
+- **Knocked down:** a new crawl along the ground: one arm reaches ahead while the other pulls back, the legs push, the head looks up.
 
 ### Gameplay
 - **Cars:** hitting a parked car with the pickaxe works again (it wouldn't start breaking).
@@ -33,7 +49,7 @@ A graphics update: almost everything you see in a match was remade in Blender.
   - A bot you shoot will still fight back.
 
 ### Other
-- Test builds show their version on the hub's main board, for example "v1.0.1 - TEST 2".
+- Test builds show their version on the hub's main board, for example "v1.0.1 - TEST 3".
 
 ## v1.0.0
 The first public release.

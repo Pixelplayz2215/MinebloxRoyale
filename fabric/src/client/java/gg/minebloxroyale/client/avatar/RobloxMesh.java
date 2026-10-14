@@ -22,6 +22,28 @@ public final class RobloxMesh {
 		this.tris = tris;
 	}
 
+	/** The same mesh cut across planes y = planes[i] (Bend: an arm or leg, so it bends smoothly). */
+	RobloxMesh cut(float[] planes) {
+		float[] soup = new float[tris.length * 8];
+		for (int i = 0; i < tris.length; i++) {
+			int v = tris[i];
+			System.arraycopy(pos, v * 3, soup, i * 8, 3);
+			System.arraycopy(nrm, v * 3, soup, i * 8 + 3, 3);
+			System.arraycopy(uv, v * 2, soup, i * 8 + 6, 2);
+		}
+		soup = Bend.cutSoup(soup, 8, planes);
+		int n = soup.length / 8;
+		float[] p = new float[n * 3], nr = new float[n * 3], u = new float[n * 2];
+		int[] t = new int[n];
+		for (int i = 0; i < n; i++) {
+			System.arraycopy(soup, i * 8, p, i * 3, 3);
+			System.arraycopy(soup, i * 8 + 3, nr, i * 3, 3);
+			System.arraycopy(soup, i * 8 + 6, u, i * 2, 2);
+			t[i] = i;
+		}
+		return new RobloxMesh(p, nr, u, t);
+	}
+
 	public static RobloxMesh parse(byte[] bytes) throws IOException {
 		int nl = 0;
 		while (nl < bytes.length && bytes[nl] != '\n') nl++;

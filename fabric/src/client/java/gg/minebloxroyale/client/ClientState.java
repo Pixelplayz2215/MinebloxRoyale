@@ -27,6 +27,8 @@ public final class ClientState {
 	public static double[] stormFrom;
 	/** entity id -> (emote id, start time ms) */
 	public static final Map<Integer, Map.Entry<String, Long>> EMOTES = new HashMap<>();
+	/** Who is busy with something the others should see (server: Net.Knocks): entity id -> 1 reviving, 2 rebooting, 3 searching a chest. */
+	public static final Map<Integer, Integer> ACTIONS = new HashMap<>();
 	/**
 	 * Unlock stats in this world: lifetime kills, Victory Royales, obby finished, best shooting-range round and range
 	 * bullseyes (unlocks add my other worlds).

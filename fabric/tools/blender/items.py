@@ -8,7 +8,7 @@ drawn in its rarity colour (creator: rarity should stand out more than a stripe)
 """
 import math
 
-from brlib import box, cyl, lathe, mat, prism, sphere, torus, tube
+from brlib import box, cyl, lathe, mat, prism, sphere, surface, torus, tube
 
 # Shared materials.
 PAINT = lambda: mat("paint", "#EDEDED", ch=1, rough=0.45)
@@ -233,8 +233,18 @@ def bandages():
             torus(x1 - 0.02, 6.5, 8, a, 0.06, "x", tape, segs=24, rsegs=5)
         cyl(x0 + 2.4, 6.5, 8, 3.08, 0.7, "x", stripe, verts=28)
     cyl(8.0, 6.5, 8, 3.18, 1.2, "x", tape, verts=28, bevel=0.1)
-    # A loose end hanging off the right-hand roll.
-    tube([(12.5, 9.5, 8), (14.2, 9.0, 8), (15.0, 7.2, 8), (15.3, 5.5, 8)], [0.12, 0.12, 0.12, 0.08], cloth, segs=6)
+    # A loose end: a flat strip of the right-hand roll coming off round its front and hanging down, curling a little.
+    path = [(6.5 + 3.03 * math.sin(math.radians(a)), 8 - 3.03 * math.cos(math.radians(a))) for a in (25, 10, -5, -20)]
+    path += [(5.0, 4.75), (4.1, 4.85), (3.4, 5.15)]
+
+    def strip(u, v):
+        g = u * (len(path) - 1)
+        i = min(len(path) - 2, int(g))
+        f = g - i
+        y = path[i][0] + (path[i + 1][0] - path[i][0]) * f
+        z = path[i][1] + (path[i + 1][1] - path[i][1]) * f
+        return (11.1 + 2.0 * v + 0.15 * u * math.sin(v * math.pi), y, z)
+    surface(strip, 24, 4, cloth, thickness=0.12)
 
 
 def small_shield():

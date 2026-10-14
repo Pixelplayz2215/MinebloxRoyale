@@ -384,7 +384,8 @@ def buckled_bonnet(c):
         mz, my = (p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2 + 0.02
         ln = math.hypot(p1[0] - p0[0], p1[1] - p0[1])
         ang = math.degrees(math.atan2(p1[1] - p0[1], p1[0] - p0[0]))
-        box(-w, my - 0.022, mz - ln / 2 - 0.02, w, my + 0.022, mz + ln / 2 + 0.02, PAINT(), bevel=0.015).rot("x", ang, (0, my, mz))
+        # (a positive turn about x tips +z down: turned the other way, so each plate rises towards the ridge)
+        box(-w, my - 0.022, mz - ln / 2 - 0.02, w, my + 0.022, mz + ln / 2 + 0.02, PAINT(), bevel=0.015).rot("x", -ang, (0, my, mz))
     for s in (-1, 1):
         x = s * (w - 0.012)
         mesh_from([(x, top + 0.01, za), (x, top + 0.01, zb), (x, top + rise, zm)], [(0, 1, 2)], INSIDE(), smooth=False)

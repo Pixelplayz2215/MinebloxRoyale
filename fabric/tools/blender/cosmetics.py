@@ -135,7 +135,8 @@ def hat(s, shape, h, a="a", b="b"):
         s.at(cx, cy, cz).rotX(90).color(a).torus(hw + 0.04, 0.035, 180, 360)
         for side in (-1, 1):
             s.at(cx + side * 0.3, top + 0.42, cz + 0.05).rotZ(-side * 12).color(a).ellipsoid(0.13, 0.5, 0.07)
-            s.at(cx + side * 0.3, top + 0.42, cz - 0.02).rotZ(-side * 12).color(b).ellipsoid(0.07, 0.38, 0.03)
+            # (the inside stands a little proud of the ear: sunk level with it, the two flickered along its rim)
+            s.at(cx + side * 0.3, top + 0.42, cz - 0.045).rotZ(-side * 12).color(b).ellipsoid(0.07, 0.38, 0.035)
     elif shape == "cat":
         s.at(cx, cy, cz).rotX(90).color(a).torus(hw + 0.04, 0.035, 180, 360)
         for side in (-1, 1):

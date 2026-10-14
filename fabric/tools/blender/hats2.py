@@ -98,10 +98,16 @@ def details(s, shape, h, a="a", b="b"):
             s.at(*p).align(math.cos(th), 0.7, math.sin(th)).color(shade(a, 0.6)).torus(0.025, 0.008, 0, 360)
         d = 1 if shape == "cap" else -1
         bz = cz - d * hd * 1.05
-        for k in range(3):  # stitching rows on the bill
-            rr = 0.32 + 0.16 * k
-            pts = [(cx + math.cos(t) * rr * hw * 0.85 / 0.62, brow + 0.058, bz - d * math.sin(t) * rr * 0.5 / 0.62) for t in [math.pi * (0.12 + 0.76 * i / 16) for i in range(17)]]
-            s.at(0, 0, 0).color(shade(a, 0.8)).tube(pts, [0.008] * 17, caps=False, sides=4)
+        rx, rz, ry = 0.85 * hw, 0.5, 0.035  # the bill (cosmetics.hat: an ellipsoid at brow + 0.02)
+        for k in range(3):  # stitching rows lying on the bill's top, following its curve
+            f = 0.45 + 0.17 * k
+            pts = []
+            for i in range(17):
+                t = math.pi * (0.15 + 0.7 * i / 16)
+                x, z = math.cos(t) * rx * f, math.sin(t) * rz * f
+                y = brow + 0.02 + ry * math.sqrt(max(0.0, 1 - (x / rx) ** 2 - (z / rz) ** 2)) + 0.004
+                pts.append((cx + x, y, bz - d * z))
+            s.at(0, 0, 0).color(shade(a, 0.78)).tube(pts, [0.007] * 17, caps=False, sides=4)
         s.at(0, 0, 0).color(shade(a, 0.75)).tube(ring_pts(cx, brow + 0.035, cz, 1.072 * hw, 1.072 * hd, 40), [0.014] * 41, caps=False, sides=6)
         if shape == "backcap":  # the snap strap and its opening, now at the front
             fz = cz - hd * 1.07
@@ -190,16 +196,11 @@ def details(s, shape, h, a="a", b="b"):
             s.at(0, 0, 0).color(shade(a, 0.82)).tube(ring_pts(cx, y, cz, rr * hw + 0.004, rr * hd + 0.004, 40), [0.012] * 41, caps=False, sides=6)
         fluff(s, cx, top + 0.3, cz, 0.18, b, "pompom", n=34)
     elif shape == "halo":
-        s.at(cx, top + 0.38, cz).rotX(8).color(GLOW, glow=True).torus(0.55, 0.03, 0, 360)
-        rnd = random.Random("halo")
-        for k in range(6):
-            t = TAU * k / 6 + 0.3
-            s.at(cx + math.cos(t) * 0.55, top + 0.38 + math.sin(t) * 0.55 * math.sin(math.radians(8)) + 0.1, cz + math.sin(t) * 0.55).color(0xFFFFFF, glow=True).blob(0.025, 0.025, 0.025)
+        s.at(cx, top + 0.38, cz).rotX(8).color(GLOW, glow=True).torus(0.55, 0.03, 0, 360)  # (a glowing inner ring)
     elif shape in ("bunny", "cat"):
         for side in (-1, 1):  # fluff where each ear meets the band
             fluff(s, cx + side * (0.3 if shape == "bunny" else 0.62 * hw), top + (0.0 if shape == "bunny" else -0.02), cz + 0.02, 0.07, a, f"{shape}{side}", n=10)
-        band = [(cx + math.cos(t) * (hw + 0.07), cy + math.sin(t) * (hw + 0.07), cz) for t in [math.pi * (0.1 + 0.8 * i / 16) for i in range(17)]]
-        s.at(0, 0, 0).color(shade(a, 0.8)).tube(band, [0.012] * 17, caps=False, sides=6)
+        # (the headband is the hat's own: cosmetics.hat)
     elif shape == "witch":
         buckle(s, cx, brow + 0.17, cz - 1.04 * hw - 0.012, 0.09, 0.075, GOLD)
         s.at(0, 0, 0).color(shade(a, 0.75)).tube(ring_pts(cx, brow + 0.07, cz, 1.73 * hw, 1.73 * hw * oval, 56), [0.016] * 57, caps=False)
@@ -256,13 +257,22 @@ def details(s, shape, h, a="a", b="b"):
             s.at(cx, brow + 0.25, cz - hd * 1.13).rotX(90).color(GOLD).lens(0.08, 0.08, 0.015)
         elif shape == "army":
             rnd = random.Random("army")
-            for k in range(18):  # camo patches lying on the helmet
-                t = TAU * rnd.random()
-                p, n = shell_point(h, 1.14, top + 0.16, 0.5, t, rnd.uniform(brow + 0.12, top + 0.1), 0.002)
-                s.at(*p).align(*n).rotY(rnd.uniform(0, 180)).color(shade(a, rnd.choice((0.7, 1.3)))).lens(0.1, 0.06, 0.006)
-            for side in (-1, 1):
-                s.at(0, 0, 0).color(shade(b, 0.8)).tube([(cx + side * 1.13 * hw, brow + 0.02, cz), (cx + side * 1.02 * hw, h.cy - 0.1, cz - 0.05), (cx + side * 0.9 * hw, h.bottom + 0.05, cz - 0.1)],
-                                                        [0.02] * 3, sides=6)
+            spots = []
+            for _ in range(400):  # camo patches painted on, apart from each other (overlapping decals flicker)
+                t0, y0 = TAU * rnd.random(), rnd.uniform(brow + 0.16, top + 0.04)
+                if all(min(abs(t0 - t1), TAU - abs(t0 - t1)) * 0.75 + abs(y0 - y1) * 2.2 > 0.42 for t1, y1 in spots):
+                    spots.append((t0, y0))
+                if len(spots) == 13:
+                    break
+            for k, (t0, y0) in enumerate(spots):  # each a blob-shaped decal following the helmet's curve
+                dt, dy = 0.15 / (1.14 * hw), 0.085
+                wob = [rnd.uniform(0, TAU) for _ in range(2)]
+
+                def patch(u, v, t0=t0, y0=y0, dt=dt, dy=dy, wob=wob, lift=0.006 + 0.0012 * k):
+                    ph = TAU * u
+                    r = v * (1 + 0.22 * math.sin(3 * ph + wob[0]) + 0.12 * math.sin(5 * ph + wob[1]))
+                    return shell_point(h, 1.14, top + 0.16, 0.5, t0 + r * math.cos(ph) * dt, y0 + r * math.sin(ph) * dy, lift)[0]
+                s.at(0, 0, 0).color(shade(a, (0.7, 0.55)[k % 2])).surface(patch, 16, 3)
         elif shape == "pith":
             s.at(cx, top + 0.28, cz).color(shade(a, 0.85)).lathe([0, 0.09, 0.07, 0], [0, 0, 0.05, 0.05], 16)
             s.at(0, 0, 0).color(shade(a, 0.75)).tube(ring_pts(cx, brow - 0.06, cz, 1.55 * hw, 1.55 * hw * oval, 48), [0.018] * 49, caps=False)

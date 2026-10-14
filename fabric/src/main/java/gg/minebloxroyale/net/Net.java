@@ -116,10 +116,18 @@ public final class Net {
 		}
 	}
 
-	/** Server -> everyone: entity ids of every knocked fighter (crawling pose, nothing in hand, HUD). */
-	public record Knocks(int[] ids) implements CustomPacketPayload {
+	/**
+	 * Server -> everyone: entity ids of every knocked fighter (crawling pose, nothing in hand, HUD), and of everyone
+	 * reviving, rebooting or searching a chest right now (their avatars kneel, type or rummage).
+	 */
+	public record Knocks(int[] ids, int[] reviving, int[] rebooting, int[] searching) implements CustomPacketPayload {
 		public static final Type<Knocks> TYPE = new Type<>(MinebloxRoyale.id("knocks"));
-		public static final StreamCodec<RegistryFriendlyByteBuf, Knocks> CODEC = StreamCodec.of((buf, p) -> buf.writeVarIntArray(p.ids), buf -> new Knocks(buf.readVarIntArray()));
+		public static final StreamCodec<RegistryFriendlyByteBuf, Knocks> CODEC = StreamCodec.of((buf, p) -> {
+			buf.writeVarIntArray(p.ids);
+			buf.writeVarIntArray(p.reviving);
+			buf.writeVarIntArray(p.rebooting);
+			buf.writeVarIntArray(p.searching);
+		}, buf -> new Knocks(buf.readVarIntArray(), buf.readVarIntArray(), buf.readVarIntArray(), buf.readVarIntArray()));
 
 		@Override
 		public Type<? extends CustomPacketPayload> type() {

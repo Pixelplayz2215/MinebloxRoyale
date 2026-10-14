@@ -60,15 +60,15 @@ def battle_bus():
     for s in (-1, 1):
         for i in range(6):
             z = -3.6 + i * 1.02
-            if s < 0 and i == 5:
+            if s < 0 and i == 4:  # (the door's place: behind the front wheel, clear of its arch)
                 continue
             box(s * 1.6 - 0.04, 1.48, z, s * 1.6 + 0.04, 2.3, z + 0.86, WHITE(), bevel=0.05)
             box(s * 1.6 - 0.05, 1.56, z + 0.08, s * 1.6 + 0.05, 2.22, z + 0.78, GLASS(), bevel=0.03)
-    box(-1.65, 0.62, 1.55, -1.55, 2.32, 2.55, WHITE(), bevel=0.05)
+    box(-1.65, 0.62, 0.47, -1.55, 2.32, 1.45, WHITE(), bevel=0.05)
     for k, (y0, y1) in enumerate(((0.7, 1.45), (1.55, 2.25))):
-        box(-1.66, y0, 1.62, -1.58, y1, 2.03, GLASS(), bevel=0.03)
-        box(-1.66, y0, 2.07, -1.58, y1, 2.48, GLASS(), bevel=0.03)
-    box(-1.75, 0.2, 1.6, -1.5, 0.3, 2.5, DARK(), bevel=0.04)
+        box(-1.66, y0, 0.54, -1.58, y1, 0.94, GLASS(), bevel=0.03)
+        box(-1.66, y0, 0.98, -1.58, y1, 1.38, GLASS(), bevel=0.03)
+    box(-1.75, 0.2, 0.52, -1.5, 0.3, 1.4, DARK(), bevel=0.04)
     # The nose: grille, round headlights, a big bumper, a yellow plate.
     box(-0.9, 0.7, 4.22, 0.9, 1.35, 4.32, DARK(), bevel=0.06)
     for k in range(5):

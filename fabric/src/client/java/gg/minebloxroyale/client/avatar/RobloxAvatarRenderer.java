@@ -16,14 +16,17 @@ import java.util.Map;
 import java.util.UUID;
 import net.fabricmc.fabric.api.client.rendering.v1.RenderStateDataKey;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.entity.state.ArmedEntityRenderState;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 /**
- * Draws an entity as the classic Roblox R6 character (avatar_parts sheet) instead of its Minecraft model. Runs in the
- * living-entity model space (y down, front -Z, feet at y=1.501); Roblox studs (y up) map by a 180 degree turn about Z.
+ * Draws an entity as the classic Roblox R6 character (avatar_parts sheet) instead of its Minecraft model, with elbows
+ * and knees (Bend), moving as the moves and emote sheets say (Blender animations). Runs in the living-entity model space
+ * (y down, front -Z, feet at y=1.501); Roblox studs (y up) map by a 180 degree turn about Z.
  */
 public final class RobloxAvatarRenderer {
 	public static final RenderStateDataKey<Integer> ENTITY_ID = RenderStateDataKey.create(() -> "minebloxroyale:entity_id");
@@ -36,6 +39,10 @@ public final class RobloxAvatarRenderer {
 	/** Knocked down (team modes): drawn crawling, holding nothing. */
 	public static final RenderStateDataKey<Boolean> KNOCKED = RenderStateDataKey.create(() -> "minebloxroyale:knocked");
 	public static final RenderStateDataKey<Boolean> IS_PLAYER = RenderStateDataKey.create(() -> "minebloxroyale:is_player");
+	/** How the entity is moving and what it is doing this frame: what picks its move. */
+	public static final RenderStateDataKey<Motion> MOTION = RenderStateDataKey.create(() -> "minebloxroyale:motion");
+	/** This frame's pose, worked out the first time it is needed (a fresh holder each frame). */
+	public static final RenderStateDataKey<Pose[]> POSE = RenderStateDataKey.create(() -> "minebloxroyale:pose");
 	/**
 	 * Minecraft lays a crawling player flat itself (its swimming pose); a knocked bot gets the same turn here: the
 	 * model space of a standing body (scale -1,-1,1 then 1.501 down) with the crawl turn (90 degrees forward, 1 down,
@@ -55,17 +62,67 @@ public final class RobloxAvatarRenderer {
 	static final float HIP = 2F; // studs from feet to the root (hips)
 	/** Roblox root space (studs, y up from the hips) -> the avatar's model space, as the body meshes are drawn. */
 	static final Matrix4f ROOT = new Matrix4f().translate(0, 1.501F - HIP * S, 0).scale(-S, -S, S);
+	/** Blocks along the ground for one walk cycle (two steps) walking, running, sneaking and crawling. */
+	private static final float WALK_STRIDE = 2.0F, RUN_STRIDE = 2.8F, CROUCH_STRIDE = 1.0F, CRAWL_STRIDE = 0.7F;
+	/** Seconds a change of move (landing, starting an emote, kneeling to revive...) takes to blend in. */
+	private static final float BLEND = 0.22F;
 
 	private RobloxAvatarRenderer() {
 	}
 
 	/**
-	 * The emote pose at this moment, or null (emote_keys sheet: angles in degrees, bounce in studs). Above the hips the
-	 * body can twist (to its right), lean (forward) and tilt (to its right); the head nods (down), turns (to its right)
-	 * and tilts (to its right); legs swing out to the side (legZ, like armZ).
+	 * A pose (emote_keys and move_keys sheets; angles in degrees, bounce in studs): the arms swing forward (X) and out
+	 * to their side (Z), the legs too; the whole body turns (bodyYaw) and lifts (bounce); above the hips the body twists
+	 * (to its right), leans (forward) and tilts (to its right); the head nods (down), turns (to its right) and tilts (to
+	 * its right); the elbows bend the forearms forward and the knees the shins back (0 = straight).
 	 */
-	record Pose(float rightArmX, float rightArmZ, float leftArmX, float leftArmZ, float rightLegX, float leftLegX, float bodyYaw, float bounce,
-		float rightLegZ, float leftLegZ, float headX, float headY, float headZ, float lean, float tilt, float twist) {
+	public record Pose(float rightArmX, float rightArmZ, float leftArmX, float leftArmZ, float rightLegX, float leftLegX, float bodyYaw, float bounce,
+		float rightLegZ, float leftLegZ, float headX, float headY, float headZ, float lean, float tilt, float twist, float rightElbow, float leftElbow,
+		float rightKnee, float leftKnee) {
+		static final Pose ZERO = of(new float[20]);
+		static final int RAX = 0, RAZ = 1, LAX = 2, LAZ = 3, BOB = 7, HX = 10, HY = 11, HZ = 12, LEAN = 13, TWIST = 15, REL = 16, LEL = 17;
+		static final int[] ARMS = { RAX, RAZ, LAX, LAZ, REL, LEL }, RIGHT_ARM = { RAX, RAZ, REL };
+
+		float[] values() {
+			return new float[] { rightArmX, rightArmZ, leftArmX, leftArmZ, rightLegX, leftLegX, bodyYaw, bounce, rightLegZ, leftLegZ, headX, headY, headZ,
+				lean, tilt, twist, rightElbow, leftElbow, rightKnee, leftKnee };
+		}
+
+		static Pose of(float[] v) {
+			return new Pose(v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8], v[9], v[10], v[11], v[12], v[13], v[14], v[15], v[16], v[17], v[18], v[19]);
+		}
+
+		Pose lerp(Pose b, float f) {
+			if (f <= 0) return this;
+			if (f >= 1) return b;
+			float[] x = values(), y = b.values();
+			for (int i = 0; i < x.length; i++) x[i] += (y[i] - x[i]) * f;
+			return of(x);
+		}
+
+		/** This pose with some of its channels moved part of the way (f) to another's. */
+		Pose mix(Pose b, float f, int... channels) {
+			if (f <= 0) return this;
+			float[] x = values(), y = b.values();
+			for (int i : channels) x[i] += (y[i] - x[i]) * Math.min(1, f);
+			return of(x);
+		}
+
+		/** This pose with some of its channels changed by amounts (channel, amount, channel, amount...). */
+		Pose add(float... pairs) {
+			float[] x = values();
+			for (int i = 0; i + 1 < pairs.length; i += 2) x[(int) pairs[i]] += pairs[i + 1];
+			return of(x);
+		}
+	}
+
+	/**
+	 * What the entity is doing this frame (from the entity, when its render state is made). use: "heal" or "drink"
+	 * while using a heal or shield; action: 1 reviving, 2 rebooting, 3 searching a chest (the server says who).
+	 */
+	public record Motion(boolean sprinting, boolean crouching, boolean onGround, boolean inWater, boolean swimming, boolean climbing, String use,
+		int action) {
+		public static final Motion STILL = new Motion(false, false, true, false, false, false, null, 0);
 	}
 
 	public static boolean submit(LivingEntityRenderState state, PoseStack poseStack, SubmitNodeCollector collector, int light, int overlay) {
@@ -85,13 +142,11 @@ public final class RobloxAvatarRenderer {
 	private static boolean draw(LivingEntityRenderState state, PoseStack poseStack, SubmitNodeCollector collector, int light, int overlay) {
 		AvatarColorDef colors = Sheets.AVATAR_COLORS_BY_ID.getOrDefault(state.getDataOrDefault(COLORS, "classic"), Sheets.AVATAR_COLORS.get(0));
 		int entityId = state.getDataOrDefault(ENTITY_ID, -1);
-		boolean aiming = state.getDataOrDefault(AIMING, false);
-		Pose emote = state.getDataOrDefault(KNOCKED, false) ? crawlPose(state) : emotePose(entityId, state.walkAnimationSpeed);
+		Pose pose = pose(state);
 		String uuid = state.getDataOrDefault(PLAYER_UUID, "");
 		Map<String, String> outfit = uuid.isEmpty() ? null : Cosmetics.OUTFITS.get(UUID.fromString(uuid));
 		CosmeticDef shirt = Cosmetics.worn(outfit, "shirt"), pants = Cosmetics.worn(outfit, "pants");
-		float swing = (float) Math.cos(state.walkAnimationPos * 0.6662F) * 1.2F * Math.min(1F, state.walkAnimationSpeed);
-		collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(RobloxAssets.TEXTURE), (pose, vc) -> {
+		collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(RobloxAssets.TEXTURE), (ps, vc) -> {
 			for (AvatarPartDef part : Sheets.AVATAR_PARTS) {
 				RobloxMesh mesh = RobloxAssets.mesh(part.id());
 				if (mesh == null) continue;
@@ -101,36 +156,28 @@ public final class RobloxAvatarRenderer {
 					case "arms" -> shirt != null ? shirt.color() : colors.arms();
 					default -> pants != null ? pants.color() : colors.legs();
 				};
-				Matrix4f m = partMatrix(part, state, emote, swing, aiming);
-				drawMesh(vc, pose, m, mesh, part.faceDecal(), color, light, overlay);
+				drawMesh(vc, ps, jointMatrix(part, state, pose), part, bend(part, pose), mesh, color, light, overlay);
 			}
 		});
 		// Hats, hair, face accessories, back bling and shoes (Blender models; the lighter copies far away, so lots of
 		// bots at once stay smooth).
-		if (outfit != null && !outfit.isEmpty()) Cosmetics.submit(collector, poseStack, state, outfit, emote, swing, aiming, state.distanceToCameraSq > 24 * 24, light, overlay);
+		if (outfit != null && !outfit.isEmpty()) Cosmetics.submit(collector, poseStack, state, outfit, pose, state.distanceToCameraSq > 24 * 24, light, overlay);
 		// The glider (gliders sheet) above a gliding player, in root space.
 		if (state.getDataOrDefault(GLIDING, false)) Gliders.submit(collector, poseStack, Gliders.of(outfit, entityId), state.distanceToCameraSq > 32 * 32, light, overlay);
 		// Shirt and pants designs: painted pictures wrapped round the torso and legs (their own texture).
-		if (outfit != null && !outfit.isEmpty()) Cosmetics.submitClothes(collector, poseStack, state, outfit, emote, swing, aiming, light, overlay);
+		if (outfit != null && !outfit.isEmpty()) Cosmetics.submitClothes(collector, poseStack, state, outfit, pose, light, overlay);
 		return true;
-	}
-
-	/** Roblox root space -> part transform (studs), including walk swing, emote pose and head look. */
-	static Matrix4f partMatrix(AvatarPartDef part, LivingEntityRenderState state, Pose emote, float swing, boolean aiming) {
-		Matrix4f m = jointMatrix(part, state, emote, swing, aiming);
-		return m.translate(part.centerX() - part.pivotX(), part.centerY() - part.pivotY(), part.centerZ() - part.pivotZ());
 	}
 
 	/**
 	 * Where the held item goes: the same frame Minecraft's arm gives ItemInHandLayer (model space, blocks, y down the
-	 * arm, origin 2 px below the top of the arm), but following the Roblox arm, so the gun moves exactly with the arm
-	 * holding it.
+	 * arm, origin 2 px below the top of the arm), but following the Roblox arm and its forearm, so the gun moves exactly
+	 * with the hand holding it.
 	 */
 	public static Matrix4f handMatrix(LivingEntityRenderState state, boolean rightArm) {
 		AvatarPartDef part = Sheets.AVATAR_PARTS_BY_ID.get(rightArm ? "right_arm" : "left_arm");
-		Pose emote = emotePose(state.getDataOrDefault(ENTITY_ID, -1), state.walkAnimationSpeed);
-		float swing = (float) Math.cos(state.walkAnimationPos * 0.6662F) * 1.2F * Math.min(1F, state.walkAnimationSpeed);
-		Matrix4f joint = jointMatrix(part, state, emote, swing, state.getDataOrDefault(AIMING, false));
+		Pose pose = pose(state);
+		Matrix4f joint = jointMatrix(part, state, pose).mul(bend(part, pose).lower());
 		// Minecraft's arm pivot: 2 px below the arm's top, 1 px towards the body from its centre.
 		float top = part.centerY() + 1F - part.pivotY();
 		joint.translate(part.centerX() - part.pivotX() - Math.signum(part.centerX()) * (1F / 16F) / S, top - (2F / 16F) / S, part.centerZ() - part.pivotZ());
@@ -139,56 +186,44 @@ public final class RobloxAvatarRenderer {
 		return new Matrix4f().translate(0, 1.501F - HIP * S, 0).scale(-S, -S, S).mul(joint).scale(-1F / S, -1F / S, 1F / S);
 	}
 
-	static Matrix4f jointMatrix(AvatarPartDef part, LivingEntityRenderState state, Pose emote, float swing, boolean aiming) {
+	/** Roblox root space -> a body part's joint (studs): its pivot, turned as the pose says, the head also to the look. */
+	static Matrix4f jointMatrix(AvatarPartDef part, LivingEntityRenderState state, Pose p) {
 		Matrix4f m = new Matrix4f();
-		float bounce = emote == null ? 0 : emote.bounce();
-		float bodyYaw = emote == null ? 0 : emote.bodyYaw();
-		m.translate(0, bounce, 0).rotateY((float) Math.toRadians(bodyYaw));
+		m.translate(0, p.bounce(), 0).rotateY(rad(p.bodyYaw()));
 		// Everything above the hips (the root) twists, leans and tilts together; the legs stay planted.
-		if (emote != null && !part.swing().equals("leg"))
-			m.rotateY((float) Math.toRadians(-emote.twist())).rotateX((float) Math.toRadians(-emote.lean())).rotateZ((float) Math.toRadians(-emote.tilt()));
+		if (!part.swing().equals("leg")) m.rotateY(rad(-p.twist())).rotateX(rad(-p.lean())).rotateZ(rad(-p.tilt()));
 		m.translate(part.pivotX(), part.pivotY(), part.pivotZ());
 		boolean right = part.centerX() > 0;
 		switch (part.swing()) {
-			case "arm" -> {
-				float x, z;
-				if (emote != null) {
-					x = right ? emote.rightArmX() : emote.leftArmX();
-					z = right ? emote.rightArmZ() : emote.leftArmZ();
-				} else if (state.getDataOrDefault(GLIDING, false)) {
-					// Gliding: both hands up on the glider's grips (Gliders), like Fortnite.
-					x = 170;
-					z = -15;
-				} else if (aiming) {
-					// Holding a gun: both arms point it where you look (left hand on the handguard); a small sway while
-					// walking.
-					float sway = (float) Math.toDegrees(swing) * 0.12F;
-					x = (right ? 90 : 82) - state.xRot + sway;
-					z = right ? 0 : -28;
-				} else {
-					x = (float) Math.toDegrees(swing * part.swingSign());
-					z = 0;
-				}
-				// +x swings the arm forward (towards -Z), +z raises it out to its own side.
-				m.rotateX((float) Math.toRadians(x)).rotateZ((float) Math.toRadians(right ? z : -z));
-			}
-			case "leg" -> {
-				float x = emote != null ? (right ? emote.rightLegX() : emote.leftLegX()) : (float) Math.toDegrees(swing * part.swingSign());
-				float z = emote != null ? (right ? emote.rightLegZ() : emote.leftLegZ()) : 0;
-				m.rotateX((float) Math.toRadians(x)).rotateZ((float) Math.toRadians(right ? z : -z));
-			}
-			case "head" -> {
-				if (emote != null)
-					m.rotateX((float) Math.toRadians(-emote.headX())).rotateY((float) Math.toRadians(-emote.headY())).rotateZ((float) Math.toRadians(-emote.headZ()));
-				m.rotateY((float) Math.toRadians(-state.yRot)).rotateX((float) Math.toRadians(-state.xRot));
-			}
+			// +x swings an arm or leg forward (towards -Z), +z raises it out to its own side.
+			case "arm" -> m.rotateX(rad(right ? p.rightArmX() : p.leftArmX())).rotateZ(rad(right ? p.rightArmZ() : -p.leftArmZ()));
+			case "leg" -> m.rotateX(rad(right ? p.rightLegX() : p.leftLegX())).rotateZ(rad(right ? p.rightLegZ() : -p.leftLegZ()));
+			case "head" -> m.rotateX(rad(-p.headX())).rotateY(rad(-p.headY())).rotateZ(rad(-p.headZ()))
+				.rotateY(rad(-state.yRot)).rotateX(rad(-state.xRot));
 			default -> {
 			}
 		}
 		return m;
 	}
 
-	private static void drawMesh(VertexConsumer vc, PoseStack.Pose pose, Matrix4f m, RobloxMesh mesh, boolean face, int color, int light, int overlay) {
+	/** How much this part bends this frame: an arm at its elbow, a leg at its knee. */
+	static Bend.Of bend(AvatarPartDef part, Pose p) {
+		boolean right = part.centerX() > 0;
+		return switch (part.swing()) {
+			case "arm" -> new Bend.Of(right ? p.rightElbow() : p.leftElbow(), true);
+			case "leg" -> new Bend.Of(right ? p.rightKnee() : p.leftKnee(), false);
+			default -> Bend.Of.NONE;
+		};
+	}
+
+	private static float rad(float deg) {
+		return (float) Math.toRadians(deg);
+	}
+
+	private static void drawMesh(VertexConsumer vc, PoseStack.Pose pose, Matrix4f joint, AvatarPartDef part, Bend.Of bend, RobloxMesh mesh, int color, int light,
+		int overlay) {
+		float ox = part.centerX() - part.pivotX(), oy = part.centerY() - part.pivotY(), oz = part.centerZ() - part.pivotZ();
+		boolean face = part.faceDecal();
 		Vector3f p = new Vector3f(), n = new Vector3f();
 		int[] t = mesh.tris;
 		float[] u = new float[3], v = new float[3];
@@ -202,8 +237,11 @@ public final class RobloxAvatarRenderer {
 			for (int k = 0; k < 3; k++) {
 				int idx = t[i + k];
 				float vx = mesh.pos[idx * 3], vy = mesh.pos[idx * 3 + 1], vz = mesh.pos[idx * 3 + 2];
-				m.transformPosition(vx, vy, vz, p);
-				m.transformDirection(mesh.nrm[idx * 3], mesh.nrm[idx * 3 + 1], mesh.nrm[idx * 3 + 2], n);
+				p.set(vx + ox, vy + oy, vz + oz);
+				n.set(mesh.nrm[idx * 3], mesh.nrm[idx * 3 + 1], mesh.nrm[idx * 3 + 2]);
+				bend.apply(p, n);
+				joint.transformPosition(p);
+				joint.transformDirection(n);
 				// studs (y up, root at hips) -> model space (y down, origin 1.501 above the feet), turned 180 about Z.
 				ps[k].set(-p.x * S, 1.501F - (p.y + HIP) * S, p.z * S);
 				ns[k].set(-n.x, -n.y, n.z).normalize();
@@ -225,20 +263,172 @@ public final class RobloxAvatarRenderer {
 		}
 	}
 
-	/**
-	 * Knocked down: crawling on the belly (creator: "a better crawling animation"). Angles as an emote's, in the
-	 * standing body, which is laid flat round them: the arms reach ahead over the head and pull in turn, the legs push
-	 * off one after the other, the body rolls a little with each pull; lying still, both hands rest ahead on the
-	 * ground and the arms rise and fall with breathing.
-	 */
-	static Pose crawlPose(LivingEntityRenderState state) {
-		float move = Math.min(1F, state.walkAnimationSpeed * 2.5F);
-		double ph = state.walkAnimationPos * 0.45F;
-		float s = (float) Math.sin(ph) * move, c = (float) Math.cos(ph) * move;
-		float breathe = (float) Math.sin(state.ageInTicks * 0.08F) * 3F;
-		// (headX -55: the head lifted to look ahead along the ground instead of down into it)
-		return new Pose(150 + 38 * s + breathe, 18 - 8 * c, 150 - 38 * s + breathe, 18 + 8 * c, -8 - 8 * s, -8 + 8 * s, 7 * s, 0, 0, 0, -55, 0, 0, 0, 0, 0);
+	// ---- which move, this frame ----
+
+	/** Each avatar's going-on between frames: how far it has gone, how fast, and what it was doing (for blending). */
+	private static final class Track {
+		boolean started;
+		double x, y, z;
+		long nanos, seen;
+		float phase, speed, vy, airTime;
+		float run, crouch, air, aim, use;
+		String useMove = "heal", mode = "";
+		Pose from = Pose.ZERO, last = Pose.ZERO;
+		float since = 1;
 	}
+
+	private static final Map<Integer, Track> TRACKS = new HashMap<>();
+	private static long lastSweep;
+
+	/** This frame's pose for the entity (worked out once a frame and kept in its render state). */
+	public static Pose pose(LivingEntityRenderState state) {
+		Pose[] holder = state.getData(POSE);
+		if (holder != null && holder[0] != null) return holder[0];
+		Pose p = computePose(state);
+		if (holder != null) holder[0] = p;
+		return p;
+	}
+
+	private static Pose computePose(LivingEntityRenderState state) {
+		float swing = state instanceof ArmedEntityRenderState a ? a.swingAnimation : 0;
+		int id = state.getDataOrDefault(ENTITY_ID, -1);
+		Pose emote = state.getDataOrDefault(KNOCKED, false) ? null : emotePose(id, state.walkAnimationSpeed);
+		Pose p = compose(new Frame(id, state.getDataOrDefault(MOTION, Motion.STILL), state.getDataOrDefault(AIMING, false),
+			state.getDataOrDefault(GLIDING, false), state.getDataOrDefault(KNOCKED, false), emote, state.x, state.y, state.z, state.ageInTicks / 20F,
+			state.xRot, swing), System.nanoTime());
+		// Minecraft draws a crouching player 2 px lower; the crouch already stands its feet on the ground.
+		return state instanceof AvatarRenderState a && a.isCrouching ? p.add(Pose.BOB, 2F / 16F / S) : p;
+	}
+
+	/**
+	 * What picks an avatar's pose this frame: who (entity id), how it moves, what it holds and does, where it is,
+	 * its age (seconds), where it looks (pitch, down +) and how far through a swing it is (0..1).
+	 */
+	record Frame(int id, Motion motion, boolean aiming, boolean gliding, boolean knocked, Pose emote, double x, double y, double z, float time,
+		float pitch, float swing) {
+	}
+
+	/** The pose for this frame (the avatar's track remembers how it got here; now: System.nanoTime()). */
+	static Pose compose(Frame f, long now) {
+		Motion m = f.motion();
+		if (now - lastSweep > 10_000_000_000L) { // (forget avatars not seen for a while)
+			lastSweep = now;
+			TRACKS.values().removeIf(t -> now - t.seen > 30_000_000_000L);
+		}
+		Track tr = TRACKS.computeIfAbsent(f.id(), k -> new Track());
+		tr.seen = now;
+		float dt = tr.started ? Math.min(0.1F, (now - tr.nanos) / 1e9F) : 0;
+		double dx = f.x() - tr.x, dy = f.y() - tr.y, dz = f.z() - tr.z;
+		float along = (float) Math.sqrt(dx * dx + dz * dz);
+		if (!tr.started || along > 4 || Math.abs(dy) > 4) along = 0; // (first seen, or teleported)
+		if (!tr.started || Math.abs(dy) > 4) dy = 0;
+		tr.started = true;
+		tr.x = f.x();
+		tr.y = f.y();
+		tr.z = f.z();
+		tr.nanos = now;
+		if (dt > 0) {
+			tr.speed = ease(tr.speed, along / dt, 12, dt);
+			tr.vy = ease(tr.vy, (float) dy / dt, 12, dt);
+		}
+		boolean airborne = !m.onGround() && !m.inWater() && !m.climbing();
+		tr.airTime = airborne ? tr.airTime + dt : 0;
+		// (sprinting, or just going faster than a walk: bots don't always say they sprint)
+		tr.run = ease(tr.run, m.sprinting() ? 1 : Math.max(0, Math.min(1, (tr.speed - 4.8F) / 1.2F)), 6, dt);
+		tr.crouch = ease(tr.crouch, m.crouching() ? 1 : 0, 8, dt);
+		tr.air = ease(tr.air, airborne && (tr.airTime > 0.12F || tr.vy > 2) ? 1 : 0, 12, dt);
+		tr.aim = ease(tr.aim, f.aiming() ? 1 : 0, 10, dt);
+		tr.use = ease(tr.use, m.use() != null ? 1 : 0, 8, dt);
+		if (m.use() != null) tr.useMove = m.use();
+		float stride = lerp(lerp(WALK_STRIDE, RUN_STRIDE, tr.run), CROUCH_STRIDE, tr.crouch);
+		tr.phase += along / (f.knocked() ? CRAWL_STRIDE : stride);
+
+		String mode;
+		Pose target;
+		if (f.emote() != null) {
+			mode = "emote";
+			target = f.emote();
+		} else if (f.knocked()) {
+			mode = "crawl";
+			target = Moves.at("crawl", tr.phase);
+		} else if (m.action() > 0) {
+			mode = switch (m.action()) {
+				case 1 -> "revive";
+				case 2 -> "reboot";
+				default -> "search";
+			};
+			target = Moves.loop(mode, f.time());
+		} else if (f.gliding()) {
+			mode = "glide";
+			target = Moves.loop("glide", f.time());
+		} else if (m.swimming()) {
+			mode = "swim";
+			target = Moves.loop("swim", f.time());
+		} else if (m.inWater() && !m.onGround()) {
+			mode = "tread";
+			target = Moves.loop("tread", f.time());
+		} else if (m.climbing()) {
+			mode = "climb";
+			target = Moves.at("climb", (float) (f.y() / 1.2));
+		} else {
+			mode = "ground";
+			target = ground(f, tr);
+		}
+		// A change of move blends in over BLEND seconds (from wherever the body was).
+		if (!mode.equals(tr.mode)) {
+			tr.from = tr.last;
+			tr.since = 0;
+			tr.mode = mode;
+		}
+		tr.since += dt;
+		float k = Math.min(1, tr.since / BLEND);
+		Pose out = tr.from.lerp(target, k * k * (3 - 2 * k));
+		tr.last = out;
+		return out;
+	}
+
+	/**
+	 * On foot: standing, walking, running or sneaking (their cycles along the ground walked), in the air (from going up
+	 * to falling fast), and on top of that the arms holding a gun where you look, healing or drinking, or swinging the
+	 * pickaxe.
+	 */
+	private static Pose ground(Frame f, Track tr) {
+		float time = f.time();
+		float moving = Math.min(1, tr.speed / 2.2F);
+		Pose loco = Moves.at("walk", tr.phase).lerp(Moves.at("run", tr.phase), tr.run);
+		Pose stand = Moves.loop("idle", time).lerp(loco, moving);
+		Pose low = Moves.loop("crouch", time).lerp(Moves.at("crouch_walk", tr.phase), moving);
+		Pose base = stand.lerp(low, tr.crouch);
+		// (jumping 8 blocks/s up -> 0, falling 10 down -> about 0.55, falling fast -> 1: spread out)
+		base = base.lerp(Moves.at("air", (8 - tr.vy) / 32F), tr.air);
+		if (tr.aim > 0) {
+			// Both hands on the gun where you look (the arms are in the leaning body: its lean taken off the look).
+			Pose aim = Moves.at("aim", (f.pitch() - base.lean() + 90) / 180F);
+			base = base.mix(aim, tr.aim, Pose.ARMS).add(Pose.TWIST, -base.twist() * tr.aim);
+		}
+		if (tr.use > 0) {
+			Pose use = Moves.loop(tr.useMove, time);
+			base = base.mix(use, tr.use * (1 - tr.aim), Pose.ARMS).add(Pose.HX, use.headX() * tr.use);
+		}
+		float swing = f.swing();
+		if (swing > 0 && swing < 1 && tr.aim < 0.5F) {
+			// The pickaxe: wound up, chopped down, followed through; the body turns with it (eased in and out).
+			Pose s = Moves.at("swing", swing), s0 = Moves.at("swing", 0);
+			float w = Math.min(1, Math.min(swing, 1 - swing) * 6);
+			base = base.mix(s, w, Pose.RIGHT_ARM).add(Pose.TWIST, (s.twist() - s0.twist()) * w, Pose.LEAN, (s.lean() - s0.lean()) * w);
+		}
+		return base;
+	}
+
+	private static float ease(float from, float to, float rate, float dt) {
+		return from + (to - from) * (1 - (float) Math.exp(-rate * dt));
+	}
+
+	private static float lerp(float a, float b, float f) {
+		return a + (b - a) * f;
+	}
+
+	// ---- emotes ----
 
 	/** Each emote's keyframes in order (emote_keys sheet), sorted once. */
 	private static final Map<String, List<EmoteKeyDef>> KEYS = new HashMap<>();
@@ -269,13 +459,11 @@ public final class RobloxAvatarRenderer {
 				break;
 			}
 		float f = b.t() > a.t() ? (t - a.t()) / (b.t() - a.t()) : 0;
-		return new Pose(l(a.rightArmX(), b.rightArmX(), f), l(a.rightArmZ(), b.rightArmZ(), f), l(a.leftArmX(), b.leftArmX(), f), l(a.leftArmZ(), b.leftArmZ(), f),
-			l(a.rightLegX(), b.rightLegX(), f), l(a.leftLegX(), b.leftLegX(), f), l(a.bodyYaw(), b.bodyYaw(), f), l(a.bounce(), b.bounce(), f),
-			l(a.rightLegZ(), b.rightLegZ(), f), l(a.leftLegZ(), b.leftLegZ(), f), l(a.headX(), b.headX(), f), l(a.headY(), b.headY(), f), l(a.headZ(), b.headZ(), f),
-			l(a.lean(), b.lean(), f), l(a.tilt(), b.tilt(), f), l(a.twist(), b.twist(), f));
+		return pose(a).lerp(pose(b), f);
 	}
 
-	private static float l(float a, float b, float f) {
-		return a + (b - a) * f;
+	private static Pose pose(EmoteKeyDef k) {
+		return new Pose(k.rightArmX(), k.rightArmZ(), k.leftArmX(), k.leftArmZ(), k.rightLegX(), k.leftLegX(), k.bodyYaw(), k.bounce(), k.rightLegZ(),
+			k.leftLegZ(), k.headX(), k.headY(), k.headZ(), k.lean(), k.tilt(), k.twist(), k.rightElbow(), k.leftElbow(), k.rightKnee(), k.leftKnee());
 	}
 }

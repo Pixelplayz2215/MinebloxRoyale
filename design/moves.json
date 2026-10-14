@@ -1,0 +1,140 @@
+{
+ "sheet": "moves",
+ "class": "MoveDef",
+ "about": "How the avatar moves when it isn't emoting (fabric/tools/blender/moves.py; played by RobloxAvatarRenderer). axis: what t (0..1) runs along: phase (the walk cycle: right foot forward at 0, left at 0.5), time (a loop of loopSeconds), pitch (where you look: 0 up, 0.5 ahead, 1 down), progress (once through: a pickaxe swing; jumping, from going up to falling fast).",
+ "columns": {
+  "id": "string",
+  "name": "string",
+  "axis": "enum:phase|time|pitch|progress",
+  "loopSeconds": "float",
+  "note": "string"
+ },
+ "rows": [
+  {
+   "id": "idle",
+   "name": "Standing",
+   "axis": "time",
+   "loopSeconds": 3.2,
+   "note": "Breathing: elbows and knees relaxed"
+  },
+  {
+   "id": "walk",
+   "name": "Walking",
+   "axis": "phase",
+   "loopSeconds": 1.1,
+   "note": "Heel to toe with soft knees, arms swinging the other way"
+  },
+  {
+   "id": "run",
+   "name": "Running",
+   "axis": "phase",
+   "loopSeconds": 0.62,
+   "note": "Sprinting: knees up, heels kick back, arms pumping"
+  },
+  {
+   "id": "crouch",
+   "name": "Crouching",
+   "axis": "time",
+   "loopSeconds": 2.4,
+   "note": "Sneaking: low on bent knees, leaning in"
+  },
+  {
+   "id": "crouch_walk",
+   "name": "Sneaking",
+   "axis": "phase",
+   "loopSeconds": 1.4,
+   "note": "Creeping along, low and leaning in"
+  },
+  {
+   "id": "air",
+   "name": "Jumping and falling",
+   "axis": "progress",
+   "loopSeconds": 1.6,
+   "note": "Knees tucked going up, legs reaching for the ground coming down, spread out falling fast"
+  },
+  {
+   "id": "swim",
+   "name": "Swimming",
+   "axis": "time",
+   "loopSeconds": 1.3,
+   "note": "Front crawl: one arm reaching, one pulling, legs kicking"
+  },
+  {
+   "id": "tread",
+   "name": "Treading water",
+   "axis": "time",
+   "loopSeconds": 1.2,
+   "note": "Head up, hands sculling in front, legs cycling"
+  },
+  {
+   "id": "climb",
+   "name": "Climbing",
+   "axis": "phase",
+   "loopSeconds": 1.0,
+   "note": "Up a ladder: hand over hand, knee over knee"
+  },
+  {
+   "id": "glide",
+   "name": "Gliding",
+   "axis": "time",
+   "loopSeconds": 2.2,
+   "note": "Both hands up on the glider's grips, legs dangling"
+  },
+  {
+   "id": "aim",
+   "name": "Aiming",
+   "axis": "pitch",
+   "loopSeconds": 3.0,
+   "note": "Holding a gun where you look (here: up, ahead, then down)"
+  },
+  {
+   "id": "swing",
+   "name": "Pickaxe swing",
+   "axis": "progress",
+   "loopSeconds": 0.7,
+   "note": "Wound up over the shoulder, a big chop, follow through"
+  },
+  {
+   "id": "heal",
+   "name": "Healing",
+   "axis": "time",
+   "loopSeconds": 0.9,
+   "note": "Bandages and med kits: hands together in front, wrapping"
+  },
+  {
+   "id": "drink",
+   "name": "Drinking",
+   "axis": "time",
+   "loopSeconds": 1.2,
+   "note": "Shield potions, Slurp Juice and the Chug Jug: the drink to the mouth, head back"
+  },
+  {
+   "id": "revive",
+   "name": "Reviving",
+   "axis": "time",
+   "loopSeconds": 1.5,
+   "note": "Down on one knee by a knocked teammate, both hands working on them"
+  },
+  {
+   "id": "reboot",
+   "name": "Rebooting",
+   "axis": "time",
+   "loopSeconds": 1.1,
+   "note": "At the Reboot Van's screen, typing"
+  },
+  {
+   "id": "search",
+   "name": "Searching a chest",
+   "axis": "time",
+   "loopSeconds": 1.0,
+   "note": "Bent over it, rummaging with both hands"
+  },
+  {
+   "id": "crawl",
+   "name": "Knocked down",
+   "axis": "phase",
+   "loopSeconds": 2.0,
+   "note": "Crawling on the belly: one arm reaches ahead along the ground while the other pulls back, legs push"
+  }
+ ]
+}

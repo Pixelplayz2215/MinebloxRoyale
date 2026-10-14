@@ -13,11 +13,13 @@ import struct
 import bpy
 from mathutils import Matrix, Vector
 
+import bend
 from brlib import hexrgb, to_linear
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PARTS = json.load(open(os.path.join(HERE, "..", "..", "..", "design", "avatar_parts.json"), encoding="utf-8"))["rows"]
 C = Matrix(((1, 0, 0, 0), (0, 0, -1, 0), (0, 1, 0, 0), (0, 0, 0, 1)))
+REST = {}  # limb id -> (each mesh corner in joint space, its normal): what avatar.repose bends
 
 
 def content():
@@ -101,9 +103,15 @@ def build(root, joints, colors):
     {part id: object}."""
     face_png = os.path.join(root, "textures", "face.png")
     objs = {}
+    REST.clear()
     for part in PARTS:
         pos, nrm, tris = parse(open(os.path.join(root, part["mesh"]), "rb").read())
-        m = C @ Matrix.Translation((part["centerX"] - part["pivotX"], part["centerY"] - part["pivotY"], part["centerZ"] - part["pivotZ"]))
+        off = (part["centerX"] - part["pivotX"], part["centerY"] - part["pivotY"], part["centerZ"] - part["pivotZ"])
+        kd = bend.kind(part["id"])
+        if kd:  # arms and legs: cut across the elbow / knee so they bend smoothly (bend.py, as the game cuts them)
+            for cy in bend.cuts(kd):
+                pos, tris, (nrm,) = bend.split(pos, tris, cy - off[1], [nrm])
+        m = C @ Matrix.Translation(off)
         nm = m.to_3x3().inverted_safe().transposed()
         slot = {"arms": "arms", "legs": "legs", "torso": "torso"}.get(part["colorSlot"], "head")
         verts, faces, normals, uvs, mats = [], [], [], [], []
@@ -129,6 +137,8 @@ def build(root, joints, colors):
         if part["faceDecal"]:
             me.materials.append(_mat(part["id"] + "_face", colors[slot], face_png if os.path.isfile(face_png) else None))
         obj = bpy.data.objects.new(part["id"], me)
+        if kd:  # (each corner in joint space, and its normal, to bend from: avatar.repose)
+            REST[part["id"]] = ([tuple(Vector(pos[i]) + Vector(off)) for t in tris for i in t], [tuple(Vector(nrm[i]).normalized()) for t in tris for i in t])
         obj["br_preview"] = 1
         obj.matrix_world = C @ joints[part["id"]] @ C.inverted()
         bpy.context.scene.collection.objects.link(obj)

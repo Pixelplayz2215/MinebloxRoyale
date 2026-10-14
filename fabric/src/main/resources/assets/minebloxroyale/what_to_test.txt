@@ -1,9 +1,11 @@
-Cars: hit a parked car with the pickaxe: it clanks, gives metal, goes through its damage stages and breaks
-Guns on the ground: no light beam above them any more
-Reboot vans (Duos, Trios, Squads): out in the open, never inside or under a tree
-Emotes (new Blender animations): try them all in the emote wheel (B); smooth, with head, body and leg moves
-Knocked down (team modes): the new crawl: arms reach ahead and pull in turn, head up, body rolling a little
-Locker hair (remade): sculpted locks; try each hair with a cap, a fedora and a top hat (cut cleanly under the hat)
-Locker hats, shoes and back bling (remade, smoother): seams, stitching, laces, soles, buckles, pompoms
-Locker shirts and pants: 3D collars, cuffs, belts, pockets, straps, ties, badges, knee pads over the designs
-Hub: the main board shows v1.0.1 - TEST 2 next to MINEBLOX ROYALE
+Walking and running (new, with knees and elbows): heel-to-toe walk; sprint with knees up and arms pumping; sneak low and leaning in
+Jumping and falling: knees tuck on the way up, legs reach for the ground coming down, arms and legs spread falling fast
+Aiming a gun: the gun follows where you look, up and down, standing, walking and sprinting (watch others and bots too)
+Pickaxe and heals: a big over-the-shoulder chop each hit; bandages and med kits wrapped in front; shields drunk at the mouth
+Team modes: reviving kneels on one knee, rebooting types on the van's screen, holding F at a chest rummages; others see it (bots revive and reboot too)
+Swimming (front crawl or treading water), climbing ladders hand over hand, gliding with the legs dangling
+Knocked down: the crawl along the ground: one arm reaches ahead while the other pulls, legs pushing
+Emotes (all 40 redone with elbows and knees): waves from the elbow, robot arms, boxing guard, flexing; no hands through the body
+Shirts, pants and shoes bend with the knees and elbows: stripes, knee pads, cuffs, laces stay on
+Fixed models: army helmet camo, mohawk crown, cap stitching, halo, ear headbands, boot heels, pigtails, bus door, bandages, wrecked bonnets
+Hub: the main board shows v1.0.1 - TEST 3 next to MINEBLOX ROYALE

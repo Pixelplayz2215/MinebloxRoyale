@@ -9,6 +9,7 @@ import gg.minebloxroyale.client.DropControl;
 import gg.minebloxroyale.client.LockerScreen;
 import gg.minebloxroyale.client.avatar.Cosmetics;
 import gg.minebloxroyale.client.avatar.RobloxAvatarRenderer;
+import gg.minebloxroyale.item.ConsumableItem;
 import gg.minebloxroyale.item.WeaponItem;
 import gg.minebloxroyale.match.BattleBusEntity;
 import gg.minebloxroyale.match.Knocked;
@@ -48,6 +49,8 @@ public abstract class LivingEntityRendererMixin {
 			state.setData(RobloxAvatarRenderer.IN_BUS, entity.getVehicle() instanceof BattleBusEntity);
 			state.setData(RobloxAvatarRenderer.KNOCKED, Knocked.CLIENT.contains(entity.getId()));
 			state.setData(RobloxAvatarRenderer.IS_PLAYER, entity instanceof Player);
+			state.setData(RobloxAvatarRenderer.MOTION, minebloxroyale$motion(entity));
+			state.setData(RobloxAvatarRenderer.POSE, new RobloxAvatarRenderer.Pose[1]); // (worked out when first drawn this frame)
 			// Teammates' name tags in their teammate colour (team modes; your party in the hub), on your screen only.
 			if (state.nameTag != null) {
 				Net.Mate mate = ClientState.mateByEntity(entity.getId());
@@ -75,6 +78,14 @@ public abstract class LivingEntityRendererMixin {
 			state.setData(RobloxAvatarRenderer.HIDDEN, hidden);
 			if (hidden) state.isInvisible = true; // no shadow either (shadows skip invisible entities)
 		}
+	}
+
+	/** How it is moving and what it is doing, for its move (RobloxAvatarRenderer): heals and shields say heal or drink. */
+	private static RobloxAvatarRenderer.Motion minebloxroyale$motion(LivingEntity e) {
+		String use = null;
+		if (e.isUsingItem() && e.getUseItem().getItem() instanceof ConsumableItem c) use = c.def.anim().equals("drink") ? "drink" : "heal";
+		return new RobloxAvatarRenderer.Motion(e.isSprinting(), e.isCrouching(), e.onGround(), e.isInWater(), e.isSwimming(), e.onClimbable() && !e.onGround(), use,
+			ClientState.ACTIONS.getOrDefault(e.getId(), 0));
 	}
 
 	/** Entities (other players, bots) that have touched the ground since their drop: never show a glider again. */

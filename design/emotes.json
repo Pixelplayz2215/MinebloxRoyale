@@ -17,7 +17,7 @@
    "unlock": "default",
    "need": 0,
    "loopSeconds": 1.0,
-   "note": "right arm up, waving, head tilted with a smile"
+   "note": "right arm up, waving from the elbow, head tilted with a smile"
   },
   {
    "id": "swing",
@@ -25,7 +25,7 @@
    "unlock": "default",
    "need": 0,
    "loopSeconds": 0.8,
-   "note": "both arms swing side to side, dipping in the middle"
+   "note": "both arms swing side to side, elbows easing, dipping in the middle"
   },
   {
    "id": "robot",
@@ -33,7 +33,7 @@
    "unlock": "default",
    "need": 0,
    "loopSeconds": 1.6,
-   "note": "stiff, snapping 90 degree moves with holds"
+   "note": "stiff, snapping 90 degree elbows with holds"
   },
   {
    "id": "floss",
@@ -41,7 +41,7 @@
    "unlock": "default",
    "need": 0,
    "loopSeconds": 0.7,
-   "note": "straight arms swing across the body, front and back in turn, hips the other way"
+   "note": "arms swing across the body, front and back in turn, hips the other way"
   },
   {
    "id": "dab",
@@ -57,7 +57,7 @@
    "unlock": "default",
    "need": 0,
    "loopSeconds": 0.8,
-   "note": "arms up and legs out, then back, hopping"
+   "note": "arms up and legs out, then back, hopping with bent knees"
   },
   {
    "id": "twist",
@@ -65,7 +65,7 @@
    "unlock": "default",
    "need": 0,
    "loopSeconds": 0.6,
-   "note": "the body twists left and right, bent arms, low bounce"
+   "note": "the body twists left and right, bent arms, knees low and bouncing"
   },
   {
    "id": "obby_hop",
@@ -73,7 +73,7 @@
    "unlock": "obby",
    "need": 0,
    "loopSeconds": 1.0,
-   "note": "crouch, a big parkour hop with arms swinging, a soft landing"
+   "note": "crouch, a big parkour hop with knees tucked and arms swinging, a soft landing"
   },
   {
    "id": "victory_dance",
@@ -81,7 +81,7 @@
    "unlock": "victory",
    "need": 0,
    "loopSeconds": 0.6,
-   "note": "arms up in a V, pumping, bouncing, looking up"
+   "note": "arms up in a V, pumping from the elbows, bouncing, looking up"
   },
   {
    "id": "clap",
@@ -97,7 +97,7 @@
    "unlock": "kills",
    "need": 5,
    "loopSeconds": 1.8,
-   "note": "snaps the right hand to the forehead, chest out, holds, then away"
+   "note": "snaps the right hand up to the brow, chest out, holds, then away"
   },
   {
    "id": "shrug",
@@ -105,7 +105,7 @@
    "unlock": "kills",
    "need": 8,
    "loopSeconds": 1.4,
-   "note": "arms out, palms up, shoulders up, head tilted"
+   "note": "elbows in, forearms out, palms up, shoulders up, head tilted"
   },
   {
    "id": "chicken",
@@ -113,7 +113,7 @@
    "unlock": "kills",
    "need": 10,
    "loopSeconds": 0.6,
-   "note": "elbows flapping, pecking head, knees up in turns"
+   "note": "hands in the armpits, elbows flapping, pecking head, knees up in turns"
   },
   {
    "id": "disco",
@@ -121,7 +121,7 @@
    "unlock": "kills",
    "need": 12,
    "loopSeconds": 0.9,
-   "note": "point up, point down across, hips swinging, eyes on the finger"
+   "note": "point up, point down across, hand on the hip, hips swinging, eyes on the finger"
   },
   {
    "id": "running_man",
@@ -129,7 +129,7 @@
    "unlock": "kills",
    "need": 15,
    "loopSeconds": 0.7,
-   "note": "running on the spot, knees high, arms pumping"
+   "note": "running on the spot, knees high, arms pumping with bent elbows"
   },
   {
    "id": "karate",
@@ -145,7 +145,7 @@
    "unlock": "kills",
    "need": 25,
    "loopSeconds": 0.5,
-   "note": "one hand on the neck, strumming, head banging, leaning back"
+   "note": "one hand on the neck, strumming, head banging, leaning back on bent knees"
   },
   {
    "id": "drum",
@@ -153,7 +153,7 @@
    "unlock": "kills",
    "need": 30,
    "loopSeconds": 0.4,
-   "note": "drumming fast, sticks in turn, head bobbing"
+   "note": "drumming fast, sticks in turn from the elbows, head bobbing"
   },
   {
    "id": "boxing",
@@ -161,7 +161,7 @@
    "unlock": "kills",
    "need": 40,
    "loopSeconds": 0.7,
-   "note": "guard up, jab, cross with the hips behind it, jab, light on the feet"
+   "note": "guard up, jab, cross with the hips behind it, jab, light on bent knees"
   },
   {
    "id": "spin",
@@ -177,7 +177,7 @@
    "unlock": "range",
    "need": 15,
    "loopSeconds": 0.6,
-   "note": "arms out, spinning fast, lifting off"
+   "note": "arms out, spinning fast, lifting off, knees tucking"
   },
   {
    "id": "hip_shake",
@@ -185,7 +185,7 @@
    "unlock": "bullseyes",
    "need": 5,
    "loopSeconds": 0.5,
-   "note": "arms forward, hips side to side"
+   "note": "hands on the hips, hips side to side"
   },
   {
    "id": "swim",
@@ -201,7 +201,7 @@
    "unlock": "wins",
    "need": 2,
    "loopSeconds": 1.4,
-   "note": "arms out, head lolling, shuffling"
+   "note": "arms out, head lolling, shuffling on dragging knees"
   },
   {
    "id": "flex",
@@ -217,7 +217,7 @@
    "unlock": "bullseyes",
    "need": 10,
    "loopSeconds": 2.0,
-   "note": "hand on the heart, a deep polite bow"
+   "note": "hand on the heart, the other behind the back, a deep polite bow"
   },
   {
    "id": "cheer",
@@ -225,7 +225,7 @@
    "unlock": "kills",
    "need": 75,
    "loopSeconds": 0.5,
-   "note": "arms up in turns, bouncing"
+   "note": "fists up in turns, bouncing on bent knees"
   },
   {
    "id": "raise_roof",
@@ -233,7 +233,7 @@
    "unlock": "range",
    "need": 35,
    "loopSeconds": 0.5,
-   "note": "pushing the roof up, bouncing"
+   "note": "pushing the roof up from the elbows, bouncing"
   },
   {
    "id": "penguin",
@@ -241,7 +241,7 @@
    "unlock": "wins",
    "need": 3,
    "loopSeconds": 0.5,
-   "note": "little flaps and a waddle"
+   "note": "little flaps and a waddle, stiff as a penguin"
   },
   {
    "id": "slide",
@@ -249,7 +249,7 @@
    "unlock": "bullseyes",
    "need": 20,
    "loopSeconds": 0.9,
-   "note": "smooth sliding feet, arms easing back and forth"
+   "note": "smooth sliding feet, knees taking turns, arms easing back and forth"
   },
   {
    "id": "fly_pose",
@@ -257,7 +257,7 @@
    "unlock": "kills",
    "need": 90,
    "loopSeconds": 1.5,
-   "note": "one fist up, hovering"
+   "note": "one fist up, the other at the hip, hovering"
   },
   {
    "id": "star_jump",
@@ -265,7 +265,7 @@
    "unlock": "range",
    "need": 45,
    "loopSeconds": 1.0,
-   "note": "crouch, a big jumping star, land"
+   "note": "crouch, a big jumping star, land on bent knees"
   },
   {
    "id": "hula",
@@ -273,7 +273,7 @@
    "unlock": "bullseyes",
    "need": 35,
    "loopSeconds": 0.8,
-   "note": "arms flowing side to side, hips swaying"
+   "note": "arms flowing side to side from the elbows, hips swaying on soft knees"
   },
   {
    "id": "wave_both",
@@ -281,7 +281,7 @@
    "unlock": "wins",
    "need": 5,
    "loopSeconds": 0.8,
-   "note": "waving with both hands, swaying"
+   "note": "waving with both hands from the elbows, swaying"
   },
   {
    "id": "rock_out",
@@ -297,7 +297,7 @@
    "unlock": "range",
    "need": 60,
    "loopSeconds": 0.5,
-   "note": "quick feet, arms out for balance"
+   "note": "quick feet with bending knees, arms out for balance"
   },
   {
    "id": "lasso",
@@ -329,7 +329,7 @@
    "unlock": "kills",
    "need": 150,
    "loopSeconds": 2.0,
-   "note": "the 1000-kill emote: crouch, a spinning jump with arms up, land, victory pose"
+   "note": "the 1000-kill emote: crouch, a spinning jump with knees tucked, land, victory pose"
   }
  ]
 }

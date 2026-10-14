@@ -78,7 +78,7 @@ def boots(s, a, b):
     shoe_shell(s, LEG, 1.13, bottom - 0.04, bottom + 0.1, 1.32, shade(b, 0.8))  # lug sole
     shoe_shell(s, LEG, 1.08, y0, y1, toe, a)
     shoe_shell(s, LEG, 1.13, bottom + 0.58, y1, 1.0, b)  # the cuff
-    s.at(0, bottom - 0.02, 0.36).color(shade(b, 0.7)).scale(0.5, 1, 0.2).rotY(45).lathe([0, 1.41, 1.41, 0], [-0.06, -0.06, 0.05, 0.05], 4)  # heel block
+    s.at(0, bottom + 0.035, 0.34).color(shade(b, 0.7)).scale(0.5, 1, 0.19).rotY(45).lathe([0, 1.41, 1.41, 0], [-0.075, -0.075, 0.065, 0.065], 4)  # heel block (in the sole: the ground is at its bottom)
     for p in outline(bottom - 0.02, bottom - 0.04, bottom + 0.1, 1.32, 1.13, 0.01, n=36)[::3]:  # lugs
         s.at(*p).color(shade(b, 0.55)).scale(0.03, 0.03, 0.03).sphere(-90, 90, 6)
     s.at(0, 0, 0).color(shade(a, 0.75)).tube(outline(y0 + 0.16, y0, y1, toe, 1.08, 0.006)[25:36], [0.01] * 11, caps=False, sides=4)  # toe cap seam
@@ -91,7 +91,7 @@ def loafers(s, a, b):
     y0, y1, toe = bottom + 0.04, bottom + 0.24, 1.36
     shoe_shell(s, LEG, 1.12, bottom - 0.02, bottom + 0.07, 1.4, DARK)
     shoe_shell(s, LEG, 1.08, y0, y1, toe, a)
-    s.at(0, bottom - 0.02, 0.38).color(DARK).scale(0.48, 1, 0.16).rotY(45).lathe([0, 1.41, 1.41, 0], [-0.05, -0.05, 0.04, 0.04], 4)  # low heel
+    s.at(0, bottom + 0.02, 0.37).color(DARK).scale(0.48, 1, 0.15).rotY(45).lathe([0, 1.41, 1.41, 0], [-0.04, -0.04, 0.05, 0.05], 4)  # low heel (in the sole)
     seam = [p for p in outline(y0 + 0.13, y0, y1, toe, 1.08, 0.006, n=40) if p[2] < -0.2]
     s.at(0, 0, 0).color(shade(a, 0.7)).tube(seam, [0.01] * len(seam), caps=False, sides=4)  # moccasin seam
     zf = front_z(y1 - 0.02, y0, y1, toe, 1.08)

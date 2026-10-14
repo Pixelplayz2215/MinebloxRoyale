@@ -144,7 +144,7 @@ def cosmetic(row):
         if row["slot"] in ("hat", "hair", "face"):
             return {"frame": frame(objs, js["head"], HEAD)}
         if row["slot"] == "shoes":
-            return {"frame": frame(objs, Matrix.Translation((0, 0, 0)), (-1.2, -2.0, -0.5, 1.2, -0.3, 0.5))}
+            return {"frame": frame(objs, Matrix.Translation((0, 0, 0)), (-1.2, -2.05, -0.5, 1.2, -1.1, 0.5), pad=0.08)}
         return {}
     views = {"Back": 0} if row["slot"] == "back" else VIEWS  # (creator: back bling only needs the back)
     return (row["name"], fn, {"export": False, "folder": FOLDER[row["slot"]], "unlock": unlock_text(row), "views": views})
@@ -154,7 +154,8 @@ def pose_of(emote):
     """The emote's most telling moment: its keyframe furthest from standing still (turned to face the front)."""
     keys = [k for k in json.load(open(os.path.join(DESIGN, "emote_keys.json"), encoding="utf-8"))["rows"] if k["emote"] == emote]
     angles = ("rightArmX", "rightArmZ", "leftArmX", "leftArmZ", "rightLegX", "leftLegX")
-    best = max(keys, key=lambda k: sum(abs(k[a]) for a in angles) + 200 * abs(k["bounce"]))
+    bends = ("rightElbow", "leftElbow", "rightKnee", "leftKnee")
+    best = max(keys, key=lambda k: sum(abs(k[a]) for a in angles) + 0.5 * sum(k.get(b, 0) for b in bends) + 200 * abs(k["bounce"]))
     return {**best, "bodyYaw": 0}
 
 

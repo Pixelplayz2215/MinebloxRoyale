@@ -95,6 +95,10 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 		ClientPlayNetworking.registerGlobalReceiver(Net.Knocks.TYPE, (p, ctx) -> {
 			Knocked.CLIENT.clear();
 			for (int id : p.ids()) Knocked.CLIENT.add(id);
+			ClientState.ACTIONS.clear();
+			for (int id : p.reviving()) ClientState.ACTIONS.put(id, 1);
+			for (int id : p.rebooting()) ClientState.ACTIONS.put(id, 2);
+			for (int id : p.searching()) ClientState.ACTIONS.put(id, 3);
 		});
 		ClientPlayNetworking.registerGlobalReceiver(Net.PartyInfo.TYPE, (p, ctx) -> {
 			ClientState.partyIds = List.copyOf(p.ids());
@@ -206,6 +210,7 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 			ClientState.partyIds = List.of();
 			ClientState.partyNames = List.of();
 			Knocked.CLIENT.clear();
+			ClientState.ACTIONS.clear();
 			interactWasDown = false;
 			RoomCodes.onDisconnect();
 			AutoWorld.onDisconnect();
