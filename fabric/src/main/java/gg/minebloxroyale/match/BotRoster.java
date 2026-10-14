@@ -1,5 +1,6 @@
 package gg.minebloxroyale.match;
 
+import gg.minebloxroyale.MeltyTest;
 import gg.minebloxroyale.MinebloxRoyale;
 import gg.minebloxroyale.bot.BotBag;
 import gg.minebloxroyale.bot.BotEntity;
@@ -589,6 +590,7 @@ public final class BotRoster {
 		lastElim = server.overworld().getGameTime();
 		Component msg = Component.literal(s.name + (by == null ? " was eliminated by the storm" : " was eliminated by " + by)).withStyle(ChatFormatting.GRAY);
 		for (ServerPlayer p : server.getPlayerList().getPlayers()) p.sendSystemMessage(msg);
+		MeltyTest.pass("eliminations");
 	}
 
 	/** An elimination for the bot of this name (if it is one). */

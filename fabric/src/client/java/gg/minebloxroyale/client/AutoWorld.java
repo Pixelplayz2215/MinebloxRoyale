@@ -1,6 +1,7 @@
 package gg.minebloxroyale.client;
 
 import gg.minebloxroyale.Legacy;
+import gg.minebloxroyale.MeltyTest;
 import gg.minebloxroyale.MinebloxRoyale;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -263,6 +264,7 @@ public final class AutoWorld {
 		if (!m.find() || m.group(1).equals(lastDomain)) return;
 		lastDomain = m.group(1);
 		meltyLog("Melty join address: " + lastDomain);
+		MeltyTest.pass("friends-can-join");
 		RoomCodes.hosting(lastDomain);
 	}
 

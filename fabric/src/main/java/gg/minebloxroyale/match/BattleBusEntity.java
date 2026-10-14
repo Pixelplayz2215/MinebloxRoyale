@@ -21,7 +21,7 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * The Battle Bus: flies a straight route across the island at the world's height limit with every player inside.
- * Players leave it with Space (or at the end of the route) and skydive. Not saved; the match owns it.
+ * Players leave it with Space (or at the end of the route) and skydive. Not saved with the world; the match owns it.
  */
 public class BattleBusEntity extends Entity {
 	public static EntityType<BattleBusEntity> TYPE;
@@ -68,6 +68,13 @@ public class BattleBusEntity extends Entity {
 
 	@Override
 	public void tick() {
+		// Only the match's own bus flies. A player saved riding one (the game closed during the ride) brings a copy back
+		// with them when the world opens again: it goes, and they're let off.
+		if (!level().isClientSide() && MatchManager.get().bus() != this) {
+			ejectPassengers();
+			discard();
+			return;
+		}
 		super.tick();
 		// Both sides move the bus the same way every tick, so riding it is smooth (no waiting for position packets).
 		if (level().isClientSide()) {

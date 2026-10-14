@@ -15,6 +15,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.EmptyBlockGetter;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.LevelResource;
 
@@ -40,12 +41,21 @@ public final class IslandRestore {
 		if (ORIGINAL.isEmpty()) return;
 		int n = ORIGINAL.size();
 		// Logs before leaves and attachments (vines, cocoa) so nothing is placed without its support; no neighbour
-		// updates, so leaves don't decay and vines don't drop while the tree is put back.
+		// updates, so leaves don't decay and vines don't drop while the tree is put back. No "on place" either: a block
+		// put back isn't newly placed (a carved pumpkin next to a chunk that isn't loaded yet, at server start, crashed
+		// Minecraft's iron golem check).
 		List<Map.Entry<BlockPos, BlockState>> order = new ArrayList<>(ORIGINAL.entrySet());
 		order.sort((a, b) -> Integer.compare(rank(a.getValue()), rank(b.getValue())));
+		int failed = 0;
 		for (var e : order) {
-			if (level.getBlockState(e.getKey()) != e.getValue()) level.setBlock(e.getKey(), e.getValue(), 2 | 16);
+			try {
+				if (level.getBlockState(e.getKey()) != e.getValue())
+					level.setBlock(e.getKey(), e.getValue(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SKIP_ON_PLACE);
+			} catch (RuntimeException ex) {
+				if (failed++ == 0) MinebloxRoyale.LOG.warn("BR: couldn't put back {} at {}", e.getValue(), e.getKey(), ex);
+			}
 		}
+		if (failed > 0) MinebloxRoyale.LOG.warn("BR: {} island blocks couldn't be put back", failed);
 		ORIGINAL.clear();
 		dirty = true;
 		save(level.getServer());

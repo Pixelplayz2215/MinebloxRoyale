@@ -1,5 +1,6 @@
 package gg.minebloxroyale.match;
 
+import gg.minebloxroyale.MeltyTest;
 import gg.minebloxroyale.MinebloxRoyale;
 import gg.minebloxroyale.bot.BotEntity;
 import gg.minebloxroyale.hub.HubBuilder;
@@ -57,12 +58,13 @@ public final class MatchManager {
 	public enum State { HUB, COUNTDOWN, LIVE, ENDED }
 
 	private static final MatchManager INSTANCE = new MatchManager();
-	private static final boolean TEST = System.getenv("MINEBLOXROYALE_TEST") != null;
+	/** Test mode (MINEBLOXROYALE_TEST, or a Melty test run): matches start by themselves, on faster clocks. */
+	private static final boolean TEST = System.getenv("MINEBLOXROYALE_TEST") != null || MeltyTest.active();
 	/**
 	 * Test mode's match mode: MINEBLOXROYALE_TEST=solo, duos, trios or squads; "all" takes turns; anything else: the
 	 * current one.
 	 */
-	private static final String TEST_MODE = TEST ? System.getenv("MINEBLOXROYALE_TEST").trim().toLowerCase(Locale.ROOT) : "";
+	private static final String TEST_MODE = System.getenv("MINEBLOXROYALE_TEST") == null ? "" : System.getenv("MINEBLOXROYALE_TEST").trim().toLowerCase(Locale.ROOT);
 
 	public static MatchManager get() {
 		return INSTANCE;
@@ -136,6 +138,7 @@ public final class MatchManager {
 	}
 
 	public void onJoin(ServerPlayer player) {
+		MeltyTest.pass("world-opens");
 		Combat.setupFighter(player);
 		setTeam(player, alivePlayers.contains(player.getUUID())); // blue name; pushing only in a match
 		// Crafting is off: with limited_crafting on, a player who knows no recipes can't craft anything.
@@ -404,7 +407,8 @@ public final class MatchManager {
 		IslandPregen.matchStarted(server);
 		matchIndex++;
 		writeIndex(server);
-		RandomSource rnd = level.getRandom();
+		// A Melty test run lays the match out from its seed.
+		RandomSource rnd = MeltyTest.active() ? RandomSource.create(MeltyTest.seed() + matchIndex) : level.getRandom();
 		float startR = MinebloxRoyale.setting("startRadius");
 		chestSpots.clear();
 		placedChests.clear();
@@ -486,6 +490,8 @@ public final class MatchManager {
 		nextPhase(level);
 		MinebloxRoyale.LOG.info("BR: match {} ({}) bus launched at y={}, centre {} {}, {} players, {} bots, {} teams", matchIndex, mode.name(), (int) busY, (int) cx, (int) cz,
 			players.size(), roster.alive(), teams);
+		if (players.isEmpty() || roster.alive() == 0) MeltyTest.fail("match-starts", players.size() + " players and " + roster.alive() + " bots on the bus");
+		else MeltyTest.pass("match-starts");
 	}
 
 	/** Chests appear as their chunk loads (no forced world generation): checked a few per tick. */
@@ -534,6 +540,7 @@ public final class MatchManager {
 		dropping.add(p.getUUID());
 		Net.sfxTo(p, "falling", p.position());
 		MinebloxRoyale.LOG.info("BR: {} jumped from the bus at y={}", p.getName().getString(), (int) p.getY());
+		MeltyTest.pass("bus-drop");
 	}
 
 	private void tickBus(MinecraftServer server) {
@@ -611,6 +618,7 @@ public final class MatchManager {
 		if (!shrinking && phaseTimer <= 0) {
 			shrinking = true;
 			phaseTimer = scaled(def.shrinkSeconds());
+			MeltyTest.pass("storm-moves");
 			// No storm music: the on-screen "STORM EYE SHRINKING" banner (BRHud) plus one short warning sound per
 			// shrink.
 			for (ServerPlayer p : level.getServer().getPlayerList().getPlayers()) Net.sfxTo(p, "storm_warning", p.position());
@@ -693,6 +701,7 @@ public final class MatchManager {
 			}
 		}
 		MinebloxRoyale.LOG.info("BR: {} eliminated by {}", victim.getName().getString(), by);
+		MeltyTest.pass("eliminations");
 	}
 
 	public void onBotDied(BotEntity bot, Entity killer, String byName) {
@@ -707,6 +716,7 @@ public final class MatchManager {
 		String by = byName != null ? byName : killer == null ? "the storm" : killer.getName().getString();
 		broadcast(server, Component.empty().append(who(bot)).append(" was eliminated by ").append(killer == null ? Component.literal(by) : who(killer)).withStyle(ChatFormatting.GRAY));
 		MinebloxRoyale.LOG.info("BR: bot {} eliminated by {}", bot.getName().getString(), by);
+		MeltyTest.pass("eliminations");
 	}
 
 	/** Can this card's owner still come back (players: eliminated but still in the match; bots: out)? */
@@ -938,6 +948,7 @@ public final class MatchManager {
 	}
 
 	public void sendToHub(ServerPlayer p) {
+		p.stopRiding(); // a rider snaps back to its vehicle after a teleport (a game closed on the bus reopens on it)
 		p.setCamera(p);
 		p.getInventory().clearContent();
 		Combat.reset(p);
@@ -976,8 +987,11 @@ public final class MatchManager {
 			case HUB -> {
 				ModeDef m = portalMode(server);
 				if (m != null) requestStart(server, "everyone is on the " + m.name() + " portal", m);
-				if (testStartIn > 0 && !server.getPlayerList().getPlayers().isEmpty() && --testStartIn == 0)
+				if (IslandPregen.ready()) MeltyTest.pass("island-ready");
+				if (testStartIn > 0 && !server.getPlayerList().getPlayers().isEmpty() && --testStartIn == 0) {
 					requestStart(server, "test mode", Sheets.MODES_BY_ID.getOrDefault(TEST_MODE, TEST_MODE.equals("all") ? Sheets.MODES.get(matchIndex % Sheets.MODES.size()) : mode));
+					if (state == State.HUB) testStartIn = 20; // the island isn't ready yet: try again in a second
+				}
 			}
 			case COUNTDOWN -> {
 				if (!TEST && !devStarted && portalMode(server) != mode) {
