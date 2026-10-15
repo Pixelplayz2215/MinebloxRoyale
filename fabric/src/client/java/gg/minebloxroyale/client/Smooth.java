@@ -3,12 +3,23 @@ package gg.minebloxroyale.client;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import gg.minebloxroyale.MinebloxRoyale;
+import gg.minebloxroyale.client.mixin.GuiGraphicsAccessor;
 import java.io.Reader;
+import java.util.Arrays;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
+import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.resources.Identifier;
+import org.joml.Matrix3x2f;
+import org.joml.Matrix3x2fc;
+import org.jspecify.annotations.Nullable;
 
 /**
  * The HUD's smooth drawing (v2.0.0, creator: "Cleaner UI (taken from Fortnite and re-rendered smoother)"): panels and
@@ -16,6 +27,10 @@ import net.minecraft.resources.Identifier;
  * ones), the HUD's Blender icons and its lettering (a bold condensed face) from glyph atlases, all smoothly filtered at
  * any size (textures/gui/hud, made by fabric/tools/blender/hud_art.py). Positions and sizes are in GUI pixels, as the
  * rest of the HUD.
+ *
+ * Each panel and each line of lettering goes to Minecraft as one piece (Batch; 2.0.0-test3, creator: "we need to reduce
+ * the lag"): drawn as hundreds of tiny ones (a rounded corner's rows of pixels, each letter), Minecraft checked every
+ * new one against all those before it, and as the letters of a line overlap a little, put each on a layer of its own.
  */
 public final class Smooth {
 	public static final int LEFT = -1, CENTER = 0, RIGHT = 1;
@@ -51,26 +66,102 @@ public final class Smooth {
 		int ri = (int) Math.ceil(rad);
 		g.pose().pushMatrix();
 		g.pose().scale(1F / s, 1F / s);
+		Batch b = new Batch(RenderPipelines.GUI, TextureSetup.noTexture());
 		// the middle: straight sides
-		if (y1 - y0 > 2 * ri) g.fillGradient(x0, y0 + ri, x1, y1 - ri, mix(top, bottom, ri / (float) (y1 - y0)), mix(top, bottom, 1 - ri / (float) (y1 - y0)));
+		if (y1 - y0 > 2 * ri) b.quad(x0, y0 + ri, x1, y1 - ri, mix(top, bottom, ri / (float) (y1 - y0)), mix(top, bottom, 1 - ri / (float) (y1 - y0)));
 		for (int j = 0; j < ri && j < (y1 - y0 + 1) / 2; j++) {
 			float dy = rad - (j + 0.5F);
 			float in = rad - (float) Math.sqrt(Math.max(0, rad * rad - dy * dy));
 			for (int row : new int[] { y0 + j, y1 - 1 - j }) {
 				int c = mix(top, bottom, (row - y0 + 0.5F) / (y1 - y0));
-				row(g, x0 + in, x1 - in, row, c);
+				row(b, x0 + in, x1 - in, row, c);
 			}
 		}
+		b.submit(g);
 		g.pose().popMatrix();
 	}
 
 	/** One row of pixels from xa to xb (fractional): the solid run, and the end pixels as much as they're covered. */
-	private static void row(GuiGraphicsExtractor g, float xa, float xb, int y, int c) {
+	private static void row(Batch b, float xa, float xb, int y, int c) {
 		int ia = (int) Math.ceil(xa), ib = (int) Math.floor(xb);
-		if (ib > ia) g.fill(ia, y, ib, y + 1, c);
+		if (ib > ia) b.quad(ia, y, ib, y + 1, c, c);
 		float la = ia - xa, lb = xb - ib;
-		if (la > 0.01F) g.fill(ia - 1, y, ia, y + 1, alpha(c, la));
-		if (lb > 0.01F && ib >= ia) g.fill(ib, y, ib + 1, y + 1, alpha(c, lb));
+		if (la > 0.01F) b.quad(ia - 1, y, ia, y + 1, alpha(c, la), alpha(c, la));
+		if (lb > 0.01F && ib >= ia) b.quad(ib, y, ib + 1, y + 1, alpha(c, lb), alpha(c, lb));
+	}
+
+	/**
+	 * Quads gathered to go to Minecraft as one GUI piece, in the pose of the moment (the HUD never draws these inside a
+	 * scissor): one pipeline, one texture.
+	 */
+	static final class Batch {
+		private final RenderPipeline pipeline;
+		private final TextureSetup texture;
+		private float[] v = new float[64]; // x, y, u, v per corner, four a quad
+		private int[] c = new int[16];
+		private int n;
+		private float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE, maxX = -Float.MAX_VALUE, maxY = -Float.MAX_VALUE;
+
+		Batch(RenderPipeline pipeline, TextureSetup texture) {
+			this.pipeline = pipeline;
+			this.texture = texture;
+		}
+
+		/** A plain quad shading from colour top to bottom (as GuiGraphicsExtractor.fillGradient). */
+		void quad(float x0, float y0, float x1, float y1, int top, int bottom) {
+			textured(x0, y0, x1, y1, 0, 0, 0, 0, top, bottom);
+		}
+
+		/** A quad of a texture's u0..u1, v0..v1 (0..1), tinted (as GuiGraphicsExtractor.blit). */
+		void textured(float x0, float y0, float x1, float y1, float u0, float v0, float u1, float v1, int top, int bottom) {
+			corner(x0, y0, u0, v0, top);
+			corner(x0, y1, u0, v1, bottom);
+			corner(x1, y1, u1, v1, bottom);
+			corner(x1, y0, u1, v0, top);
+			minX = Math.min(minX, Math.min(x0, x1));
+			minY = Math.min(minY, Math.min(y0, y1));
+			maxX = Math.max(maxX, Math.max(x0, x1));
+			maxY = Math.max(maxY, Math.max(y0, y1));
+		}
+
+		private void corner(float x, float y, float u, float w, int color) {
+			if (n == c.length) {
+				v = Arrays.copyOf(v, n * 8);
+				c = Arrays.copyOf(c, n * 2);
+			}
+			v[n * 4] = x;
+			v[n * 4 + 1] = y;
+			v[n * 4 + 2] = u;
+			v[n * 4 + 3] = w;
+			c[n++] = color;
+		}
+
+		void submit(GuiGraphicsExtractor g) {
+			if (n == 0) return;
+			Matrix3x2f pose = new Matrix3x2f(g.pose());
+			int left = (int) Math.floor(minX), top = (int) Math.floor(minY);
+			ScreenRectangle area = new ScreenRectangle(left, top, (int) Math.ceil(maxX) - left, (int) Math.ceil(maxY) - top).transformMaxBounds(pose);
+			((GuiGraphicsAccessor) g).minebloxroyale$state().addGuiElement(new Piece(pipeline, texture, pose, Arrays.copyOf(v, n * 4), Arrays.copyOf(c, n), area));
+		}
+	}
+
+	/** A Batch as Minecraft draws it. */
+	private record Piece(RenderPipeline pipeline, TextureSetup textureSetup, Matrix3x2fc pose, float[] v, int[] c, ScreenRectangle bounds)
+		implements GuiElementRenderState {
+		@Override
+		public void buildVertices(VertexConsumer vc) {
+			boolean uv = pipeline != RenderPipelines.GUI;
+			for (int i = 0; i < c.length; i++) {
+				VertexConsumer at = vc.addVertexWith2DPose(pose, v[i * 4], v[i * 4 + 1]);
+				if (uv) at.setUv(v[i * 4 + 2], v[i * 4 + 3]);
+				at.setColor(c[i]);
+			}
+		}
+
+		@Override
+		public @Nullable ScreenRectangle scissorArea() {
+			return null;
+		}
 	}
 
 	/**
@@ -155,20 +246,22 @@ public final class Smooth {
 			g.pose().popMatrix();
 			return w;
 		}
-		if (shadow) glyphs(g, f, text, left + size * 0.05F, y + size * 0.07F, size, (color >>> 24) * 2 / 3 << 24);
-		glyphs(g, f, text, left, y, size, color);
-		return w;
-	}
-
-	private static void glyphs(GuiGraphicsExtractor g, Face f, String text, float x, float y, float size, int color) {
 		// the atlas nearest this size on screen (so it's neither blurred up nor thinned down much)
 		float px = size * scale();
 		int em = f.ems()[0];
 		for (int e : f.ems()) if (Math.abs(e - px) < Math.abs(em - px)) em = e;
-		Identifier tex = MinebloxRoyale.id("textures/gui/hud/hud_font_" + em + ".png");
+		AbstractTexture atlas = Minecraft.getInstance().getTextureManager().getTexture(MinebloxRoyale.id("textures/gui/hud/hud_font_" + em + ".png"));
+		Batch b = new Batch(RenderPipelines.GUI_TEXTURED, TextureSetup.singleTexture(atlas.getTextureView(), atlas.getSampler()));
+		if (shadow) glyphs(b, f, em, text, left + size * 0.05F, y + size * 0.07F, size, (color >>> 24) * 2 / 3 << 24);
+		glyphs(b, f, em, text, left, y, size, color);
+		b.submit(g);
+		return w;
+	}
+
+	private static void glyphs(Batch b, Face f, int em, String text, float x, float y, float size, int color) {
 		int rows = (f.chars().length() + f.cols() - 1) / f.cols();
 		int cw = Math.round(f.cw() * em), ch = Math.round(f.ch() * em), texW = cw * f.cols(), texH = ch * rows;
-		float baseline = y + size * 0.82F, pen = x;
+		float baseline = y + size * 0.82F, pen = x, scale = size / em;
 		for (int i = 0; i < text.length(); i++) {
 			int k = f.chars().indexOf(text.charAt(i));
 			if (k < 0) {
@@ -176,12 +269,10 @@ public final class Smooth {
 				continue;
 			}
 			if (text.charAt(i) != ' ') {
-				g.pose().pushMatrix();
 				// the glyph's cell: its pen point pad in from the left, its baseline `base` up from the bottom
-				g.pose().translate(pen - f.pad() * size, baseline - (f.ch() - f.base()) * size);
-				g.pose().scale(size / em, size / em);
-				g.blit(RenderPipelines.GUI_TEXTURED, tex, 0, 0, (k % f.cols()) * cw, (k / f.cols()) * ch, cw, ch, texW, texH, color);
-				g.pose().popMatrix();
+				float gx = pen - f.pad() * size, gy = baseline - (f.ch() - f.base()) * size;
+				int u = (k % f.cols()) * cw, v = (k / f.cols()) * ch;
+				b.textured(gx, gy, gx + cw * scale, gy + ch * scale, u / (float) texW, v / (float) texH, (u + cw) / (float) texW, (v + ch) / (float) texH, color, color);
 			}
 			pen += f.advance()[k] * size;
 		}

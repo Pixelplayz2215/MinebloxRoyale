@@ -39,6 +39,8 @@ final class Gliders {
 	private static final Map<String, List<GliderKeyDef>> KEYS = new HashMap<>();
 	/** The Locker's preview of you keeps its own track (so your avatar in the world doesn't put a glider away after). */
 	static final int PREVIEW_TRACK = Integer.MIN_VALUE;
+	/** About how big a glider is (blocks), for picking its lighter copies far away (Mesh.lod). */
+	private static final float SIZE = 3.5F;
 	private static final Map<Integer, Track> TRACKS = new HashMap<>();
 	private static long lastSweep;
 
@@ -117,8 +119,8 @@ final class Gliders {
 		return tr != null && tr.open && (System.nanoTime() - tr.opened) / 1e9F > seconds("deploy") * 0.6F;
 	}
 
-	static void submit(SubmitNodeCollector collector, PoseStack poseStack, GliderDef g, Matrix4f t, boolean far, int light, int overlay) {
-		Mesh mesh = Mesh.get(g.id() + (far ? "_far" : ""));
+	static void submit(SubmitNodeCollector collector, PoseStack poseStack, GliderDef g, Matrix4f t, double distSq, int light, int overlay) {
+		Mesh mesh = Mesh.lod(g.id(), distSq, SIZE);
 		Matrix4f local = new Matrix4f(RobloxAvatarRenderer.ROOT).mul(t);
 		collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(WorldVisuals.white()),
 			(pose, vc) -> mesh.draw(pose, local, vc, light, overlay, g.color() & 0xFFFFFF, g.color2() & 0xFFFFFF));

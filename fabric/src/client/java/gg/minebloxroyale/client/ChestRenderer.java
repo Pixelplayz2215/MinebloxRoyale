@@ -21,11 +21,12 @@ import org.jspecify.annotations.Nullable;
 /**
  * Draws a loot chest (creator, v1.0.1: "a smoother texture built in Blender. And the chest should have an opening
  * animation"): the Blender models (fabric/tools/blender/chests.py), the wooden one or the blue rare one, front the way
- * the chest faces; the lighter copies past FAR blocks. When a chest is searched open, its lid swings up and back about
+ * the chest faces; the lighter copies further away (Mesh.lod). When a chest is searched open, its lid swings up and back about
  * its hinge with a little bounce at the top; a chest already open when it comes into view is simply open.
  */
 public class ChestRenderer implements BlockEntityRenderer<LootChestBlockEntity, ChestRenderer.State> {
-	private static final double FAR = 24;
+	/** About how big a chest is (blocks), for picking its lighter copies far away. */
+	private static final float SIZE = 1.4F;
 	/** The lid: how far it opens (degrees) and how long it takes (seconds). */
 	private static final float OPEN_DEGREES = 105, OPEN_SECONDS = 0.45F;
 	/** The body's hinge line (chests.py HINGE): the top of its back. */
@@ -75,9 +76,9 @@ public class ChestRenderer implements BlockEntityRenderer<LootChestBlockEntity, 
 
 	@Override
 	public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
-		boolean far = camera.pos.distanceToSqr(Vec3.atCenterOf(state.blockPos)) > FAR * FAR;
-		String kind = "chest_" + (state.rare ? "rare" : "loot"), lod = far ? "_far" : "";
-		Mesh body = Mesh.get(kind + "_body" + lod), lid = Mesh.get(kind + "_lid" + lod);
+		double distSq = camera.pos.distanceToSqr(Vec3.atCenterOf(state.blockPos));
+		String kind = "chest_" + (state.rare ? "rare" : "loot");
+		Mesh body = Mesh.lod(kind + "_body", distSq, SIZE), lid = Mesh.lod(kind + "_lid", distSq, SIZE);
 		int light = state.lightCoords;
 		poseStack.pushPose();
 		poseStack.translate(0.5F, 0F, 0.5F);

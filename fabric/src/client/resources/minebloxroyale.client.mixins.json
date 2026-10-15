@@ -21,7 +21,8 @@
     "MouseScopedMixin",
     "MouseSettingsScreenMixin",
     "OnboardingSkipMixin",
-    "SpecialModelRenderersAccessor"
+    "SpecialModelRenderersAccessor",
+    "GuiGraphicsAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

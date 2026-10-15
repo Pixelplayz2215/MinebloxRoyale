@@ -55,6 +55,31 @@ public final class Bend {
 			return Math.max(2 * HALF, (float) Math.toRadians(degrees) * (arm ? 0.5F : 0.64F) / SQUEEZE);
 		}
 
+		/**
+		 * This bend as a Mesh.Deform with its numbers worked out once (2.0.0-test3, lag: a worn model's every corner goes
+		 * through it); null if straight.
+		 */
+		gg.minebloxroyale.client.mesh.Mesh.Deform deform() {
+			if (none()) return null;
+			float mid = mid(), up = up(), length = length(), full = angle(1), c1 = (float) Math.cos(full), s1 = (float) Math.sin(full);
+			return (p, n) -> {
+				float s = p.y - mid;
+				if (s >= up) return;
+				float c = c1, sn = s1;
+				if (s > up - length) {
+					float a = full * (up - s) / length;
+					c = (float) Math.cos(a);
+					sn = (float) Math.sin(a);
+				}
+				float y = mid + s * c - p.z * sn, z = s * sn + p.z * c;
+				p.y = y;
+				p.z = z;
+				float ny = n.y * c - n.z * sn, nz = n.y * sn + n.z * c;
+				n.y = ny;
+				n.z = nz;
+			};
+		}
+
 		/** Bends a point (and its normal, if not null) of the limb, in joint space. */
 		void apply(Vector3f p, Vector3f n) {
 			if (none()) return;

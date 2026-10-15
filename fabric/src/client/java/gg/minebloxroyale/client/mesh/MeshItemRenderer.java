@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomModelData;
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 import org.joml.Vector3fc;
@@ -20,7 +21,8 @@ import org.joml.Vector3fc;
  * An item drawn from a Blender mesh (items/*.json: {"type": "minecraft:special", "model": {"type":
  * "minebloxroyale:mesh", "mesh": "gun_smg"}, "base": ...}; the base model gives the hold in each hand). Tint channel 1
  * takes the stack's custom model data colour (a gun's rarity, Guns.make), or the given default. A model name in the
- * stack's custom model data draws that model instead (v2.0.0: a pickaxe skin, Loadout.pickaxe(skin)).
+ * stack's custom model data draws that model instead (v2.0.0: a pickaxe skin, Loadout.pickaxe(skin)). In the world, its
+ * lighter copies further away (Mesh.lod; 2.0.0-test3, lag).
  */
 public record MeshItemRenderer(Mesh mesh, int tint) implements SpecialModelRenderer<MeshItemRenderer.Look> {
 	/** What one stack looks like: its tint, and the model it asks for (null: this renderer's own). */
@@ -37,7 +39,20 @@ public record MeshItemRenderer(Mesh mesh, int tint) implements SpecialModelRende
 		if (m.isEmpty()) return;
 		int c = look == null ? tint : look.color();
 		Mesh draw = m;
-		collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(WorldVisuals.white()), (pose, vc) -> draw.draw(pose, null, vc, light, overlay, c, c));
+		collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(WorldVisuals.white()), (pose, vc) -> lod(draw, pose).draw(pose, null, vc, light, overlay, c, c));
+	}
+
+	/**
+	 * Which copy to draw: in the world the pose is from the camera, so its offset is how far away the item is, and its
+	 * scale how big; in a GUI (an inventory slot, many times bigger than anything in the world) always the full model.
+	 */
+	private static Mesh lod(Mesh m, PoseStack.Pose pose) {
+		Matrix4f p = pose.pose();
+		float scale = (float) Math.cbrt(Math.abs(p.determinant3x3()));
+		if (scale > 4) return m;
+		float[] b = m.bounds;
+		float size = scale * (float) Math.sqrt((b[3] - b[0]) * (b[3] - b[0]) + (b[4] - b[1]) * (b[4] - b[1]) + (b[5] - b[2]) * (b[5] - b[2]));
+		return Mesh.lod(m.id, p.m30() * p.m30() + p.m31() * p.m31() + p.m32() * p.m32(), Math.max(0.1F, size));
 	}
 
 	@Override

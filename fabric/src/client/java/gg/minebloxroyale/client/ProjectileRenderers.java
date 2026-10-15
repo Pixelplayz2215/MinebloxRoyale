@@ -50,8 +50,9 @@ public final class ProjectileRenderers {
 			poseStack.rotate(Axis.YP.rotationDegrees(-state.yaw - 90F));
 			poseStack.rotate(Axis.ZP.rotationDegrees(-state.pitch));
 			poseStack.translate(-0.5F, 0, 0);
+			Mesh mesh = Mesh.lod("rocket", state.distanceToCameraSq, 1F);
 			collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(WorldVisuals.white()),
-				(pose, vc) -> Mesh.get("rocket").draw(pose, null, vc, Mesh.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0xFFFFFF, 0xFFFFFF));
+				(pose, vc) -> mesh.draw(pose, null, vc, Mesh.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0xFFFFFF, 0xFFFFFF));
 			poseStack.popPose();
 			super.submit(state, poseStack, collector, camera);
 		}
@@ -84,8 +85,9 @@ public final class ProjectileRenderers {
 			// the item model is in item pixels (0..16, upright): a third of a block across here, centred
 			poseStack.scale(0.05F, 0.05F, 0.05F);
 			poseStack.translate(-8F, -6.4F, -8F);
+			Mesh mesh = Mesh.lod("grenade", state.distanceToCameraSq, 0.4F);
 			collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(WorldVisuals.white()),
-				(pose, vc) -> Mesh.get("grenade").draw(pose, null, vc, light, OverlayTexture.NO_OVERLAY, 0xFFFFFF, 0xFFFFFF));
+				(pose, vc) -> mesh.draw(pose, null, vc, light, OverlayTexture.NO_OVERLAY, 0xFFFFFF, 0xFFFFFF));
 			poseStack.popPose();
 			super.submit(state, poseStack, collector, camera);
 		}

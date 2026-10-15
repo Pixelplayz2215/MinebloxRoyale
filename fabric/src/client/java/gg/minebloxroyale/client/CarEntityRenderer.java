@@ -16,10 +16,11 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 
 /**
  * A car being driven (v2.0.0, CarEntity): the same Blender model as a parked car (fabric/tools/blender/cars.py), its kind
- * and damage stage in its paint and trim, turned the way it drives; the lighter copy far away.
+ * and damage stage in its paint and trim, turned the way it drives; the lighter copies further away (Mesh.lod).
  */
 public class CarEntityRenderer extends EntityRenderer<CarEntity, CarEntityRenderer.State> {
-	private static final double FAR = 40;
+	/** About how big a car is (blocks), for picking its lighter copies far away. */
+	static final float SIZE = 5F;
 
 	public static class State extends EntityRenderState {
 		CarBlockEntity.Kind kind = CarBlockEntity.Kind.SEDAN;
@@ -49,8 +50,7 @@ public class CarEntityRenderer extends EntityRenderer<CarEntity, CarEntityRender
 
 	@Override
 	public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
-		boolean far = state.distanceToCameraSq > FAR * FAR;
-		Mesh mesh = Mesh.get("car_" + state.kind.name().toLowerCase(Locale.ROOT) + "_" + state.stage + (far ? "_far" : ""));
+		Mesh mesh = Mesh.lod("car_" + state.kind.name().toLowerCase(Locale.ROOT) + "_" + state.stage, state.distanceToCameraSq, SIZE);
 		int light = state.lightCoords;
 		poseStack.pushPose();
 		poseStack.rotate(Axis.YP.rotationDegrees(-state.yaw));
