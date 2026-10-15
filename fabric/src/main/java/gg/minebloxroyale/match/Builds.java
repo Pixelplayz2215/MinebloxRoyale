@@ -139,6 +139,7 @@ public final class Builds {
 
 	/** Server: a builder asks for a piece. Checks reach and cost, fills only air / replaceable blocks. */
 	public static void place(ServerLevel level, Player builder, String pieceId, String materialId, Placement p) {
+		if (MatchManager.noBuild()) return; // (a No Build match)
 		BuildPieceDef piece = Sheets.BUILDS_BY_ID.get(pieceId);
 		MaterialDef mat = Sheets.MATERIALS_BY_ID.get(materialId);
 		if (piece == null || mat == null || builder.isSpectator()) return;
@@ -152,6 +153,7 @@ public final class Builds {
 	 * built.
 	 */
 	public static boolean build(ServerLevel level, Vec3 from, BuildPieceDef piece, MaterialDef mat, Placement p) {
+		if (MatchManager.noBuild()) return false; // (a No Build match: bots don't build either)
 		Map<BlockPos, BlockState> shape = shape(piece, mat, p);
 		double reach = MinebloxRoyale.setting("buildReach");
 		BlockPos first = shape.keySet().iterator().next();

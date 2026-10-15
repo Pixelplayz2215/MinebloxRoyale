@@ -53,6 +53,10 @@ public final class BuildMode {
 		if (mc.player == null) return;
 		if (!active) {
 			if (!ClientState.inMatch() || mc.player.isSpectator()) return;
+			if (ClientState.noBuild()) {
+				mc.player.sendOverlayMessage(net.minecraft.network.chat.Component.literal("No Build match: no building, just fight"));
+				return;
+			}
 			active = true;
 			savedSlot = mc.player.getInventory().getSelectedSlot();
 			mc.player.getInventory().setSelectedSlot(0);

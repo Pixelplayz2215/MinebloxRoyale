@@ -200,6 +200,20 @@ public final class MatchManager {
 		return state == State.HUB || state == State.COUNTDOWN || !players.contains(p.getUUID());
 	}
 
+	/** The mode of the countdown or match under way (the portal everyone stood on). */
+	public ModeDef mode() {
+		return mode;
+	}
+
+	/**
+	 * A No Build match (v2.0.0, creator: "4 new portals for Solo, Duos, Trios, Squad NO BUILD mode") is boarding or
+	 * under way: nobody builds, and harvesting gives no materials (bots too).
+	 */
+	public static boolean noBuild() {
+		MatchManager m = get();
+		return m != null && m.state != State.HUB && m.mode.noBuild();
+	}
+
 	public State state() {
 		return state;
 	}
@@ -1140,7 +1154,7 @@ public final class MatchManager {
 			boolean in = players.contains(p.getUUID()) && live;
 			ServerPlayNetworking.send(p, new Net.Hud(state.name(), alive, Combat.shield(p), (float) cx, (float) cz, radius, (float) toX, (float) toZ, toR, seconds, label, in, kills.getOrDefault(p.getUUID(), 0),
 				p.getVehicle() instanceof BattleBusEntity ? 1 : dropping.contains(p.getUUID()) ? 2 : 0, onPortal, hubCount, phase + 1, shrinking,
-				live || state == State.COUNTDOWN ? mode.teamSize() : 1, padText.toString()));
+				live || state == State.COUNTDOWN ? mode.teamSize() : 1, padText.toString(), state == State.HUB ? "" : mode.id()));
 			if (in && Teams.teamMode()) ServerPlayNetworking.send(p, SquadInfo.build(server, this, p));
 		}
 	}

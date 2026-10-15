@@ -627,6 +627,7 @@ public class BotEntity extends PathfinderMob {
 	 * first. A car takes several hits; the rest comes down in one.
 	 */
 	private boolean harvestTick(ServerLevel level) {
+		if (MatchManager.noBuild()) return false; // (a No Build match: nothing to build with, nothing worth farming)
 		if (harvestAt == null && bag.totalMaterials() >= FARM_UNTIL) return false;
 		if (harvestAt == null && tickCount % 60 == 0) harvestAt = findHarvest(level);
 		if (harvestAt == null) return false;

@@ -416,13 +416,13 @@ public final class BRHud {
 		int codeW = code == null ? 0 : mc.font.width(label) + mc.font.width(code);
 		int w = Math.max(Math.max(Math.max(mc.font.width(line1), mc.font.width(line2)), codeW), pads ? SquadHud.padsWidth(mc) : 0);
 		int cx = g.guiWidth() / 2 + d.x();
-		int y = d.y(), rows = 2 + (pads ? 1 : 0) + (code == null ? 0 : 1);
+		int y = d.y(), rows = 2 + (pads ? SquadHud.padRows() : 0) + (code == null ? 0 : 1);
 		g.fill(cx - w / 2 - 6, y - 4, cx + w / 2 + 6, y + rows * 11, 0xB0101420);
 		g.centeredText(mc.font, line1, cx, y, 0xFFFFFFFF);
 		y += 11;
 		if (pads) {
 			SquadHud.pads(g, mc, cx, y);
-			y += 11;
+			y += 11 * SquadHud.padRows();
 		}
 		g.centeredText(mc.font, line2, cx, y, 0xFFB8C4D6);
 		y += 11;

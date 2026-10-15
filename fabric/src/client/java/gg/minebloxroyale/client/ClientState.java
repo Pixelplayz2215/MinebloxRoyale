@@ -7,6 +7,7 @@ import gg.minebloxroyale.net.Net;
 import gg.minebloxroyale.sheets.CosmeticDef;
 import gg.minebloxroyale.sheets.EmoteDef;
 import gg.minebloxroyale.sheets.GliderDef;
+import gg.minebloxroyale.sheets.ModeDef;
 import gg.minebloxroyale.sheets.Sheets;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -17,7 +18,7 @@ import net.minecraft.client.Minecraft;
 
 /** What the server last told this client (HUD state, emotes, unlocks). */
 public final class ClientState {
-	public static Net.Hud hud = new Net.Hud("HUB", 0, 0, 0, 0, 0, 0, 0, 0, 0, "Step on a mode portal to play", false, 0, 0, 0, 0, 0, false, 1, "0,0,0,0");
+	public static Net.Hud hud = new Net.Hud("HUB", 0, 0, 0, 0, 0, 0, 0, 0, 0, "Step on a mode portal to play", false, 0, 0, 0, 0, 0, false, 1, "0,0,0,0", "");
 	/** Team modes: my teammates, the reboot vans and my team's cards (null outside a Duos / Trios / Squads match). */
 	public static Net.Squad squad;
 	/** My party (account ids and names, in the order they joined; empty = no party). */
@@ -87,6 +88,12 @@ public final class ClientState {
 
 	public static boolean inMatch() {
 		return hud.inMatch();
+	}
+
+	/** A No Build match (v2.0.0) is boarding or under way: build mode stays shut. */
+	public static boolean noBuild() {
+		ModeDef m = Sheets.MODES_BY_ID.get(hud.mode());
+		return m != null && m.noBuild();
 	}
 
 	/** In a Duos / Trios / Squads match right now (with teammate info). */

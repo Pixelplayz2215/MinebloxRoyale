@@ -1,12 +1,88 @@
 {
-  "sheet": "modes",
-  "class": "ModeDef",
-  "about": "Match modes (creator: Solo, Duos, Trios and Squads, each with its own portal in the hub; the match starts in the mode everyone is standing on). teamSize = fighters per team; bots play in teams of the same size and fill a short party. portal = its hub piece, which fills one floor square in the mode's colour: edge = its rim block, the hub row's block = its glass (creator: match the hologram's colour).",
-  "columns": { "id": "string", "name": "string", "teamSize": "int", "portal": "ref:hub", "color": "color", "edge": "string" },
-  "rows": [
-    { "id": "solo", "name": "Solo", "teamSize": 1, "portal": "portal_solo", "color": "#C77DFF", "edge": "minecraft:purple_concrete" },
-    { "id": "duos", "name": "Duos", "teamSize": 2, "portal": "portal_duos", "color": "#5AA9FF", "edge": "minecraft:light_blue_concrete" },
-    { "id": "trios", "name": "Trios", "teamSize": 3, "portal": "portal_trios", "color": "#FF9A1F", "edge": "minecraft:orange_concrete" },
-    { "id": "squads", "name": "Squads", "teamSize": 4, "portal": "portal_squads", "color": "#FF4FD8", "edge": "minecraft:magenta_concrete" }
-  ]
+ "sheet": "modes",
+ "class": "ModeDef",
+ "about": "Match modes (creator: Solo, Duos, Trios and Squads, each with its own portal in the hub; the match starts in the mode everyone is standing on). teamSize = fighters per team; bots play in teams of the same size and fill a short party. portal = its hub piece, which fills one floor square in the mode's colour: edge = its rim block, the hub row's block = its glass (creator: match the hologram's colour). noBuild (v2.0.0, creator: \"4 new portals for Solo, Duos, Trios, Squad NO BUILD mode\"): nobody builds and harvesting gives no materials (bots too); its portals stand in their own zone beside the build modes'.",
+ "columns": {
+  "id": "string",
+  "name": "string",
+  "teamSize": "int",
+  "portal": "ref:hub",
+  "color": "color",
+  "edge": "string",
+  "noBuild": "bool"
+ },
+ "rows": [
+  {
+   "id": "solo",
+   "name": "Solo",
+   "teamSize": 1,
+   "portal": "portal_solo",
+   "color": "#C77DFF",
+   "edge": "minecraft:purple_concrete",
+   "noBuild": false
+  },
+  {
+   "id": "duos",
+   "name": "Duos",
+   "teamSize": 2,
+   "portal": "portal_duos",
+   "color": "#5AA9FF",
+   "edge": "minecraft:light_blue_concrete",
+   "noBuild": false
+  },
+  {
+   "id": "trios",
+   "name": "Trios",
+   "teamSize": 3,
+   "portal": "portal_trios",
+   "color": "#FF9A1F",
+   "edge": "minecraft:orange_concrete",
+   "noBuild": false
+  },
+  {
+   "id": "squads",
+   "name": "Squads",
+   "teamSize": 4,
+   "portal": "portal_squads",
+   "color": "#FF4FD8",
+   "edge": "minecraft:magenta_concrete",
+   "noBuild": false
+  },
+  {
+   "id": "solo_nb",
+   "name": "No Build Solo",
+   "teamSize": 1,
+   "portal": "portal_solo_nb",
+   "color": "#7BD389",
+   "edge": "minecraft:lime_concrete",
+   "noBuild": true
+  },
+  {
+   "id": "duos_nb",
+   "name": "No Build Duos",
+   "teamSize": 2,
+   "portal": "portal_duos_nb",
+   "color": "#4FD1C5",
+   "edge": "minecraft:cyan_concrete",
+   "noBuild": true
+  },
+  {
+   "id": "trios_nb",
+   "name": "No Build Trios",
+   "teamSize": 3,
+   "portal": "portal_trios_nb",
+   "color": "#F2D45C",
+   "edge": "minecraft:yellow_concrete",
+   "noBuild": true
+  },
+  {
+   "id": "squads_nb",
+   "name": "No Build Squads",
+   "teamSize": 4,
+   "portal": "portal_squads_nb",
+   "color": "#FF7B6B",
+   "edge": "minecraft:red_concrete",
+   "noBuild": true
+  }
+ ]
 }

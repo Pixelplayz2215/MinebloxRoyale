@@ -35,7 +35,7 @@ public final class Net {
 	/** Server -> client, twice a second: what the HUD shows. */
 	public record Hud(String phase, int alive, float shield, float stormX, float stormZ, float stormR, float nextX, float nextZ, float nextR,
 		int secondsLeft, String label, boolean inMatch, int kills,
-		int drop, int onPortal, int hubCount, int stormPhase, boolean shrinking, int teamSize, String pads) implements CustomPacketPayload {
+		int drop, int onPortal, int hubCount, int stormPhase, boolean shrinking, int teamSize, String pads, String mode) implements CustomPacketPayload {
 		public static final Type<Hud> TYPE = new Type<>(MinebloxRoyale.id("hud"));
 		public static final StreamCodec<RegistryFriendlyByteBuf, Hud> CODEC = StreamCodec.of((buf, p) -> {
 			buf.writeUtf(p.phase); buf.writeVarInt(p.alive); buf.writeFloat(p.shield);
@@ -43,10 +43,10 @@ public final class Net {
 			buf.writeFloat(p.nextX); buf.writeFloat(p.nextZ); buf.writeFloat(p.nextR);
 			buf.writeVarInt(p.secondsLeft); buf.writeUtf(p.label); buf.writeBoolean(p.inMatch); buf.writeVarInt(p.kills);
 			buf.writeVarInt(p.drop); buf.writeVarInt(p.onPortal); buf.writeVarInt(p.hubCount); buf.writeVarInt(p.stormPhase); buf.writeBoolean(p.shrinking);
-			buf.writeVarInt(p.teamSize); buf.writeUtf(p.pads);
+			buf.writeVarInt(p.teamSize); buf.writeUtf(p.pads); buf.writeUtf(p.mode);
 		}, buf -> new Hud(buf.readUtf(), buf.readVarInt(), buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat(),
 			buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readVarInt(), buf.readUtf(), buf.readBoolean(), buf.readVarInt(),
-			buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readBoolean(), buf.readVarInt(), buf.readUtf()));
+			buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readBoolean(), buf.readVarInt(), buf.readUtf(), buf.readUtf()));
 
 		@Override
 		public Type<? extends CustomPacketPayload> type() {

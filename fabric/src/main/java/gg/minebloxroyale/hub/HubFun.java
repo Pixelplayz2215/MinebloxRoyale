@@ -34,13 +34,18 @@ import net.minecraft.world.phys.Vec3;
 /**
  * Things to do in the hub while the next island is made (creator: more fun): a shooting range with pop-up targets and
  * a practice rifle (timed rounds: your best round score and your bullseyes unlock emotes and gliders, RangeStats), and
- * the Sky Tower (a second obby, spiralling up), each in a neat purple-bordered zone (creator: clean and tidy). Built
+ * the Sky Tower (a second obby, spiralling up), each in a neat bordered zone (creator: clean and tidy). Built
  * from the hub sheet (kinds shooting_range, tower_obby); this class builds them and runs them every tick. It also keeps
  * each player in the hub empty-handed. Only players in the hub count, never those in a match.
  */
 public final class HubFun {
-	/** The hub's theme (creator: clean and tidy): purple and blues. */
-	private static final String[] THEME = { "minecraft:purple_concrete", "minecraft:blue_concrete", "minecraft:light_blue_concrete" };
+	/**
+	 * The hub's theme (creator: clean and tidy; v2.0.0: "not too colourful, but with some variety"): soft blue, muted
+	 * teal and white.
+	 */
+	private static final String[] THEME = { "minecraft:light_blue_concrete", "minecraft:cyan_terracotta", "minecraft:white_concrete" };
+	/** A zone's border on the floor (v2.0.0: muted teal, it was purple). */
+	static final String BORDER = "minecraft:cyan_terracotta";
 
 	private HubFun() {
 	}
@@ -56,9 +61,9 @@ public final class HubFun {
 
 	// ---- building ----
 
-	/** A neat purple border (one block wide) round a zone on the floor: x0..x1, z0..z1 inclusive. */
+	/** A neat border (one block wide, BORDER) round a zone on the floor: x0..x1, z0..z1 inclusive. */
 	private static void border(ServerLevel level, int hubY, int x0, int z0, int x1, int z1) {
-		BlockState purple = b("minecraft:purple_concrete").defaultBlockState();
+		BlockState purple = b(BORDER).defaultBlockState();
 		for (int x = x0; x <= x1; x++) {
 			set(level, new BlockPos(x, hubY, z0), purple);
 			set(level, new BlockPos(x, hubY, z1), purple);
@@ -112,10 +117,10 @@ public final class HubFun {
 				for (int d = 1; d <= 3; d++) set(level, q.below(d), floor);
 			}
 		BlockState line = b("minecraft:light_blue_concrete").defaultBlockState(), wall = b("minecraft:black_concrete").defaultBlockState(),
-			frame = b("minecraft:purple_concrete").defaultBlockState();
+			frame = b("minecraft:gray_concrete").defaultBlockState();
 		for (int u = -r.hw() + 1; u <= r.hw() - 1; u++)
 			for (int v = -r.hl() + 1; v <= -r.hl() + 2; v++) set(level, r.at(u, v, hubY), line);
-		// The back wall: black, framed in purple.
+		// The back wall: black, framed in grey.
 		for (int u = -r.hw(); u <= r.hw(); u++)
 			for (int y = 1; y <= 8; y++) set(level, r.at(u, r.hl(), hubY + y), Math.abs(u) == r.hw() || y == 8 ? frame : wall);
 		BlockPos c0 = r.at(-r.hw(), -r.hl(), hubY), c1 = r.at(r.hw(), r.hl(), hubY);
@@ -136,7 +141,7 @@ public final class HubFun {
 	}
 
 	/**
-	 * The Sky Tower: a white pillar with purple and blue platforms spiralling up round it, one block per step, a golden
+	 * The Sky Tower: a white pillar with blue, teal and white platforms spiralling up round it, one block per step, a golden
 	 * platform on top. The last step is one block below the gold (creator: the old last jump was two blocks, too high).
 	 * The steps sit outside the gold's 5 x 5, so nobody bumps their head under it.
 	 */

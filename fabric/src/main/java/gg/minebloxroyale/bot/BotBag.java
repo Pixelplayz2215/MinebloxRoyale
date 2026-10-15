@@ -61,7 +61,7 @@ public final class BotBag {
 
 	public void addMaterial(String id, int amount) {
 		MaterialDef m = Sheets.MATERIALS_BY_ID.get(id);
-		if (m != null && amount > 0) materials.put(id, Math.min(m.maxCarry(), material(id) + amount));
+		if (m != null && amount > 0 && !gg.minebloxroyale.match.MatchManager.noBuild()) materials.put(id, Math.min(m.maxCarry(), material(id) + amount));
 	}
 
 	public int material(String id) {

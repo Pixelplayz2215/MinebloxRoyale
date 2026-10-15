@@ -217,6 +217,7 @@ public final class HubBuilder {
 				for (int a = -hl; a <= hl; a++)
 					for (int b = -hw; b <= hw; b++)
 						set(level, cx + (alongX ? a : b), hubY, cz + (alongX ? b : a), block);
+				busBody(level, p, hubY);
 			}
 			case "text_board" -> {
 				// A black board on two legs, with the label as big text on its front (' | ' = new line, first line =
@@ -245,6 +246,29 @@ public final class HubBuilder {
 						set(level, bx, legY, bz, Blocks.IRON_BLOCK.defaultBlockState());
 					}
 			}
+			case "zone" -> {
+				// v2.0.0: the grid lines round a group of portals in the zone's colour, its name floating over its north
+				// edge, facing the spawn.
+				int x0 = cx - Math.round(p.width() / 2F), x1 = cx + Math.round(p.width() / 2F);
+				int z0 = cz - Math.round(p.height() / 2F), z1 = cz + Math.round(p.height() / 2F);
+				for (int x = x0; x <= x1; x++) {
+					set(level, x, hubY, z0, block);
+					set(level, x, hubY, z1, block);
+				}
+				for (int z = z0; z <= z1; z++) {
+					set(level, x0, hubY, z, block);
+					set(level, x1, hubY, z, block);
+				}
+				String[] lines = p.label().split(Pattern.quote(" | "));
+				label(level.getServer(), cx + 0.5, y, z0 + 0.5, lines[0], "white", 3.2F, "center", "south", true);
+				if (lines.length > 1) label(level.getServer(), cx + 0.5, y - 0.8, z0 + 0.5, lines[1], "gray", 1.2F, "center", "south", true);
+			}
+			case "path" -> {
+				// v2.0.0: a walkway on the floor, from the spawn to the portals.
+				for (int x = cx - halfW; x <= cx + halfW; x++)
+					for (int z = cz - halfH; z <= cz + halfH; z++)
+						set(level, x, hubY, z, block);
+			}
 			case "rarity_board", "heals_board" -> BoardRows.build(level, p, hubY, block);
 			case "shooting_range" -> HubFun.buildRange(level, p, hubY);
 			case "tower_obby" -> HubFun.buildTower(level, p, hubY);
@@ -253,7 +277,34 @@ public final class HubBuilder {
 		}
 	}
 
-	/** A board's frame: black (the piece's block) with a purple border, on two iron legs, one block behind its text. */
+	/**
+	 * The parked Battle Bus's body, solid (v2.0.0, creator: "the parked Battle Bus should not be able to be walking
+	 * through"): invisible barrier blocks fill every block its body reaches into, as the client draws it (WorldVisuals:
+	 * the battle_bus model at the piece's x, y, z, turned to face its way). Its body in the model's own space, from
+	 * fabric/tools/blender/vehicles.py: x -2..2, z -4.40..4.52 (front +z), 0 to 2.97 up; the balloon floats out of reach.
+	 */
+	private static void busBody(ServerLevel level, HubPieceDef p, int hubY) {
+		float x0 = -2.0F, x1 = 2.0F, z0 = -4.40F, z1 = 4.52F, top = 2.97F;
+		int deg = switch (p.facing()) { case "east" -> 90; case "west" -> -90; case "north" -> 180; default -> 0; };
+		double c = Math.cos(Math.toRadians(deg)), sn = Math.sin(Math.toRadians(deg));
+		double minX = Double.MAX_VALUE, maxX = -Double.MAX_VALUE, minZ = Double.MAX_VALUE, maxZ = -Double.MAX_VALUE;
+		for (float mx : new float[] { x0, x1 })
+			for (float mz : new float[] { z0, z1 }) { // (turned as the renderer's rotateY does: x' = x cos + z sin, z' = -x sin + z cos)
+				double wx = p.x() + mx * c + mz * sn, wz = p.z() - mx * sn + mz * c;
+				minX = Math.min(minX, wx);
+				maxX = Math.max(maxX, wx);
+				minZ = Math.min(minZ, wz);
+				maxZ = Math.max(maxZ, wz);
+			}
+		double base = hubY + p.y() + 0.1;
+		BlockState barrier = Blocks.BARRIER.defaultBlockState();
+		for (int x = (int) Math.floor(minX); x < Math.ceil(maxX); x++)
+			for (int z = (int) Math.floor(minZ); z < Math.ceil(maxZ); z++)
+				for (int y = (int) Math.floor(base); y < Math.ceil(base + top); y++)
+					set(level, x, y, z, barrier);
+	}
+
+	/** A board's frame: black (the piece's block) with a soft blue border, on two iron legs, one block behind its text. */
 	static void boardFrame(ServerLevel level, HubPieceDef p, int hubY, BlockState block) {
 		int cx = Math.round(p.x()), cz = Math.round(p.z()), y = hubY + Math.round(p.y());
 		int w = Math.round(p.width() / 2F) + 1, h = Math.round(p.height() / 2F) + 1;
@@ -261,7 +312,7 @@ public final class HubBuilder {
 		int back = p.facing().equals("south") || p.facing().equals("east") ? -1 : 1;
 		for (int a = -w; a <= w; a++)
 			for (int b = -h; b <= h; b++)
-				set(level, ns ? cx + a : cx + back, y + b, ns ? cz + back : cz + a, (Math.abs(a) == w || Math.abs(b) == h) ? block("minecraft:purple_concrete").defaultBlockState() : block);
+				set(level, ns ? cx + a : cx + back, y + b, ns ? cz + back : cz + a, (Math.abs(a) == w || Math.abs(b) == h) ? block("minecraft:light_blue_terracotta").defaultBlockState() : block);
 		for (int legY = hubY + 1; legY < y - h; legY++)
 			for (int a : new int[] { -w + 2, w - 2 }) set(level, ns ? cx + a : cx + back, legY, ns ? cz + back : cz + a, Blocks.IRON_BLOCK.defaultBlockState());
 	}

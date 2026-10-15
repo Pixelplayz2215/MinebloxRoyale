@@ -165,25 +165,54 @@ public final class SquadHud {
 	// ---- in the hub ----
 
 	/**
-	 * "Solo 1 Duos 0 Trios 2 Squads 0": how many stand on each mode portal, in each mode's colour. Width in pixels.
+	 * "Solo 1 Duos 0 Trios 2 Squads 0": how many stand on each mode portal, in each mode's colour; the build modes on
+	 * one row, the No Build ones (v2.0.0) on the next ("NO BUILD: Solo 0 ..."). Width in pixels of the wider row.
 	 */
 	static int padsWidth(Minecraft mc) {
-		int w = 0;
+		return Math.max(rowWidth(mc, false), rowWidth(mc, true));
+	}
+
+	/** How many rows of portal counts: one, or two with the No Build portals. */
+	static int padRows() {
+		return Sheets.MODES.stream().anyMatch(ModeDef::noBuild) ? 2 : 1;
+	}
+
+	private static final String NO_BUILD = "NO BUILD: ";
+
+	private static String shortName(ModeDef m) {
+		return m.noBuild() ? m.name().replace("No Build ", "") : m.name();
+	}
+
+	private static int rowWidth(Minecraft mc, boolean noBuild) {
 		String[] n = ClientState.hud.pads().split(",");
-		for (int i = 0; i < Sheets.MODES.size(); i++) w += mc.font.width(Sheets.MODES.get(i).name() + " " + (i < n.length ? n[i] : "0")) + (i > 0 ? 10 : 0);
+		int w = noBuild ? mc.font.width(NO_BUILD) : 0, k = 0;
+		for (int i = 0; i < Sheets.MODES.size(); i++) {
+			ModeDef m = Sheets.MODES.get(i);
+			if (m.noBuild() != noBuild) continue;
+			w += mc.font.width(shortName(m) + " " + (i < n.length ? n[i] : "0")) + (k++ > 0 ? 10 : 0);
+		}
 		return w;
 	}
 
 	static void pads(GuiGraphicsExtractor g, Minecraft mc, int cx, int y) {
 		String[] n = ClientState.hud.pads().split(",");
-		int x = cx - padsWidth(mc) / 2;
-		for (int i = 0; i < Sheets.MODES.size(); i++) {
-			ModeDef m = Sheets.MODES.get(i);
-			String count = i < n.length ? n[i] : "0";
-			String text = m.name() + " " + count;
-			boolean someone = !count.equals("0");
-			g.text(mc.font, text, x, y, someone ? 0xFF000000 | m.color() : 0xFF7A8496, true);
-			x += mc.font.width(text) + 10;
+		for (boolean noBuild : new boolean[] { false, true }) {
+			if (noBuild && padRows() < 2) break;
+			int x = cx - rowWidth(mc, noBuild) / 2;
+			if (noBuild) {
+				g.text(mc.font, NO_BUILD, x, y, 0xFFB8C4D6, true);
+				x += mc.font.width(NO_BUILD);
+			}
+			for (int i = 0; i < Sheets.MODES.size(); i++) {
+				ModeDef m = Sheets.MODES.get(i);
+				if (m.noBuild() != noBuild) continue;
+				String count = i < n.length ? n[i] : "0";
+				String text = shortName(m) + " " + count;
+				boolean someone = !count.equals("0");
+				g.text(mc.font, text, x, y, someone ? 0xFF000000 | m.color() : 0xFF7A8496, true);
+				x += mc.font.width(text) + 10;
+			}
+			y += 11;
 		}
 	}
 
