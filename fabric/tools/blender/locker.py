@@ -174,7 +174,22 @@ def preset(row):
     return (row["name"], lambda: dress(worn) and None, {"export": False, "folder": "New Presets", "unlock": lock, "views": VIEWS})
 
 
+def _sheet(name):
+    return json.load(open(os.path.join(DESIGN, name + ".json"), encoding="utf-8"))["rows"]
+
+
+def boss(row):
+    """A boss (bosses sheet, v2.0.0): its outfit on the avatar, with what it carries and drops as the picture's line."""
+    worn = {slot: BY_ID[cid] for slot, cid in (part.split(":") for part in row["outfit"].split(","))}
+    gun = {r["id"]: r["name"] for r in _sheet("weapons")}[row["weapon"]]
+    gold = next(int(r["value"]) for r in _sheet("match") if r["id"] == "goldBoss")
+    line = f"Boss: {row['rarity'].title()} {gun} (drops it), {gold} gold"  # (the heals it drops too: too long for the line)
+    return (row["name"], lambda: dress(worn) and None, {"export": False, "folder": "Bosses v2.0.0", "unlock": line, "views": VIEWS})
+
+
 ITEMS = {}
+for r in _sheet("bosses"):
+    ITEMS["boss_" + r["id"]] = boss(r)
 for r in ROWS:
     if r["slot"] in FOLDER:
         ITEMS[r["id"]] = cosmetic(r)

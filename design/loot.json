@@ -27,8 +27,8 @@
     { "id": "l_medium", "kind": "ammo", "weapon": "-", "consumable": "-", "ammo": "medium", "weight": 16, "count": 1 },
     { "id": "l_heavy", "kind": "ammo", "weapon": "-", "consumable": "-", "ammo": "heavy", "weight": 6, "count": 1 },
     { "id": "l_shells", "kind": "ammo", "weapon": "-", "consumable": "-", "ammo": "shells", "weight": 12, "count": 1 },
-    { "id": "l_rocket_launcher", "kind": "weapon", "weapon": "rocket_launcher", "consumable": "-", "ammo": "-", "weight": 5, "count": 1 },
-    { "id": "l_rockets", "kind": "ammo", "weapon": "-", "consumable": "-", "ammo": "rockets", "weight": 4, "count": 1 },
-    { "id": "l_grenades", "kind": "grenade", "weapon": "-", "consumable": "-", "ammo": "-", "weight": 10, "count": 3 }
+    { "id": "l_rocket_launcher", "kind": "weapon", "weapon": "rocket_launcher", "consumable": "-", "ammo": "-", "weight": 10, "count": 1 },
+    { "id": "l_rockets", "kind": "ammo", "weapon": "-", "consumable": "-", "ammo": "rockets", "weight": 12, "count": 1 },
+    { "id": "l_grenades", "kind": "grenade", "weapon": "-", "consumable": "-", "ammo": "-", "weight": 20, "count": 3 }
   ]
 }

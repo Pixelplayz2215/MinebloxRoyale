@@ -62,6 +62,51 @@
    "speed": 0.26,
    "loot": "shield_potion:3+bandages:5",
    "note": "a secret agent with a mythic assault rifle"
+  },
+  {
+   "id": "sergeant_bacon",
+   "name": "Sergeant Bacon",
+   "colors": "classic",
+   "outfit": "hat:hat_army,face:face_aviators,back:back_army_pack,shirt:shirt_soldier,pants:pants_soldier,shoes:shoes_soldier",
+   "weapon": "smg",
+   "rarity": "mythic",
+   "health": 750,
+   "scale": 1.5,
+   "accuracy": 0.5,
+   "reactionTicks": 10,
+   "speed": 0.27,
+   "loot": "medkit:1+small_shield:4",
+   "note": "a drill sergeant with a mythic SMG: comes at you fast (2.0.0-test2, creator: 'Add more bosses')"
+  },
+  {
+   "id": "doctor_kaboom",
+   "name": "Doctor Kaboom",
+   "colors": "classic",
+   "outfit": "hair:hair_messy_white,face:face_goggles,back:back_chem_tank,shirt:shirt_scientist,pants:pants_scientist,shoes:shoes_scientist",
+   "weapon": "rocket_launcher",
+   "rarity": "mythic",
+   "health": 650,
+   "scale": 1.45,
+   "accuracy": 0.4,
+   "reactionTicks": 18,
+   "speed": 0.23,
+   "loot": "shield_potion:2+slurp_juice:1",
+   "note": "a mad scientist with a mythic rocket launcher: keep moving, and his rockets miss more than they hit (2.0.0-test2)"
+  },
+  {
+   "id": "sheriff_noobly",
+   "name": "Sheriff Noobly",
+   "colors": "classic",
+   "outfit": "hat:hat_cowboy,face:face_mustache,back:back_lasso,shirt:shirt_cowboy,pants:pants_cowboy,shoes:shoes_cowboy",
+   "weapon": "pistol",
+   "rarity": "mythic",
+   "health": 700,
+   "scale": 1.45,
+   "accuracy": 0.65,
+   "reactionTicks": 8,
+   "speed": 0.26,
+   "loot": "bandages:5+chug_jug:1",
+   "note": "the quickest draw on the island, with a mythic pistol (2.0.0-test2)"
   }
  ]
 }

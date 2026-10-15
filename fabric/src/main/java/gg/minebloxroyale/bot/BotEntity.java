@@ -195,6 +195,8 @@ public class BotEntity extends PathfinderMob {
 		bot.setHealth(def.health());
 		Combat.setShield(bot, MinebloxRoyale.setting("maxShield"));
 		bot.equipBest();
+		// (Doctor Kaboom, 2.0.0-test2: an ordinary bot's best gun is never its launcher, so a launcher boss holds it here)
+		if (!bot.armed() && bot.bag.launcher() != null) bot.setItemInHand(InteractionHand.MAIN_HAND, bot.bag.launcher());
 		level.addFreshEntity(bot);
 		return bot;
 	}
@@ -595,8 +597,15 @@ public class BotEntity extends PathfinderMob {
 				if (dist > pref * 1.3) chase(1.0);
 				else if (dist < pref * 0.6) strafe();
 				else getNavigation().stop();
-				if (++seenFor > def.reactionTicks() && mm.botsMayShoot(level.getGameTime()))
-					Guns.tryFire(this, held, w.def, getRandom().nextFloat() < def.accuracy() ? 1F : 3F);
+				if (++seenFor > def.reactionTicks() && mm.botsMayShoot(level.getGameTime())) {
+					boolean onTarget = getRandom().nextFloat() < def.accuracy();
+					// (a rocket, 2.0.0-test2: at their feet for the blast, or a few blocks off when its aim is off; rockets
+					// otherwise fly dead straight)
+					Vec3 aim = !w.def.projectile().equals("rocket") ? null
+						: target.position().add(onTarget ? 0 : (getRandom().nextFloat() - 0.5F) * 7, onTarget ? 0.2 : getRandom().nextFloat() * 2.5,
+							onTarget ? 0 : (getRandom().nextFloat() - 0.5F) * 7);
+					Guns.tryFire(this, held, w.def, onTarget ? 1F : 3F, aim);
+				}
 			}
 			return;
 		}

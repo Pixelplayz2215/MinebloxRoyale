@@ -335,9 +335,9 @@
   },
   {
    "id": "rebootVans",
-   "value": 6,
+   "value": 8,
    "unit": "vans",
-   "meaning": "reboot vans on each island (team modes only)"
+   "meaning": "reboot vans on each island, every mode (every other one near the middle, the rest out towards the edge)"
   },
   {
    "id": "rebootVanCooldownSeconds",
@@ -437,7 +437,7 @@
   },
   {
    "id": "bosses",
-   "value": 2,
+   "value": 4,
    "unit": "bosses",
    "meaning": "bosses in each match (v2.0.0, bosses sheet), each a different one, guarding lairs spread round the island"
   },
