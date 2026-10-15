@@ -1,5 +1,49 @@
 # Changelog
 
+## v2.0.0 (in testing: 2.0.0-test1, not released yet)
+
+A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and a new look and sound.
+
+### Modes and the hub
+- **No Build:** Solo, Duos, Trios and Squads without building. There are four new portals for them in their own zone of a bigger, calmer hub. No materials are gathered, and bots don't build either.
+- **The parked Battle Bus in the hub is solid:** you can't walk through it any more.
+
+### Gold and the Locker shop
+- **Gold:** earned in matches for eliminations, a top 10 or top 5 finish, playing a match, a Victory Royale and eliminating a boss. Gold follows you into every world.
+- **Shop tab in the Locker:** buy emotes, cosmetics, pickaxes and contrails with gold. What you buy is yours for good.
+- **Pickaxe skins:** golden, candy, diamond, ice, lava, lollipop and neon, made in Blender.
+- **New emotes:** the Griddy, Default Dance, Orange Justice, Boneless, Take the L, Electro Shuffle, Fresh and Hype (400 to 800 gold). All are animated in Blender with nothing clipping.
+
+### Gliders and contrails
+- **Gliders now animate:** they pop open out of your back, sway as they ride the air, bank into turns, and fold away when you land. The animation is keyframed in Blender.
+- **Contrails:** a new Locker tab with 14 of them. Light trails stream from your hands while skydiving and from your glider's wingtips while gliding: streak, rainbow, candy stripes, neon, sparkle, flame, ghost wave and bubbles. Some are free, some are unlocked, and some cost gold.
+
+### Shooting
+- **Hip and aim:** a gun is carried at the hip and raised into the aim when you aim down the sights.
+- **Recoil on every gun:** the arms and body kick on each shot, and so does your view, each gun by its own amount.
+- **Visible bullets:** tracers fly from the muzzle to where each shot lands, with a muzzle flash, sparks and dust on impact, and a red puff on a hit. The sniper leaves a smoke trail.
+- **Rocket launcher:** a slow rocket you can see, which explodes where it hits. It hurts players and bots, breaks builds and buildings, and does 300 damage to cars. Rockets have their own ammo slot, never a hotbar slot.
+- **Grenades:** left click throws one in an arc. It bounces and explodes after 2.5 seconds. Up to 6 fit in one slot.
+- Bots use both: grenades against players behind cover, rockets against players among builds or in groups.
+
+### Cars
+- **Drivable cars:** F gets in, W A S D drive, Space boosts and Shift gets out. Up to 4 fit in a car: the first one in drives, and only their teammates can join.
+- **Fuel:** about 5 minutes per car, with no refuelling. Each car has 4 boosts, and each boost costs 30 seconds of fuel.
+- **No shooting from a car.** Boosting smashes through buildings, but hills and water stop you.
+- **Car HUD:** the fuel, boosts and the car's durability (out of 600) show where the ammo usually is.
+- **Bots drive too,** heading for the safe zone.
+
+### Bosses
+- **Two bosses per match:** The Blockbuster, Captain Bloxbeard and Agent Noob, each with a mythic gun. They guard lairs you can see from a distance, and their icons show on the minimap and the map.
+- **Boss loot:** a boss drops its own named mythic gun and loot, and gives 50 gold to whoever eliminates it.
+
+### The island
+- **Bigger buildings:** warehouses, two-storey houses and forts, with more chests. There are now 26 buildings per island.
+
+### Look and sound
+- **A cleaner, smoother HUD in Fortnite's style:** rounded panels, icons made in Blender, smooth lettering, and a Fortnite-style hotbar in matches. Fortnite's own HUD is locked in its encrypted files, so all of this is ours.
+- **Our own sounds:** a shot sound for each gun type (rarities sound the same), a new storm warning, rocket and grenade blasts, and two battle music tracks in matches. The harder track plays in the last circles.
+
 ## v1.0.1 (in testing: 1.0.1-test5, not released yet)
 
 A graphics update: almost everything you see in a match was remade in Blender.
