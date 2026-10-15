@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.0.0 (in testing: 2.0.0-test1, not released yet)
+## v2.0.0 (in testing: 2.0.0-test2, not released yet)
 
 A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and a new look and sound.
 
@@ -11,12 +11,15 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 ### Gold and the Locker shop
 - **Gold:** earned in matches for eliminations, a top 10 or top 5 finish, playing a match, a Victory Royale and eliminating a boss. Gold follows you into every world.
 - **Shop tab in the Locker:** buy emotes, cosmetics, pickaxes and contrails with gold. What you buy is yours for good.
+- **The Shop says what everything is:** its items sit under their category's title (Pickaxes, Contrails, Emotes...), and hovering one shows it on you: a pickaxe in your hand, a contrail trailing as you skydive, an emote danced. Something you've bought leaves the Shop and sits in its own tab, and buying it tells you which.
+- **The Pickaxes tab shows your pickaxe** in your hand on the preview.
 - **Pickaxe skins:** golden, candy, diamond, ice, lava, lollipop and neon, made in Blender.
 - **New emotes:** the Griddy, Default Dance, Orange Justice, Boneless, Take the L, Electro Shuffle, Fresh and Hype (400 to 800 gold). All are animated in Blender with nothing clipping.
 
 ### Gliders and contrails
 - **Gliders now animate:** they pop open out of your back, sway as they ride the air, bank into turns, and fold away when you land. The animation is keyframed in Blender.
 - **Contrails:** a new Locker tab with 14 of them. Light trails stream from your hands while skydiving and from your glider's wingtips while gliding: streak, rainbow, candy stripes, neon, sparkle, flame, ghost wave and bubbles. Some are free, some are unlocked, and some cost gold.
+- **Smooth contrails:** every trail follows a smooth curve and starts right at your hand, and striped ones (Candy Stripe) have sharp stripes that slide along instead of jumping.
 
 ### Shooting
 - **Hip and aim:** a gun is carried at the hip and raised into the aim when you aim down the sights.
@@ -25,6 +28,7 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 - **Rocket launcher:** a slow rocket you can see, which explodes where it hits. It hurts players and bots, breaks builds and buildings, and does 300 damage to cars. Rockets have their own ammo slot, never a hotbar slot.
 - **Grenades:** left click throws one in an arc. It bounces and explodes after 2.5 seconds. Up to 6 fit in one slot.
 - Bots use both: grenades against players behind cover, rockets against players among builds or in groups.
+- Rocket launchers, rockets and grenades turn up about twice as often as in the first test.
 
 ### Cars
 - **Drivable cars:** F gets in, W A S D drive, Space boosts and Shift gets out. Up to 4 fit in a car: the first one in drives, and only their teammates can join.
@@ -34,17 +38,23 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 - **Bots drive too,** heading for the safe zone.
 
 ### Bosses
-- **Two bosses per match:** The Blockbuster, Captain Bloxbeard and Agent Noob, each with a mythic gun. They guard lairs you can see from a distance, and their icons show on the minimap and the map.
+- **Four bosses per match, out of six:** The Blockbuster (pump shotgun), Captain Bloxbeard (sniper), Agent Noob (assault rifle), Sergeant Bacon (SMG), Doctor Kaboom (rocket launcher) and Sheriff Noobly (pistol), each with a mythic gun. They guard lairs you can see from a distance, and their icons show on the minimap and the map.
 - **Boss loot:** a boss drops its own named mythic gun and loot, and gives 50 gold to whoever eliminates it.
 
 ### The island
 - **Bigger buildings:** warehouses, two-storey houses and forts, with more chests. There are now 26 buildings per island.
+- **Reboot vans on every island, in every mode:** 8 of them, half near the middle and half out towards the edge, so some are inside the circle and some outside. They're all on the map and the minimap from the start. In Solo they're just there, with no one to bring back.
 
 ### Look and sound
 - **A cleaner, smoother HUD in Fortnite's style:** rounded panels, icons made in Blender, smooth lettering, and a Fortnite-style hotbar in matches. Fortnite's own HUD is locked in its encrypted files, so all of this is ours.
+- **3D items in the hotbar and inventory:** every gun, heal, shield, grenade and pickaxe shows as its own 3D model, guns in their rarity colour, instead of a flat pixel picture. The hub's Gun Rarity and Heals & Shields boards show the 3D models too.
 - **Our own sounds:** a shot sound for each gun type (rarities sound the same), a new storm warning, rocket and grenade blasts, and two battle music tracks in matches. The harder track plays in the last circles.
 
-## v1.0.1 (in testing: 1.0.1-test5, not released yet)
+### Fixes
+- Opening the creative inventory crashed the game (2.0.0-test1).
+- The log notes for Minecraft's sign-in, Realms and e4mc from Melty's 1.0.0.3, so Melty doesn't mistake them for errors loading the mod.
+
+## v1.0.1 (in testing: 1.0.1-test6, not released yet)
 
 A graphics update: almost everything you see in a match was remade in Blender.
 

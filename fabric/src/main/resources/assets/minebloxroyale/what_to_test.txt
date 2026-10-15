@@ -1,3 +1,11 @@
+Test 2 - Shop: items under their category's title; hover one to see it on you (pickaxe in hand, contrail, emote); buying says which tab it's in
+Test 2 - Pickaxes tab: your pickaxe shows in your hand on the preview
+Test 2 - Contrails: smooth curves, and Candy Stripe's stripes slide instead of jumping (Locker preview and skydiving)
+Test 2 - Hotbar and inventory: 3D models (guns in their rarity colour); the hub's Gun Rarity and Heals & Shields boards too
+Test 2 - Reboot vans on every island, Solo too: 8, some near the middle and some at the edge, all on the map (Tab) from the start
+Test 2 - Bosses: 4 a match out of 6 (new: Sergeant Bacon, Doctor Kaboom with a rocket launcher, Sheriff Noobly)
+Test 2 - Rocket launchers, rockets and grenades about twice as common in chests and on the floor
+Test 2 - The creative inventory opens without crashing (dev account)
 No Build (new): the four No Build portals in their own zone of the bigger hub; in a No Build match nothing builds or gives materials
 Gold and the Shop (new): gold after a match (eliminations, top 10/5, a win); the Locker's Shop tab buys emotes, pickaxes, contrails
 New emotes (shop): the Griddy, Default Dance, Orange Justice, Boneless, Take the L, Electro Shuffle, Fresh, Hype: nothing clips
@@ -7,10 +15,10 @@ Contrails (new Locker tab): trails from your hands while skydiving, from your gl
 Shooting (new): the gun at the hip, raised when you aim (right mouse); every gun kicks; tracers, muzzle flash, impacts
 Rocket launcher and grenades (new): rockets in their own ammo slot; a rocket's blast breaks builds and buildings; grenades bounce
 Cars (new): F to get in, WASD, Space to boost (4 per car), Shift to get out; fuel and durability where the ammo shows; no shooting
-Bosses (new): 2 a match, a crowned skull on the minimap; their lair is a gold-rimmed platform; they drop a named mythic gun and 50 gold
+Bosses (new): 4 a match, a crowned skull on the minimap; their lair is a gold-rimmed platform; they drop a named mythic gun and 50 gold
 Buildings (new): warehouses, two-storey houses and forts on every island, with more chests
 Sounds (new): each gun its own shot, the storm warning, explosions, battle music in a match (harder in the last circles)
 HUD (new look): smooth panels, Blender icons and lettering, Fortnite-style hotbar in a match; check it's all readable
 The parked Battle Bus in the hub is solid (you can't walk through it)
 With a friend: host a game, and your friend joins with Melty's Join or your room code (/rc)
-Hub: the main board shows v2.0.0 - TEST 1 next to MINEBLOX ROYALE
+Hub: the main board shows v2.0.0 - TEST 2 next to MINEBLOX ROYALE
