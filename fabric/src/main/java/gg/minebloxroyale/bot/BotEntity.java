@@ -89,6 +89,11 @@ public class BotEntity extends PathfinderMob {
 	public static final EntityDataAccessor<String> COLORS = SynchedEntityData.defineId(BotEntity.class, EntityDataSerializers.STRING);
 	/** Its Locker outfit ("slot:id,slot:id", empty = default look), drawn like a player's. */
 	public static final EntityDataAccessor<String> OUTFIT = SynchedEntityData.defineId(BotEntity.class, EntityDataSerializers.STRING);
+	/**
+	 * A boss's shield, for the bar over its name everyone sees (2.0.0-test3, creator: "Boss's should have a healthbar
+	 * above the nametag"); -1: not a boss (no bar). Its health is Minecraft's own, which every game already sees.
+	 */
+	public static final EntityDataAccessor<Float> BOSS_SHIELD = SynchedEntityData.defineId(BotEntity.class, EntityDataSerializers.FLOAT);
 
 	/** It farms until it has this much material in all, never more than this of one kind. */
 	private static final int FARM_UNTIL = 150, FARM_EACH = 70;
@@ -172,8 +177,9 @@ public class BotEntity extends PathfinderMob {
 	}
 
 	/**
-	 * A boss at its lair (v2.0.0, Bosses): bigger (scale), in its outfit, with a lot of health and its mythic gun; it
-	 * guards the lair instead of playing the match (bossStep).
+	 * A boss at its lair (v2.0.0, Bosses): bigger (scale), in its outfit, its health and a full shield (bosses sheet;
+	 * 2.0.0-test3: 200 and 100, a bar over its name) and its gun at Boss rarity; it guards the lair instead of playing the
+	 * match (bossStep).
 	 */
 	public static BotEntity spawnBoss(ServerLevel level, BossDef def, Vec3 at) {
 		BotEntity bot = TYPE.create(level, EntitySpawnReason.EVENT);
@@ -194,6 +200,7 @@ public class BotEntity extends PathfinderMob {
 		bot.getAttribute(Attributes.MAX_HEALTH).setBaseValue(def.health());
 		bot.setHealth(def.health());
 		Combat.setShield(bot, MinebloxRoyale.setting("maxShield"));
+		bot.entityData.set(BOSS_SHIELD, Combat.shield(bot));
 		bot.equipBest();
 		// (Doctor Kaboom, 2.0.0-test2: an ordinary bot's best gun is never its launcher, so a launcher boss holds it here)
 		if (!bot.armed() && bot.bag.launcher() != null) bot.setItemInHand(InteractionHand.MAIN_HAND, bot.bag.launcher());
@@ -218,6 +225,7 @@ public class BotEntity extends PathfinderMob {
 		super.defineSynchedData(builder);
 		builder.define(COLORS, "classic");
 		builder.define(OUTFIT, "");
+		builder.define(BOSS_SHIELD, -1F);
 	}
 
 	public void setTeam(int team, int slot, UUID leader) {
@@ -362,6 +370,11 @@ public class BotEntity extends PathfinderMob {
 		return this.entityData.get(COLORS);
 	}
 
+	/** A boss's shield as everyone's game sees it; -1 for any other bot. */
+	public float bossShield() {
+		return this.entityData.get(BOSS_SHIELD);
+	}
+
 	public boolean dropping() {
 		return dropTo != null;
 	}
@@ -394,6 +407,8 @@ public class BotEntity extends PathfinderMob {
 			return;
 		}
 		if (boss != null) {
+			float shield = Combat.shield(this);
+			if (shield != bossShield()) this.entityData.set(BOSS_SHIELD, shield);
 			bossStep(level);
 			return;
 		}

@@ -1,7 +1,7 @@
 {
   "sheet": "rarities",
   "class": "RarityDef",
-  "about": "Fortnite's loot rarity rule: grey < green < blue < purple < gold < mythic (mythic only from the rare blue chests: lootWeight 0 keeps it out of the gold ones). Higher rarity = more damage, rarer drops.",
+  "about": "Fortnite's loot rarity rule: grey < green < blue < purple < gold < mythic (mythic only from the rare blue chests: lootWeight 0 keeps it out of the gold ones) < boss (2.0.0-test3, creator: \"a brand new rarity of guns called BOSS rarity. And it's higher than Mythic (that rarity can be red)\": only the bosses' own guns, which they drop). Higher rarity = more damage, rarer drops.",
   "columns": {
     "id": "string",
     "name": "string",
@@ -17,6 +17,7 @@
     { "id": "rare", "name": "Rare", "color": "#3C9BE8", "damageMult": 1.1, "reloadMult": 0.9, "lootWeight": 18, "tier": 2 },
     { "id": "epic", "name": "Epic", "color": "#B44CE8", "damageMult": 1.15, "reloadMult": 0.85, "lootWeight": 9, "tier": 3 },
     { "id": "legendary", "name": "Legendary", "color": "#F0A626", "damageMult": 1.2, "reloadMult": 0.8, "lootWeight": 3, "tier": 4 },
-    { "id": "mythic", "name": "Mythic", "color": "#FFD84A", "damageMult": 1.3, "reloadMult": 0.7, "lootWeight": 0, "tier": 5 }
+    { "id": "mythic", "name": "Mythic", "color": "#FFD84A", "damageMult": 1.3, "reloadMult": 0.7, "lootWeight": 0, "tier": 5 },
+    { "id": "boss", "name": "Boss", "color": "#F0302A", "damageMult": 1.4, "reloadMult": 0.6, "lootWeight": 0, "tier": 6 }
   ]
 }

@@ -30,8 +30,9 @@ import net.minecraft.world.phys.Vec3;
  * the minimap; bosses drop their own custom loot"). Each match picks a few from the bosses sheet and gives each a lair
  * somewhere on the island, well apart; a boss appears at its lair when someone comes near (keeping the health it had if
  * it was there before), fights anyone it sees close by, and never strays far (BotEntity's boss mode). Everyone in the
- * match sees where the bosses are (Net.BossMarks: the minimap and map icons). Eliminated, it drops its mythic gun with
- * ammo and its loot, and its eliminator gets goldBoss gold. Bosses aren't players: they don't count towards players left.
+ * match sees where the bosses are (Net.BossMarks: the minimap and map icons). Eliminated, it drops its gun (Boss rarity,
+ * 2.0.0-test3) with ammo and its loot, and its eliminator gets goldBoss gold. Bosses aren't players: they don't count
+ * towards players left.
  */
 public final class Bosses {
 	/** One boss this match: who, its lair, its entity while there, its health between visits, out or not. */
@@ -39,7 +40,7 @@ public final class Bosses {
 		final BossDef def;
 		final double x, z;
 		UUID entity;
-		float health = -1;
+		float health = -1, shield = -1;
 		boolean out, lair;
 
 		Boss(BossDef def, double x, double z) {
@@ -93,6 +94,7 @@ public final class Bosses {
 			Entity e = b.entity == null ? null : level.getEntity(b.entity);
 			if (e instanceof BotEntity bot && bot.isAlive()) {
 				b.health = bot.getHealth();
+				b.shield = Combat.shield(bot);
 				continue;
 			}
 			b.entity = null;
@@ -108,6 +110,7 @@ public final class Bosses {
 			BotEntity bot = BotEntity.spawnBoss(level, b.def, new Vec3(bx + 0.5, y, bz + 0.5));
 			if (bot == null) continue;
 			if (b.health > 0) bot.setHealth(Math.min(bot.getMaxHealth(), b.health));
+			if (b.shield >= 0) Combat.setShield(bot, b.shield);
 			b.entity = bot.getUUID();
 		}
 		// where they are (an out boss's mark goes)
@@ -134,7 +137,7 @@ public final class Bosses {
 		ServerLevel level = (ServerLevel) bot.level();
 		double x = bot.getX(), y = bot.getY() + 0.6, z = bot.getZ();
 		BossDef def = b.def;
-		// its own mythic gun, plenty of ammo for it, then its loot
+		// its own gun (Boss rarity), plenty of ammo for it, then its loot
 		ItemStack gun = Guns.make(def.weapon(), def.rarity());
 		gun.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME,
 			Component.literal(def.name() + "'s " + Guns.rarity(gun).name() + " " + Sheets.WEAPONS_BY_ID.get(def.weapon()).name()).withStyle(ChatFormatting.GOLD));

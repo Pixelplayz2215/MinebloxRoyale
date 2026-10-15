@@ -73,7 +73,7 @@
    "height": 14,
    "facing": "south",
    "block": "minecraft:black_concrete",
-   "label": "GUN RARITY | Better rarity = more damage, faster reloads | Mythic guns are only in the rare blue chests | Walk over a better copy of your gun to swap | The stripe on each gun shows its rarity"
+   "label": "GUN RARITY | Better rarity = more damage, faster reloads | Mythic: only in the rare blue chests. Boss: only from bosses | Walk over a better copy of your gun to swap | A gun's body is in its rarity's colour"
   },
   {
    "id": "heals_board",
