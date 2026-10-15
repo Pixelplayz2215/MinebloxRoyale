@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.SlabType;
@@ -32,8 +33,11 @@ public final class CustomStructures {
 	private CustomStructures() {
 	}
 
-	private static final String[] KINDS = { "shack", "watchtower", "supply depot", "parking lot (metal)", "container yard (metal)", "ruins" };
-	private static final int LOT = 3;
+	private static final String[] KINDS = { "shack", "watchtower", "supply depot", "parking lot (metal)", "container yard (metal)", "ruins",
+		"warehouse (metal)", "house", "fort" };
+	private static final int LOT = 3, WAREHOUSE = 6, HOUSE = 7, FORT = 8;
+	/** The big ones (v2.0.0, creator: "Add more custom structures. Bigger, Better."): they need the big, level ground a lot does. */
+	private static final List<Integer> BIG = List.of(LOT, WAREHOUSE, HOUSE, FORT);
 	/** Buildings' middles are at least this far apart (the spots are random, and two could overlap). */
 	private static final int GAP = 26;
 	/**
@@ -74,7 +78,8 @@ public final class CustomStructures {
 	}
 
 	/** The kinds' names for /br tp (DevCommands), in KINDS order. */
-	public static final List<String> TP_NAMES = List.of("shack", "watchtower", "supply_depot", "parking_lot", "container_yard", "ruins");
+	public static final List<String> TP_NAMES = List.of("shack", "watchtower", "supply_depot", "parking_lot", "container_yard", "ruins", "warehouse", "house",
+		"fort");
 
 	/** The floor middle of the nearest building of this kind built so far on this island (TP_NAMES index), or null. */
 	public static BlockPos nearest(int kind, double x, double z) {
@@ -90,23 +95,23 @@ public final class CustomStructures {
 	}
 
 	/**
-	 * Builds this island's next building at the spot (x, z), if one fits there. Returns where its loot chest is (to add
-	 * to the match's chests), or null when nothing was built: the ground is too steep or wet for any building still to
-	 * come, or the spot is too close to another building. Such a spot is passed over and the building goes to a later
-	 * spot, so the guaranteed ones are always built.
+	 * Builds this island's next building at the spot (x, z), if one fits there. Returns where its loot chests are (to add
+	 * to the match's chests: the big ones have several), or none when nothing was built: the ground is too steep or wet
+	 * for any building still to come, or the spot is too close to another building. Such a spot is passed over and the
+	 * building goes to a later spot, so the guaranteed ones are always built.
 	 */
-	static BlockPos build(ServerLevel level, int x, int z, RandomSource rnd) {
+	static List<BlockPos> build(ServerLevel level, int x, int z, RandomSource rnd) {
 		for (Built c : CENTRES)
 			if (Math.abs(c.at().getX() - x) < GAP && Math.abs(c.at().getZ() - z) < GAP) {
 				MinebloxRoyale.LOG.info("BR: building spot {} {} passed over: too close to the {} at {} {}", x, z, KINDS[c.kind()], c.at().getX(), c.at().getZ());
-				return null;
+				return List.of();
 			}
 		int center = ground(level, x, z);
 		// A parking lot is always the big one (creator): it levels the ground under it, up to 4 blocks either way.
 		Integer kind = take(flat(level, x, z, 10, 9, center, 4), flat(level, x, z, 4, 4, center, 2), rnd);
 		if (kind == null) {
 			MinebloxRoyale.LOG.info("BR: building spot {} {} passed over: too steep or wet for what's still due", x, z);
-			return null;
+			return List.of();
 		}
 		// The floor goes level with the ground just outside the way in (creator: a shack's door was left a block above
 		// the grass on a slope).
@@ -118,12 +123,16 @@ public final class CustomStructures {
 		BlockPos o = new BlockPos(x, y, z);
 		CENTRES.add(new Built(kind, o));
 		building = null;
+		MORE_CHESTS.clear();
 		BlockPos loot = switch (kind) {
 			case 0 -> shack(level, o, rnd);
 			case 1 -> watchtower(level, o);
 			case 2 -> depot(level, o, rnd);
 			case LOT -> parkingLot(level, o, rnd);
 			case 4 -> containerYard(level, o, rnd);
+			case WAREHOUSE -> warehouse(level, o, rnd);
+			case HOUSE -> house(level, o, rnd);
+			case FORT -> fort(level, o, rnd);
 			default -> ruins(level, o, rnd);
 		};
 		if (building != null) BUILT.add(building);
@@ -131,8 +140,22 @@ public final class CustomStructures {
 		// so far, and what's still due.
 		MinebloxRoyale.LOG.info("BR: built {} at {} {} {} ({} of {}; still due: {} guaranteed, {} random)", KINDS[kind], x, y, z, CENTRES.size(), total, tally(GUARANTEED),
 			EXTRA.size());
-		boolean rare = rnd.nextFloat() < MinebloxRoyale.setting("enderChestStructure");
-		return LootChests.place(level, loot, rare, rnd) ? loot : null;
+		List<BlockPos> chests = new ArrayList<>();
+		for (BlockPos c : MORE_CHESTS.isEmpty() ? List.of(loot) : concat(loot, MORE_CHESTS)) {
+			boolean rare = rnd.nextFloat() < MinebloxRoyale.setting("enderChestStructure");
+			if (LootChests.place(level, c, rare, rnd)) chests.add(c);
+		}
+		return chests;
+	}
+
+	/** A big building's other chests (its builder adds them; the main one is what it returns). */
+	private static final List<BlockPos> MORE_CHESTS = new ArrayList<>();
+
+	private static List<BlockPos> concat(BlockPos first, List<BlockPos> rest) {
+		List<BlockPos> out = new ArrayList<>();
+		out.add(first);
+		out.addAll(rest);
+		return out;
 	}
 
 	/**
@@ -142,7 +165,14 @@ public final class CustomStructures {
 	private static Integer take(boolean lotFits, boolean smallFits, RandomSource rnd) {
 		for (List<Integer> due : List.of(GUARANTEED, EXTRA)) {
 			if (lotFits && due.remove((Integer) LOT)) return LOT;
-			List<Integer> fit = smallFits ? due.stream().filter(k -> k != LOT).toList() : List.of();
+			// (the other big ones need the same room: a warehouse, a house or a fort)
+			List<Integer> big = lotFits ? due.stream().filter(BIG::contains).toList() : List.of();
+			if (!big.isEmpty()) {
+				Integer k = big.get(rnd.nextInt(big.size()));
+				due.remove(k);
+				return k;
+			}
+			List<Integer> fit = smallFits ? due.stream().filter(k -> !BIG.contains(k)).toList() : List.of();
 			if (!fit.isEmpty()) {
 				Integer k = fit.get(rnd.nextInt(fit.size()));
 				due.remove(k);
@@ -413,6 +443,171 @@ public final class CustomStructures {
 	private static void lightPost(ServerLevel level, BlockPos at) {
 		for (int dy = 0; dy < 4; dy++) put(level, at.above(dy), Blocks.IRON_BARS.defaultBlockState());
 		put(level, at.above(4), Blocks.SEA_LANTERN.defaultBlockState());
+	}
+
+	// ---- v2.0.0: bigger, better (creator) ----
+
+	/**
+	 * A warehouse (metal): 19 x 13 and 7 tall, iron pillars every four blocks with light grey walls between and a row of
+	 * high windows, a big roll-up door's opening in the front (-Z), a smooth stone roof on iron beams; inside, two rows of
+	 * shelving (barrels and crates) and three chests. Its iron and copper break for metal.
+	 */
+	private static BlockPos warehouse(ServerLevel level, BlockPos o, RandomSource rnd) {
+		int hx = 9, hz = 6, h = 7;
+		clear(level, o, hx + 1, hz + 1, h + 2);
+		floor(level, o, hx, hz, Blocks.SMOOTH_STONE.defaultBlockState(), Blocks.COBBLESTONE.defaultBlockState());
+		BlockState pillar = Blocks.IRON_BLOCK.defaultBlockState(), wall = block("minecraft:light_gray_concrete"), glass = Blocks.GLASS.defaultBlockState();
+		for (int dx = -hx; dx <= hx; dx++)
+			for (int dz = -hz; dz <= hz; dz++) {
+				boolean edge = Math.abs(dx) == hx || Math.abs(dz) == hz;
+				if (edge)
+					for (int dy = 0; dy < h; dy++) {
+						if (dz == -hz && Math.abs(dx) <= 2 && dy < 4) continue; // the roll-up door's opening
+						boolean post = (dx + hx) % 4 == 0 || Math.abs(dx) == hx && (dz + hz) % 4 == 0;
+						put(level, o.offset(dx, dy, dz), post ? pillar : (dy == 4 || dy == 5) && Math.abs(dz) == hz && Math.abs(dx) % 2 == 1 ? glass : wall);
+					}
+				put(level, o.offset(dx, h, dz), (dx + hx) % 4 == 0 ? pillar : Blocks.SMOOTH_STONE_SLAB.defaultBlockState());
+			}
+		// the door's frame: a copper lintel over it
+		for (int dx = -3; dx <= 3; dx++) put(level, o.offset(dx, 4, -hz), block("minecraft:waxed_cut_copper"));
+		// shelving: barrels and crates in two rows, with gaps to walk through
+		for (int row : new int[] { -2, 2 })
+			for (int dx = -hx + 2; dx <= hx - 2; dx++) {
+				if (Math.abs(dx) <= 1 || rnd.nextFloat() < 0.15F) continue;
+				put(level, o.offset(dx, 0, row), (rnd.nextBoolean() ? Blocks.BARREL : Blocks.SPRUCE_PLANKS).defaultBlockState());
+				if (rnd.nextFloat() < 0.5F) put(level, o.offset(dx, 1, row), Blocks.BARREL.defaultBlockState());
+			}
+		for (int side : new int[] { -1, 1 }) lightPost(level, o.offset(side * (hx + 2), 0, -hz - 1));
+		MORE_CHESTS.add(o.offset(-hx + 2, 0, hz - 1));
+		MORE_CHESTS.add(o.offset(hx - 2, 0, hz - 1));
+		return o.offset(0, 0, 4);
+	}
+
+	/**
+	 * A two-storey house: 11 x 9 in a random wood, log corners and plank walls on a stone brick footing, windows on both
+	 * floors, a front door (-Z), an upstairs floor reached by a ladder, and a pitched roof of stairs; a chest on each floor.
+	 */
+	private static BlockPos house(ServerLevel level, BlockPos o, RandomSource rnd) {
+		int hx = 5, hz = 4, wall = 8;
+		String wood = WOODS[rnd.nextInt(WOODS.length)];
+		BlockState planks = block("minecraft:" + wood + "_planks"), logs = block("minecraft:" + wood + "_log"), glass = Blocks.GLASS.defaultBlockState();
+		clear(level, o, hx + 2, hz + 2, wall + hz + 5);
+		floor(level, o, hx, hz, planks, Blocks.COBBLESTONE.defaultBlockState());
+		for (int dx = -hx; dx <= hx; dx++)
+			for (int dz = -hz; dz <= hz; dz++) {
+				boolean edge = Math.abs(dx) == hx || Math.abs(dz) == hz, corner = Math.abs(dx) == hx && Math.abs(dz) == hz;
+				if (!edge) continue;
+				put(level, o.offset(dx, -1, dz), Blocks.STONE_BRICKS.defaultBlockState()); // the footing
+				for (int dy = 0; dy < wall; dy++) {
+					if (dz == -hz && dx == 0 && dy < 2) continue; // the doorway
+					boolean window = !corner && (dy == 1 || dy == 5) && (Math.abs(dx) == 2 || Math.abs(dz) == 2) && !(dz == -hz && Math.abs(dx) < 2);
+					put(level, o.offset(dx, dy, dz), corner || dy == 3 ? logs : window ? glass : planks);
+				}
+			}
+		BlockState door = block("minecraft:" + wood + "_door").setValue(DoorBlock.FACING, Direction.SOUTH).setValue(DoorBlock.OPEN, false);
+		put(level, o.offset(0, 0, -hz), door.setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER));
+		put(level, o.offset(0, 1, -hz), door.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER));
+		// upstairs: a floor at 4 with a hole for the ladder by the back wall
+		for (int dx = -hx + 1; dx <= hx - 1; dx++)
+			for (int dz = -hz + 1; dz <= hz - 1; dz++)
+				if (!(dx == hx - 1 && dz == hz - 1)) put(level, o.offset(dx, 4, dz), planks);
+		for (int dy = 0; dy <= 4; dy++) put(level, o.offset(hx - 1, dy, hz - 1), Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.NORTH));
+		// the roof: stairs up both long sides to a ridge along x, gable ends filled with planks
+		BlockState stairs = block("minecraft:" + wood + "_stairs");
+		for (int k = 0; k <= hz + 1; k++) { // (each row a step in from the eaves, a block over the walls, to the ridge)
+			int y = wall + k;
+			for (int dx = -hx - 1; dx <= hx + 1; dx++) {
+				if (k <= hz) {
+					put(level, o.offset(dx, y, -hz - 1 + k), stairs.setValue(StairBlock.FACING, Direction.SOUTH));
+					put(level, o.offset(dx, y, hz + 1 - k), stairs.setValue(StairBlock.FACING, Direction.NORTH));
+				} else put(level, o.offset(dx, y, 0), block("minecraft:" + wood + "_slab").setValue(SlabBlock.TYPE, SlabType.BOTTOM));
+			}
+			for (int dz = -hz + k; dz <= hz - k; dz++)
+				for (int side : new int[] { -hx, hx }) put(level, o.offset(side, y, dz), planks); // the gable ends
+		}
+		MORE_CHESTS.add(o.offset(-hx + 2, 5, hz - 2)); // upstairs
+		return o.offset(-hx + 2, 0, hz - 2);
+	}
+
+	/**
+	 * A fort: 17 x 17 stone brick walls (mossy here and there) 5 high with battlements, a tower at each corner, a gate in
+	 * the front (-Z) and a keep in the middle with a ladder to its roof; a chest in the keep and one on its roof.
+	 */
+	private static BlockPos fort(ServerLevel level, BlockPos o, RandomSource rnd) {
+		int r = 8;
+		clear(level, o, r + 1, r + 1, 12);
+		floor(level, o, r, r, Blocks.GRAVEL.defaultBlockState(), Blocks.COBBLESTONE.defaultBlockState());
+		BlockState bricks = Blocks.STONE_BRICKS.defaultBlockState(), mossy = Blocks.MOSSY_STONE_BRICKS.defaultBlockState(), crenel = Blocks.STONE_BRICK_WALL.defaultBlockState();
+		for (int dx = -r; dx <= r; dx++)
+			for (int dz = -r; dz <= r; dz++) {
+				if (Math.abs(dx) != r && Math.abs(dz) != r) continue;
+				for (int dy = 0; dy < 5; dy++) {
+					if (dz == -r && Math.abs(dx) <= 1 && dy < 3) continue; // the gate
+					put(level, o.offset(dx, dy, dz), rnd.nextFloat() < 0.2F ? mossy : bricks);
+				}
+				if ((dx + dz) % 2 == 0) put(level, o.offset(dx, 5, dz), crenel);
+			}
+		// corner towers: 3 x 3, 8 high, battlements on top
+		for (int cx : new int[] { -r + 1, r - 1 })
+			for (int cz : new int[] { -r + 1, r - 1 })
+				for (int dx = -1; dx <= 1; dx++)
+					for (int dz = -1; dz <= 1; dz++) {
+						for (int dy = 0; dy < 8; dy++) put(level, o.offset(cx + dx, dy, cz + dz), bricks);
+						if ((dx + dz) % 2 == 0) put(level, o.offset(cx + dx, 8, cz + dz), crenel);
+					}
+		// the keep: 5 x 5, 7 high, a door to the front, windows, a roof to stand on with a battlement round it
+		for (int dx = -2; dx <= 2; dx++)
+			for (int dz = -2; dz <= 2; dz++) {
+				boolean edge = Math.abs(dx) == 2 || Math.abs(dz) == 2;
+				for (int dy = 0; dy < 7; dy++) {
+					if (!edge) {
+						if (dy > 0) put(level, o.offset(dx, dy, dz), Blocks.AIR.defaultBlockState());
+						continue;
+					}
+					if (dz == -2 && dx == 0 && dy < 2) continue; // its door
+					put(level, o.offset(dx, dy, dz), dy == 4 && (dx == 0 || dz == 0) ? Blocks.GLASS.defaultBlockState() : bricks);
+				}
+				if (!(dx == 1 && dz == 1)) put(level, o.offset(dx, 7, dz), bricks); // the roof, a hole for the ladder
+				if (edge && (dx + dz) % 2 == 0) put(level, o.offset(dx, 8, dz), crenel);
+			}
+		for (int dy = 0; dy <= 7; dy++) put(level, o.offset(1, dy, 1), Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.NORTH));
+		MORE_CHESTS.add(o.offset(-1, 8, -1)); // on the keep's roof
+		return o.offset(-1, 0, 1);
+	}
+
+	/**
+	 * A boss's lair (v2.0.0, Bosses): a round platform of polished blackstone with a gold rim, a raised dais in the middle,
+	 * broken pillars round it with lanterns on top, so you can see from a way off where a boss waits. Built when the boss
+	 * first appears.
+	 */
+	public static void bossLair(ServerLevel level, BlockPos o) {
+		building = null;
+		int r = 7;
+		clear(level, o, r + 1, r + 1, 7);
+		for (int dx = -r; dx <= r; dx++)
+			for (int dz = -r; dz <= r; dz++) {
+				double d = Math.sqrt(dx * dx + dz * dz);
+				if (d > r + 0.5) continue;
+				BlockState top = d > r - 0.5 ? Blocks.GOLD_BLOCK.defaultBlockState() : d < 1.6 ? Blocks.GILDED_BLACKSTONE.defaultBlockState()
+					: Blocks.POLISHED_BLACKSTONE_BRICKS.defaultBlockState();
+				put(level, o.offset(dx, -1, dz), top);
+				for (int dd = 2; dd <= 6; dd++) {
+					BlockPos below = o.offset(dx, -dd, dz);
+					if (!level.getBlockState(below).canBeReplaced()) break;
+					put(level, below, Blocks.BLACKSTONE.defaultBlockState());
+				}
+			}
+		for (int dx = -1; dx <= 1; dx++)
+			for (int dz = -1; dz <= 1; dz++) put(level, o.offset(dx, 0, dz), Blocks.POLISHED_BLACKSTONE_SLAB.defaultBlockState());
+		var rnd = level.getRandom();
+		for (int i = 0; i < 6; i++) {
+			double a = i * Math.PI / 3 + 0.3;
+			BlockPos base = o.offset((int) Math.round(Math.cos(a) * (r - 1.5)), 0, (int) Math.round(Math.sin(a) * (r - 1.5)));
+			int hgt = 2 + rnd.nextInt(4);
+			for (int dy = 0; dy < hgt; dy++) put(level, base.above(dy), (rnd.nextFloat() < 0.3F ? Blocks.CRACKED_POLISHED_BLACKSTONE_BRICKS : Blocks.POLISHED_BLACKSTONE_BRICKS).defaultBlockState());
+			put(level, base.above(hgt), Blocks.LANTERN.defaultBlockState());
+		}
+		if (building != null) BUILT.add(building);
 	}
 
 	/** Shipping container sides: cut copper in its four shades. */

@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -39,7 +40,7 @@ public final class Bosses {
 		final double x, z;
 		UUID entity;
 		float health = -1;
-		boolean out;
+		boolean out, lair;
 
 		Boss(BossDef def, double x, double z) {
 			this.def = def;
@@ -100,6 +101,10 @@ public final class Bosses {
 			int bx = Mth.floor(b.x), bz = Mth.floor(b.z);
 			if (!someone || !level.hasChunk(bx >> 4, bz >> 4)) continue;
 			int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, bx, bz);
+			if (!b.lair) { // (its lair, the first time it appears: a gold-rimmed platform you can see from a way off)
+				CustomStructures.bossLair(level, new BlockPos(bx, y, bz));
+				b.lair = true;
+			}
 			BotEntity bot = BotEntity.spawnBoss(level, b.def, new Vec3(bx + 0.5, y, bz + 0.5));
 			if (bot == null) continue;
 			if (b.health > 0) bot.setHealth(Math.min(bot.getMaxHealth(), b.health));

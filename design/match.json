@@ -137,9 +137,9 @@
   },
   {
    "id": "customStructures",
-   "value": 20,
+   "value": 26,
    "unit": "buildings",
-   "meaning": "custom buildings on each island (shacks, watchtowers, supply depots, ruins, parking lots full of cars and container yards: those two break for metal), each with a loot chest; built as their area loads (was 16, creator: slightly more common)"
+   "meaning": "custom buildings on each island (shacks, watchtowers, supply depots, ruins, parking lots full of cars and container yards: those two break for metal), each with a loot chest; built as their area loads (was 16, creator: slightly more common) v2.0.0: 26 (creator: \"Add more custom structures. Bigger, Better.\"): warehouses, two-storey houses and forts too."
   },
   {
    "id": "structuresEach",
@@ -155,7 +155,7 @@
   },
   {
    "id": "structureSpots",
-   "value": 40,
+   "value": 52,
    "unit": "spots",
    "meaning": "random spots tried for the custom buildings: spares for spots too steep, wet or close to another building"
   },

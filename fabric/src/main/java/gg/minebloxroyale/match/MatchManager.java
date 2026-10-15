@@ -534,8 +534,7 @@ public final class MatchManager {
 			if (!level.hasChunk((c.getX() - 12) >> 4, (c.getZ() - 12) >> 4) || !level.hasChunk((c.getX() + 12) >> 4, (c.getZ() + 12) >> 4)
 				|| !level.hasChunk((c.getX() - 12) >> 4, (c.getZ() + 12) >> 4) || !level.hasChunk((c.getX() + 12) >> 4, (c.getZ() - 12) >> 4)) continue;
 			structureSpots.remove(i);
-			BlockPos loot = CustomStructures.build(level, c.getX(), c.getZ(), level.getRandom());
-			if (loot != null) placedChests.add(loot);
+			placedChests.addAll(CustomStructures.build(level, c.getX(), c.getZ(), level.getRandom()));
 			break;
 		}
 		if (chestSpots.isEmpty()) return;
