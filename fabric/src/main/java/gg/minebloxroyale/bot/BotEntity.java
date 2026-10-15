@@ -4,6 +4,7 @@ import gg.minebloxroyale.MinebloxRoyale;
 import gg.minebloxroyale.ModItems;
 import gg.minebloxroyale.item.Guns;
 import gg.minebloxroyale.item.WeaponItem;
+import gg.minebloxroyale.match.Bosses;
 import gg.minebloxroyale.match.Builds;
 import gg.minebloxroyale.match.CarBlock;
 import gg.minebloxroyale.match.Combat;
@@ -15,6 +16,7 @@ import gg.minebloxroyale.match.LootChests;
 import gg.minebloxroyale.match.MatchManager;
 import gg.minebloxroyale.match.Reboot;
 import gg.minebloxroyale.match.Teams;
+import gg.minebloxroyale.sheets.BossDef;
 import gg.minebloxroyale.sheets.BotDef;
 import gg.minebloxroyale.sheets.HarvestRuleDef;
 import gg.minebloxroyale.sheets.Sheets;
@@ -26,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
@@ -109,6 +112,9 @@ public class BotEntity extends PathfinderMob {
 	/** Teammates' reboot cards it carries to a van, and how long it has stood at the van. */
 	public final List<Reboot.Owner> cards = new ArrayList<>();
 	private int rebootTicks;
+	/** A boss (v2.0.0, Bosses): which, and its lair; null for an ordinary bot. */
+	private BossDef boss;
+	private Vec3 bossHome;
 	/** Set by finish(): who gets the elimination when it bleeds out (a simulated knocker has no entity to credit). */
 	private String finishedBy;
 	/** Ticks spent searching the chest it stands at (chestSearchSeconds, like a player holding F). */
@@ -160,6 +166,38 @@ public class BotEntity extends PathfinderMob {
 		bot.equipBest();
 		level.addFreshEntity(bot);
 		return bot;
+	}
+
+	/**
+	 * A boss at its lair (v2.0.0, Bosses): bigger (scale), in its outfit, with a lot of health and its mythic gun; it
+	 * guards the lair instead of playing the match (bossStep).
+	 */
+	public static BotEntity spawnBoss(ServerLevel level, BossDef def, Vec3 at) {
+		BotEntity bot = TYPE.create(level, EntitySpawnReason.EVENT);
+		if (bot == null) return null;
+		bot.def = new BotDef(def.id(), def.name(), def.colors(), def.weapon(), def.accuracy(), def.reactionTicks(), def.speed());
+		bot.boss = def;
+		bot.bossHome = at;
+		bot.bag = new BotBag();
+		bot.bag.add(Guns.make(def.weapon(), def.rarity()));
+		bot.entityData.set(COLORS, def.colors());
+		bot.setOutfit(def.outfit());
+		bot.setCustomName(Component.literal(def.name()).withStyle(ChatFormatting.GOLD));
+		bot.setCustomNameVisible(true);
+		bot.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(def.speed());
+		bot.getAttribute(Attributes.SCALE).setBaseValue(def.scale());
+		bot.setDropChance(EquipmentSlot.MAINHAND, 0F); // (Bosses drops its loot)
+		bot.snapTo(at.x, at.y, at.z, level.getRandom().nextFloat() * 360F, 0F);
+		bot.getAttribute(Attributes.MAX_HEALTH).setBaseValue(def.health());
+		bot.setHealth(def.health());
+		Combat.setShield(bot, MinebloxRoyale.setting("maxShield"));
+		bot.equipBest();
+		level.addFreshEntity(bot);
+		return bot;
+	}
+
+	public boolean isBoss() {
+		return boss != null;
 	}
 
 	/** Swimming (it floats up and paddles instead of sinking) and wooden doors (opened as it walks through, then shut). */
@@ -345,6 +383,10 @@ public class BotEntity extends PathfinderMob {
 			discard();
 			return;
 		}
+		if (boss != null) {
+			bossStep(level);
+			return;
+		}
 		if (dropTo != null) {
 			tickDrop(level);
 			return;
@@ -501,6 +543,60 @@ public class BotEntity extends PathfinderMob {
 			boolean steady = getRandom().nextFloat() < def.accuracy();
 			Guns.tryFire(this, held, w.def, steady ? 1F : 4F);
 		}
+	}
+
+	/**
+	 * A boss's tick: it fights the nearest fighter it can see within bossAggro (or whoever just hurt it), but never
+	 * further than bossLeash from its lair; with nobody about it walks back and paces round the lair. It doesn't build,
+	 * loot, farm or follow the storm: it's guarding.
+	 */
+	private void bossStep(ServerLevel level) {
+		ItemStack held = getMainHandItem();
+		if (held.getItem() instanceof WeaponItem w) Guns.tickReload(held, w.def, level.getGameTime(), this);
+		heading = null;
+		MatchManager mm = MatchManager.get();
+		double leash = MinebloxRoyale.setting("bossLeash"), aggro = MinebloxRoyale.setting("bossAggro");
+		if (--rethink <= 0) {
+			rethink = 10;
+			LivingEntity best = null;
+			double bd = aggro * aggro;
+			for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(aggro), e -> e != this && e.isAlive() && !e.isSpectator()
+				&& (e instanceof ServerPlayer p ? mm.isAlive(p) : e instanceof BotEntity b && b.boss == null && b.dropTo == null) && !Knocked.is(e))) {
+				double d = distanceToSqr(e);
+				if (d < bd && hasLineOfSight(e)) {
+					bd = d;
+					best = e;
+				}
+			}
+			if (best != null && (target == null || !target.isAlive() || tickCount - lastHurt > 100)) target = best;
+			if (target != null && (!target.isAlive() || Knocked.is(target) || target.position().distanceTo(bossHome) > leash + aggro)) target = null;
+		}
+		double fromHome = Math.hypot(getX() - bossHome.x, getZ() - bossHome.z);
+		if (target != null && fromHome < leash) {
+			getLookControl().setLookAt(target, 60F, 60F);
+			faceTarget();
+			if (held.getItem() instanceof WeaponItem w) {
+				double dist = distanceTo(target), pref = w.def.botPreferredRange();
+				if (dist > pref * 1.3) chase(1.0);
+				else if (dist < pref * 0.6) strafe();
+				else getNavigation().stop();
+				if (++seenFor > def.reactionTicks() && mm.botsMayShoot(level.getGameTime()))
+					Guns.tryFire(this, held, w.def, getRandom().nextFloat() < def.accuracy() ? 1F : 3F);
+			}
+			return;
+		}
+		target = null;
+		seenFor = 0;
+		// back to the lair, then pacing round it
+		if (fromHome > 7) {
+			navigateTo(bossHome);
+			return;
+		}
+		if (wanderTo == null || getNavigation().isDone() && getRandom().nextInt(60) == 0) {
+			double a = getRandom().nextDouble() * Math.PI * 2, d = 2 + getRandom().nextDouble() * 5;
+			wanderTo = new Vec3(bossHome.x + Math.cos(a) * d, bossHome.y, bossHome.z + Math.sin(a) * d);
+		}
+		navigateTo(wanderTo);
 	}
 
 	private void chase(double speed) {
@@ -859,6 +955,10 @@ public class BotEntity extends PathfinderMob {
 	@Override
 	public void die(DamageSource source) {
 		super.die(source);
+		if (!level().isClientSide() && boss != null) { // a boss: its own loot and gold (Bosses), not a player in the match
+			Bosses.died(this, source.getEntity());
+			return;
+		}
 		if (!level().isClientSide()) {
 			// Fortnite: an eliminated bot drops everything it looted, plus ammo for its gun.
 			ItemStack gun = bag.bestGun();
@@ -874,6 +974,14 @@ public class BotEntity extends PathfinderMob {
 
 	@Override
 	public boolean hurtServer(ServerLevel level, DamageSource source, float damage) {
+		if (boss != null) { // a boss turns on whoever hurt it (no walls: it doesn't build)
+			boolean hurt = super.hurtServer(level, source, damage);
+			if (hurt && source.getEntity() instanceof LivingEntity le && le != this) {
+				lastHurt = tickCount;
+				target = le;
+			}
+			return hurt;
+		}
 		boolean hurt = super.hurtServer(level, source, damage);
 		Entity by = source.getEntity();
 		if (hurt && by instanceof LivingEntity le && le != this && !Teams.sameTeam(this, le) && !Knocked.is(this)) {

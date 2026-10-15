@@ -177,12 +177,32 @@ def main(scratch):
                 for i in range(10)]
         slab(star, 0.16, 0.26, mat("hud_gold_star", "#B8861B", rough=0.3, metal=1.0), bevel=0.02)
 
+    def boss():
+        """A boss on the map: a skull in a golden crown, on a dark red badge."""
+        cyl(0, -0.1, -0.35, 1.18, 0.25, "z", mat("hud_boss_badge", "#6E1420", rough=0.4), verts=48, bevel=0.08)
+        torus(0, -0.1, -0.2, 1.18, 0.09, "z", mat("hud_boss_rim", "#F2C230", rough=0.25, metal=0.9), segs=48, rsegs=8)
+        bone = mat("hud_bone", "#F4F1E8", rough=0.45)
+        sphere(0, 0.0, 0, 0.62, 0.58, 0.45, bone, segs=32, rings=16)
+        box(-0.36, -0.68, -0.25, 0.36, -0.28, 0.3, bone, bevel=0.12, seg=3)
+        dark = mat("hud_socket", "#1A0B0E", rough=0.6)
+        for sx in (-0.24, 0.24):
+            sphere(sx, -0.02, 0.36, 0.16, 0.18, 0.1, dark, segs=20, rings=10)
+        cyl(0, -0.3, 0.38, 0.07, 0.06, "z", dark, verts=12, r2=0.0)
+        for tx in (-0.2, -0.07, 0.07, 0.2):
+            box(tx - 0.04, -0.66, 0.28, tx + 0.04, -0.5, 0.33, dark)
+        gold = mat("hud_crown", "#F2C230", rough=0.2, metal=1.0)
+        box(-0.5, 0.42, -0.2, 0.5, 0.62, 0.2, gold, bevel=0.05, seg=2)
+        for k, tx in enumerate((-0.42, 0.0, 0.42)):
+            h = 0.42 if k == 1 else 0.32
+            cyl(tx, 0.62 + h / 2, 0, 0.12, h, "y", gold, verts=4, r2=0.01)
+            sphere(tx, 0.62 + h + 0.05, 0, 0.07, 0.07, 0.07, mat("hud_crown_gem", "#E8263A", rough=0.15), segs=12, rings=8)
+
     ICONS = {
         "shield": ("Shield", shield), "health": ("Health", health), "storm": ("Storm", storm), "players": ("Players Left", players),
         "kills": ("Eliminations", kills), "team": ("Team Eliminations", team), "wood": ("Wood", wood), "brick": ("Brick", brick),
         "metal": ("Metal", metal), "ammo_light": ("Light Ammo", ammo_light), "ammo_medium": ("Medium Ammo", ammo_medium),
         "ammo_heavy": ("Heavy Ammo", ammo_heavy), "ammo_shells": ("Shells", ammo_shells), "ammo_rockets": ("Rockets", ammo_rockets),
-        "gold": ("Gold", gold),
+        "gold": ("Gold", gold), "boss": ("Boss", boss),
     }
     only = set(sys.argv[sys.argv.index("--") + 2:]) if "--" in sys.argv else set()
     made = []

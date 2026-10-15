@@ -445,6 +445,7 @@ public final class MatchManager {
 			double a = rnd.nextDouble() * Math.PI * 2, d = Math.sqrt(rnd.nextDouble()) * startR * 0.9;
 			chestSpots.add(BlockPos.containing(cx + Math.cos(a) * d, 0, cz + Math.sin(a) * d));
 		}
+		Bosses.start(cx, cz, startR, rnd); // (v2.0.0: a few bosses guard lairs round the island)
 		structureSpots.clear();
 		CustomStructures.clearAll();
 		CustomStructures.plan(rnd);
@@ -979,6 +980,7 @@ public final class MatchManager {
 		players.clear();
 		alivePlayers.clear();
 		dropping.clear();
+		Bosses.stop(server);
 		state = State.HUB;
 		phase = -1;
 		closedAt = 0;
@@ -1058,6 +1060,7 @@ public final class MatchManager {
 				if (level.getGameTime() % 20 == 0) {
 					Reboot.secondTick(server);
 					tickSpectators(server);
+					Bosses.second(server);
 				}
 				// Bots become real near ANY player in the world (eliminated, spectating or flying in creative too), so
 				// the ones still in the match can always be found and watched.

@@ -167,6 +167,24 @@ public final class Net {
 		}
 	}
 
+	/** Server -> client, each second of a match (v2.0.0): where the bosses still standing are (x, z each), for the map icons. */
+	public record BossMarks(float[] xz) implements CustomPacketPayload {
+		public static final Type<BossMarks> TYPE = new Type<>(MinebloxRoyale.id("boss_marks"));
+		public static final StreamCodec<RegistryFriendlyByteBuf, BossMarks> CODEC = StreamCodec.of((buf, p) -> {
+			buf.writeVarInt(p.xz.length);
+			for (float f : p.xz) buf.writeFloat(f);
+		}, buf -> {
+			float[] xz = new float[Math.min(buf.readVarInt(), 32)];
+			for (int i = 0; i < xz.length; i++) xz[i] = buf.readFloat();
+			return new BossMarks(xz);
+		});
+
+		@Override
+		public Type<? extends CustomPacketPayload> type() {
+			return TYPE;
+		}
+	}
+
 	/**
 	 * Server -> clients near it (v2.0.0): a gun fired. Who, which gun (weapons sheet), from where (the shooter's eye) and
 	 * where each bullet or pellet ended (x, y, z each); hits: which of them hit someone (a bit each, the first 32). Each
@@ -303,6 +321,7 @@ public final class Net {
 		PayloadTypeRegistry.clientboundPlay().register(Hud.TYPE, Hud.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(Sfx.TYPE, Sfx.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(Shot.TYPE, Shot.CODEC);
+		PayloadTypeRegistry.clientboundPlay().register(BossMarks.TYPE, BossMarks.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(Emote.TYPE, Emote.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(Unlocks.TYPE, Unlocks.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(Room.TYPE, Room.CODEC);
@@ -393,6 +412,10 @@ public final class Net {
 
 	public static void sfxAll(MinecraftServer server, String soundId, Vec3 at) {
 		for (ServerPlayer p : server.getPlayerList().getPlayers()) sfxTo(p, soundId, at);
+	}
+
+	public static void bossMarks(ServerPlayer p, float[] xz) {
+		ServerPlayNetworking.send(p, new BossMarks(xz));
 	}
 
 	/** A shot, to every player within 256 blocks of it in its world (they see its tracers). */

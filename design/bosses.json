@@ -1,0 +1,67 @@
+{
+ "sheet": "bosses",
+ "class": "BossDef",
+ "about": "Bosses (v2.0.0, creator: players report the middle of a match gets boring with nobody to fight yet; 'A boss icon on the minimap; bosses drop their own custom loot'). Each match has a few (match sheet bosses), each guarding its lair somewhere on the island: a bigger Roblox avatar (scale) in its own outfit (Locker items, 'slot:id,...'), with a lot of health, a mythic gun (weapon, rarity) and a bot's aim (accuracy, reactionTicks); it fights anyone who comes within bossAggro blocks and never strays more than bossLeash from its lair. Everyone sees bosses on the minimap and the map. Not a player: it doesn't count towards players left. Eliminated, it drops its gun with ammo and its loot ('item:count+...', consumables sheet ids), and whoever eliminated it gets goldBoss gold.",
+ "columns": {
+  "id": "string",
+  "name": "string",
+  "colors": "ref:avatar_colors",
+  "outfit": "string",
+  "weapon": "ref:weapons",
+  "rarity": "ref:rarities",
+  "health": "float",
+  "scale": "float",
+  "accuracy": "float",
+  "reactionTicks": "int",
+  "speed": "float",
+  "loot": "string",
+  "note": "string"
+ },
+ "rows": [
+  {
+   "id": "blockbuster",
+   "name": "The Blockbuster",
+   "colors": "classic",
+   "outfit": "hat:hat_royal_crown,face:face_gold_shades,back:back_royal_cape,shirt:shirt_royal,pants:pants_royal",
+   "weapon": "pump_shotgun",
+   "rarity": "mythic",
+   "health": 900,
+   "scale": 1.6,
+   "accuracy": 0.6,
+   "reactionTicks": 10,
+   "speed": 0.24,
+   "loot": "chug_jug:1+shield_potion:2",
+   "note": "a royal brute with a mythic pump shotgun: close up and dangerous"
+  },
+  {
+   "id": "captain_bloxbeard",
+   "name": "Captain Bloxbeard",
+   "colors": "classic",
+   "outfit": "hat:hat_tricorne,face:face_eyepatch,back:back_sword,shirt:shirt_pirate,pants:pants_pirate",
+   "weapon": "sniper",
+   "rarity": "mythic",
+   "health": 700,
+   "scale": 1.45,
+   "accuracy": 0.55,
+   "reactionTicks": 14,
+   "speed": 0.25,
+   "loot": "slurp_juice:2+medkit:2",
+   "note": "a pirate with a mythic sniper: picks you off from his lair"
+  },
+  {
+   "id": "agent_noob",
+   "name": "Agent Noob",
+   "colors": "classic",
+   "outfit": "hat:hat_fedora_black,face:face_shades,shirt:shirt_suit,pants:pants_black,back:back_money_bag",
+   "weapon": "assault_rifle",
+   "rarity": "mythic",
+   "health": 800,
+   "scale": 1.5,
+   "accuracy": 0.5,
+   "reactionTicks": 12,
+   "speed": 0.26,
+   "loot": "shield_potion:3+bandages:5",
+   "note": "a secret agent with a mythic assault rifle"
+  }
+ ]
+}

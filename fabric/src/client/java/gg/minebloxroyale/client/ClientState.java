@@ -18,6 +18,8 @@ import net.minecraft.client.Minecraft;
 
 /** What the server last told this client (HUD state, emotes, unlocks). */
 public final class ClientState {
+	/** Where the bosses still standing are this match (x, z each; v2.0.0, Net.BossMarks): their map icons. */
+	public static float[] bosses = new float[0];
 	public static Net.Hud hud = new Net.Hud("HUB", 0, 0, 0, 0, 0, 0, 0, 0, 0, "Step on a mode portal to play", false, 0, 0, 0, 0, 0, false, 1, "0,0,0,0", "");
 	/** Team modes: my teammates, the reboot vans and my team's cards (null outside a Duos / Trios / Squads match). */
 	public static Net.Squad squad;

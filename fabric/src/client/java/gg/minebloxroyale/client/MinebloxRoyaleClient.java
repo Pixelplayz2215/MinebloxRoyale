@@ -80,6 +80,7 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 		});
 		ClientPlayNetworking.registerGlobalReceiver(Net.Sfx.TYPE, (p, ctx) -> SfxBank.play(p.soundId(), new Vec3(p.x(), p.y(), p.z())));
 		ClientPlayNetworking.registerGlobalReceiver(Net.Shot.TYPE, (p, ctx) -> Tracers.receive(p));
+		ClientPlayNetworking.registerGlobalReceiver(Net.BossMarks.TYPE, (p, ctx) -> ClientState.bosses = p.xz());
 		ClientPlayNetworking.registerGlobalReceiver(Net.Emote.TYPE, (p, ctx) -> {
 			if (p.emoteId().isEmpty()) ClientState.EMOTES.remove(p.entityId());
 			else ClientState.EMOTES.put(p.entityId(), Map.entry(p.emoteId(), System.currentTimeMillis()));
@@ -186,7 +187,10 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 			boolean tab = mc.options.keyPlayerList.isDown();
 			if (tab && !tabWasDown && mc.gui.screen() == null && ClientState.inMatch()) mc.gui.setScreen(new MapScreen());
 			tabWasDown = tab;
-			if (!ClientState.inMatch()) Waypoint.clear();
+			if (!ClientState.inMatch()) {
+				Waypoint.clear();
+				ClientState.bosses = new float[0];
+			}
 			boolean inHub = !ClientState.inMatch();
 			FortniteMedia.tick(inHub);
 			if (inHub) mc.getMusicManager().stopPlaying();

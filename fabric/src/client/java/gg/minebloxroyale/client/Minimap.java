@@ -157,6 +157,7 @@ public final class Minimap {
 		}
 		// Team modes: reboot vans, your team's cards, teammates' waypoints and teammates.
 		teamMarks(g, S, k, px - half / k, pz - half / k, gs);
+		bossMarks(g, S, k, px - half / k, pz - half / k, gs, true);
 		// Player arrow: smooth arrowhead with a dark outline, pointing where you face (yellow; your teammate colour in
 		// a team mode, as your teammates see you).
 		double yaw = Math.toRadians(mc.player.getYRot());
@@ -208,6 +209,23 @@ public final class Minimap {
 			boolean down = m.status() == 1;
 			disc(g, x, y, 3.2 * u, down && blink ? 0xFFE03A3A : 0xFF101010);
 			disc(g, x, y, 2.2 * u, ClientState.teamColor(m.slot()));
+		}
+	}
+
+	/**
+	 * Bosses (v2.0.0): their Blender icon where each is, on a map drawn in screen pixels (S its size, k pixels per block,
+	 * (ox, oz) the world point at pixel 0,0); edge: held at the map's edge when off it, pointing the way (the minimap).
+	 */
+	static void bossMarks(GuiGraphicsExtractor g, int S, double k, double ox, double oz, int gs, boolean edge) {
+		float[] b = ClientState.bosses;
+		float size = 9.5F * gs;
+		for (int i = 0; i + 1 < b.length; i += 2) {
+			double x = (b[i] - ox) * k, y = (b[i + 1] - oz) * k, m = size / 2 + 1;
+			if (edge) {
+				x = Math.max(m, Math.min(S - m, x));
+				y = Math.max(m, Math.min(S - m, y));
+			} else if (x < -m || y < -m || x > S + m || y > S + m) continue;
+			Smooth.icon(g, "boss", (float) (x - size / 2), (float) (y - size / 2), size, -1);
 		}
 	}
 

@@ -434,6 +434,30 @@
    "value": 50,
    "unit": "gold",
    "meaning": "gold for eliminating a boss (v2.0.0 bosses)"
+  },
+  {
+   "id": "bosses",
+   "value": 2,
+   "unit": "bosses",
+   "meaning": "bosses in each match (v2.0.0, bosses sheet), each a different one, guarding lairs spread round the island"
+  },
+  {
+   "id": "bossAggro",
+   "value": 36,
+   "unit": "blocks",
+   "meaning": "a boss fights anyone it can see within this far"
+  },
+  {
+   "id": "bossLeash",
+   "value": 30,
+   "unit": "blocks",
+   "meaning": "a boss never goes further than this from its lair (it goes back when you run)"
+  },
+  {
+   "id": "bossSpawnRange",
+   "value": 96,
+   "unit": "blocks",
+   "meaning": "a boss appears at its lair when someone comes this close (and keeps what health it had)"
   }
  ]
 }

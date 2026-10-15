@@ -145,6 +145,7 @@ public class MapScreen extends Screen {
 			Minimap.ring(g, S, wx, wz, 1.2 * gs / 3.0 * 2, 0xFF3030, 2.4 * gs / 3.0 * 2);
 		}
 		Minimap.teamMarks(g, S, k, vx0, vz0, gs); // team modes: vans, cards, teammates and their waypoints
+		Minimap.bossMarks(g, S, k, vx0, vz0, gs, false); // (v2.0.0) the bosses
 		double yaw = Math.toRadians(mc.player.getYRot());
 		Minimap.arrow(g, (mc.player.getX() - vx0) * k, (mc.player.getZ() - vz0) * k, -Math.sin(yaw), Math.cos(yaw), gs, ClientState.myColor());
 		g.pose().popMatrix();
