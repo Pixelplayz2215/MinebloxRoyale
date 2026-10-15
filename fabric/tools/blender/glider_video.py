@@ -89,6 +89,24 @@ def hexrgb(h):
     return tuple(int(h[i:i + 2], 16) / 255 for i in (0, 2, 4))
 
 
+# Stripes along a trail ("bands") and how many go by a second; points a trail is drawn with: the game's Contrails.
+STRIPES, STRIPE_SPEED, POINTS = 9, 3, 64
+
+
+def resample(pts, m):
+    """The game's Contrails.resample (2.0.0-test2): m points evenly along a trail (head first), on a Catmull-Rom curve
+    through its points, so its look sits on a fine, steady grid."""
+    n = len(pts)
+    out = []
+    for j in range(m):
+        x = j / (m - 1) * (n - 1)
+        k = min(int(x), n - 2)
+        f = x - k
+        a, b, c, d = pts[max(0, k - 1)], pts[k], pts[k + 1], pts[min(n - 1, k + 2)]
+        out.append(0.5 * (2 * b + (c - a) * f + (2 * a - 5 * b + 4 * c - d) * f * f + (3 * b - a - 3 * c + d) * f * f * f))
+    return out
+
+
 def look_at(style, c1, c2, u, time):
     """A contrail's colour and opacity, and its width factor, at u along it (0 = at the hand, 1 = the end), at time
     (seconds): the game's Contrails.look, line for line."""
@@ -97,7 +115,7 @@ def look_at(style, c1, c2, u, time):
     if style == "rainbow":
         rgb = colorsys.hsv_to_rgb((u * 1.2 - time * 0.6) % 1.0, 0.75, 1.0)
     elif style == "bands":
-        rgb = c1 if int(u * 9 - time * 3) % 2 == 0 else c2
+        rgb = c1 if math.floor(u * STRIPES - time * STRIPE_SPEED) % 2 == 0 else c2  # (ribbons() cuts at the edges)
     elif style == "flame":
         flick = 0.75 + 0.25 * math.sin(u * 37 + time * 23) * math.sin(u * 13 - time * 17)
         w *= flick
@@ -303,9 +321,10 @@ def blender_main(args):
             faces.append((i, i + 1, i + 2, i + 3))
 
         for pts in trails:
-            n = len(pts)
-            if n < 2:
+            if len(pts) < 2:
                 continue
+            pts = resample(pts, POINTS)
+            n = len(pts)
             us = [k / (n - 1) for k in range(n)]
             looks = [look_at(style, c1, c2, u, time) for u in us]
             if style == "wave":  # (weaving side to side as it goes)
@@ -322,6 +341,19 @@ def blender_main(args):
                         s0 = t.cross(view).normalized()
                         (r0, a0, w0), (r1, a1, w1) = looks[k], looks[k + 1]
                         h0, h1 = base_width * w0 * wk / 2, base_width * w1 * wk / 2
+                        if style == "bands":
+                            # cut where a stripe ends between the two points (the game's Contrails.band): each piece one
+                            # colour, so the edges are sharp and slide as the stripes move
+                            st0, st1 = us[k] * STRIPES - time * STRIPE_SPEED, us[k + 1] * STRIPES - time * STRIPE_SPEED
+                            stripe, fr = math.floor(st0), 0.0
+                            while fr < 1:
+                                to = min(1.0, (stripe + 1 - st0) / (st1 - st0)) if st1 > st0 else 1.0
+                                rgb = c1 if stripe % 2 == 0 else c2
+                                pa, pb = p0.lerp(p1, fr), p0.lerp(p1, to)
+                                ha, hb = h0 + (h1 - h0) * fr, h0 + (h1 - h0) * to
+                                quad(pa - s0 * ha, pa + s0 * ha, pb + s0 * hb, pb - s0 * hb, rgb + (a0 + (a1 - a0) * fr,), rgb + (a0 + (a1 - a0) * to,))
+                                fr, stripe = to, stripe + 1
+                            continue
                         core = style == "neon" and wk == 1.0
                         ca = ((1, 1, 1) if core else r0) + (a0 * ak,)
                         cb = ((1, 1, 1) if core else r1) + (a1 * ak,)

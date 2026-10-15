@@ -25,7 +25,10 @@ import org.jspecify.annotations.Nullable;
  * glider's wingtips while riding it. A trail is where the hand or wingtip went in the world over the last part of a
  * second, drawn as a band facing the camera, tapering and fading to its end, the same as the Blender renders
  * (fabric/tools/blender/glider_video.py; look() is its look_at). Everyone without one picked trails the first free one,
- * as everyone in Fortnite has a contrail.
+ * as everyone in Fortnite has a contrail. (2.0.0-test2, creator: "Candy Stripe annimation is too choppy ... smoother
+ * animations for all crontrails") A trail is drawn along a smooth curve through its points, resampled evenly and finely,
+ * so its look sits on a steady grid whatever the frame rate; a striped one is cut exactly at each stripe's edge, so the
+ * stripes slide instead of jumping from point to point; and it starts at the hand where the hand is this frame.
  */
 public final class Contrails {
 	private static final float S = RobloxAvatarRenderer.S;
@@ -40,13 +43,22 @@ public final class Contrails {
 		new Style(0.4F, 0.8F), "dots", new Style(0.34F, 0.7F));
 	private static final Style STREAK = STYLES.get("streak");
 
-	/** One avatar's trails: two from the hands, two from the wingtips (each world points {x, y, z, seconds}, newest last). */
+	/**
+	 * One avatar's trails: two from the hands, two from the wingtips (each world points {x, y, z, seconds}, newest last;
+	 * and where each tip was this frame, the trail's start).
+	 */
 	private static final class Trails {
 		@SuppressWarnings({ "unchecked", "rawtypes" })
 		final ArrayDeque<double[]>[] pts = new ArrayDeque[] { new ArrayDeque<>(), new ArrayDeque<>(), new ArrayDeque<>(), new ArrayDeque<>() };
+		final double[][] head = new double[4][];
 		CosmeticDef look;
 		double seen;
 	}
+
+	/** Points a trail in the world is drawn with (evenly along it), and the Locker's preview. */
+	private static final int WORLD_POINTS = 64, PREVIEW_POINTS = 96;
+	/** Stripes along a trail ("bands"), and how many go by a second: look_at's numbers. */
+	private static final float STRIPES = 9, STRIPE_SPEED = 3;
 
 	private static final Map<Integer, Trails> ALL = new HashMap<>();
 
@@ -83,6 +95,7 @@ public final class Contrails {
 			model.transformPosition(tips[i], w);
 			ArrayDeque<double[]> q = t.pts[(wingtips ? 2 : 0) + i];
 			double x = cam.x + w.x, y = cam.y + w.y, z = cam.z + w.z;
+			t.head[(wingtips ? 2 : 0) + i] = new double[] { x, y, z, time };
 			double[] last = q.peekLast();
 			// (a new point every 30th of a second or so, or sooner when it moved: smooth at any frame rate)
 			if (last != null && time - last[3] < 1 / 60.0 && (x - last[0]) * (x - last[0]) + (y - last[1]) * (y - last[1]) + (z - last[2]) * (z - last[2]) < 0.0025) continue;
@@ -108,21 +121,26 @@ public final class Contrails {
 				it.remove();
 				continue;
 			}
-			for (ArrayDeque<double[]> q : t.pts) {
+			for (int i = 0; i < t.pts.length; i++) {
+				ArrayDeque<double[]> q = t.pts[i];
 				if (q.size() < 2) continue;
-				// newest first, camera-relative, with how far along the trail each is (0 at the hand, 1 at the end)
-				int n = q.size();
+				// newest first, camera-relative, with how far along the trail each is (0 at the hand, 1 at the end); first
+				// where the tip is this frame (recorded since the newest point, still being recorded)
+				double[] h = t.head[i];
+				boolean live = h != null && h[3] > q.peekLast()[3] && time - h[3] < 0.1;
+				int n = q.size() + (live ? 1 : 0);
 				Vector3f[] p = new Vector3f[n];
 				float[] u = new float[n];
 				Iterator<double[]> d = q.descendingIterator();
 				for (int k = 0; k < n; k++) {
-					double[] a = d.next();
+					double[] a = live && k == 0 ? h : d.next();
 					p[k] = new Vector3f((float) (a[0] - cam.x), (float) (a[1] - cam.y), (float) (a[2] - cam.z));
 					u[k] = (float) Math.min(1, (time - a[3]) / st.life());
 				}
+				Strip strip = resample(p, u, WORLD_POINTS);
 				CosmeticDef look = t.look;
 				out.submitCustomGeometry(ps, RenderTypes.entityTranslucentEmissive(WorldVisuals.white()),
-					(pose, vc) -> band(vc, pose, p, u, look, st.width() * S, tsec, null));
+					(pose, vc) -> band(vc, pose, strip.p(), strip.u(), look, st.width() * S, tsec, null));
 			}
 		}
 	}
@@ -133,7 +151,7 @@ public final class Contrails {
 		if (look == null) return;
 		Style st = STYLES.getOrDefault(look.shape(), STREAK);
 		float tsec = (float) (now() % 1000);
-		int n = 28;
+		int n = PREVIEW_POINTS;
 		for (Vector3f h : hands) {
 			Vector3f[] p = new Vector3f[n];
 			float[] u = new float[n];
@@ -151,10 +169,43 @@ public final class Contrails {
 		}
 	}
 
+	/** A trail's points (newest first) and how far along it each is (0 at the hand, 1 at the end). */
+	private record Strip(Vector3f[] p, float[] u) {
+	}
+
+	/**
+	 * The trail at m points evenly along it (by u, from its first point to its last), on a smooth curve through the
+	 * recorded points (Catmull-Rom): its look then sits on a fine grid that doesn't change with the frame rate or with
+	 * how far apart the points were recorded.
+	 */
+	private static Strip resample(Vector3f[] p, float[] u, int m) {
+		int n = p.length, k = 0;
+		Vector3f[] q = new Vector3f[m];
+		float[] w = new float[m];
+		for (int j = 0; j < m; j++) {
+			float uj = u[0] + (u[n - 1] - u[0]) * j / (m - 1);
+			while (k < n - 2 && u[k + 1] < uj) k++;
+			float span = u[k + 1] - u[k], f = span <= 1e-6F ? 0 : Math.max(0, Math.min(1, (uj - u[k]) / span));
+			q[j] = curve(p[Math.max(0, k - 1)], p[k], p[k + 1], p[Math.min(n - 1, k + 2)], f);
+			w[j] = uj;
+		}
+		return new Strip(q, w);
+	}
+
+	/** The point f of the way from b to c on the Catmull-Rom curve through a, b, c, d. */
+	private static Vector3f curve(Vector3f a, Vector3f b, Vector3f c, Vector3f d, float f) {
+		float f2 = f * f, f3 = f2 * f;
+		return new Vector3f(cr(a.x, b.x, c.x, d.x, f, f2, f3), cr(a.y, b.y, c.y, d.y, f, f2, f3), cr(a.z, b.z, c.z, d.z, f, f2, f3));
+	}
+
+	private static float cr(float a, float b, float c, float d, float f, float f2, float f3) {
+		return 0.5F * (2 * b + (c - a) * f + (2 * a - 5 * b + 4 * c - d) * f2 + (3 * b - a - 3 * c + d) * f3);
+	}
+
 	/**
 	 * One trail as a band (p newest first, u along it): facing the camera (at the origin) or, given, across a fixed
 	 * direction; neon a white core in a wide glow, wave weaving side to side, sparkle with bright sparks, dots just
-	 * bubbles.
+	 * bubbles; bands cut at every stripe's edge (each piece one colour).
 	 */
 	private static void band(VertexConsumer vc, PoseStack.Pose pose, Vector3f[] p, float[] u, CosmeticDef look, float width, float time,
 		@Nullable Vector3f across) {
@@ -172,11 +223,27 @@ public final class Contrails {
 		if (style.equals("wave"))
 			for (int k = 0; k < n; k++) p[k] = new Vector3f(p[k]).fma(0.35F * S * u[k] * (float) Math.sin(u[k] * 9 - time * 6), side[k]);
 		if (!style.equals("dots")) {
-			boolean neon = style.equals("neon");
+			boolean neon = style.equals("neon"), bands = style.equals("bands");
+			float[] a = rgb(look.color()), b = rgb(look.color2());
 			for (int layer = neon ? 1 : 0; layer >= 0; layer--) {
 				float wk = layer == 1 ? 2.6F : 1, ak = layer == 1 ? 0.35F : 1;
 				for (int k = 0; k + 1 < n; k++) {
 					float h0 = width * lk[k][4] * wk / 2, h1 = width * lk[k + 1][4] * wk / 2;
+					if (bands) {
+						// Cut where a stripe ends between the two points (the stripe count runs up along the trail): each
+						// piece one colour, so its edges are sharp and slide smoothly as the stripes move.
+						float s0 = u[k] * STRIPES - time * STRIPE_SPEED, s1 = u[k + 1] * STRIPES - time * STRIPE_SPEED;
+						int stripe = (int) Math.floor(s0);
+						for (float from = 0; from < 1;) {
+							float to = s1 > s0 ? Math.min(1, (stripe + 1 - s0) / (s1 - s0)) : 1;
+							float[] c = Math.floorMod(stripe, 2) == 0 ? a : b;
+							piece(vc, pose, p[k], p[k + 1], side[k], side[k + 1], h0, h1, from, to, argb(c, lerp(lk[k][3], lk[k + 1][3], from)),
+								argb(c, lerp(lk[k][3], lk[k + 1][3], to)));
+							from = to;
+							stripe++;
+						}
+						continue;
+					}
 					int c0 = argb(neon && layer == 0 ? WHITE : lk[k], lk[k][3] * ak), c1 = argb(neon && layer == 0 ? WHITE : lk[k + 1], lk[k + 1][3] * ak);
 					quad(vc, pose, new Vector3f(p[k]).fma(-h0, side[k]), new Vector3f(p[k]).fma(h0, side[k]), new Vector3f(p[k + 1]).fma(h1, side[k + 1]),
 						new Vector3f(p[k + 1]).fma(-h1, side[k + 1]), c0, c0, c1, c1);
@@ -207,6 +274,21 @@ public final class Contrails {
 
 	private static final float[] WHITE = { 1, 1, 1 };
 
+	/** The band between points p0 and p1 (sides s0, s1, half widths h0, h1) from fraction from to fraction to, coloured c0 to c1. */
+	private static void piece(VertexConsumer vc, PoseStack.Pose pose, Vector3f p0, Vector3f p1, Vector3f s0, Vector3f s1, float h0, float h1, float from, float to,
+		int c0, int c1) {
+		Vector3f a = new Vector3f(p0).lerp(p1, from), b = new Vector3f(p0).lerp(p1, to);
+		Vector3f sa = new Vector3f(s0).lerp(s1, from), sb = new Vector3f(s0).lerp(s1, to);
+		if (sa.lengthSquared() > 1e-8F) sa.normalize();
+		if (sb.lengthSquared() > 1e-8F) sb.normalize();
+		float ha = lerp(h0, h1, from), hb = lerp(h0, h1, to);
+		quad(vc, pose, new Vector3f(a).fma(-ha, sa), new Vector3f(a).fma(ha, sa), new Vector3f(b).fma(hb, sb), new Vector3f(b).fma(-hb, sb), c0, c0, c1, c1);
+	}
+
+	private static float lerp(float a, float b, float f) {
+		return a + (b - a) * f;
+	}
+
 	/**
 	 * The colour (r, g, b 0..1), opacity and width factor at u along a trail (0 at the hand, 1 at its end), at time
 	 * (seconds): glider_video.look_at, line for line.
@@ -216,7 +298,7 @@ public final class Contrails {
 		float[] a = rgb(c1), b = rgb(c2), c;
 		switch (style) {
 			case "rainbow" -> c = hsv(((u * 1.2F - time * 0.6F) % 1F + 1F) % 1F, 0.75F, 1F);
-			case "bands" -> c = Math.floorMod((int) (u * 9 - time * 3), 2) == 0 ? a : b;
+			case "bands" -> c = Math.floorMod((int) Math.floor(u * STRIPES - time * STRIPE_SPEED), 2) == 0 ? a : b; // (band() cuts at the edges)
 			case "flame" -> {
 				w *= 0.75F + 0.25F * (float) (Math.sin(u * 37 + time * 23) * Math.sin(u * 13 - time * 17));
 				c = mix(a, b, Math.min(1, u * 1.6F));
