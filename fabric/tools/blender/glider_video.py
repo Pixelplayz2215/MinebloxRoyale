@@ -15,6 +15,8 @@ skydiving (the body falls upright here, so trails from the feet would rise throu
 blender --background --factory-startup --python glider_video.py -- sheet
 blender --background --factory-startup --python glider_video.py -- gliders <frames dir> [glider ids]
 blender --background --factory-startup --python glider_video.py -- contrails <frames dir> [contrail ids]
+blender --background --factory-startup --python glider_video.py -- boosttrails <frames dir> [boost trail ids]
+    (2.0.0-test3: each car boost trail on the sports car, seen from behind and the side as the Locker shows it)
 python emote_video.py videos <frames dir> <out dir>      (the titled MP4s, and a titled still of each)
 """
 import colorsys
@@ -606,6 +608,85 @@ def blender_main(args):
             index.append({"id": row["id"], "name": row["name"], "line": unlock_line(row), "kind": "contrail", "dir": d, "frames": frames,
                           "still": frames - 6})
             print(f"CONTRAIL {row['id']}: {frames} frames", flush=True)
+    elif mode == "boosttrails":
+        # (2.0.0-test3) a driven car in its pieces, as the game draws it (cars.py, car_rigs.json; CarEntityRenderer), in
+        # studs like the avatar
+        import brm_import
+        from emote_video import unlock_line
+        assets = os.path.join(HERE, "..", "..", "src", "main", "resources", "assets", "minebloxroyale")
+        rigs = json.load(open(os.path.join(assets, "car_rigs.json"), encoding="utf-8"))
+        k = 1 / 0.36  # (a block in studs: the game's RobloxAvatarRenderer.S, 0.36 blocks a stud)
+
+        def to_blender(m):
+            """A Minecraft-space matrix (blocks) as a Blender one in studs."""
+            return C @ Matrix.Diagonal((k, k, k, 1)) @ m @ C.inverted()
+
+        def piece(mid, paint, trim):
+            return brm_import.load(os.path.join(assets, "meshes", mid + ".brm"), paint, trim, name=mid)
+
+        def car(kind, paint, trim):
+            """The shell, the wheels and the front doors (shut, hidden); returns them to move."""
+            rig = rigs[kind]
+            parts = {"shell": piece(f"car_{kind}_1_shell", paint, trim)}
+            for i in range(4):
+                parts[f"wheel{i}"] = piece(f"car_wheel_{kind}" + ("" if i % 2 == 0 else "_r"), paint, trim)
+            parts["door"] = piece(f"car_door_{kind}", paint, trim)
+            parts["doorway"] = piece(f"car_doorway_{kind}", paint, trim)
+            return rig, parts
+
+        def pose_car(rig, parts, spin, steer=0.0, lean=0.0, door=0.0, place=Matrix.Identity(4)):
+            body = place @ Matrix.Rotation(math.radians(lean), 4, "Z") @ Matrix.Identity(4)
+            parts["shell"].matrix_world = to_blender(body)
+            for i in range(4):
+                front, left = i < 2, i % 2 == 0
+                m = place @ Matrix.Translation(((1 if left else -1) * rig["wheelX"], rig["wheelR"], rig["frontZ"] if front else rig["backZ"]))
+                if front:
+                    m = m @ Matrix.Rotation(math.radians(steer), 4, "Y")
+                parts[f"wheel{i}"].matrix_world = to_blender(m @ Matrix.Rotation(spin, 4, "X"))
+            hinge = body @ Matrix.Translation((rig["hingeX"], 0, rig["hingeZ"])) @ Matrix.Rotation(math.radians(-65 * door), 4, "Y")
+            parts["door"].matrix_world = to_blender(hinge)
+            parts["doorway"].matrix_world = to_blender(body)
+            for name in ("door", "doorway"):
+                parts[name].hide_render = door <= 0.01
+
+        rows = [r for r in json.load(open(os.path.join(DESIGN, "cosmetics.json"), encoding="utf-8"))["rows"] if r["slot"] == "boosttrail"]
+        for row in rows:
+            if only and row["id"] not in only:
+                continue
+            stage()
+            look = CONTRAILS.get(row["shape"], CONTRAILS["streak"])
+            rig, parts = car("sports", 0xD8352C, 0xF2F4F8)
+            pose_car(rig, parts, 0)
+            lo, hi = bounds(list(parts.values()))
+            tail = C @ Vector((0, 1.0 * k, -(rig["length"] / 2 + 4.0) * k))
+            lo, hi = Vector(map(min, lo, tail)), Vector(map(max, hi, tail))
+            cam = camera(lo, hi, yaw=135, elevation=20)
+            view = view_dir(cam)
+            frames = int(round(2.4 * FPS))
+            d = os.path.join(out, row["id"])
+            os.makedirs(d, exist_ok=True)
+            sc = bpy.context.scene
+            trail_obj = None
+            c1, c2 = hexrgb(row["color"]), hexrgb(row["color2"])
+            width = look["width"] * 2.6  # (the game: a boost trail is CAR_WIDTH times a contrail's)
+            for f in range(1, frames + 1):
+                sec = (f - 1) / FPS
+                pose_car(rig, parts, sec * 17 / rig["wheelR"])  # (boosting: about 17 blocks a second)
+                if trail_obj is not None:
+                    bpy.data.objects.remove(trail_obj, do_unlink=True)
+                trails = []
+                for e in rig["exhausts"]:
+                    pts = []
+                    for j in range(POINTS):
+                        u = j / (POINTS - 1)
+                        pts.append(Vector((e[0] + 0.05 * math.sin(sec * 3 - u * 6), e[1] + 0.08 * u, e[2] - 4.2 * u)) * k)
+                    trails.append(pts)
+                trail_obj = ribbons(trails, row["shape"], c1, c2, sec, width, view)
+                sc.render.filepath = os.path.join(d, f"{f:04d}.png")
+                bpy.ops.render.render(write_still=True)
+            index.append({"id": row["id"], "name": row["name"], "line": unlock_line(row), "kind": "boosttrail", "dir": d, "frames": frames,
+                          "still": frames - 6})
+            print(f"BOOSTTRAIL {row['id']}: {frames} frames", flush=True)
     with open(os.path.join(out, "frames.json"), "w", encoding="utf-8") as f:
         json.dump(index, f, indent=1)
 

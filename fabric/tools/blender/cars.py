@@ -449,7 +449,7 @@ def door(kind, s=1):
             z = -1.65 + i * 0.3
             lo, hi = max(z - 0.15, d0), min(z + 0.15, d1)
             if hi > lo:
-                parts.append(slab(c.hx + 0.09, c.hx + 0.1, 0.76, 0.88, lo, hi, DARK() if i % 2 == 0 else WHITE()))
+                parts.append(slab(c.hx + 0.092, c.hx + 0.1, 0.76, 0.88, lo, hi, DARK() if i % 2 == 0 else WHITE()))  # (just proud of the door)
     for p in parts:
         p.move(-s * (c.hx + 0.02), 0, -d1)
 

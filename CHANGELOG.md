@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.0.0 (in testing: 2.0.0-test2, not released yet)
+## v2.0.0 (in testing: 2.0.0-test3, not released yet)
 
 A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and a new look and sound.
 
@@ -11,15 +11,18 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 ### Gold and the Locker shop
 - **Gold:** earned in matches for eliminations, a top 10 or top 5 finish, playing a match, a Victory Royale and eliminating a boss. Gold follows you into every world.
 - **Shop tab in the Locker:** buy emotes, cosmetics, pickaxes and contrails with gold. What you buy is yours for good.
-- **The Shop says what everything is:** its items sit under their category's title (Pickaxes, Contrails, Emotes...), and hovering one shows it on you: a pickaxe in your hand, a contrail trailing as you skydive, an emote danced. Something you've bought leaves the Shop and sits in its own tab, and buying it tells you which.
-- **The Pickaxes tab shows your pickaxe** in your hand on the preview.
-- **Pickaxe skins:** golden, candy, diamond, ice, lava, lollipop and neon, made in Blender.
+- **The Shop says what everything is:** its items sit under their category's title (Pickaxes, Contrails, Emotes...), and hovering one shows it on you: a pickaxe in your hand, a contrail trailing as you skydive, an emote danced. Something you've bought leaves the Shop and sits in its own tab, and buying it tells you which. Items you already own show on you too when hovered, and the Shop shows the pickaxe you have on in your hand.
+- **The Pickaxes tab shows your pickaxe** in your hand on the preview, and hovering any pickaxe or contrail you own shows it on you.
+- **Pickaxe skins, all made in Blender:** candy, ice, lava, lollipop and neon, plus Fortnite-style designs of our own. The Royal Cleaver (a gold crescent axe with a crown, it was the Golden Pick) and the Prism Breaker (a crystal axe, it was the Diamond Pick) keep their unlocks. New for gold: Riff Ripper (an electric guitar), Scoop Smasher (an ice cream cone), Pizza Slicer and Boom Pick (a firework rocket). New to unlock: Storm Splitter (5 wins), Bone Breaker (100 eliminations), Bullseye Breaker (30 bullseyes) and Flint Hunter (range 55).
+- **Presets for gold:** Victory Royale (1500), Storm Raider (1200), Neon Rider (1000) and Sweet Tooth (900), with 25 new items among them: a Victory Crown, a Storm Hood, a Victory Banner and a Hoverboard made in Blender, and new looks for hair, faces, back bling, shirts, pants and shoes. Buying a preset makes every piece yours, each in its own tab. Those pieces only come with their preset. Hovering a preset shows the whole outfit on you. The old presets haven't changed.
 - **New emotes:** the Griddy, Default Dance, Orange Justice, Boneless, Take the L, Electro Shuffle, Fresh and Hype (400 to 800 gold). All are animated in Blender with nothing clipping.
 
 ### Gliders and contrails
 - **Gliders now animate:** they pop open out of your back, sway as they ride the air, bank into turns, and fold away when you land. The animation is keyframed in Blender.
 - **Contrails:** a new Locker tab with 14 of them. Light trails stream from your hands while skydiving and from your glider's wingtips while gliding: streak, rainbow, candy stripes, neon, sparkle, flame, ghost wave and bubbles. Some are free, some are unlocked, and some cost gold.
 - **Smooth contrails:** every trail follows a smooth curve and starts right at your hand, and striped ones (Candy Stripe) have sharp stripes that slide along instead of jumping.
+- **Ten more contrails, 24 in all**, with four new looks: a jagged lightning bolt that flickers, a twisting ribbon, retro pixel blocks and beating hearts. For gold: Lightning Strike, Twister, Pixel Trail, Lovestruck and Inferno. To unlock: Storm Surge (25 eliminations), Royal Ribbon (3 wins), Arcade (10 bullseyes), Sweet Hearts (range 40) and Frostbite (15 eliminations).
+- **A new skydiving animation, made in Blender:** belly down with your arms spread wide, elbows and knees bent, and a little flutter. Look down and you tip into a head-first dive with your arms swept back.
 
 ### Shooting
 - **Hip and aim:** a gun is carried at the hip and raised into the aim when you aim down the sights.
@@ -36,18 +39,29 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 - **No shooting from a car.** Boosting smashes through buildings, but hills and water stop you.
 - **Car HUD:** the fuel, boosts and the car's durability (out of 600) show where the ammo usually is.
 - **Bots drive too,** heading for the safe zone.
+- **Cars come alive:** the wheels turn with the speed and the front ones steer, and the body leans out of turns and dips when braking. Getting in, the door swings open, you climb in and it shuts behind you.
+- **Car sounds:** an engine that revs with your speed, squealing tyres in fast turns, a boost of its own, and doors opening and shutting.
+- **Boost trails:** a new Locker tab, all for gold. Your trail streams from the back of any car you drive while it boosts: Nitro Flame, Blue Blaze, Rainbow Rocket, Neon Streak, Gold Rush, Thunder Road, Candy Rush and Toxic Fumes. The tab shows a car from behind and the side with the trail you hover.
 
 ### Bosses
-- **Four bosses per match, out of six:** The Blockbuster (pump shotgun), Captain Bloxbeard (sniper), Agent Noob (assault rifle), Sergeant Bacon (SMG), Doctor Kaboom (rocket launcher) and Sheriff Noobly (pistol), each with a mythic gun. They guard lairs you can see from a distance, and their icons show on the minimap and the map.
-- **Boss loot:** a boss drops its own named mythic gun and loot, and gives 50 gold to whoever eliminates it.
+- **Four bosses per match, out of six:** The Blockbuster (pump shotgun), Captain Bloxbeard (sniper), Agent Noob (assault rifle), Sergeant Bacon (SMG), Doctor Kaboom (rocket launcher) and Sheriff Noobly (pistol). They guard lairs you can see from a distance, and their icons show on the minimap and the map.
+- **Boss health:** 200 health and 100 shield, shown on a bar over the boss's name (shield over health).
+- **Boss rarity:** a new red rarity above Mythic. Each boss holds and drops its own gun at Boss rarity, plus its loot and 50 gold for whoever eliminates it. Boss guns never come from chests. The hub's Gun Rarity board has the new row.
 
 ### The island
 - **Bigger buildings:** warehouses, two-storey houses and forts, with more chests. There are now 26 buildings per island.
 - **Reboot vans on every island, in every mode:** 8 of them, half near the middle and half out towards the edge, so some are inside the circle and some outside. They're all on the map and the minimap from the start. In Solo they're just there, with no one to bring back.
 
+### Matches
+- **Your team can still bring you back:** in Duos, Trios and Squads the match no longer ends the moment you (the only real player) are eliminated. While your reboot card is out and a teammate still stands, you watch your team and the match goes on; it ends when your team is out or the card runs out.
+- **The Battle Bus drops everyone before the storm:** anyone still aboard jumps just before the bus would fly into the storm's wall, bots included.
+
 ### Look and sound
 - **A cleaner, smoother HUD in Fortnite's style:** rounded panels, icons made in Blender, smooth lettering, and a Fortnite-style hotbar in matches. Fortnite's own HUD is locked in its encrypted files, so all of this is ours.
 - **A bigger HUD:** every panel is about 15% bigger: health and shield, the hotbar, ammo and materials, the minimap, the compass, the storm banner, the teammate list and the "Hold F" prompts. On a screen narrower than 1920x1080 it shrinks just enough that nothing overlaps.
+- **The bar under the minimap is exactly the minimap's width** in every mode, team modes too.
+- **The hub panel is simpler:** no more player counts for each mode's portal.
+- **Less lag:** models far away are drawn from lighter copies (made in Blender), models send half as many points to the graphics card, the HUD is drawn in a few pieces instead of hundreds, and the next island isn't built while the Battle Bus is flying and everyone is dropping in.
 - **3D items in the hotbar and inventory:** every gun, heal, shield, grenade and pickaxe shows as its own 3D model, guns in their rarity colour, instead of a flat pixel picture. The hub's Gun Rarity and Heals & Shields boards show the 3D models too.
 - **Our own sounds:** a shot sound for each gun type (rarities sound the same), a new storm warning, rocket and grenade blasts, and two battle music tracks in matches. The harder track plays in the last circles.
 

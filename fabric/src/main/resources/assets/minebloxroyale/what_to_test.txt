@@ -1,3 +1,14 @@
+Test 3 - Duos/Trios/Squads: get eliminated with a bot teammate up: the match goes on while your card is out; they can reboot you
+Test 3 - The Battle Bus: everyone still aboard drops just before the storm wall, not inside it
+Test 3 - Lag: is it smoother? (far bots, cars and items use lighter models; the HUD is drawn in a few pieces)
+Test 3 - The bar under the minimap is exactly as wide as the minimap, in team modes too; no counts on the hub panel
+Test 3 - Skydiving: the new animation (arms wide, knees bent); look down to dive head first
+Test 3 - Shop: hover anything (owned too) to see it on you; your pickaxe is in your hand in the Shop
+Test 3 - Pickaxes: Royal Cleaver and Prism Breaker (the old Golden and Diamond picks) and 8 new ones in the Locker
+Test 3 - Contrails: 10 new (lightning, twisting ribbon, pixels, hearts...); Shop presets: Victory Royale, Storm Raider, Neon Rider, Sweet Tooth
+Test 3 - Bosses: a shield and health bar over the name, 200 health + 100 shield, a red Boss-rarity gun they drop
+Test 3 - Cars: wheels turn and steer, the body leans; the door opens as you get in; engine, tyre, boost and door sounds
+Test 3 - Boost trails (Locker tab, gold): the car preview shows the hovered one; yours streams from the car when you boost
 Test 2 - Shop: items under their category's title; hover one to see it on you (pickaxe in hand, contrail, emote); buying says which tab it's in
 Test 2 - Pickaxes tab: your pickaxe shows in your hand on the preview
 Test 2 - Contrails: smooth curves, and Candy Stripe's stripes slide instead of jumping (Locker preview and skydiving)
