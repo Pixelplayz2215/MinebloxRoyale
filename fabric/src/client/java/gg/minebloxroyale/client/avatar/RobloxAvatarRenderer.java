@@ -46,6 +46,8 @@ public final class RobloxAvatarRenderer {
 	public static final RenderStateDataKey<Boolean> SITTING = RenderStateDataKey.create(() -> "minebloxroyale:sitting");
 	/** The Locker's preview of you (its glider and contrail kept apart from your avatar in the world). */
 	public static final RenderStateDataKey<Boolean> PREVIEW = RenderStateDataKey.create(() -> "minebloxroyale:preview");
+	/** The Locker's Shop (2.0.0-test2): the hovered item ({slot: id}), worn on the preview over the outfit. */
+	public static final RenderStateDataKey<Map<String, String>> TRY_ON = RenderStateDataKey.create(() -> "minebloxroyale:try_on");
 	/** Knocked down (team modes): drawn crawling, holding nothing. */
 	public static final RenderStateDataKey<Boolean> KNOCKED = RenderStateDataKey.create(() -> "minebloxroyale:knocked");
 	public static final RenderStateDataKey<Boolean> IS_PLAYER = RenderStateDataKey.create(() -> "minebloxroyale:is_player");
@@ -168,6 +170,11 @@ public final class RobloxAvatarRenderer {
 		Pose pose = pose(state);
 		String uuid = state.getDataOrDefault(PLAYER_UUID, "");
 		Map<String, String> outfit = uuid.isEmpty() ? null : Cosmetics.OUTFITS.get(UUID.fromString(uuid));
+		Map<String, String> tryOn = state.getDataOrDefault(TRY_ON, null);
+		if (tryOn != null) {
+			outfit = new HashMap<>(outfit == null ? Map.of() : outfit);
+			outfit.putAll(tryOn);
+		}
 		CosmeticDef shirt = Cosmetics.worn(outfit, "shirt"), pants = Cosmetics.worn(outfit, "pants");
 		collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(RobloxAssets.TEXTURE), (ps, vc) -> {
 			for (AvatarPartDef part : Sheets.AVATAR_PARTS) {

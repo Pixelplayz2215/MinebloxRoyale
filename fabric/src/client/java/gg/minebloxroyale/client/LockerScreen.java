@@ -6,6 +6,7 @@ import gg.minebloxroyale.client.avatar.RobloxAvatarRenderer;
 import gg.minebloxroyale.client.media.SfxBank;
 import gg.minebloxroyale.hub.Locker;
 import gg.minebloxroyale.hub.UnlockRule;
+import gg.minebloxroyale.match.Loadout;
 import gg.minebloxroyale.net.Net;
 import gg.minebloxroyale.sheets.CosmeticDef;
 import gg.minebloxroyale.sheets.EmoteDef;
@@ -21,9 +22,13 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.entity.state.ArmedEntityRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -57,6 +62,13 @@ public class LockerScreen extends Screen {
 	private final LockerParticles particles = new LockerParticles();
 	private String toast = "";
 	private long toastUntil;
+	private int toastColor;
+	/** The Shop item being bought ({id, name, its tab}), till the server says it's yours (a toast then says where it is). */
+	private static String[] buying;
+	/** Shop tiles on this page (button, "slot:id"): hovering one shows it on your preview. */
+	private final List<Map.Entry<Button, String>> tryOnButtons = new ArrayList<>();
+	/** The Shop's category titles on this page: {title, x, y}. */
+	private final List<Object[]> headers = new ArrayList<>();
 
 	public LockerScreen() {
 		super(Component.literal("Locker"));
@@ -67,10 +79,22 @@ public class LockerScreen extends Screen {
 		return mc.player == null ? Map.of() : Cosmetics.OUTFITS.getOrDefault(mc.player.getUUID(), Map.of());
 	}
 
-	/** One tile in the grid (locked: what unlocks it, shown while hovered). */
-	private record Tile(String label, boolean active, Runnable click, String emote, String locked) {
+	/**
+	 * One tile in the grid (locked: what unlocks it, shown while hovered; tryOn: "slot:id" shown on your preview while
+	 * hovered, the Shop; header: a category's title on a row of its own, the Shop).
+	 */
+	private record Tile(String label, boolean active, Runnable click, String emote, String locked, String tryOn, boolean header) {
 		Tile(String label, boolean active, Runnable click) {
-			this(label, active, click, null, null);
+			this(label, active, click, null, null, null, false);
+		}
+
+		Tile(String label, boolean active, Runnable click, String emote, String locked) {
+			this(label, active, click, emote, locked, null, false);
+		}
+
+		static Tile header(String title) {
+			return new Tile(title, false, () -> {
+			}, null, null, null, true);
 		}
 	}
 
@@ -80,14 +104,26 @@ public class LockerScreen extends Screen {
 		UnlockRule.Stats st = ClientState.career();
 		switch (tab) {
 			case "shop" -> {
-				// v2.0.0: everything bought with gold (the "shop" items of every section), with its price; owned ones say
-				// so and are used from here too.
-				for (EmoteDef e : Sheets.EMOTES)
-					if (e.unlock().equals("shop")) out.add(shopTile(e.id(), e.name(), e.need(), "emote", st, e.id()));
-				for (CosmeticDef c : Sheets.COSMETICS)
-					if (c.unlock().equals("shop")) out.add(shopTile(c.id(), c.name(), c.need(), c.slot(), st, null));
-				for (GliderDef g : Sheets.GLIDERS)
-					if (g.unlock().equals("shop")) out.add(shopTile(g.id(), g.name(), g.need(), "glider", st, null));
+				// v2.0.0: what's for gold (the "shop" items of every section), with its price. 2.0.0-test2 (creator: "I have
+				// no idea what any of the items are for purchase"): under its category's title, in the tabs' order, and
+				// shown on you while hovered; a bought one leaves the Shop and is used from its own tab like any other.
+				for (String[] t : TABS) {
+					List<Tile> items = new ArrayList<>();
+					if (t[0].equals("emote")) {
+						for (EmoteDef e : Sheets.EMOTES)
+							if (e.unlock().equals("shop") && !st.owned().contains(e.id())) items.add(shopTile(e.id(), e.name(), e.need(), "emote", st, e.id()));
+					} else if (t[0].equals("glider")) {
+						for (GliderDef g : Sheets.GLIDERS)
+							if (g.unlock().equals("shop") && !st.owned().contains(g.id())) items.add(shopTile(g.id(), g.name(), g.need(), "glider", st, null));
+					} else
+						for (CosmeticDef c : Sheets.COSMETICS)
+							if (c.slot().equals(t[0]) && c.unlock().equals("shop") && !st.owned().contains(c.id()))
+								items.add(shopTile(c.id(), c.name(), c.need(), c.slot(), st, null));
+					if (items.isEmpty()) continue;
+					out.add(Tile.header(t[1]));
+					out.addAll(items);
+				}
+				if (out.isEmpty()) out.add(Tile.header("You've bought everything!"));
 			}
 			case "preset" -> {
 				for (PresetDef p : Sheets.PRESETS) {
@@ -153,16 +189,20 @@ public class LockerScreen extends Screen {
 	}
 
 	/**
-	 * A shop item (v2.0.0): not bought yet, its name and price, clicked to buy (its hint says how much gold you have);
-	 * bought, it's used like any other (an emote goes on or off your wheel, the rest is worn).
+	 * A shop item (v2.0.0): not bought yet, its name and price, clicked to buy (its hint says how much gold you have;
+	 * hovered, it's shown on you, 2.0.0-test2); bought, it's used like any other (an emote goes on or off your wheel, the
+	 * rest is worn).
 	 */
 	private Tile shopTile(String id, String name, int price, String kind, UnlockRule.Stats st, String emote) {
 		boolean owned = ClientState.all || st.owned().contains(id);
 		if (!owned)
 			return new Tile(name + " - " + price + "g", true, () -> {
 				if (st.gold() < price) toast("Not enough gold: " + name + " costs " + price + ", you have " + st.gold());
-				else send("locker:buy:" + id);
-			}, emote, UnlockRule.hint("shop", price, st));
+				else {
+					buying = new String[] { id, name, tabName(kind) };
+					send("locker:buy:" + id);
+				}
+			}, emote, UnlockRule.hint("shop", price, st), kind.equals("emote") ? null : kind + ":" + id, false); // (an emote plays instead)
 		if (kind.equals("emote")) {
 			List<String> wheel = new ArrayList<>(ClientState.myEmotes());
 			boolean on = wheel.contains(id);
@@ -199,15 +239,43 @@ public class LockerScreen extends Screen {
 		}
 		emoteButtons.clear();
 		lockedButtons.clear();
+		tryOnButtons.clear();
+		headers.clear();
 		List<Tile> all = tiles();
-		int per = rowsPerPage() * COLS, pages = Math.max(1, (all.size() + per - 1) / per);
+		// Each tile's cell (row * COLS + column): a header (the Shop's categories) takes a row of its own, never a page's
+		// last, and its items follow on the rows under it.
+		int rows = rowsPerPage(), row = 0, col = 0;
+		int[] cell = new int[all.size()];
+		for (int i = 0; i < all.size(); i++) {
+			if (all.get(i).header()) {
+				if (col > 0) row++;
+				col = 0;
+				if (row % rows == rows - 1) row++;
+				cell[i] = row++ * COLS;
+			} else {
+				cell[i] = row * COLS + col;
+				if (++col == COLS) {
+					row++;
+					col = 0;
+				}
+			}
+		}
+		int pages = Math.max(1, ((col > 0 ? row + 1 : row) + rows - 1) / rows);
 		page = Math.max(0, Math.min(page, pages - 1));
-		for (int i = page * per, n = 0; i < Math.min(all.size(), (page + 1) * per); i++, n++) {
+		for (int i = 0; i < all.size(); i++) {
+			int r = cell[i] / COLS;
+			if (r / rows != page) continue;
 			Tile t = all.get(i);
-			Button b = Button.builder(Component.literal(t.label()), btn -> t.click().run()).bounds(96 + (n % COLS) * (W + 4), 30 + (n / COLS) * 21, W, 18).build();
+			int tx = 96 + cell[i] % COLS * (W + 4), ty = 30 + r % rows * 21;
+			if (t.header()) {
+				headers.add(new Object[] { t.label(), tx, ty });
+				continue;
+			}
+			Button b = Button.builder(Component.literal(t.label()), btn -> t.click().run()).bounds(tx, ty, W, 18).build();
 			b.active = t.active();
 			if (t.emote() != null) emoteButtons.add(Map.entry(b, t.emote()));
 			if (t.locked() != null) lockedButtons.add(Map.entry(b, t.locked()));
+			if (t.tryOn() != null) tryOnButtons.add(Map.entry(b, t.tryOn()));
 			this.addRenderableWidget(b);
 		}
 		if (pages > 1) {
@@ -240,12 +308,29 @@ public class LockerScreen extends Screen {
 	}
 
 	private void toast(String text) {
+		toast(text, 0xFFFF8080);
+	}
+
+	private void toast(String text, int color) {
 		toast = text;
+		toastColor = color;
 		toastUntil = System.currentTimeMillis() + 3000;
+	}
+
+	/** A tab's name ("Emotes") from its id ("emote"). */
+	private static String tabName(String id) {
+		for (String[] t : TABS)
+			if (t[0].equals(id)) return t[1];
+		return id;
 	}
 
 	@Override
 	public void tick() {
+		// (2.0.0-test2) A purchase went through: say which tab the item is in now.
+		if (buying != null && ClientState.career().owned().contains(buying[0])) {
+			toast("Bought " + buying[1] + "! It's in " + buying[2] + " now", 0xFF7CFC7C);
+			buying = null;
+		}
 		// Redraw the lists when the server confirms a change (the > marker < moves) or the unlocks change.
 		String now = String.valueOf(mine()) + ClientState.here();
 		if (!now.equals(shown)) {
@@ -283,7 +368,14 @@ public class LockerScreen extends Screen {
 			default -> "Roblox-style catalog - looks only, no advantage";
 		};
 		g.text(this.font, info, 60, 12, 0xFFB8C4D6, true);
-		if (System.currentTimeMillis() < toastUntil) g.text(this.font, toast, 96, this.height - 22, 0xFFFF8080, true);
+		// The Shop's category titles, each with a line on to the grid's edge.
+		for (Object[] h : headers) {
+			String title = (String) h[0];
+			int hx = (int) h[1], hy = (int) h[2];
+			g.text(this.font, title, hx + 2, hy + 5, 0xFFFFD42A, true);
+			g.fill(hx + 8 + this.font.width(title), hy + 9, 96 + COLS * (W + 4) - 4, hy + 10, 0x60FFD42A);
+		}
+		if (System.currentTimeMillis() < toastUntil) g.text(this.font, toast, 96, this.height - 22, toastColor, true);
 		else for (Map.Entry<Button, String> e : lockedButtons) {
 			// (Checked by position: a locked button is inactive.)
 			Button b = e.getKey();
@@ -293,15 +385,19 @@ public class LockerScreen extends Screen {
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.player == null) return;
 		hoverPreview(mc);
+		// (2.0.0-test2) The Shop: the hovered item on you (a glider open, a contrail while skydiving).
+		String tryOn = null;
+		for (Map.Entry<Button, String> e : tryOnButtons)
+			if (e.getKey().isHovered()) tryOn = e.getValue();
 		int x0 = PANEL + 20, y0 = 30, x1 = this.width - 20, y1 = this.height - 20;
-		boolean glider = tab.equals("glider");
+		boolean glider = tab.equals("glider") || tryOn != null && tryOn.startsWith("glider:");
 		int size = (int) Math.min((y1 - y0) * (glider ? 0.22F : 0.36F), (x1 - x0) * 0.5F);
 		// The particle effect around the preview: feet at the box's middle plus half the body (and the gliders tab
 		// offset).
 		CosmeticDef fx = Cosmetics.worn(mine(), "particle");
 		int cx = (x0 + x1) / 2, feet = (y0 + y1) / 2 + (int) (size * (0.9F + (glider ? 0.45F : 0.0625F)));
 		particles.draw(g, fx, cx, feet, size, false);
-		preview(g, mc, x0, y0, x1, y1, size, glider, tab.equals("contrail"));
+		preview(g, mc, x0, y0, x1, y1, size, glider, tab.equals("contrail") || tryOn != null && tryOn.startsWith("contrail:"), tryOn, heldPickaxe(tryOn));
 		frames++;
 		particles.draw(g, fx, cx, feet, size, true);
 		g.centeredText(this.font, mc.player.getName().getString(), (x0 + x1) / 2, y1 - 14, 0xFFFFFFFF);
@@ -340,8 +436,24 @@ public class LockerScreen extends Screen {
 		super.removed();
 	}
 
-	/** Draws you, facing the camera, turned by previewYaw (no up/down tilt). */
-	private static void preview(GuiGraphicsExtractor g, Minecraft mc, int x0, int y0, int x1, int y1, int size, boolean glider, boolean contrail) {
+	/**
+	 * The pickaxe in your hand on the preview (2.0.0-test2; empty-handed in the hub, so it never showed): the hovered
+	 * Shop one, or in the Pickaxes tab the one you have on. Its model ("" the default pickaxe), or null for none.
+	 */
+	private String heldPickaxe(String tryOn) {
+		CosmeticDef c;
+		if (tryOn != null && tryOn.startsWith("pickaxe:")) c = Sheets.COSMETICS_BY_ID.get(tryOn.substring("pickaxe:".length()));
+		else if (tab.equals("pickaxe")) c = Cosmetics.worn(mine(), "pickaxe");
+		else return null;
+		return c == null ? "" : "pickaxe_" + c.shape();
+	}
+
+	/**
+	 * Draws you, facing the camera, turned by previewYaw (no up/down tilt); tryOn ("slot:id"): that item worn just here
+	 * (the Shop); pickaxe: that pickaxe in your hand (heldPickaxe).
+	 */
+	private static void preview(GuiGraphicsExtractor g, Minecraft mc, int x0, int y0, int x1, int y1, int size, boolean glider, boolean contrail, String tryOn,
+		String pickaxe) {
 		previewing = true;
 		try {
 			var renderer = mc.getEntityRenderDispatcher().getRenderer(mc.player);
@@ -358,6 +470,18 @@ public class LockerScreen extends Screen {
 				l.setData(RobloxAvatarRenderer.GLIDING, glider); // Gliders tab: show your glider
 				l.setData(RobloxAvatarRenderer.SKYDIVING, contrail); // Contrails tab: skydiving, trailing yours
 				l.setData(RobloxAvatarRenderer.PREVIEW, true);
+				if (tryOn != null) {
+					int colon = tryOn.indexOf(':');
+					l.setData(RobloxAvatarRenderer.TRY_ON, Map.of(tryOn.substring(0, colon), tryOn.substring(colon + 1)));
+				}
+			}
+			if (pickaxe != null && st instanceof ArmedEntityRenderState armed) { // (in your main hand, as in a match)
+				ItemStack pick = Loadout.pickaxe(pickaxe.isEmpty() ? null : pickaxe);
+				boolean right = armed.mainArm != HumanoidArm.LEFT;
+				if (right) armed.rightHandItemStack = pick;
+				else armed.leftHandItemStack = pick;
+				mc.getItemModelResolver().updateForLiving(right ? armed.rightHandItemState : armed.leftHandItemState, pick,
+					right ? ItemDisplayContext.THIRD_PERSON_RIGHT_HAND : ItemDisplayContext.THIRD_PERSON_LEFT_HAND, mc.player);
 			}
 			Vector3f translation = new Vector3f(0, st.boundingBoxHeight / 2.0F + (glider ? 0.45F : 0.0625F), 0);
 			// Gliders tab: seen a little from above (as when gliding), so flat gliders don't show edge-on as a line.
