@@ -261,8 +261,24 @@ public final class AutoWorld {
 		StringBuilder text = new StringBuilder(line.getString());
 		copyValues(line, text); // e4mc can hide the domain behind "click to copy"
 		Matcher m = E4MC.matcher(text);
-		if (!m.find() || m.group(1).equals(lastDomain)) return;
-		lastDomain = m.group(1);
+		if (m.find()) hosted(m.group(1));
+	}
+
+	/**
+	 * e4mc's own log line with this world's public address (LogWatch), from e4mc's network thread: the same as its chat
+	 * line, which can come later or not at all.
+	 */
+	static void onE4mcDomain(String domain) {
+		Minecraft mc = Minecraft.getInstance();
+		if (mc == null) return;
+		mc.execute(() -> {
+			if (mc.getSingleplayerServer() != null) hosted(domain);
+		});
+	}
+
+	private static void hosted(String domain) {
+		if (domain.equals(lastDomain)) return;
+		lastDomain = domain;
 		meltyLog("Melty join address: " + lastDomain);
 		MeltyTest.pass("friends-can-join");
 		RoomCodes.hosting(lastDomain);

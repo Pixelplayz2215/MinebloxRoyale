@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.1 (in testing: 1.0.1-test3, not released yet)
+## v1.0.1 (in testing: 1.0.1-test4, not released yet)
 
 A graphics update: almost everything you see in a match was remade in Blender.
 
@@ -51,7 +51,9 @@ A graphics update: almost everything you see in a match was remade in Blender.
 
 ### Other
 - **Starting the game:** the Prism Launcher package now carries Minecraft's and Fabric's version details and Java 25, so Prism doesn't have to download them before the game starts. On some PCs that download never got through and the game closed right after starting. The same fix went to Melty as 1.0.0.1.
-- Test builds show their version on the hub's main board, for example "v1.0.1 - TEST 3".
+- **Playing with friends:** the host's game writes its join address the moment the relay gives it out, without waiting for the chat message, and starts a fresh note every launch, so friends are never sent an old address. (Also in 1.0.0.2.)
+- **Sign-in errors:** when Minecraft can't check the Microsoft sign-in (an offline account, or one whose sign-in has run out), each check writes one plain line in the log instead of a long error. Playing works as normal; joining friends needs a signed-in account. (Also in 1.0.0.2.)
+- Test builds show their version on the hub's main board, for example "v1.0.1 - TEST 4".
 
 ## v1.0.0
 The first public release.

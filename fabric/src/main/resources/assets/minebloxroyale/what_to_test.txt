@@ -8,4 +8,5 @@ Knocked down: the crawl along the ground: one arm reaches ahead while the other 
 Emotes (all 40 redone with elbows and knees, checked frame by frame): nothing goes through anything; Floss and Arm Swing reach the middle
 Shirts, pants and shoes bend with the knees and elbows: stripes, knee pads, cuffs, laces stay on
 Fixed models: army helmet camo, mohawk crown, cap stitching, halo, ear headbands, boot heels, pigtails, bus door, bandages, wrecked bonnets
-Hub: the main board shows v1.0.1 - TEST 3 next to MINEBLOX ROYALE
+With a friend (new in test4): host a game, and your friend joins with Melty's Join or your room code (/rc)
+Hub: the main board shows v1.0.1 - TEST 4 next to MINEBLOX ROYALE
