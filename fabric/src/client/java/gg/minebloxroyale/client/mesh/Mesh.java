@@ -37,6 +37,7 @@ public final class Mesh {
 	public final float[] bounds = new float[6];
 
 	private Mesh(int count, float[] pos, byte[] nrm, int[] rgb, byte[] flags) {
+		faceOut(count, pos, nrm, rgb, flags);
 		this.count = count;
 		this.pos = pos;
 		this.nrm = nrm;
@@ -50,6 +51,36 @@ public final class Mesh {
 				bounds[k] = Math.min(bounds[k], pos[i * 3 + k]);
 				bounds[k + 3] = Math.max(bounds[k + 3], pos[i * 3 + k]);
 			}
+	}
+
+	/**
+	 * Turns every triangle wound against its own normals the right way round (swapping two corners). Since 26.x a face
+	 * seen from behind is lit as if facing away, so such a triangle came out dark from both sides (a few rims and brims:
+	 * the tricorne's, the pith helmet's...); Blender, which made them, lights by the normals alone.
+	 */
+	private static void faceOut(int count, float[] pos, byte[] nrm, int[] rgb, byte[] flags) {
+		for (int t = 0; t + 2 < count; t += 3) {
+			int a = t * 3, b = a + 3, c = a + 6;
+			float ux = pos[b] - pos[a], uy = pos[b + 1] - pos[a + 1], uz = pos[b + 2] - pos[a + 2];
+			float vx = pos[c] - pos[a], vy = pos[c + 1] - pos[a + 1], vz = pos[c + 2] - pos[a + 2];
+			float gx = uy * vz - uz * vy, gy = uz * vx - ux * vz, gz = ux * vy - uy * vx;
+			float nx = nrm[a] + nrm[b] + nrm[c], ny = nrm[a + 1] + nrm[b + 1] + nrm[c + 1], nz = nrm[a + 2] + nrm[b + 2] + nrm[c + 2];
+			if (gx * nx + gy * ny + gz * nz >= 0) continue;
+			for (int k = 0; k < 3; k++) {
+				float fp = pos[b + k];
+				pos[b + k] = pos[c + k];
+				pos[c + k] = fp;
+				byte fn = nrm[b + k];
+				nrm[b + k] = nrm[c + k];
+				nrm[c + k] = fn;
+			}
+			int fr = rgb[t + 1];
+			rgb[t + 1] = rgb[t + 2];
+			rgb[t + 2] = fr;
+			byte ff = flags[t + 1];
+			flags[t + 1] = flags[t + 2];
+			flags[t + 2] = ff;
+		}
 	}
 
 	public static Mesh get(String id) {

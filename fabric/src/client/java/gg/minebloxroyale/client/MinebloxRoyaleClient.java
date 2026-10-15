@@ -142,6 +142,7 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 		EntityRenderers.register(BotEntity.TYPE, BotRenderer::new);
 		EntityRenderers.register(BattleBusEntity.TYPE, BattleBusRenderer::new);
 		BlockEntityRenderers.register(ModBlocks.CAR_ENTITY, context -> new CarRenderer()); // parked cars (smooth models)
+		BlockEntityRenderers.register(ModBlocks.LOOT_CHEST_ENTITY, context -> new ChestRenderer()); // loot chests (Blender models, lid opening)
 
 		KeyMapping.Category cat = KeyMapping.Category.register(MinebloxRoyale.id("main"));
 		reload = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.minebloxroyale.reload", InputConstants.KEY_R, cat));

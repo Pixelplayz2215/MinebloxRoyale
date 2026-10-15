@@ -7,6 +7,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.server.MinecraftServer;
@@ -19,6 +20,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.EnderChestBlock;
@@ -27,6 +29,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
@@ -37,6 +41,8 @@ import net.minecraft.world.phys.Vec3;
 public final class LootChests {
 	/** Vanilla structure chests seen as their chunks load, turned into loot chests a few a tick. */
 	private static final Queue<BlockPos> VANILLA = new ConcurrentLinkedQueue<>();
+	/** Loot chests found without their block entity (saved before v1.0.1 had one), to give one each. */
+	private static final Queue<BlockPos> NO_ENTITY = new ConcurrentLinkedQueue<>();
 
 	private LootChests() {
 	}
@@ -153,6 +159,20 @@ public final class LootChests {
 			if (level != level.getServer().overworld()) return;
 			for (BlockEntity be : chunk.getBlockEntities().values())
 				if (vanillaChest(be.getBlockState())) VANILLA.add(be.getBlockPos());
+			// Loot chests saved before they had a block entity (v1.0.1 draws them from it): given one, or they'd be
+			// invisible.
+			LevelChunkSection[] sections = chunk.getSections();
+			for (int i = 0; i < sections.length; i++) {
+				if (sections[i].hasOnlyAir() || !sections[i].maybeHas(LootChests::is)) continue;
+				int y0 = SectionPos.sectionToBlockCoord(chunk.getSectionYFromSectionIndex(i));
+				for (int y = 0; y < 16; y++)
+					for (int z = 0; z < 16; z++)
+						for (int x = 0; x < 16; x++)
+							if (is(sections[i].getBlockState(x, y, z))) {
+								BlockPos pos = new BlockPos(chunk.getPos().getMinBlockX() + x, y0 + y, chunk.getPos().getMinBlockZ() + z);
+								if (!(chunk.getBlockEntity(pos, LevelChunk.EntityCreationType.CHECK) instanceof LootChestBlockEntity)) NO_ENTITY.add(pos);
+							}
+			}
 		});
 	}
 
@@ -167,6 +187,12 @@ public final class LootChests {
 	 */
 	public static void tick(MinecraftServer server) {
 		ServerLevel level = server.overworld();
+		for (int n = 0; n < 32 && !NO_ENTITY.isEmpty(); n++) {
+			BlockPos pos = NO_ENTITY.poll();
+			BlockState s = level.isLoaded(pos) ? level.getBlockState(pos) : null;
+			if (s == null || !is(s) || level.getBlockEntity(pos) == null) continue; // (getBlockEntity makes it)
+			level.sendBlockUpdated(pos, s, s, Block.UPDATE_ALL);
+		}
 		for (int n = 0; n < 8 && !VANILLA.isEmpty(); n++) {
 			BlockPos pos = VANILLA.poll();
 			if (level.isLoaded(pos)) convert(level, pos);

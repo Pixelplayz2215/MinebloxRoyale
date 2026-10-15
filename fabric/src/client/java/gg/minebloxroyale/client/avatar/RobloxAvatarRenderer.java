@@ -76,22 +76,25 @@ public final class RobloxAvatarRenderer {
 	 * A pose (emote_keys and move_keys sheets; angles in degrees, bounce in studs): the arms swing forward (X) and out
 	 * to their side (Z), the legs too; the whole body turns (bodyYaw) and lifts (bounce); above the hips the body twists
 	 * (to its right), leans (forward) and tilts (to its right); the head nods (down), turns (to its right) and tilts (to
-	 * its right); the elbows bend the forearms forward and the knees the shins back (0 = straight).
+	 * its right); the elbows bend the forearms forward and the knees the shins back (0 = straight); each arm turns about
+	 * its own length (Y: so the elbow can fold any way, e.g. across the face); the whole body, legs too, turns over
+	 * about the hips (flip: forward, 180 = upside down).
 	 */
 	public record Pose(float rightArmX, float rightArmZ, float leftArmX, float leftArmZ, float rightLegX, float leftLegX, float bodyYaw, float bounce,
 		float rightLegZ, float leftLegZ, float headX, float headY, float headZ, float lean, float tilt, float twist, float rightElbow, float leftElbow,
-		float rightKnee, float leftKnee) {
-		static final Pose ZERO = of(new float[20]);
-		static final int RAX = 0, RAZ = 1, LAX = 2, LAZ = 3, BOB = 7, HX = 10, HY = 11, HZ = 12, LEAN = 13, TWIST = 15, REL = 16, LEL = 17;
-		static final int[] ARMS = { RAX, RAZ, LAX, LAZ, REL, LEL }, RIGHT_ARM = { RAX, RAZ, REL };
+		float rightKnee, float leftKnee, float rightArmY, float leftArmY, float flip) {
+		static final Pose ZERO = of(new float[23]);
+		static final int RAX = 0, RAZ = 1, LAX = 2, LAZ = 3, BOB = 7, HX = 10, HY = 11, HZ = 12, LEAN = 13, TWIST = 15, REL = 16, LEL = 17, RAY = 20, LAY = 21;
+		static final int[] ARMS = { RAX, RAZ, LAX, LAZ, REL, LEL, RAY, LAY }, RIGHT_ARM = { RAX, RAZ, REL, RAY };
 
 		float[] values() {
 			return new float[] { rightArmX, rightArmZ, leftArmX, leftArmZ, rightLegX, leftLegX, bodyYaw, bounce, rightLegZ, leftLegZ, headX, headY, headZ,
-				lean, tilt, twist, rightElbow, leftElbow, rightKnee, leftKnee };
+				lean, tilt, twist, rightElbow, leftElbow, rightKnee, leftKnee, rightArmY, leftArmY, flip };
 		}
 
 		static Pose of(float[] v) {
-			return new Pose(v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8], v[9], v[10], v[11], v[12], v[13], v[14], v[15], v[16], v[17], v[18], v[19]);
+			return new Pose(v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8], v[9], v[10], v[11], v[12], v[13], v[14], v[15], v[16], v[17], v[18], v[19],
+				v[20], v[21], v[22]);
 		}
 
 		Pose lerp(Pose b, float f) {
@@ -191,14 +194,15 @@ public final class RobloxAvatarRenderer {
 	/** Roblox root space -> a body part's joint (studs): its pivot, turned as the pose says, the head also to the look. */
 	static Matrix4f jointMatrix(AvatarPartDef part, LivingEntityRenderState state, Pose p) {
 		Matrix4f m = new Matrix4f();
-		m.translate(0, p.bounce(), 0).rotateY(rad(p.bodyYaw()));
+		m.translate(0, p.bounce(), 0).rotateY(rad(p.bodyYaw())).rotateX(rad(-p.flip()));
 		// Everything above the hips (the root) twists, leans and tilts together; the legs stay planted.
 		if (!part.swing().equals("leg")) m.rotateY(rad(-p.twist())).rotateX(rad(-p.lean())).rotateZ(rad(-p.tilt()));
 		m.translate(part.pivotX(), part.pivotY(), part.pivotZ());
 		boolean right = part.centerX() > 0;
 		switch (part.swing()) {
 			// +x swings an arm or leg forward (towards -Z), +z raises it out to its own side.
-			case "arm" -> m.rotateX(rad(right ? p.rightArmX() : p.leftArmX())).rotateZ(rad(right ? p.rightArmZ() : -p.leftArmZ()));
+			case "arm" -> m.rotateX(rad(right ? p.rightArmX() : p.leftArmX())).rotateZ(rad(right ? p.rightArmZ() : -p.leftArmZ()))
+				.rotateY(rad(right ? p.rightArmY() : -p.leftArmY()));
 			case "leg" -> m.rotateX(rad(right ? p.rightLegX() : p.leftLegX())).rotateZ(rad(right ? p.rightLegZ() : -p.leftLegZ()));
 			case "head" -> m.rotateX(rad(-p.headX())).rotateY(rad(-p.headY())).rotateZ(rad(-p.headZ()))
 				.rotateY(rad(-state.yRot)).rotateX(rad(-state.xRot));
@@ -497,6 +501,7 @@ public final class RobloxAvatarRenderer {
 
 	private static Pose pose(EmoteKeyDef k) {
 		return new Pose(k.rightArmX(), k.rightArmZ(), k.leftArmX(), k.leftArmZ(), k.rightLegX(), k.leftLegX(), k.bodyYaw(), k.bounce(), k.rightLegZ(),
-			k.leftLegZ(), k.headX(), k.headY(), k.headZ(), k.lean(), k.tilt(), k.twist(), k.rightElbow(), k.leftElbow(), k.rightKnee(), k.leftKnee());
+			k.leftLegZ(), k.headX(), k.headY(), k.headZ(), k.lean(), k.tilt(), k.twist(), k.rightElbow(), k.leftElbow(), k.rightKnee(), k.leftKnee(),
+			k.rightArmY(), k.leftArmY(), k.flip());
 	}
 }

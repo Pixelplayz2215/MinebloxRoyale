@@ -25,15 +25,17 @@ def K(t, **ch):
 
 
 class Emote:
-    def __init__(self, loop, keys, linear=(), note=""):
-        self.loop, self.keys, self.linear, self.note = loop, keys, set(linear), note
+    def __init__(self, loop, keys, linear=(), note="", free=(), plant="floor"):
+        # free: limbs allowed to go into the body (only where the creator chose it: the Floss's arms, "Full reach");
+        # plant: "floor" (feet kept out of the floor) or "touch" (the lowest point of the body on it: a headspin)
+        self.loop, self.keys, self.linear, self.note, self.free, self.plant = loop, keys, set(linear), note, tuple(free), plant
 
 
 def mirror(ch):
     """The same pose, mirrored left to right."""
     out = {}
     swap = {"rax": "lax", "raz": "laz", "lax": "rax", "laz": "raz", "rlx": "llx", "llx": "rlx", "rlz": "llz", "llz": "rlz", "rel": "lel", "lel": "rel",
-            "rkn": "lkn", "lkn": "rkn"}
+            "rkn": "lkn", "lkn": "rkn", "ray": "lay", "lay": "ray"}
     for k, v in ch.items():
         if k in swap:
             out[swap[k]] = v
@@ -51,13 +53,22 @@ def beat(t, ch):
 # -------------------------------------------------------------------------------------------------------------------
 
 def _floss():
-    # straight-ish arms swing across the body, in front and behind in turn; hips sway the other way on soft knees
-    # (an R6 arm turned in across the body goes into it: the arm swinging over reaches the middle, in front or behind)
-    L = dict(tilt=7, twist=-10, rlz=4, llz=-2, hz=-6, rkn=4, lkn=14)  # arms to its left, hips to its right
+    # (creator, test4: "Too fast, and it doesn't reach all the way from one side to the other"; chose "Full reach")
+    # Both arms swing to one side, then the other: one passes in front of the body, the other behind, and every second
+    # swing they change over, so each arm crosses the body in front and then behind. The crossing arm reaches right
+    # across (its elbow folding in: Y turns it so it can), the upper body tips with the arms and the hips sway the
+    # other way on soft knees. An R6 arm can't cross without its upper part going into the body's edge: free.
+    L = dict(tilt=-9, twist=-8, yaw=-4, hz=6, rlz=8, llz=-4, rkn=6, lkn=16)  # arms to its left, hips to its right
     R = mirror(L)
-    return [K(0, rax=36, raz=-4, rel=16, lax=-34, laz=40, lel=6, **L), K(0.25, rax=-34, raz=40, rel=6, lax=36, laz=-4, lel=16, **R),
-            K(0.5, rax=-36, raz=-4, rel=6, lax=34, laz=40, lel=16, **L), K(0.75, rax=34, raz=40, rel=16, lax=-36, laz=-4, lel=6, **R),
-            K(1, rax=36, raz=-4, rel=16, lax=-34, laz=40, lel=6, **L)]
+    across_front, across_back = dict(x=29, z=-38, y=90, e=15), dict(x=-29, z=-38, y=90, e=15)
+    own_front, own_back = dict(x=30, z=17, y=90, e=8), dict(x=-30, z=17, y=90, e=8)
+
+    def arms(right, left, body):
+        return dict(rax=right["x"], raz=right["z"], ray=right["y"], rel=right["e"],
+                    lax=left["x"], laz=left["z"], lay=left["y"], lel=left["e"], **body)
+    return [K(0, **arms(across_front, own_back, L)), K(0.25, **arms(own_back, across_front, R)),
+            K(0.5, **arms(across_back, own_front, L)), K(0.75, **arms(own_front, across_back, R)),
+            K(1, **arms(across_front, own_back, L))]
 
 
 def _robot():
@@ -88,15 +99,19 @@ EMOTES = {
         K(0.75, rax=20, raz=10, rel=30, lax=20, laz=10, lel=30, twist=0, tilt=0, hy=0, bob=-0.1),
     ], note="both arms swing side to side, elbows easing, dipping in the middle"),
     "robot": Emote(1.6, _robot(), note="stiff, snapping 90 degree elbows with holds"),
-    "floss": Emote(0.7, _floss(), note="arms swing across the body, front and back in turn, hips the other way"),
+    "floss": Emote(1.4, _floss(), note="arms swing right across the body, front and back in turn, hips the other way",
+                   free=("right_arm", "left_arm")),
     "dab": Emote(1.6, [
-        K(0, raz=4, laz=4, rel=8, lel=8, lean=0, hx=0, hy=0, hz=0, tilt=0, bob=0),
+        # (creator, test4: "doesn't look like a real dab") a wind-up, then the dab: the right arm straight out and up to
+        # the right, the left arm folded across in front of the face, its forearm pointing the same way, the face bowed
+        # into the crook of the left elbow (it presses in there: free)
+        K(0, raz=4, laz=4, rel=8, lel=8, lean=0, hx=0, hy=0, hz=0, tilt=0, twist=0, bob=0, ray=0, lay=0),
         K(0.15, rax=-25, lax=-25, raz=10, laz=10, rel=40, lel=40, lean=-6, bob=-0.12),
-        # the right arm straight out and up, the left forearm up in front of the left shoulder, the face turned down to it
-        K(0.24, rax=20, raz=138, rel=0, lax=95, laz=0, lel=110, lean=12, tilt=10, hx=25, hy=-30, hz=12, bob=0.04, rkn=10, lkn=4),
-        K(0.7, rax=22, raz=142, rel=0, lax=96, laz=0, lel=112, lean=13, tilt=11, hx=27, hy=-30, hz=12, bob=0),
-        K(0.85, raz=4, laz=4, rax=0, lax=0, rel=8, lel=8, lean=0, tilt=0, hx=0, hy=0, hz=0, bob=0, rkn=0, lkn=0),
-    ], note="a wind-up, then the dab snapped and held"),
+        K(0.24, rax=-6, raz=142, ray=0, rel=0, lax=136, laz=-30, lay=25, lel=32, lean=12, twist=12, tilt=6, hx=30, hy=-32, hz=10,
+          bob=0.04, rkn=10, lkn=4),
+        K(0.7, rax=-5, raz=144, ray=0, rel=0, lax=137, laz=-31, lay=25, lel=34, lean=13, twist=13, tilt=7, hx=32, hy=-33, hz=10, bob=0),
+        K(0.85, raz=4, laz=4, rax=0, lax=0, rel=8, lel=8, ray=0, lay=0, lean=0, twist=0, tilt=0, hx=0, hy=0, hz=0, bob=0, rkn=0, lkn=0),
+    ], note="a wind-up, then the dab snapped and held: one arm out and up, the face in the other's elbow", free=("left_arm",)),
     "jumping_jacks": Emote(0.8, [
         K(0, raz=6, laz=6, rel=6, lel=6, rlz=0, llz=0, bob=0, hx=0, rkn=0, lkn=0),
         K(0.12, raz=8, laz=8, bob=-0.12),
@@ -261,11 +276,15 @@ EMOTES = {
         K(0.5, lax=10, laz=168, lel=8, rax=30, raz=20, rel=70, bob=0.12, hx=-14, tilt=5, rkn=4, lkn=20),
         K(0.75, bob=0, rel=40, lel=40),
     ], note="fists up in turns, bouncing on bent knees"),
-    "raise_roof": Emote(0.5, [
-        # upper arms out level, forearms up, palms pushing the roof up from the elbows
-        K(0, rax=90, raz=92, rel=120, lax=90, laz=92, lel=120, bob=-0.12, hx=-6, lean=4),
-        K(0.5, rax=90, raz=110, rel=40, lax=90, laz=110, lel=40, bob=0.04, hx=-16, lean=-3),
-    ], note="pushing the roof up from the elbows, bouncing"),
+    "raise_roof": Emote(0.9, [
+        # (creator, test4: "Looks like it's flexing muscles") palms up, pushing the roof: from hands up in front of the
+        # shoulders, elbows out and a little forward (a flex has them level out to the sides), the arms push up into a
+        # V overhead, twice a loop, bouncing on the beat (both ends and the way between clear of the body)
+        K(0, rax=69.5, raz=58.6, ray=-1.7, rel=84.8, lax=69.5, laz=58.6, lay=-1.7, lel=84.8, bob=-0.1, hx=6, lean=4, rkn=14, lkn=14),
+        K(0.25, rax=-6.1, raz=165, ray=-1.6, rel=2.8, lax=-6.1, laz=165, lay=-1.6, lel=2.8, bob=0.03, hx=-14, lean=-4, rkn=2, lkn=2),
+        K(0.5, rax=69.5, raz=58.6, ray=-1.7, rel=84.8, lax=69.5, laz=58.6, lay=-1.7, lel=84.8, bob=-0.1, hx=6, lean=4, rkn=14, lkn=14),
+        K(0.75, rax=-6.1, raz=165, ray=-1.6, rel=2.8, lax=-6.1, laz=165, lay=-1.6, lel=2.8, bob=0.03, hx=-14, lean=-4, rkn=2, lkn=2),
+    ], note="palms up, pushing the roof up overhead, bouncing"),
     "penguin": Emote(0.5, [
         # stiff straight arms and legs, little flaps and a waddle
         K(0, raz=30, laz=8, rel=0, lel=0, tilt=-10, yaw=10, rlx=8, llx=-4, hz=8, bob=0.04),
@@ -328,12 +347,13 @@ EMOTES = {
         K(0.5, rax=-25, raz=158, rel=30, hy=0, bob=0),
         K(0.75, rax=0, raz=144, rel=10, hy=-8, bob=0.03),
     ], note="a rope twirled overhead, the other hand on the hip"),
-    "breakdance": Emote(0.9, [
-        # low on bent knees, spinning, a leg kicking out straight in turn
-        K(0, yaw=0, lean=15, raz=80, laz=80, rax=40, lax=40, rel=30, lel=30, rlz=26, llz=6, rkn=0, lkn=70, bob=-0.35),
-        K(0.5, rlz=6, llz=26, rkn=70, lkn=0, bob=-0.42),
-        K(1, yaw=360, rlz=26, llz=6, rkn=0, lkn=70, bob=-0.35),
-    ], linear=("yaw",), note="low spin, arms out, legs kicking out in turn"),
+    "breakdance": Emote(1.2, [
+        # (creator, test4: "Should spin on its head upside-down") a headspin: the whole body over (flip), the top of the
+        # head on the floor (plant: touch), spinning twice a loop, legs up in a V scissoring a little, arms out low
+        K(0, flip=180, yaw=0, rax=0, raz=104, rel=15, lax=0, laz=104, lel=15, rlz=30, llz=30, rlx=6, llx=-6, rkn=15, lkn=15),
+        K(0.5, yaw=360, rlx=-6, llx=6, rlz=34, llz=26),
+        K(1, flip=180, yaw=720, rax=0, raz=104, rel=15, lax=0, laz=104, lel=15, rlz=30, llz=30, rlx=6, llx=-6, rkn=15, lkn=15),
+    ], linear=("yaw",), note="a headspin: upside down on its head, legs in a V", plant="touch"),
     "ripple": Emote(0.9, [
         # a wave rolls from one hand through the elbows and shoulders to the other
         K(0, laz=115, raz=10, lel=10, rel=60, tilt=-10, hz=10, rax=10, lax=10, bob=0),

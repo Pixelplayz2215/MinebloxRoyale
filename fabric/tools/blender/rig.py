@@ -43,14 +43,14 @@ def joints(e, lying=None):
     g = lambda k: float(e.get(k, 0.0))
     out = {}
     for part, pv in PIVOT.items():
-        m = (lying if lying is not None else np.eye(4)) @ tr(0, g("bounce"), 0) @ rot("Y", g("bodyYaw"))
+        m = (lying if lying is not None else np.eye(4)) @ tr(0, g("bounce"), 0) @ rot("Y", g("bodyYaw")) @ rot("X", -g("flip"))
         right = pv[0] > 0
         if not part.endswith("leg"):
             m = m @ rot("Y", -g("twist")) @ rot("X", -g("lean")) @ rot("Z", -g("tilt"))
         m = m @ tr(*pv)
         if part.endswith("arm"):
-            x, z = (g("rightArmX"), g("rightArmZ")) if right else (g("leftArmX"), g("leftArmZ"))
-            m = m @ rot("X", x) @ rot("Z", z if right else -z)
+            x, z, y = (g("rightArmX"), g("rightArmZ"), g("rightArmY")) if right else (g("leftArmX"), g("leftArmZ"), g("leftArmY"))
+            m = m @ rot("X", x) @ rot("Z", z if right else -z) @ rot("Y", y if right else -y)
         elif part.endswith("leg"):
             x, z = (g("rightLegX"), g("rightLegZ")) if right else (g("leftLegX"), g("leftLegZ"))
             m = m @ rot("X", x) @ rot("Z", z if right else -z)
@@ -67,7 +67,7 @@ def bends(e):
 # Where a leg meets the floor: across the middle of its sole (a tilted shin's toe or heel may dip a little: there's
 # no ankle), down its front (the outside of the knee, kneeling) and its back (lying or sitting).
 LEG_SAMPLES = ([(x, -2.0, z) for x in (-0.5, 0.5) for z in (-0.25, 0.0, 0.25)]
-               + [(x, y, z) for x in (-0.5, 0.5) for y in (-0.55, -0.8, -1.0, -1.2, -1.45, -1.75) for z in (-0.5, 0.5)])
+               + [(x, -0.5 - 0.1 * i, z) for x in (-0.5, 0.5) for i in range(15) for z in (-0.5, 0.5)])
 
 
 SOLE = [(x, -2.0, 0.0) for x in (-0.5, 0.5)]  # (just the middle of the sole: an emote's dip)
@@ -81,9 +81,24 @@ def leg_low(js, bd, leg, samples=LEG_SAMPLES):
     return lo
 
 
+ARM_SAMPLES = [(x, 0.5 - 0.1 * i, z) for x in (-0.5, 0.5) for i in range(21) for z in (-0.5, 0.5)]
+TORSO_CORNERS = [(x, y, z) for x in (-1, 0, 1) for y in (-1, 0, 1) for z in (-0.5, 0.5)]
+HEAD_RIM = [(0.6 * math.cos(math.radians(a)), y, 0.6 * math.sin(math.radians(a))) for a in range(0, 360, 20) for y in (0.0, 1.2)]
+
+
 def lowest(e):
+    """The lowest point of the whole body (root space y): usually a foot; a knee kneeling, a hand on the floor, the head
+    upside down."""
     js, bd = joints(e), bends(e)
-    return min(leg_low(js, bd, "left_leg"), leg_low(js, bd, "right_leg"))
+    lo = min(leg_low(js, bd, "left_leg"), leg_low(js, bd, "right_leg"))
+    for arm in ("left_arm", "right_arm"):
+        for x, y, z in ARM_SAMPLES:
+            x2, y2, z2, _ = bend.bend_point(x, y, z, "arm", bd[arm])
+            lo = min(lo, (js[arm] @ np.array((x2, y2, z2, 1.0)))[1])
+    for part, pts in (("torso", TORSO_CORNERS), ("head", HEAD_RIM)):
+        for p in pts:
+            lo = min(lo, (js[part] @ np.array((*p, 1.0)))[1])
+    return lo
 
 
 # ------------------------------------------------------------------------------------------------- feet
@@ -115,7 +130,8 @@ def floor(e):
 
 
 def touch(e):
-    """The lowest foot on the floor (the legs say how high the body is), plus any hop the pose's bounce asks for."""
+    """The lowest point of the body on the floor (a foot; the head in a headspin), plus any hop the pose's bounce asks
+    for."""
     e = dict(e)
     hop = max(0.0, float(e.get("bounce", 0.0)))
     e["bounce"] = 0.0
@@ -134,6 +150,8 @@ def touch(e):
 SHOULDER_CAP = -0.5  # (joint-space y: an arm above its elbow's middle is its upper arm, by the shoulder)
 HIP_CAP = -0.45
 JOINT_ALLOW = 0.2  # (how far an upper arm / thigh may sit into the torso where it is joined on: the joint itself)
+CAP_ALLOW = 0.26  # (an arm's end above its shoulder pivot: inside the shoulder itself; an arm raised 125-145 degrees out
+#                    always tucks that corner a touch deeper into the top of the torso, on any R6 body)
 EPS = 0.01  # (studs: 0.0036 blocks, well under a pixel at any distance)
 LIMBS = ("right_arm", "left_arm", "right_leg", "left_leg")
 EXTENT = {"arm": (-1.5, 0.5), "leg": (-2.0, 0.0)}
@@ -185,16 +203,56 @@ def _head_inside(q):
     return np.minimum(r, h)
 
 
-def _limb_inside(kind, deg, joint, world):
-    """How deep each world point is inside a (bent) limb: its upper half and its turned lower half as two boxes, each
-    reaching to the middle of the bend (a little more than the round elbow itself: on the safe side)."""
-    y0, y1 = EXTENT[kind]
+def _turns(kind, deg, s):
+    """bend.turn for many slices at once."""
+    up, down = bend.span(kind, deg)
+    return bend.LIMB[kind][1] * math.radians(deg) * np.clip((up - s) / (up + down), 0.0, 1.0)
+
+
+def _bent_depth(kind, deg, q, lo, hi, split=False):
+    """How deep each point (limb joint space, bent) is inside the limb's box lo..hi (its rest shape, > 0 inside):
+    each point taken back to where it was before the bend (bend.unbend: its slice is the one whose turn, undone, puts
+    it back on that slice; a deep bend presses the far end into the near one, so a point may be in both: the deeper).
+    Above and below the bending stretch the limb is rigid (one answer each); across it, slices every 0.02.
+    split: (above the middle, below it) separately."""
+    lo, hi = np.asarray(lo, dtype=float), np.asarray(hi, dtype=float)
     mid = bend.LIMB[kind][0]
-    q = _to_local(joint, world)
-    upper = _box_inside(q, np.array((-0.5, mid, -0.5)), np.array((0.5, y1, 0.5)))
-    ql = _to_local(joint @ np.array(bend.lower_matrix(kind, deg)), world)
-    lower = _box_inside(ql, np.array((-0.5, y0, -0.5)), np.array((0.5, mid, 0.5)))
-    return np.maximum(upper, lower)
+    if deg <= 0.01:
+        d = _box_inside(q, lo, hi)
+        if not split:
+            return d
+        return np.where(q[:, 1] >= mid, d, -1.0), np.where(q[:, 1] < mid, d, -1.0)
+    up, down = bend.span(kind, deg)
+    full = bend.LIMB[kind][1] * math.radians(deg)
+    ry, rz = q[:, 1] - mid, q[:, 2]
+    # the rigid parts: above (unturned) and below (turned all the way)
+    s_up = ry
+    s_low = ry * math.cos(full) + rz * math.sin(full)
+    cand_s = [np.where(s_up >= up, s_up, np.nan), np.where(s_low <= -down, s_low, np.nan)]
+    # across the bend
+    k = max(2, int(math.ceil((up + down) / 0.02)) + 1)
+    grid = np.linspace(-down, up, k)
+    a = _turns(kind, deg, grid)
+    back = ry[:, None] * np.cos(a)[None] + rz[:, None] * np.sin(a)[None] - grid[None]
+    b0, b1 = back[:, :-1], back[:, 1:]
+    hit = (b0 > 0) != (b1 > 0)
+    t = b0 / np.where(hit, b0 - b1, 1.0)
+    sz = np.where(hit, grid[:-1][None] + t * (grid[1] - grid[0]), np.nan)
+    s = np.concatenate([c[:, None] for c in cand_s] + [sz], axis=1)
+    ar = _turns(kind, deg, np.nan_to_num(s))
+    across = -ry[:, None] * np.sin(ar) + rz[:, None] * np.cos(ar)
+    x = np.broadcast_to(q[:, 0:1], s.shape)
+    d = np.minimum.reduce([x - lo[0], hi[0] - x, mid + s - lo[1], hi[1] - mid - s, across - lo[2], hi[2] - across])
+    d = np.where(np.isnan(s), -9.0, d)
+    if not split:
+        return d.max(axis=1)
+    return np.where(s >= 0, d, -9.0).max(axis=1), np.where(s < 0, d, -9.0).max(axis=1)
+
+
+def _limb_inside(kind, deg, joint, world):
+    """How deep each world point is inside a (bent) limb, exactly as bent."""
+    y0, y1 = EXTENT[kind]
+    return _bent_depth(kind, deg, _to_local(joint, world), (-0.5, y0, -0.5), (0.5, y1, 0.5))
 
 
 TORSO_SURF = None
@@ -236,13 +294,13 @@ def _parts(e, limb):
     out = {}
     # its surface in the torso (the upper arm / thigh may sit in a little where it is joined on)
     torso = _box_inside(_to_local(js["torso"], world), np.array((-1, -1, -0.5)), np.array((1, 1, 0.5)))
-    d = max(float(torso[ys < cap].max(initial=-1)), float(torso[ys >= cap].max(initial=-1)) - JOINT_ALLOW)
+    d = max(float(torso[ys < cap].max(initial=-1)), float(torso[(ys >= cap) & (ys < 0)].max(initial=-1)) - JOINT_ALLOW,
+            float(torso[ys >= 0].max(initial=-1)) - (CAP_ALLOW if kind == "arm" else JOINT_ALLOW))
     # and the torso's surface in it: none in its lower part, a little in its upper part
     tw = _world(js["torso"], TORSO_SURF)
     y0, y1 = EXTENT[kind]
     mid = bend.LIMB[kind][0]
-    up = _box_inside(_to_local(js[limb], tw), np.array((-0.5, mid, -0.5)), np.array((0.5, y1, 0.5)))
-    low = _box_inside(_to_local(js[limb] @ np.array(bend.lower_matrix(kind, bd[limb])), tw), np.array((-0.5, y0, -0.5)), np.array((0.5, mid, 0.5)))
+    up, low = _bent_depth(kind, bd[limb], _to_local(js[limb], tw), (-0.5, y0, -0.5), (0.5, y1, 0.5), split=True)
     d = max(d, float(low.max()), float(up.max()) - JOINT_ALLOW)
     out["torso"] = d
     if kind == "arm":
@@ -311,14 +369,14 @@ def _smallest(e, limb, moves, limit=150.0):
     return None
 
 
-def clear(e, keep=()):
+def clear(e, keep=(), free=()):
     """Each limb that goes into the body: the smallest change that takes it out, as {column: change}. An arm bends its
     elbow, swings further forward / back or out to its side, or (an arm holding a gun, in keep) swings at the shoulder
     while its elbow turns back the same amount, so the forearm keeps pointing the same way. A leg swings out."""
     out = {}
     f = dict(e)
     for limb in LIMBS:
-        if penetration(f, limb) <= EPS:
+        if limb in free or penetration(f, limb) <= EPS:
             continue
         if limb in ARM_COLS:
             xc, zc, ec = ARM_COLS[limb]
@@ -373,14 +431,16 @@ def _runs(bad, n, cyclic):
     return runs
 
 
-def fix_sequence(poses, cyclic, keep=(), smooth=None, log=print):
+def fix_sequence(poses, cyclic, keep=(), smooth=None, log=print, free=()):
     """Clears a whole animation (poses at evenly spaced moments). For each limb, each run of moments where it would go
     into something gets one kind of fix (so it doesn't switch between them and jitter), each moment the smallest amount
     that clears it, eased in and out; then any moment still not clear gets its own fix. Changes poses in place; returns
-    how many moments needed fixing."""
+    how many moments needed fixing. free: limbs allowed to touch (the Floss's arms crossing the body: creator's
+    choice, "Full reach")."""
     fixed = 0
     n = len(poses)
-    for limb in LIMBS:
+    limbs = [l for l in LIMBS if l not in free]
+    for limb in limbs:
         bad = [i for i, p in enumerate(poses) if penetration(p, limb) > EPS]
         if not bad:
             continue
@@ -413,13 +473,13 @@ def fix_sequence(poses, cyclic, keep=(), smooth=None, log=print):
                         p[col] = p.get(col, 0.0) + sign * a
             log(f"  {limb}: moments {run[0]}-{run[-1]} of {n} would clip: {name} by up to {max(ds) + 1.5:.1f} degrees")
     for _ in range(4):  # (anything left, moment by moment)
-        left = [i for i, p in enumerate(poses) if any(penetration(p, l) > EPS for l in LIMBS)]
+        left = [i for i, p in enumerate(poses) if any(penetration(p, l) > EPS for l in limbs)]
         if not left:
             break
         for i in left:
-            for col, v in clear(poses[i], keep).items():
+            for col, v in clear(poses[i], keep, free).items():
                 poses[i][col] = poses[i].get(col, 0.0) + v
-    left = [i for i, p in enumerate(poses) if any(penetration(p, l) > EPS for l in LIMBS)]
+    left = [i for i, p in enumerate(poses) if any(penetration(p, l) > EPS for l in limbs)]
     if left:
         log(f"  STILL CLIPPING at {len(left)} moments")
     return fixed

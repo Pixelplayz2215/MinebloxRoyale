@@ -155,7 +155,7 @@ def pose_of(emote):
     keys = [k for k in json.load(open(os.path.join(DESIGN, "emote_keys.json"), encoding="utf-8"))["rows"] if k["emote"] == emote]
     angles = ("rightArmX", "rightArmZ", "leftArmX", "leftArmZ", "rightLegX", "leftLegX")
     bends = ("rightElbow", "leftElbow", "rightKnee", "leftKnee")
-    best = max(keys, key=lambda k: sum(abs(k[a]) for a in angles) + 0.5 * sum(k.get(b, 0) for b in bends) + 200 * abs(k["bounce"]))
+    best = max(keys, key=lambda k: sum(abs(k[a]) for a in angles) + 0.5 * sum(k.get(b, 0) for b in bends) + 200 * abs(k["bounce"]) + abs(k.get("flip", 0)))
     return {**best, "bodyYaw": 0}
 
 

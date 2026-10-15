@@ -14,7 +14,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -25,11 +28,13 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * A Fortnite-style loot chest (creator): the gold-trimmed wooden chest, or the rare one (the blue special chest, in
- * place of the old ender chests). Its own models, closed and open (fabric/tools/models/make_chest_models.py). Nobody
- * opens it with right-click: holding F next to it searches it (LootChests), the lid flips open and the loot pops out
- * onto the ground. A closed chest glitters and chimes now and then, as Fortnite's do.
+ * place of the old ender chests). Each player's game draws it from Blender models (fabric/tools/blender/chests.py,
+ * ChestRenderer; v1.0.1, creator: "a smoother texture built in Blender ... an opening animation"); the block's own
+ * box models (make_chest_models.py) are only its item and its particles now. Nobody opens it with right-click: holding
+ * F next to it searches it (LootChests), the lid swings open and the loot pops out onto the ground. A closed chest
+ * glitters and chimes now and then, as Fortnite's do.
  */
-public class LootChestBlock extends HorizontalDirectionalBlock {
+public class LootChestBlock extends HorizontalDirectionalBlock implements EntityBlock {
 	public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
 	private static final VoxelShape SHAPE = Block.column(14.0, 0.0, 13.0);
 	/** The rare (blue) chest: better loot (Loot.enderContents). */
@@ -49,6 +54,17 @@ public class LootChestBlock extends HorizontalDirectionalBlock {
 	@Override
 	protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
 		return SHAPE;
+	}
+
+	/** Not drawn as a block: each player's game draws the chest's models (ChestRenderer). */
+	@Override
+	protected RenderShape getRenderShape(BlockState state) {
+		return RenderShape.INVISIBLE;
+	}
+
+	@Override
+	public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+		return new LootChestBlockEntity(pos, state);
 	}
 
 	/** Right-click: just a reminder of how chests open (F, like Fortnite's interact key). */

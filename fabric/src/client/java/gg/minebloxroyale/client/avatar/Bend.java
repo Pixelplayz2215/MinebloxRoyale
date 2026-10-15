@@ -8,15 +8,20 @@ import org.joml.Vector3f;
  * its middle, exactly as fabric/tools/blender/bend.py bends them for the renders and the emote and move sheets.
  *
  * The bend turns the limb about an axis across its middle (its centre line keeps its length, so a bent leg is no longer
- * than a straight one): above a short stretch round the middle (2 * HALF studs) nothing moves, below it the rest turns
- * as one piece, and in between each slice turns part of the way, so the outside of the bend is a smooth round corner and
- * the inside tucks into the limb. Elbows bend the forearm forward, knees bend the shin back. All in the limb's joint
- * space (studs, y up, front -Z, the joint at 0): the arms' middle is 0.5 below the shoulder joint, the legs' 1 below the
- * hip joint. Meshes are cut across the bend (CUTS slices) so it shows smoothly.
+ * than a straight one): above a stretch round the middle nothing moves, below it the rest turns as one piece, and in
+ * between each slice turns part of the way, so the outside of the bend is a smooth round corner and the inside is
+ * squeezed. Elbows bend the forearm forward, knees bend the shin back. All in the limb's joint space (studs, y up, front
+ * -Z, the joint at 0): the arms' middle is 0.5 below the shoulder joint, the legs' 1 below the hip joint.
+ *
+ * The deeper the bend, the longer that stretch (creator, test4: "behind the knees the textures overlap"): squeezed too
+ * hard, the inside of a bend folds back over itself, two layers in one place, one seen from behind (lit darker since
+ * 26.x), and they flicker. Turning a stretch of length L by a squeezes what sits d inside to 1 - a d / L of its length,
+ * so L is at least a * INNER / SQUEEZE: never folded. A slight bend stays 2 * HALF long; a deep one reaches at most UP
+ * above the middle (an elbow is only 0.5 below its shoulder joint) and the rest below. Meshes are cut every STEP across
+ * where a limb can bend (cuts) so the curve shows smoothly.
  */
 public final class Bend {
-	static final float HALF = 0.25F;
-	static final int CUTS = 6;
+	static final float HALF = 0.25F, SQUEEZE = 0.9F, STEP = 0.1F;
 
 	/** One limb's bend this frame: degrees (0 = straight) and which kind of limb. */
 	public record Of(float degrees, boolean arm) {
@@ -41,12 +46,21 @@ public final class Bend {
 			return (arm ? 1 : -1) * (float) Math.toRadians(degrees) * w;
 		}
 
+		/** The stretch that bends: how far above the middle (up) and below it, studs. */
+		float up() {
+			return Math.min(length() / 2, arm ? 0.45F : 0.9F);
+		}
+
+		float length() {
+			return Math.max(2 * HALF, (float) Math.toRadians(degrees) * (arm ? 0.5F : 0.64F) / SQUEEZE);
+		}
+
 		/** Bends a point (and its normal, if not null) of the limb, in joint space. */
 		void apply(Vector3f p, Vector3f n) {
 			if (none()) return;
-			float s = p.y - mid();
-			if (s >= HALF) return;
-			float w = s <= -HALF ? 1 : (HALF - s) / (2 * HALF);
+			float s = p.y - mid(), up = up(), length = length();
+			if (s >= up) return;
+			float w = s <= up - length ? 1 : (up - s) / length;
 			float a = angle(w), c = (float) Math.cos(a), sn = (float) Math.sin(a);
 			float y = mid() + s * c - p.z * sn, z = s * sn + p.z * c;
 			p.y = y;
@@ -62,11 +76,12 @@ public final class Bend {
 	private Bend() {
 	}
 
-	/** Where to cut a limb's mesh (joint-space y) so its bend shows smoothly: across the bend. */
+	/** Where to cut a limb's mesh (joint-space y): every STEP across where it can bend (bend.py cuts, REACH). */
 	static float[] cuts(boolean arm) {
-		float mid = arm ? -0.5F : -1.0F;
-		float[] out = new float[CUTS + 1];
-		for (int i = 0; i <= CUTS; i++) out[i] = mid + HALF - 2 * HALF * i / CUTS;
+		float mid = arm ? -0.5F : -1.0F, hi = arm ? 0.45F : 0.9F, lo = -1.0F;
+		int k = Math.round((hi - lo) / STEP);
+		float[] out = new float[k + 1];
+		for (int i = 0; i <= k; i++) out[i] = mid + hi - STEP * i;
 		return out;
 	}
 

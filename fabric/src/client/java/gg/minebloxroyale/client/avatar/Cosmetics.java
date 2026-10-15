@@ -233,17 +233,19 @@ public final class Cosmetics {
 				// The model mapping mirrors x, so the picture's left edge goes on the face's right-hand edge.
 				float[][] corner = { { faces[f][1][0], ya, faces[f][1][1], ua, va }, { faces[f][1][0], yb, faces[f][1][1], ua, vb },
 					{ faces[f][0][0], yb, faces[f][0][1], ub, vb }, { faces[f][0][0], ya, faces[f][0][1], ub, va } };
-				for (int pass = 0; pass < 2; pass++) // both windings, so it shows whichever way the mirror turns it
-					for (int k = 0; k < 4; k++) {
-						float[] c = corner[pass == 0 ? k : 3 - k];
-						p.set(c[0], c[1], c[2]);
-						n.set(normals[f][0], normals[f][1], normals[f][2]);
-						bend.apply(p, n);
-						joint.transformPosition(p);
-						joint.transformDirection(n);
-						vc.addVertex(pose, -p.x * RobloxAvatarRenderer.S, 1.501F - (p.y + RobloxAvatarRenderer.HIP) * RobloxAvatarRenderer.S, p.z * RobloxAvatarRenderer.S)
-							.setColor(0xFFFFFFFF).setUv(c[3], c[4]).setOverlay(overlay).setLight(light).setNormal(pose, -n.x, -n.y, n.z);
-					}
+				// Once, wound like the body's own faces (anticlockwise seen from outside). (It was drawn both ways round: since
+				// 26.x the copy seen from behind is lit as if facing away, so the two at the same depth flickered white and
+				// grey, creator test4: "the shirt starts flickering".)
+				for (int k = 0; k < 4; k++) {
+					float[] c = corner[3 - k];
+					p.set(c[0], c[1], c[2]);
+					n.set(normals[f][0], normals[f][1], normals[f][2]);
+					bend.apply(p, n);
+					joint.transformPosition(p);
+					joint.transformDirection(n);
+					vc.addVertex(pose, -p.x * RobloxAvatarRenderer.S, 1.501F - (p.y + RobloxAvatarRenderer.HIP) * RobloxAvatarRenderer.S, p.z * RobloxAvatarRenderer.S)
+						.setColor(0xFFFFFFFF).setUv(c[3], c[4]).setOverlay(overlay).setLight(light).setNormal(pose, -n.x, -n.y, n.z);
+				}
 			}
 		}
 	}

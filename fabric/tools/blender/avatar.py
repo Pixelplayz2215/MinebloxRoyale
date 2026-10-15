@@ -32,19 +32,21 @@ def joints(emote=None, gliding=False, lying=None):
     g = lambda k: e.get(k, 0.0)
     out = {}
     for part, pv in PIVOT.items():
-        m = (lying or Matrix.Identity(4)) @ Matrix.Translation((0, g("bounce"), 0)) @ _rot("Y", g("bodyYaw"))
+        m = (lying or Matrix.Identity(4)) @ Matrix.Translation((0, g("bounce"), 0)) @ _rot("Y", g("bodyYaw")) @ _rot("X", -g("flip"))
         right = pv[0] > 0
         if not part.endswith("leg"):  # everything above the hips twists, leans and tilts together
             m = m @ _rot("Y", -g("twist")) @ _rot("X", -g("lean")) @ _rot("Z", -g("tilt"))
         m = m @ Matrix.Translation(pv)
         if part.endswith("arm"):
+            y = 0
             if emote:
-                x, z = (g("rightArmX"), g("rightArmZ")) if right else (g("leftArmX"), g("leftArmZ"))
+                x, z, y = (g("rightArmX"), g("rightArmZ"), g("rightArmY")) if right else (g("leftArmX"), g("leftArmZ"), g("leftArmY"))
             elif gliding:  # both hands up on the glider's grips
                 x, z = 170, -15
             else:
                 x, z = 0, 0
-            m = m @ _rot("X", x) @ _rot("Z", z if right else -z)
+            # (an arm's Y turns it about its own length, so the elbow can fold any way)
+            m = m @ _rot("X", x) @ _rot("Z", z if right else -z) @ _rot("Y", y if right else -y)
         elif part.endswith("leg"):
             x, z = (g("rightLegX"), g("rightLegZ")) if right else (g("leftLegX"), g("leftLegZ"))
             m = m @ _rot("X", x) @ _rot("Z", z if right else -z)

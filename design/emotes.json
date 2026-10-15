@@ -40,8 +40,8 @@
    "name": "Floss",
    "unlock": "default",
    "need": 0,
-   "loopSeconds": 0.7,
-   "note": "arms swing across the body, front and back in turn, hips the other way"
+   "loopSeconds": 1.4,
+   "note": "arms swing right across the body, front and back in turn, hips the other way"
   },
   {
    "id": "dab",
@@ -49,7 +49,7 @@
    "unlock": "default",
    "need": 0,
    "loopSeconds": 1.6,
-   "note": "a wind-up, then the dab snapped and held"
+   "note": "a wind-up, then the dab snapped and held: one arm out and up, the face in the other's elbow"
   },
   {
    "id": "jumping_jacks",
@@ -232,8 +232,8 @@
    "name": "Raise the Roof",
    "unlock": "range",
    "need": 35,
-   "loopSeconds": 0.5,
-   "note": "pushing the roof up from the elbows, bouncing"
+   "loopSeconds": 0.9,
+   "note": "palms up, pushing the roof up overhead, bouncing"
   },
   {
    "id": "penguin",
@@ -312,8 +312,8 @@
    "name": "Breakdance Spin",
    "unlock": "wins",
    "need": 8,
-   "loopSeconds": 0.9,
-   "note": "low spin, arms out, legs kicking out in turn"
+   "loopSeconds": 1.2,
+   "note": "a headspin: upside down on its head, legs in a V"
   },
   {
    "id": "ripple",

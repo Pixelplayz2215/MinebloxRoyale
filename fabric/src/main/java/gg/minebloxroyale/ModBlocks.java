@@ -3,6 +3,7 @@ package gg.minebloxroyale;
 import gg.minebloxroyale.match.CarBlock;
 import gg.minebloxroyale.match.CarBlockEntity;
 import gg.minebloxroyale.match.LootChestBlock;
+import gg.minebloxroyale.match.LootChestBlockEntity;
 import java.util.Set;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -20,6 +21,8 @@ import net.minecraft.world.level.material.PushReaction;
 public final class ModBlocks {
 	/** The gold-trimmed loot chest, and the rare blue one (better loot). Unbreakable; they glow a little while closed. */
 	public static Block LOOT_CHEST, RARE_CHEST;
+	/** Where each player's game draws a loot chest (its Blender models, the lid swinging open). */
+	public static BlockEntityType<LootChestBlockEntity> LOOT_CHEST_ENTITY;
 	/** A parked car's invisible body blocks, and the one that keeps its data (CarBlock). */
 	public static Block CAR_PART, CAR_CORE;
 	public static BlockEntityType<CarBlockEntity> CAR_ENTITY;
@@ -30,6 +33,8 @@ public final class ModBlocks {
 	static void init() {
 		LOOT_CHEST = chest("loot_chest", false, MapColor.GOLD);
 		RARE_CHEST = chest("rare_chest", true, MapColor.COLOR_BLUE);
+		LOOT_CHEST_ENTITY = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, MinebloxRoyale.id("loot_chest"),
+			new BlockEntityType<>(LootChestBlockEntity::new, Set.of(LOOT_CHEST, RARE_CHEST)));
 		CAR_PART = car("car_part", false);
 		CAR_CORE = car("car_core", true);
 		CAR_ENTITY = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, MinebloxRoyale.id("car"), new BlockEntityType<>(CarBlockEntity::new, Set.of(CAR_CORE)));

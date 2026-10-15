@@ -49,6 +49,6 @@ final class Moves {
 	private static RobloxAvatarRenderer.Pose pose(MoveKeyDef k) {
 		return new RobloxAvatarRenderer.Pose(k.rightArmX(), k.rightArmZ(), k.leftArmX(), k.leftArmZ(), k.rightLegX(), k.leftLegX(), k.bodyYaw(), k.bounce(),
 			k.rightLegZ(), k.leftLegZ(), k.headX(), k.headY(), k.headZ(), k.lean(), k.tilt(), k.twist(), k.rightElbow(), k.leftElbow(), k.rightKnee(),
-			k.leftKnee());
+			k.leftKnee(), k.rightArmY(), k.leftArmY(), k.flip());
 	}
 }

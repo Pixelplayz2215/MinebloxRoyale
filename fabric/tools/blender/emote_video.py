@@ -26,9 +26,11 @@ FPS = 30
 SAMPLES = 64  # sheet rows per loop
 CHANNELS = {"rax": "rightArmX", "raz": "rightArmZ", "lax": "leftArmX", "laz": "leftArmZ", "rlx": "rightLegX", "llx": "leftLegX", "yaw": "bodyYaw",
             "bob": "bounce", "rlz": "rightLegZ", "llz": "leftLegZ", "hx": "headX", "hy": "headY", "hz": "headZ", "lean": "lean", "tilt": "tilt",
-            "twist": "twist", "rel": "rightElbow", "lel": "leftElbow", "rkn": "rightKnee", "lkn": "leftKnee"}
+            "twist": "twist", "rel": "rightElbow", "lel": "leftElbow", "rkn": "rightKnee", "lkn": "leftKnee",
+            "ray": "rightArmY", "lay": "leftArmY", "flip": "flip"}
 UNLOCK = {"kills": "Get {n} eliminations", "wins": "Win {n} Victory Royales", "range": "Score {n} in one shooting range round",
           "bullseyes": "Hit {n} shooting range bullseyes", "obby": "Finish the obby in the lobby", "victory": "Win a Victory Royale"}
+FREE = []  # (the limbs the emote being drawn may put into the body: Emote.free)
 CRAWL_FLOOR = -0.3 / 0.36  # (knocked: the game lays the body flat 0.3 blocks in front of where it stood: RobloxAvatarRenderer.CRAWL)
 
 
@@ -142,14 +144,36 @@ def blender_main(args):
         keep = getattr(e, "keep", ())
         r = max(1, n // 48)
         for _ in range(3):  # (clear, put the feet right again, until both hold)
-            if not rig.fix_sequence(poses, cyclic, keep, smooth=lambda v, c: smooth(v, c, r), log=lambda m: print(m, flush=True)):
+            if not rig.fix_sequence(poses, cyclic, keep, smooth=lambda v, c: smooth(v, c, r), log=lambda m: print(m, flush=True),
+                                    free=getattr(e, "free", ())):
                 break
             poses = [feet(p) for p in poses]
+        # The game blends straight between the sheet's rows: where that blend would touch, both rows get the fix.
+        step = n // SAMPLES
+        free = getattr(e, "free", ())
+        if step * SAMPLES == n:
+            for _ in range(4):
+                touched = False
+                for i in range(SAMPLES):
+                    a_, b_ = poses[i * step], poses[(i + 1) * step]
+                    mid = {k: (a_.get(k, 0.0) + b_.get(k, 0.0)) / 2 for k in set(a_) | set(b_)}
+                    if max(rig.penetration(mid, l) for l in rig.LIMBS if l not in free) <= rig.EPS * 0.9:
+                        continue
+                    touched = True
+                    before = [dict(a_), dict(b_)]
+                    for col, v in rig.clear(mid, keep, free).items():
+                        for q in (a_, b_):
+                            q[col] = q.get(col, 0.0) + v
+                    if any(max(rig.penetration(q, l) for l in rig.LIMBS if l not in free) > rig.EPS * 0.9 for q in (a_, b_)):
+                        a_.clear(); a_.update(before[0])  # (it would only move the touch onto a row: left as it was)
+                        b_.clear(); b_.update(before[1])
+                if not touched:
+                    break
         if cyclic:
             poses[-1] = dict(poses[0])
         return poses
 
-    def verify(aid, poses, frames, tf):
+    def verify(aid, poses, frames, tf, free=()):
         """Every moment the game or the video shows must be clear: the sheet's rows, halfway between them (the game
         blends straight between rows), and every video frame."""
         checks = [at(poses, i / SAMPLES) for i in range(SAMPLES + 1)]
@@ -159,10 +183,10 @@ def blender_main(args):
         checks += [at(poses, tf(f)) for f in range(1, frames + 1)]
         worst, which = 0.0, None
         for j, p in enumerate(checks):
-            d = max(rig.penetration(p, l) for l in rig.LIMBS)
+            d = max(rig.penetration(p, l) for l in rig.LIMBS if l not in free)
             if d > worst:
                 worst, which = d, j
-        verdict = "clear" if worst <= rig.EPS else f"CLIPS {worst:.3f} studs (check {which})"
+        verdict = ("clear" if worst <= rig.EPS else f"CLIPS {worst:.3f} studs (check {which})") + (f" (free: {', '.join(free)})" if free else "")
         print(f"VERIFY {aid}: {len(checks)} moments, {verdict}", flush=True)
         return worst
 
@@ -247,7 +271,7 @@ def blender_main(args):
                  ("right_arm", "right_leg"), ("right_arm", "left_leg"), ("left_arm", "right_leg"), ("left_arm", "left_leg"),
                  ("right_leg", "left_leg"), ("right_leg", "torso"), ("left_leg", "torso")]
         for a, b in pairs:
-            if a not in trees or b not in trees:
+            if a not in trees or b not in trees or a in FREE or b in FREE:
                 continue
             hits = trees[a].overlap(trees[b])
             joined = {("right_arm", "torso"), ("left_arm", "torso"), ("right_leg", "torso"), ("left_leg", "torso"), ("right_leg", "left_leg")}
@@ -320,7 +344,8 @@ def blender_main(args):
         else:  # there and back (aiming: up to down and up again; jumping: up, falling, and back)
             frames = int(round(2 * length))
             tf = lambda f: 1 - abs(1 - 2 * ((f - 1) / frames))
-        verify(aid, poses, frames, tf)
+        verify(aid, poses, frames, tf, getattr(e, "free", ()))
+        FREE[:] = getattr(e, "free", ())
         if os.environ.get("BR_SHEETS_ONLY"):  # (just the sheets: no pictures)
             continue
         lying = Matrix.Rotation(math.radians(-90), 4, "X") if getattr(e, "lying", False) else None
