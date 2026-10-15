@@ -87,7 +87,7 @@ public final class ModItems {
 				for (WeaponDef w : Sheets.WEAPONS) for (RarityDef r : Sheets.RARITIES) out.accept(Guns.make(w.id(), r.id()));
 				AMMO.values().forEach(out::accept);
 				CONSUMABLES.values().forEach(out::accept);
-				out.accept(new ItemStack(GRENADE, 6));
+				out.accept(GRENADE); // (the creative tab only takes single items: a stack of 6 crashed it, 2.0.0-test1)
 				MATERIALS.values().forEach(out::accept);
 				out.accept(REBOOT_CARD);
 			})
