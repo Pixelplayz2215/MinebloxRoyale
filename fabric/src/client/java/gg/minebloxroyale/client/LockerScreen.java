@@ -45,6 +45,8 @@ public class LockerScreen extends Screen {
 		{ "back", "Back" }, { "shirt", "Shirts" }, { "pants", "Pants" }, { "shoes", "Shoes" }, { "particle", "Particles" }, { "pickaxe", "Pickaxes" }, { "contrail", "Contrails" },
 		{ "emote", "Emotes" }, { "glider", "Gliders" } };
 	private static final int PANEL = 350, COLS = 3, W = 80;
+	/** Tabs where hovering one of your items shows it on you, like the emotes (2.0.0-test3): in your hand, or skydiving. */
+	private static final List<String> HOVER_TRY = List.of("pickaxe", "contrail");
 	/** True only while the Locker draws its preview of you (the in-world you is hidden while the Locker is open). */
 	public static boolean previewing;
 	static String tab = "preset";
@@ -65,7 +67,7 @@ public class LockerScreen extends Screen {
 	private int toastColor;
 	/** The Shop item being bought ({id, name, its tab}), till the server says it's yours (a toast then says where it is). */
 	private static String[] buying;
-	/** Shop tiles on this page (button, "slot:id"): hovering one shows it on your preview. */
+	/** Tiles on this page that hovering shows on your preview (button, "slot:id"): the Shop's, pickaxes and contrails. */
 	private final List<Map.Entry<Button, String>> tryOnButtons = new ArrayList<>();
 	/** The Shop's category titles on this page: {title, x, y}. */
 	private final List<Object[]> headers = new ArrayList<>();
@@ -181,7 +183,8 @@ public class LockerScreen extends Screen {
 					if (!has && c.unlock().equals("shop")) out.add(shopTile(c.id(), c.name(), c.need(), c.slot(), st, null));
 					else if (!has) out.add(new Tile(UnlockRule.needs(c.unlock(), c.need()), false, () -> {
 					}, null, UnlockRule.hint(c.unlock(), c.need(), st)));
-					else out.add(new Tile(on ? "> " + c.name() + " <" : c.name(), true, () -> send("locker:" + tab + ":" + (on ? "none" : c.id()))));
+					else out.add(new Tile(on ? "> " + c.name() + " <" : c.name(), true, () -> send("locker:" + tab + ":" + (on ? "none" : c.id())), null, null,
+						HOVER_TRY.contains(tab) ? tab + ":" + c.id() : null, false));
 				}
 			}
 		}
@@ -189,9 +192,10 @@ public class LockerScreen extends Screen {
 	}
 
 	/**
-	 * A shop item (v2.0.0): not bought yet, its name and price, clicked to buy (its hint says how much gold you have;
-	 * hovered, it's shown on you, 2.0.0-test2); bought, it's used like any other (an emote goes on or off your wheel, the
-	 * rest is worn).
+	 * A shop item (v2.0.0): not bought yet, its name and price, clicked to buy (its hint says how much gold you have);
+	 * bought, it's used like any other (an emote goes on or off your wheel, the rest is worn). Hovered, bought or not,
+	 * it's shown on you (2.0.0-test2; owned ones too since 2.0.0-test3, creator: "on hover like Emotes"): an emote plays,
+	 * the rest is tried on.
 	 */
 	private Tile shopTile(String id, String name, int price, String kind, UnlockRule.Stats st, String emote) {
 		boolean owned = ClientState.all || st.owned().contains(id);
@@ -217,7 +221,8 @@ public class LockerScreen extends Screen {
 			}, id, null);
 		}
 		boolean on = id.equals(mine().get(kind));
-		return new Tile(on ? "> " + name + " <" : name + " (owned)", true, () -> send("locker:" + kind + ":" + (on ? "none" : id)));
+		return new Tile(on ? "> " + name + " <" : name + " (owned)", true, () -> send("locker:" + kind + ":" + (on ? "none" : id)), null, null, kind + ":" + id,
+			false);
 	}
 
 	private int rowsPerPage() {
@@ -385,7 +390,7 @@ public class LockerScreen extends Screen {
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.player == null) return;
 		hoverPreview(mc);
-		// (2.0.0-test2) The Shop: the hovered item on you (a glider open, a contrail while skydiving).
+		// (2.0.0-test2) The hovered item on you (a glider open, a contrail while skydiving, a pickaxe in your hand).
 		String tryOn = null;
 		for (Map.Entry<Button, String> e : tryOnButtons)
 			if (e.getKey().isHovered()) tryOn = e.getValue();
@@ -397,7 +402,8 @@ public class LockerScreen extends Screen {
 		CosmeticDef fx = Cosmetics.worn(mine(), "particle");
 		int cx = (x0 + x1) / 2, feet = (y0 + y1) / 2 + (int) (size * (0.9F + (glider ? 0.45F : 0.0625F)));
 		particles.draw(g, fx, cx, feet, size, false);
-		preview(g, mc, x0, y0, x1, y1, size, glider, tab.equals("contrail") || tryOn != null && tryOn.startsWith("contrail:"), tryOn, heldPickaxe(tryOn));
+		boolean contrail = tab.equals("contrail") || tryOn != null && tryOn.startsWith("contrail:");
+		preview(g, mc, x0, y0, x1, y1, size, glider, contrail, tryOn, glider || contrail ? null : heldPickaxe(tryOn));
 		frames++;
 		particles.draw(g, fx, cx, feet, size, true);
 		g.centeredText(this.font, mc.player.getName().getString(), (x0 + x1) / 2, y1 - 14, 0xFFFFFFFF);
@@ -438,12 +444,13 @@ public class LockerScreen extends Screen {
 
 	/**
 	 * The pickaxe in your hand on the preview (2.0.0-test2; empty-handed in the hub, so it never showed): the hovered
-	 * Shop one, or in the Pickaxes tab the one you have on. Its model ("" the default pickaxe), or null for none.
+	 * one, else in the Pickaxes tab and the Shop (2.0.0-test3, creator: "show the new pickaxe in hand ... while in shop")
+	 * the one you have on. Its model ("" the default pickaxe), or null for none.
 	 */
 	private String heldPickaxe(String tryOn) {
 		CosmeticDef c;
 		if (tryOn != null && tryOn.startsWith("pickaxe:")) c = Sheets.COSMETICS_BY_ID.get(tryOn.substring("pickaxe:".length()));
-		else if (tab.equals("pickaxe")) c = Cosmetics.worn(mine(), "pickaxe");
+		else if (tab.equals("pickaxe") || tab.equals("shop")) c = Cosmetics.worn(mine(), "pickaxe");
 		else return null;
 		return c == null ? "" : "pickaxe_" + c.shape();
 	}

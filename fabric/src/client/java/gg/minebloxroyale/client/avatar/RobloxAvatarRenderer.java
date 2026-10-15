@@ -362,8 +362,8 @@ public final class RobloxAvatarRenderer {
 	}
 
 	private static Pose computePose(LivingEntityRenderState state) {
-		// (the Locker's Contrails tab: you, skydiving)
-		if (state.getDataOrDefault(PREVIEW, false) && state.getDataOrDefault(SKYDIVING, false)) return Moves.at("air", 1F);
+		// (the Locker's Contrails tab: you, skydiving as in a match, 2.0.0-test3)
+		if (state.getDataOrDefault(PREVIEW, false) && state.getDataOrDefault(SKYDIVING, false)) return Moves.loop("skydive", state.ageInTicks / 20F);
 		float swing = state instanceof ArmedEntityRenderState a ? a.swingAnimation : 0;
 		int id = state.getDataOrDefault(ENTITY_ID, -1);
 		Pose emote = state.getDataOrDefault(KNOCKED, false) ? null : emotePose(id, state.walkAnimationSpeed);
