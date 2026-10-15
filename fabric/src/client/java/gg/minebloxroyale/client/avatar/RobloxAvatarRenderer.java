@@ -3,6 +3,7 @@ package gg.minebloxroyale.client.avatar;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import gg.minebloxroyale.client.ClientState;
+import gg.minebloxroyale.client.Tracers;
 import gg.minebloxroyale.sheets.AvatarColorDef;
 import gg.minebloxroyale.sheets.AvatarPartDef;
 import gg.minebloxroyale.sheets.CosmeticDef;
@@ -33,6 +34,8 @@ public final class RobloxAvatarRenderer {
 	public static final RenderStateDataKey<Integer> ENTITY_ID = RenderStateDataKey.create(() -> "minebloxroyale:entity_id");
 	public static final RenderStateDataKey<String> COLORS = RenderStateDataKey.create(() -> "minebloxroyale:colors");
 	public static final RenderStateDataKey<Boolean> AIMING = RenderStateDataKey.create(() -> "minebloxroyale:aiming");
+	/** Aiming down the sights (right mouse; bots while they're shooting): the gun raised from the hip into the aim. */
+	public static final RenderStateDataKey<Boolean> ADS = RenderStateDataKey.create(() -> "minebloxroyale:ads");
 	public static final RenderStateDataKey<Boolean> IN_BUS = RenderStateDataKey.create(() -> "minebloxroyale:in_bus");
 	/** Not drawn this frame (your own avatar while the Locker shows its preview of you). */
 	public static final RenderStateDataKey<Boolean> HIDDEN = RenderStateDataKey.create(() -> "minebloxroyale:hidden");
@@ -118,6 +121,14 @@ public final class RobloxAvatarRenderer {
 			return of(x);
 		}
 
+		/** This pose with some of its channels moved by how far `to` is from `from`, times k. */
+		Pose shift(Pose to, Pose from, float k, int... channels) {
+			if (k == 0) return this;
+			float[] x = values(), a = to.values(), b = from.values();
+			for (int i : channels) x[i] += (a[i] - b[i]) * k;
+			return of(x);
+		}
+
 		/** This pose with some of its channels changed by amounts (channel, amount, channel, amount...). */
 		Pose add(float... pairs) {
 			float[] x = values();
@@ -179,6 +190,12 @@ public final class RobloxAvatarRenderer {
 		GliderDef glider = Gliders.of(outfit, entityId);
 		Matrix4f gt = Gliders.transform(track, glider.id(), state.getDataOrDefault(GLIDING, false), state.bodyRot);
 		if (gt != null) Gliders.submit(collector, poseStack, glider, gt, state.distanceToCameraSq > 32 * 32, light, overlay);
+		// (a gun in hand: where its bullets leave from, Tracers)
+		if (!preview && state.getDataOrDefault(AIMING, false)) {
+			Vector3f hand = poseStack.last().pose().transformPosition(handTips(state, pose)[0]);
+			var cam = net.minecraft.client.Minecraft.getInstance().gameRenderer.mainCamera().position();
+			Tracers.hand(entityId, cam.x + hand.x, cam.y + hand.y, cam.z + hand.z);
+		}
 		// Contrails (v2.0.0): skydiving, from the hands; riding a glider, from its wingtips (Contrails).
 		boolean sky = state.getDataOrDefault(SKYDIVING, false);
 		if (preview) {
@@ -310,7 +327,7 @@ public final class RobloxAvatarRenderer {
 		double x, y, z;
 		long nanos, seen;
 		float phase, speed, vy, airTime;
-		float run, crouch, air, aim, use;
+		float run, crouch, air, aim, ads, use;
 		String useMove = "heal", useWas = "heal", mode = "";
 		float useSince = 1;
 		Pose from = Pose.ZERO, last = Pose.ZERO;
@@ -339,7 +356,7 @@ public final class RobloxAvatarRenderer {
 		int id = state.getDataOrDefault(ENTITY_ID, -1);
 		Pose emote = state.getDataOrDefault(KNOCKED, false) ? null : emotePose(id, state.walkAnimationSpeed);
 		Pose p = compose(new Frame(id, state.getDataOrDefault(MOTION, Motion.STILL), state.getDataOrDefault(AIMING, false),
-			state.getDataOrDefault(GLIDING, false), state.getDataOrDefault(KNOCKED, false), emote, state.x, state.y, state.z, state.ageInTicks / 20F,
+			state.getDataOrDefault(ADS, false), state.getDataOrDefault(GLIDING, false), state.getDataOrDefault(KNOCKED, false), emote, state.x, state.y, state.z, state.ageInTicks / 20F,
 			state.xRot, swing), System.nanoTime());
 		// Minecraft draws a crouching player 2 px lower; the crouch already stands its feet on the ground.
 		return state instanceof AvatarRenderState a && a.isCrouching ? p.add(Pose.BOB, 2F / 16F / S) : p;
@@ -349,8 +366,8 @@ public final class RobloxAvatarRenderer {
 	 * What picks an avatar's pose this frame: who (entity id), how it moves, what it holds and does, where it is,
 	 * its age (seconds), where it looks (pitch, down +) and how far through a swing it is (0..1).
 	 */
-	record Frame(int id, Motion motion, boolean aiming, boolean gliding, boolean knocked, Pose emote, double x, double y, double z, float time,
-		float pitch, float swing) {
+	record Frame(int id, Motion motion, boolean aiming, boolean ads, boolean gliding, boolean knocked, Pose emote, double x, double y, double z,
+		float time, float pitch, float swing) {
 	}
 
 	/** The pose for this frame (the avatar's track remembers how it got here; now: System.nanoTime()). */
@@ -383,6 +400,7 @@ public final class RobloxAvatarRenderer {
 		tr.crouch = ease(tr.crouch, m.crouching() ? 1 : 0, 8, dt);
 		tr.air = ease(tr.air, airborne && (tr.airTime > 0.12F || tr.vy > 2) ? 1 : 0, 12, dt);
 		tr.aim = ease(tr.aim, f.aiming() ? 1 : 0, 10, dt);
+		tr.ads = ease(tr.ads, f.ads() ? 1 : 0, 14, dt); // (raising the gun to aim takes about a sixth of a second)
 		tr.use = ease(tr.use, m.use() != null ? 1 : 0, 8, dt);
 		// (from healing straight to drinking or back: one into the other)
 		if (m.use() != null && !m.use().equals(tr.useMove)) {
@@ -453,9 +471,18 @@ public final class RobloxAvatarRenderer {
 		// (jumping 8 blocks/s up -> 0, falling 10 down -> about 0.55, falling fast -> 1: spread out)
 		base = base.lerp(Moves.at("air", (8 - tr.vy) / 32F), tr.air);
 		if (tr.aim > 0) {
-			// Both hands on the gun where you look (the arms are in the leaning body: its lean taken off the look).
-			Pose aim = Moves.at("aim", (f.pitch() - base.lean() + 90) / 180F);
-			base = base.mix(aim, tr.aim, Pose.ARMS).add(Pose.TWIST, -base.twist() * tr.aim);
+			// A gun where you look (the arms are in the leaning body: its lean taken off the look): carried at the hip,
+			// raised into the aim with both hands when aiming down the sights (v2.0.0: Blender's hip and aim moves).
+			float look = (f.pitch() - base.lean() + 90) / 180F;
+			Pose hold = Moves.at("hip", look).lerp(Moves.at("aim", look), tr.ads);
+			base = base.mix(hold, tr.aim, Pose.ARMS).add(Pose.TWIST, -base.twist() * tr.aim);
+			// Each shot kicks: Blender's recoil move, how far it moves from its start, times the gun's kick.
+			float[] shot = Tracers.lastShot(f.id());
+			float span = Moves.seconds("recoil");
+			if (shot != null && shot[0] >= 0 && shot[0] < span) {
+				Pose r = Moves.at("recoil", shot[0] / span), r0 = Moves.at("recoil", 0);
+				base = base.shift(r, r0, shot[1] * tr.aim, Pose.RAX, Pose.RAZ, Pose.LAX, Pose.LAZ, Pose.REL, Pose.LEL, Pose.LEAN, Pose.HX, Pose.TWIST);
+			}
 		}
 		if (tr.use > 0) {
 			Pose use = Moves.loop(tr.useMove, time);

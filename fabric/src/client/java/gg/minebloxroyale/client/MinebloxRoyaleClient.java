@@ -79,6 +79,7 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 			ClientState.hudAt = System.currentTimeMillis();
 		});
 		ClientPlayNetworking.registerGlobalReceiver(Net.Sfx.TYPE, (p, ctx) -> SfxBank.play(p.soundId(), new Vec3(p.x(), p.y(), p.z())));
+		ClientPlayNetworking.registerGlobalReceiver(Net.Shot.TYPE, (p, ctx) -> Tracers.receive(p));
 		ClientPlayNetworking.registerGlobalReceiver(Net.Emote.TYPE, (p, ctx) -> {
 			if (p.emoteId().isEmpty()) ClientState.EMOTES.remove(p.entityId());
 			else ClientState.EMOTES.put(p.entityId(), Map.entry(p.emoteId(), System.currentTimeMillis()));
@@ -199,6 +200,7 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 			while (emote.consumeClick()) if (mc.gui.screen() == null) mc.gui.setScreen(new EmoteScreen());
 			while (locker.consumeClick()) if (mc.gui.screen() == null && !ClientState.inMatch()) mc.gui.setScreen(new LockerScreen());
 			CosmeticParticles.tick(mc);
+			Tracers.tick(mc);
 		});
 		ClientPlayConnectionEvents.JOIN.register((handler, sender, mc) -> {
 			SfxBank.preload();

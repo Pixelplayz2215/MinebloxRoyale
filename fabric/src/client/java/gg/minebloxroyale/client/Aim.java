@@ -1,6 +1,5 @@
 package gg.minebloxroyale.client;
 
-import gg.minebloxroyale.item.Guns;
 import gg.minebloxroyale.item.WeaponItem;
 import gg.minebloxroyale.net.Net;
 import gg.minebloxroyale.sheets.WeaponDef;
@@ -9,7 +8,6 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
@@ -20,15 +18,21 @@ import org.jspecify.annotations.Nullable;
 public final class Aim {
 	/** Scoping in takes this long (creator: "a slow zoom in", the scope fading in as it goes). */
 	private static final int SCOPE_IN_TICKS = 8;
-	/** The sniper's recoil: the view kicks up this far and settles back (creator: "keep in with a recoil kick"). */
-	private static final float KICK_DEG = 4F;
-	private static final long KICK_UP_MS = 70, KICK_SETTLE_MS = 450;
+	/**
+	 * Recoil (v2.0.0: every gun, creator: "recoil to each gun"; first the sniper's, "keep in with a recoil kick"): each
+	 * shot kicks the view up by its gun's recoilDeg (weapons sheet), automatic guns a little sideways too, quickly, then
+	 * it settles back; kicks from quick shots add up (to three at most).
+	 */
+	private static final long KICK_UP_MS = 60, KICK_SETTLE_MS = 420;
+	/** Recent kicks: {when (ms), degrees up, degrees sideways}. */
+	private static final java.util.ArrayDeque<float[]> KICKS = new java.util.ArrayDeque<>();
+	private static long kickBase = System.currentTimeMillis();
 	private static final long HIT_MARKER_MS = 350;
 
 	private static float zoom = 1F, prevZoom = 1F;
 	private static int scopeTicks;
 	private static boolean attackWasDown, wasScoped;
-	private static long kickAt, hitAt;
+	private static long hitAt;
 	private static boolean hitHead;
 
 	private Aim() {
@@ -75,16 +79,44 @@ public final class Aim {
 		return Mth.clamp((zoom(partialTicks) - 1F) / (w.adsZoom() - 1F), 0F, 1F);
 	}
 
-	/** Degrees the view is kicked up by the last sniper shot, right now (0 when settled). */
+	/** A shot of yours went off (Tracers, from the server's Shot): the view kicks. */
+	public static void kick(float deg, boolean automatic) {
+		var r = java.util.concurrent.ThreadLocalRandom.current();
+		KICKS.addLast(new float[] { System.currentTimeMillis() - kickBase, deg, automatic ? (r.nextFloat() - 0.5F) * deg * 0.6F : 0 });
+		while (KICKS.size() > 12) KICKS.removeFirst();
+	}
+
+	/** Degrees the view is kicked up by recent shots, right now (0 when settled). */
 	public static float recoil() {
-		long t = System.currentTimeMillis() - kickAt;
-		if (kickAt == 0 || t >= KICK_UP_MS + KICK_SETTLE_MS) return 0F;
-		if (t < KICK_UP_MS) {
-			float u = t / (float) KICK_UP_MS;
-			return KICK_DEG * (1F - (1F - u) * (1F - u));
+		return kicked(1);
+	}
+
+	/** Degrees the view is kicked sideways (automatic guns), right now. */
+	public static float recoilYaw() {
+		return kicked(2);
+	}
+
+	private static float kicked(int which) {
+		float now = System.currentTimeMillis() - kickBase, sum = 0, cap = 0;
+		for (var it = KICKS.iterator(); it.hasNext();) {
+			float[] k = it.next();
+			float t = now - k[0];
+			if (t >= KICK_UP_MS + KICK_SETTLE_MS) {
+				it.remove();
+				continue;
+			}
+			float shape;
+			if (t < KICK_UP_MS) {
+				float u = t / KICK_UP_MS;
+				shape = 1F - (1F - u) * (1F - u);
+			} else {
+				float u = (t - KICK_UP_MS) / KICK_SETTLE_MS;
+				shape = 1F - u * u * (3F - 2F * u);
+			}
+			sum += k[which] * shape;
+			cap = Math.max(cap, Math.abs(k[1]) * 3);
 		}
-		float u = (t - KICK_UP_MS) / (float) KICK_SETTLE_MS;
-		return KICK_DEG * (1F - u * u * (3F - 2F * u));
+		return Math.max(-cap, Math.min(cap, sum));
 	}
 
 	/** A shot of yours landed (the server's damage number): the scope shows a hit marker, a different one for a head. */
@@ -128,15 +160,9 @@ public final class Aim {
 			if (down && (w.automatic() || !attackWasDown)) {
 				// Send where the crosshair points, so the shot goes exactly there (the camera is over the shoulder).
 				Vec3 at = Crosshair.aimPoint(mc, w.rangeBlocks());
-				if (scoped() && ready(mc.player.getMainHandItem(), mc.level.getGameTime())) kickAt = System.currentTimeMillis();
 				ClientPlayNetworking.send(new Net.Action(String.format(Locale.ROOT, "fire:%.3f:%.3f:%.3f", at.x, at.y, at.z)));
 			}
 		}
 		attackWasDown = down;
-	}
-
-	/** Whether this gun fires when the trigger is pulled now (loaded, not reloading, not between shots). */
-	private static boolean ready(ItemStack stack, long now) {
-		return Guns.ammo(stack) > 0 && !Guns.reloading(stack, now) && Guns.tag(stack).getLongOr("nextShot", 0L) <= now;
 	}
 }

@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Set;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -181,6 +180,8 @@ public final class Guns {
 		Vec3 eye = shooter.getEyePosition();
 		Map<LivingEntity, Float> damage = new HashMap<>();
 		Set<LivingEntity> headshots = new HashSet<>();
+		float[] ends = new float[3 * w.pellets()];
+		int hits = 0;
 		for (int p = 0; p < w.pellets(); p++) {
 			// Aimed at the crosshair, every gun hits exactly there; only the shotgun keeps its pellet spread (creator).
 			float spread = aim != null && w.pellets() <= 1 ? 0F : w.spreadDeg() * spreadMult;
@@ -205,6 +206,7 @@ public final class Guns {
 			Vec3 impact = end;
 			if (hit != null && hit.getEntity() instanceof LivingEntity target) {
 				impact = hit.getLocation();
+				if (p < 32) hits |= 1 << p;
 				boolean head = impact.y > target.getEyeY() - 0.3;
 				if (head) headshots.add(target);
 				damage.merge(target, w.damage() * r.damageMult() * (head ? w.headshotMult() : 1F), Float::sum);
@@ -217,14 +219,12 @@ public final class Guns {
 				// Fortnite: bullets chew through built walls, floors and ramps.
 				Builds.damage(level, block.getBlockPos(), w.damage() * r.damageMult());
 			}
-			// Tracer: a few particles along the shot.
-			double len = eye.distanceTo(impact);
-			for (double d = 1.5; d < len; d += 3.0) {
-				Vec3 pt = eye.add(dir.scale(d));
-				level.sendParticles(ParticleTypes.CRIT, pt.x, pt.y, pt.z, 1, 0, 0, 0, 0);
-			}
-			level.sendParticles(ParticleTypes.SMOKE, impact.x, impact.y, impact.z, 2, 0.05, 0.05, 0.05, 0.01);
+			// (where it ended: every client nearby draws its tracer and impact, Net.Shot)
+			ends[p * 3] = (float) impact.x;
+			ends[p * 3 + 1] = (float) impact.y;
+			ends[p * 3 + 2] = (float) impact.z;
 		}
+		Net.shot(level, new Net.Shot(shooter.getId(), w.id(), (float) eye.x, (float) eye.y, (float) eye.z, ends, hits));
 		playSheetSound(shooter, w.fireSound());
 		for (var e : damage.entrySet()) {
 			Combat.gunDamage(level, shooter, e.getKey(), e.getValue(), headshots.contains(e.getKey()));

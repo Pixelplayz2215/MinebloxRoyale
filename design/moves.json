@@ -88,6 +88,20 @@
    "note": "Holding a gun where you look (here: up, ahead, then down)"
   },
   {
+   "id": "hip",
+   "name": "Hip",
+   "axis": "pitch",
+   "loopSeconds": 3.0,
+   "note": "Holding a gun at the hip, pointed where you look (here: up, ahead, then down); raised into the aim when aiming"
+  },
+  {
+   "id": "recoil",
+   "name": "Recoil",
+   "axis": "progress",
+   "loopSeconds": 0.25,
+   "note": "A shot's kick: the gun and arms jump up and back, the head and body with them, and settle (each gun kicks its own amount)"
+  },
+  {
    "id": "swing",
    "name": "Pickaxe swing",
    "axis": "progress",

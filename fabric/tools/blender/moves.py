@@ -125,6 +125,29 @@ MOVES = {
         K(0.8333, rax=15.0, raz=4, rel=14.7, lax=31, laz=-24, lel=20),
         K(1, rax=0.0, raz=4, rel=4.5, lax=4, laz=-24, lel=20),
     ], plant="none", linear=("rax", "rel", "lax"), keep=("right_arm",)),
+    # v2.0.0 (creator: "make shooting guns a bit better ... a proper aim animation, recoil to each gun"): a gun is
+    # carried at the hip and raised into the aim (above) when aiming down sights; every shot kicks (recoil, by the gun).
+    "hip": Move("Hip", "Holding a gun at the hip, pointed where you look (here: up, ahead, then down); raised into the aim when aiming",
+                "pitch", 3.0, [
+        # The right forearm carries the gun along the look, low: the shoulder only 15 - pitch / 3 forward and 10 out,
+        # the elbow bent the rest of the way; the left hand under the front of the gun.
+        K(0, rax=43.0, raz=10, rel=131.0, lax=90.4, laz=-22, lel=50),
+        K(0.1667, rax=33.7, raz=10, rel=112.3, lax=73.6, laz=-22, lel=50),
+        K(0.3333, rax=24.3, raz=10, rel=93.7, lax=56.8, laz=-22, lel=50),
+        K(0.5, rax=15.0, raz=10, rel=75.0, lax=40.0, laz=-22, lel=50),
+        K(0.6667, rax=5.7, raz=10, rel=56.3, lax=23.2, laz=-22, lel=50),
+        K(0.8333, rax=-3.7, raz=10, rel=37.7, lax=6.4, laz=-22, lel=50),
+        K(1, rax=-13.0, raz=10, rel=19.0, lax=-10.4, laz=-22, lel=50),
+    ], plant="none", linear=("rax", "rel", "lax"), keep=("right_arm",)),
+    "recoil": Move("Recoil", "A shot's kick: the gun and arms jump up and back, the head and body with them, and settle (each gun kicks its own amount)",
+                   "progress", 0.25, [
+        # From the aim straight ahead (aim at 0.5); the game adds how far this moves from its start to whatever hold
+        # the gun is in, times the gun's kick (weapons sheet).
+        K(0, rax=45, raz=4, rel=44.9, lax=85, laz=-24, lel=20, lean=0, hx=0, twist=0),
+        K(0.18, rax=53, raz=5, rel=55, lax=91, laz=-24, lel=27, lean=-3, hx=-4, twist=-3),
+        K(0.5, rax=47.5, raz=4.3, rel=48, lax=87, laz=-24, lel=22, lean=-1, hx=-1.5, twist=-1),
+        K(1, rax=45, raz=4, rel=44.9, lax=85, laz=-24, lel=20, lean=0, hx=0, twist=0),
+    ], plant="none", keep=("right_arm",)),
     "swing": Move("Pickaxe swing", "Wound up over the shoulder, a big chop, follow through", "progress", 0.7, [
         K(0, rax=30, raz=6, rel=40, twist=0, lean=0, lax=12, lel=24),
         K(0.3, rax=158, raz=14, rel=72, twist=-16, lean=-6, lax=34, lel=50, hx=-4),

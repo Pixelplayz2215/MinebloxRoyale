@@ -21,7 +21,8 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * Hub: the parked Battle Bus and the Fortnite splash billboard. Match: the storm wall (StormVisuals), reboot vans,
- * loot beams over guns on the ground, waypoint beacons, Build mode's ghost piece and contrails (v2.0.0).
+ * loot beams over guns on the ground, waypoint beacons, Build mode's ghost piece and contrails (v2.0.0). Both: bullets
+ * (Tracers).
  */
 public final class WorldVisuals {
 	private static final int FULL_BRIGHT = 0xF000F0, READY = 0x4CD964, RECHARGING = 0xE03A3A;
@@ -55,6 +56,7 @@ public final class WorldVisuals {
 			BuildMode.preview(ps, out, cam);
 			Contrails.draw(ps, out, cam);
 		}
+		Tracers.draw(ps, out, cam); // (matches and the hub's shooting range)
 	}
 
 	/** Team modes: the reboot vans within 200 blocks (their Blender model), glowing green when ready and red while recharging. */

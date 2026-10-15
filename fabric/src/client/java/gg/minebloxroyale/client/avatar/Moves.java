@@ -40,6 +40,12 @@ final class Moves {
 		return pose(a).lerp(pose(b), f);
 	}
 
+	/** How long a move takes (its loopSeconds: a loop's round, or once through). */
+	static float seconds(String move) {
+		MoveDef def = Sheets.MOVES_BY_ID.get(move);
+		return def == null ? 0.25F : def.loopSeconds();
+	}
+
 	/** A loop of a move that runs on time (seconds since anything; its loopSeconds a round). */
 	static RobloxAvatarRenderer.Pose loop(String move, float seconds) {
 		MoveDef def = Sheets.MOVES_BY_ID.get(move);

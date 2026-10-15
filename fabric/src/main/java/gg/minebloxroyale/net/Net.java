@@ -22,6 +22,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
@@ -167,6 +168,33 @@ public final class Net {
 	}
 
 	/**
+	 * Server -> clients near it (v2.0.0): a gun fired. Who, which gun (weapons sheet), from where (the shooter's eye) and
+	 * where each bullet or pellet ended (x, y, z each); hits: which of them hit someone (a bit each, the first 32). Each
+	 * client draws the tracers, the muzzle flash, the impacts, and the shooter's recoil.
+	 */
+	public record Shot(int shooter, String weapon, float x, float y, float z, float[] ends, int hits) implements CustomPacketPayload {
+		public static final Type<Shot> TYPE = new Type<>(MinebloxRoyale.id("shot"));
+		public static final StreamCodec<RegistryFriendlyByteBuf, Shot> CODEC = StreamCodec.of((buf, p) -> {
+			buf.writeVarInt(p.shooter); buf.writeUtf(p.weapon); buf.writeFloat(p.x); buf.writeFloat(p.y); buf.writeFloat(p.z);
+			buf.writeVarInt(p.ends.length);
+			for (float f : p.ends) buf.writeFloat(f);
+			buf.writeInt(p.hits);
+		}, buf -> {
+			int shooter = buf.readVarInt();
+			String weapon = buf.readUtf();
+			float x = buf.readFloat(), y = buf.readFloat(), z = buf.readFloat();
+			float[] ends = new float[Math.min(buf.readVarInt(), 3 * 64)];
+			for (int i = 0; i < ends.length; i++) ends[i] = buf.readFloat();
+			return new Shot(shooter, weapon, x, y, z, ends, buf.readInt());
+		});
+
+		@Override
+		public Type<? extends CustomPacketPayload> type() {
+			return TYPE;
+		}
+	}
+
+	/**
 	 * Both ways. Client -> server: "I want to do this emote" (entityId ignored). Server -> clients: entity emotes (""
 	 * stops).
 	 */
@@ -274,6 +302,7 @@ public final class Net {
 	public static void init() {
 		PayloadTypeRegistry.clientboundPlay().register(Hud.TYPE, Hud.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(Sfx.TYPE, Sfx.CODEC);
+		PayloadTypeRegistry.clientboundPlay().register(Shot.TYPE, Shot.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(Emote.TYPE, Emote.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(Unlocks.TYPE, Unlocks.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(Room.TYPE, Room.CODEC);
@@ -364,6 +393,12 @@ public final class Net {
 
 	public static void sfxAll(MinecraftServer server, String soundId, Vec3 at) {
 		for (ServerPlayer p : server.getPlayerList().getPlayers()) sfxTo(p, soundId, at);
+	}
+
+	/** A shot, to every player within 256 blocks of it in its world (they see its tracers). */
+	public static void shot(ServerLevel level, Shot shot) {
+		for (ServerPlayer p : level.players())
+			if (p.distanceToSqr(shot.x(), shot.y(), shot.z()) < 256 * 256) ServerPlayNetworking.send(p, shot);
 	}
 
 	public static void emoteAll(MinecraftServer server, Entity who, String emoteId) {

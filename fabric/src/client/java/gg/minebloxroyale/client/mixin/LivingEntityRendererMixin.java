@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.PoseStack;
 import gg.minebloxroyale.bot.BotEntity;
 import gg.minebloxroyale.client.ClientState;
+import gg.minebloxroyale.client.Tracers;
 import gg.minebloxroyale.client.DropControl;
 import gg.minebloxroyale.client.LockerScreen;
 import gg.minebloxroyale.client.avatar.Cosmetics;
@@ -45,6 +46,10 @@ public abstract class LivingEntityRendererMixin {
 			state.setData(RobloxAvatarRenderer.ENTITY_ID, entity.getId());
 			state.setData(RobloxAvatarRenderer.COLORS, entity instanceof BotEntity bot ? bot.colors() : "classic");
 			state.setData(RobloxAvatarRenderer.AIMING, entity.getMainHandItem().getItem() instanceof WeaponItem);
+			// Aiming down the sights: a player holding right mouse with a gun; a bot while it's shooting (it fired lately).
+			float[] shot = Tracers.lastShot(entity.getId());
+			state.setData(RobloxAvatarRenderer.ADS, entity instanceof Player ? entity.isUsingItem() && entity.getUseItem().getItem() instanceof WeaponItem
+				: shot != null && shot[0] < 1.5F);
 			state.setData(RobloxAvatarRenderer.GLIDING, gliding(entity));
 			state.setData(RobloxAvatarRenderer.SKYDIVING, skydiving(entity)); // (after gliding: that keeps who has landed)
 			state.setData(RobloxAvatarRenderer.IN_BUS, entity.getVehicle() instanceof BattleBusEntity);
