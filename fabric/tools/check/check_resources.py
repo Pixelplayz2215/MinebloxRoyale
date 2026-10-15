@@ -311,7 +311,7 @@ for f in sorted(os.listdir(mc_items)) if os.path.isdir(mc_items) else []:
 # Items the code registers: the ids in the design sheets the registration reads, plus the reboot card and the
 # creative tab's icon.
 design = os.path.join(FAB, "..", "design")
-reg_items = {"reboot_card", "icon"}
+reg_items = {"reboot_card", "icon", "grenade"}  # (registered in ModItems itself, not from a sheet)
 src_items = open(os.path.join(FAB, "src/main/java/gg/minebloxroyale/ModItems.java"), encoding="utf-8").read()
 for sheet in os.listdir(design):
     if not sheet.endswith(".json"):

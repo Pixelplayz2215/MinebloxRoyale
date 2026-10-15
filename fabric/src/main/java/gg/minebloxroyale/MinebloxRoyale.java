@@ -7,6 +7,7 @@ import gg.minebloxroyale.hub.Obby;
 import gg.minebloxroyale.match.BattleBusEntity;
 import gg.minebloxroyale.match.Builds;
 import gg.minebloxroyale.match.Combat;
+import gg.minebloxroyale.match.GrenadeEntity;
 import gg.minebloxroyale.match.Harvest;
 import gg.minebloxroyale.match.IslandPregen;
 import gg.minebloxroyale.match.IslandRestore;
@@ -14,6 +15,7 @@ import gg.minebloxroyale.match.Knocked;
 import gg.minebloxroyale.match.Loadout;
 import gg.minebloxroyale.match.Loot;
 import gg.minebloxroyale.match.LootChests;
+import gg.minebloxroyale.match.RocketEntity;
 import gg.minebloxroyale.match.MatchManager;
 import gg.minebloxroyale.net.Net;
 import gg.minebloxroyale.sheets.Sheets;
@@ -81,6 +83,8 @@ public final class MinebloxRoyale implements ModInitializer {
 		IslandPregen.init(); // its chunk ticket type (registries close after start-up)
 		BotEntity.init();
 		BattleBusEntity.init();
+		RocketEntity.init(); // (v2.0.0) rockets and grenades in flight
+		GrenadeEntity.init();
 		Net.init();
 		Combat.init();
 		Loot.initStructureLoot();

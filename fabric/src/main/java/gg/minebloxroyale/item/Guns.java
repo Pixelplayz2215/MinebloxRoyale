@@ -7,6 +7,7 @@ import gg.minebloxroyale.match.CarBlock;
 import gg.minebloxroyale.match.Combat;
 import gg.minebloxroyale.match.Knocked;
 import gg.minebloxroyale.match.MatchManager;
+import gg.minebloxroyale.match.RocketEntity;
 import gg.minebloxroyale.match.Teams;
 import gg.minebloxroyale.net.Net;
 import gg.minebloxroyale.sheets.RarityDef;
@@ -170,7 +171,8 @@ public final class Guns {
 		tag.putLong("nextShot", now + w.fireIntervalTicks());
 		save(stack, tag);
 		RarityDef r = rarity(stack);
-		shoot(level, shooter, w, r, spreadMult, aim);
+		if (w.projectile().equals("rocket")) launch(level, shooter, w, r, aim);
+		else shoot(level, shooter, w, r, spreadMult, aim);
 		if (ammo - 1 <= 0) startReload(shooter, stack, w);
 		return true;
 	}
@@ -231,6 +233,20 @@ public final class Guns {
 			// The shooter hears the hit; a headshot has its own sound (creator).
 			if (shooter instanceof ServerPlayer sp) Net.sfxTo(sp, headshots.contains(e.getKey()) ? "headshot" : "hit_marker", sp.position());
 		}
+	}
+
+	/**
+	 * The rocket launcher (v2.0.0): a rocket flies off towards the crosshair (RocketEntity, which explodes where it
+	 * hits); everyone near sees the launcher kick and its flash (Net.Shot, pointing the way it went, no bullets).
+	 */
+	static void launch(ServerLevel level, LivingEntity shooter, WeaponDef w, RarityDef r, Vec3 aim) {
+		Vec3 eye = shooter.getEyePosition();
+		Vec3 dir = aim != null && aim.distanceToSqr(eye) > 1e-4 ? aim.subtract(eye).normalize() : shooter.getLookAngle();
+		if (aim == null && shooter instanceof Player pl) dir = shoulderAim(level, pl, eye, dir, w.rangeBlocks());
+		RocketEntity.fire(level, shooter, w, r, eye.add(dir.scale(w.rangeBlocks())));
+		Vec3 to = eye.add(dir.scale(2));
+		Net.shot(level, new Net.Shot(shooter.getId(), w.id(), (float) eye.x, (float) eye.y, (float) eye.z, new float[] { (float) to.x, (float) to.y, (float) to.z }, 0));
+		playSheetSound(shooter, w.fireSound());
 	}
 
 	/** Over-the-shoulder camera (1.1 right, 0.2 up): aim at what the crosshair sees, then shoot from the eye. */

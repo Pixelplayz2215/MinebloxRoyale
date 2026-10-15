@@ -6,6 +6,7 @@ import gg.minebloxroyale.item.Guns;
 import gg.minebloxroyale.item.WeaponItem;
 import gg.minebloxroyale.match.Bosses;
 import gg.minebloxroyale.match.Builds;
+import gg.minebloxroyale.match.GrenadeEntity;
 import gg.minebloxroyale.match.CarBlock;
 import gg.minebloxroyale.match.Combat;
 import gg.minebloxroyale.match.Harvest;
@@ -523,6 +524,7 @@ public class BotEntity extends PathfinderMob {
 		double dist = distanceTo(target);
 		planBuild();
 		boolean building = builder().busy();
+		if (!building && explosives(level)) return;
 		if (!(held.getItem() instanceof WeaponItem w)) {
 			// No gun yet: swing the pickaxe up close.
 			if (!building) chase(1.1);
@@ -597,6 +599,53 @@ public class BotEntity extends PathfinderMob {
 			wanderTo = new Vec3(bossHome.x + Math.cos(a) * d, bossHome.y, bossHome.z + Math.sin(a) * d);
 		}
 		navigateTo(wanderTo);
+	}
+
+	/** Ticks until it may throw a grenade or fire a rocket again. */
+	private int explosiveCooldown;
+
+	/**
+	 * Rockets and grenades (v2.0.0, creator: "Bots can use both (rockets at builds and groups, grenades at players behind
+	 * cover)"): a grenade lobbed over the cover someone is hiding behind (it can't see them, 4 to 22 blocks off); a rocket
+	 * at someone among builds or with others round them (8 to 70 blocks off), then back to its gun. True if it did one.
+	 */
+	private boolean explosives(ServerLevel level) {
+		ItemStack rl = bag.launcher();
+		if (rl != null && rl.getItem() instanceof WeaponItem lw) Guns.tickReload(rl, lw.def, level.getGameTime(), this); // (it isn't held)
+		if (--explosiveCooldown > 0 || !MatchManager.get().botsMayShoot(level.getGameTime())) return false;
+		double dist = distanceTo(target);
+		if (!hasLineOfSight(target) && dist > 4 && dist < 22 && bag.takeGrenade()) {
+			// (aimed above them, more the further they are, so the arc comes down on them)
+			GrenadeEntity.throwFrom(level, this, target.position().add(0, 0.5 + dist * 0.22, 0));
+			swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT);
+			explosiveCooldown = 80;
+			return true;
+		}
+		if (rl != null && rl.getItem() instanceof WeaponItem w && dist > 8 && dist < 70 && hasLineOfSight(target) && (amongBuilds(target) || crowd(level, target) >= 2)) {
+			ItemStack was = getMainHandItem();
+			setItemInHand(InteractionHand.MAIN_HAND, rl);
+			faceTarget();
+			explosiveCooldown = Guns.tryFire(this, rl, w.def, 1F) ? 100 : 20;
+			setItemInHand(InteractionHand.MAIN_HAND, was);
+			return explosiveCooldown == 100;
+		}
+		explosiveCooldown = 10;
+		return false;
+	}
+
+	/** Someone with builds round them (a box, walls): a few built blocks within 2 of them. */
+	private static boolean amongBuilds(LivingEntity e) {
+		int n = 0;
+		BlockPos c = e.blockPosition();
+		for (BlockPos p : BlockPos.betweenClosed(c.offset(-2, -1, -2), c.offset(2, 3, 2)))
+			if (Builds.isBuilt(p) && ++n >= 4) return true;
+		return false;
+	}
+
+	/** How many fighters (of other teams than this bot's) stand within 5 blocks of e, e included. */
+	private int crowd(ServerLevel level, LivingEntity e) {
+		return level.getEntitiesOfClass(LivingEntity.class, e.getBoundingBox().inflate(5),
+			o -> o.isAlive() && o != this && !o.isSpectator() && (o instanceof Player || o instanceof BotEntity) && !Teams.sameTeam(this, o)).size();
 	}
 
 	private void chase(double speed) {

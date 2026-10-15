@@ -34,5 +34,8 @@
     "options.minebloxroyale.scopedSensitivity": "Scoped Sensitivity",
     "options.minebloxroyale.scopedSensitivity.tooltip": "How fast the mouse turns the view while looking through a sniper scope, as a share of your normal sensitivity.",
     "itemGroup.minebloxroyale.main": "Mineblox Royale",
-    "item.minebloxroyale.icon": "Mineblox Royale"
+    "item.minebloxroyale.icon": "Mineblox Royale",
+    "item.minebloxroyale.gun_rocket_launcher": "Rocket Launcher",
+    "item.minebloxroyale.ammo_rockets": "Rockets",
+    "item.minebloxroyale.grenade": "Grenade"
 }

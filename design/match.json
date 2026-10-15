@@ -458,6 +458,78 @@
    "value": 96,
    "unit": "blocks",
    "meaning": "a boss appears at its lair when someone comes this close (and keeps what health it had)"
+  },
+  {
+   "id": "rocketSpeed",
+   "value": 1.6,
+   "unit": "blocks/tick",
+   "meaning": "a rocket's speed (v2.0.0 rocket launcher): slow enough to see it go, about 32 blocks a second"
+  },
+  {
+   "id": "rocketRadius",
+   "value": 3.5,
+   "unit": "blocks",
+   "meaning": "a rocket's blast: players and bots inside it are hurt (less towards its edge), builds and buildings in it break"
+  },
+  {
+   "id": "rocketDamage",
+   "value": 110,
+   "unit": "health",
+   "meaning": "a rocket's damage at the middle of its blast (times the launcher's rarity)"
+  },
+  {
+   "id": "rocketBuildDamage",
+   "value": 400,
+   "unit": "health",
+   "meaning": "a rocket's damage to built walls, floors and ramps in its blast"
+  },
+  {
+   "id": "rocketCarDamage",
+   "value": 300,
+   "unit": "durability",
+   "meaning": "a rocket's damage to a car (2 wreck one; creator)"
+  },
+  {
+   "id": "grenadeRadius",
+   "value": 3.0,
+   "unit": "blocks",
+   "meaning": "a grenade's blast"
+  },
+  {
+   "id": "grenadeDamage",
+   "value": 100,
+   "unit": "health",
+   "meaning": "a grenade's damage at the middle of its blast"
+  },
+  {
+   "id": "grenadeBuildDamage",
+   "value": 375,
+   "unit": "health",
+   "meaning": "a grenade's damage to builds in its blast"
+  },
+  {
+   "id": "grenadeCarDamage",
+   "value": 100,
+   "unit": "durability",
+   "meaning": "a grenade's damage to a car (creator)"
+  },
+  {
+   "id": "grenadeFuseTicks",
+   "value": 50,
+   "unit": "ticks",
+   "meaning": "a grenade explodes this long after it's thrown (2.5 s), bouncing till then"
+  },
+  {
+   "id": "grenadeThrow",
+   "value": 1.15,
+   "unit": "blocks/tick",
+   "meaning": "how hard a grenade is thrown (it flies in an arc)"
+  },
+  {
+   "id": "grenadeCooldownTicks",
+   "value": 12,
+   "unit": "ticks",
+   "meaning": "the time between one grenade thrown and the next"
   }
  ]
 }

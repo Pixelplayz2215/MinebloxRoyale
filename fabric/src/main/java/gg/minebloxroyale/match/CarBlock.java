@@ -80,7 +80,7 @@ public class CarBlock extends Block implements EntityBlock {
 	}
 
 	/** The car this block belongs to: every car block joined to it (cars in a lot stand a block apart). */
-	static Set<BlockPos> parts(Level level, BlockPos start) {
+	public static Set<BlockPos> parts(Level level, BlockPos start) {
 		Set<BlockPos> out = new LinkedHashSet<>();
 		ArrayDeque<BlockPos> q = new ArrayDeque<>();
 		q.add(start.immutable());

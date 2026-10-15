@@ -84,12 +84,13 @@ public final class Tracers {
 		Vec3 muzzle = muzzle(mc, p.shooter(), eye, first, time);
 		boolean sniper = w.scope();
 		float speed = sniper ? SNIPER_SPEED : SPEED;
-		for (int i = 0; i + 2 < p.ends().length; i += 3) {
+		// (a rocket is its own flying thing, RocketEntity: just the kick and the flash here)
+		for (int i = 0; i + 2 < p.ends().length && !w.projectile().equals("rocket"); i += 3) {
 			Vec3 to = new Vec3(p.ends()[i], p.ends()[i + 1], p.ends()[i + 2]);
 			boolean hit = i / 3 < 32 && (p.hits() >> (i / 3) & 1) != 0;
 			BULLETS.add(new Bullet(muzzle, to, time, speed, w.tracerLength(), w.tracer() & 0xFFFFFF, hit, sniper));
 		}
-		float size = w.pellets() > 1 ? 0.55F : sniper ? 0.5F : w.automatic() ? 0.3F : 0.36F;
+		float size = w.pellets() > 1 || w.projectile().equals("rocket") ? 0.55F : sniper ? 0.5F : w.automatic() ? 0.3F : 0.36F;
 		FLASHES.add(new Flash(muzzle, time, size, mc.level.getRandom().nextFloat() * 90));
 		if (BULLETS.size() > 400) BULLETS.subList(0, BULLETS.size() - 400).clear();
 	}

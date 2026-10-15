@@ -1,5 +1,6 @@
 package gg.minebloxroyale.client;
 
+import gg.minebloxroyale.ModItems;
 import gg.minebloxroyale.item.WeaponItem;
 import gg.minebloxroyale.net.Net;
 import gg.minebloxroyale.sheets.WeaponDef;
@@ -161,6 +162,16 @@ public final class Aim {
 				// Send where the crosshair points, so the shot goes exactly there (the camera is over the shoulder).
 				Vec3 at = Crosshair.aimPoint(mc, w.rangeBlocks());
 				ClientPlayNetworking.send(new Net.Action(String.format(Locale.ROOT, "fire:%.3f:%.3f:%.3f", at.x, at.y, at.z)));
+			}
+		}
+		// A grenade in hand (v2.0.0): a click throws one, towards the crosshair (GrenadeEntity).
+		if (w == null && mc.player.getMainHandItem().is(ModItems.GRENADE) && !BuildMode.active()) {
+			while (mc.options.keyAttack.consumeClick()) {
+				// swallowed: a grenade doesn't punch or mine
+			}
+			if (down && !attackWasDown) {
+				Vec3 at = Crosshair.aimPoint(mc, 60);
+				ClientPlayNetworking.send(new Net.Action(String.format(Locale.ROOT, "throw:%.3f:%.3f:%.3f", at.x, at.y, at.z)));
 			}
 		}
 		attackWasDown = down;

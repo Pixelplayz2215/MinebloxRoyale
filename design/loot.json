@@ -1,10 +1,10 @@
 {
   "sheet": "loot",
   "class": "LootDef",
-  "about": "What a chest can roll. Each chest rolls 'chestRolls' (match sheet) entries by weight; every weapon rolled also brings one box of its own ammo (Fortnite chests always do). Weapons roll a rarity by rarities.lootWeight. Chug Jugs are kept rare (creator): weight 1 out of ~265, about 2-3 per match across all chests.",
+  "about": "What a chest can roll. Each chest rolls 'chestRolls' (match sheet) entries by weight; every weapon rolled also brings one box of its own ammo (Fortnite chests always do). Weapons roll a rarity by rarities.lootWeight. Chug Jugs are kept rare (creator): weight 1 out of ~265, about 2-3 per match across all chests. v2.0.0: rocket launchers (with rockets), and grenades (kind grenade: count of them, up to 6 in a hotbar slot).",
   "columns": {
     "id": "string",
-    "kind": "enum:weapon|consumable|ammo",
+    "kind": "enum:weapon|consumable|ammo|grenade",
     "weapon": "ref:weapons?",
     "consumable": "ref:consumables?",
     "ammo": "ref:ammo?",
@@ -26,6 +26,9 @@
     { "id": "l_light", "kind": "ammo", "weapon": "-", "consumable": "-", "ammo": "light", "weight": 16, "count": 1 },
     { "id": "l_medium", "kind": "ammo", "weapon": "-", "consumable": "-", "ammo": "medium", "weight": 16, "count": 1 },
     { "id": "l_heavy", "kind": "ammo", "weapon": "-", "consumable": "-", "ammo": "heavy", "weight": 6, "count": 1 },
-    { "id": "l_shells", "kind": "ammo", "weapon": "-", "consumable": "-", "ammo": "shells", "weight": 12, "count": 1 }
+    { "id": "l_shells", "kind": "ammo", "weapon": "-", "consumable": "-", "ammo": "shells", "weight": 12, "count": 1 },
+    { "id": "l_rocket_launcher", "kind": "weapon", "weapon": "rocket_launcher", "consumable": "-", "ammo": "-", "weight": 5, "count": 1 },
+    { "id": "l_rockets", "kind": "ammo", "weapon": "-", "consumable": "-", "ammo": "rockets", "weight": 4, "count": 1 },
+    { "id": "l_grenades", "kind": "grenade", "weapon": "-", "consumable": "-", "ammo": "-", "weight": 10, "count": 3 }
   ]
 }

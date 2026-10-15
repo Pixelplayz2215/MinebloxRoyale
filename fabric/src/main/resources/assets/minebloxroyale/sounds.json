@@ -70,5 +70,24 @@
         "stream": true
       }
     ]
+  },
+  "gun.rocket_launcher": {
+    "sounds": [
+      "minebloxroyale:gun/rocket_launcher_1",
+      "minebloxroyale:gun/rocket_launcher_2",
+      "minebloxroyale:gun/rocket_launcher_3"
+    ]
+  },
+  "boom.explosion": {
+    "sounds": [
+      "minebloxroyale:boom/explosion_1",
+      "minebloxroyale:boom/explosion_2",
+      "minebloxroyale:boom/explosion_3"
+    ]
+  },
+  "boom.grenade_bounce": {
+    "sounds": [
+      "minebloxroyale:boom/grenade_bounce"
+    ]
   }
 }

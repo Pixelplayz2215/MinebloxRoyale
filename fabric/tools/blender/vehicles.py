@@ -170,7 +170,21 @@ def reboot_van():
     sphere(0.57, 3.5, -1.0, 0.06, 0.06, 0.06, DARK(), segs=10, rings=6)
 
 
+def rocket():
+    """v2.0.0: a rocket in flight (the rocket launcher's), pointing along +x, a block long: an olive body with a red
+    nose, four fins, the nozzle and a glowing flame out of the back."""
+    body = mat("rk_body", "#7D8A6A", rough=0.45)
+    cyl(0.48, 0, 0, 0.075, 0.5, "x", body, verts=20)
+    lathe([(0.0, 0.0), (0.077, 0.0), (0.07, 0.06), (0.045, 0.13), (0.0, 0.18)], 0.73, 0, 0, mat("rk_nose", "#D84A3A", rough=0.35), segs=20, axis="x")
+    torus(0.62, 0, 0, 0.076, 0.008, "x", mat("rk_band", "#F2C230", rough=0.3, metal=0.6), segs=20, rsegs=6)
+    for a in (45, 135, 225, 315):
+        box(0.24, -0.006, 0.07, 0.4, 0.006, 0.16, body, bevel=0.004).rot("x", a, (0, 0, 0))
+    lathe([(0.0, 0.07), (0.06, 0.07), (0.075, 0.0), (0.0, 0.0)], 0.16, 0, 0, DARK(), segs=20, axis="x")
+    lathe([(0.0, 0.0), (0.05, 0.0), (0.035, 0.08), (0.0, 0.16)], 0.155, 0, 0, mat("rk_flame", "#FFB24A", glow=True), segs=16, axis="x").rot("y", 180, (0.155, 0, 0))
+
+
 ITEMS = {
+    "rocket": ("Rocket", rocket, {"scale": 1.0, "ao": 0.1, "folder": "Rocket", "views": {"Side": 0, "Front": 90, "Back": 270}}),
     "battle_bus": ("Battle Bus", battle_bus, {"scale": 1.0, "ao": 1.2, "folder": "Battle Bus", "views": {"Front": 0, "Left": 90, "Back": 180, "Right": 270},
                                               "focus": ("close-up", ((-2.1, -0.2, -4.6), (2.1, 3.0, 4.6)))}),
     "reboot_van": ("Reboot Van", reboot_van, {"scale": 1.0, "ao": 0.8, "folder": "Reboot Van",

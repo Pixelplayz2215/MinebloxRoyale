@@ -6,6 +6,7 @@ import gg.minebloxroyale.hub.Obby;
 import gg.minebloxroyale.item.Guns;
 import gg.minebloxroyale.item.WeaponItem;
 import gg.minebloxroyale.match.Builds;
+import gg.minebloxroyale.match.GrenadeEntity;
 import gg.minebloxroyale.match.Interact;
 import gg.minebloxroyale.match.Knocked;
 import gg.minebloxroyale.match.MatchManager;
@@ -374,6 +375,18 @@ public final class Net {
 						Builds.place(player.level(), player, a[0], a[1], new Builds.Placement(Integer.parseInt(a[2]), Integer.parseInt(a[3]), Integer.parseInt(a[4]), dir));
 					} catch (NumberFormatException ignored) {
 					}
+				}
+				case "throw" -> {
+					// throw:x:y:z = a grenade, towards where the crosshair points (v2.0.0)
+					String[] xyz = arg.split(":");
+					Vec3 aim = null;
+					try {
+						if (xyz.length == 3) aim = new Vec3(Double.parseDouble(xyz[0]), Double.parseDouble(xyz[1]), Double.parseDouble(xyz[2]));
+					} catch (NumberFormatException e) {
+						aim = null;
+					}
+					if (aim != null && (aim.distanceTo(player.getEyePosition()) > 120 || aim.subtract(player.getEyePosition()).normalize().dot(player.getLookAngle()) < 0.7)) aim = null;
+					GrenadeEntity.tryThrow(player, aim);
 				}
 				case "fire" -> {
 					ItemStack stack = player.getMainHandItem();

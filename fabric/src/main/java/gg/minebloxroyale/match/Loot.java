@@ -67,6 +67,7 @@ public final class Loot {
 			return Guns.make(l.weapon(), r.id());
 		}
 		if (l.kind().equals("ammo")) return ModItems.ammo(l.ammo(), Sheets.AMMO_BY_ID.get(l.ammo()).pickup() * l.count());
+		if (l.kind().equals("grenade")) return new ItemStack(ModItems.GRENADE, l.count());
 		return new ItemStack(ModItems.CONSUMABLES.get(l.consumable()), l.count());
 	}
 

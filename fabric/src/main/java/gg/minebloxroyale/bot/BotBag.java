@@ -120,12 +120,28 @@ public final class BotBag {
 		return items;
 	}
 
-	/** The best gun carried: highest rarity first. */
+	/** The best gun carried: highest rarity first; the rocket launcher only when there's nothing else (it's for builds). */
 	public ItemStack bestGun() {
 		ItemStack best = null;
 		for (ItemStack s : items())
-			if (s.getItem() instanceof WeaponItem && (best == null || Guns.rarity(s).tier() > Guns.rarity(best).tier())) best = s;
-		return best;
+			if (s.getItem() instanceof WeaponItem w && !w.def.projectile().equals("rocket") && (best == null || Guns.rarity(s).tier() > Guns.rarity(best).tier())) best = s;
+		return best != null ? best : launcher();
+	}
+
+	/** A rocket launcher it carries (v2.0.0), or null. */
+	public ItemStack launcher() {
+		for (ItemStack s : items()) if (s.getItem() instanceof WeaponItem w && w.def.projectile().equals("rocket")) return s;
+		return null;
+	}
+
+	/** Takes one grenade out of the bag (v2.0.0); false if it has none. */
+	public boolean takeGrenade() {
+		for (ItemStack s : items())
+			if (s.is(ModItems.GRENADE)) {
+				s.shrink(1);
+				return true;
+			}
+		return false;
 	}
 
 	/**

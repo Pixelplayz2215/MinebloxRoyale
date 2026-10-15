@@ -179,6 +179,11 @@ public final class Builds {
 		return BY_BLOCK.containsKey(pos);
 	}
 
+	/** The built piece a block belongs to (null: none): one blast hurts each piece once. */
+	public static Object pieceAt(BlockPos pos) {
+		return BY_BLOCK.get(pos);
+	}
+
 	/** Pickaxe on a built block: the whole piece goes (no materials back, as in Fortnite). */
 	public static void breakPiece(ServerLevel level, BlockPos pos) {
 		Piece piece = BY_BLOCK.get(pos);

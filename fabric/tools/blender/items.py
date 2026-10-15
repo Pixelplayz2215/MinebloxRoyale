@@ -201,6 +201,47 @@ def gun_sniper():
         tube([(13.0, 7.9, z), (15.4, 7.6, z)], 0.1, MID(), segs=6)
 
 
+def gun_rocket_launcher():
+    """v2.0.0 (creator: "Rocket launcher"): a long tube in the rarity colour over the shoulder, a flared exhaust behind,
+    a red warhead showing at the muzzle, two grips, a sight with a glowing lens."""
+    # The tube, its end rings and the bell at the muzzle.
+    cyl(8.2, 10.2, 8, 1.25, 12.6, "x", PAINT(), verts=28)
+    for x in (2.2, 8.2, 13.9):
+        torus(x, 10.2, 8, 1.27, 0.14, "x", DARK(), segs=28, rsegs=8)
+    lathe([(0.0, 0.0), (1.3, 0.0), (1.55, 0.6), (1.55, 1.1), (0.0, 1.1)], 14.4, 10.2, 8, DARK(), segs=28, axis="x")
+    cyl(15.52, 10.2, 8, 1.2, 0.06, "x", BORE(), verts=28)
+    # the warhead waiting in the muzzle
+    lathe([(0.0, 0.0), (0.82, 0.0), (0.8, 0.5), (0.5, 1.0), (0.0, 1.3)], 14.9, 10.2, 8, mat("warhead", "#D84A3A", rough=0.35), segs=24, axis="x")
+    # The flared exhaust behind.
+    lathe([(0.0, 1.0), (1.2, 1.0), (1.45, 0.4), (1.62, 0.0), (0.0, 0.0)], 0.4, 10.2, 8, DARK(), segs=28, axis="x")
+    cyl(0.38, 10.2, 8, 1.15, 0.05, "x", BORE(), verts=28)
+    # Grips, trigger, a shoulder pad.
+    g0, g1 = zr(1.4)
+    prism([(6.6, 8.95), (8.1, 8.95), (7.8, 6.2), (6.6, 6.4)], g0, g1, POLY(), bevel=0.25, seg=3)
+    prism([(10.6, 8.95), (11.8, 8.95), (11.6, 6.9), (10.6, 7.0)], g0, g1, POLY(), bevel=0.25, seg=3)
+    trigger(8.6, 8.4)
+    box(3.0, 8.75, 6.8, 5.6, 9.2, 9.2, RUBBER(), bevel=0.2, seg=2)
+    # The sight: a box on a stalk to the left, its lens glowing.
+    box(9.0, 11.3, 6.1, 10.0, 11.7, 6.7, DARK(), bevel=0.06)
+    box(8.6, 11.5, 5.7, 10.6, 12.6, 6.5, DARK(), bevel=0.15, seg=2)
+    cyl(10.62, 12.05, 6.1, 0.3, 0.06, "x", LENS(), verts=16)
+    rail(4.0, 7.0, 11.42, 7.5, 8.5, teeth=5)
+
+
+def grenade():
+    """v2.0.0 (creator: "Grenades"): a frag grenade: a ribbed olive body, the fuse on top, the lever down its side and
+    the pin's ring."""
+    body = mat("grenade_body", "#5B7340", rough=0.6)
+    lathe([(0.0, 3.4), (1.6, 3.6), (2.5, 4.6), (2.7, 6.2), (2.45, 7.8), (1.7, 8.9), (0.9, 9.3), (0.0, 9.35)], 8, 0, 8, body, segs=32, axis="y")
+    for y in (5.2, 6.4, 7.6):
+        torus(8, y, 8, 2.64 if y != 7.6 else 2.4, 0.09, "y", mat("grenade_groove", "#3D4F2B", rough=0.7), segs=32, rsegs=6)
+    cyl(8, 9.8, 8, 0.95, 1.2, "y", MID(), verts=20, bevel=0.1)
+    cyl(8, 10.5, 8, 0.7, 0.3, "y", DARK(), verts=20, bevel=0.05)
+    # the lever (spoon) down the side, and the pin's ring
+    tube([(8.6, 10.2, 8), (9.6, 10.0, 8), (10.3, 8.6, 8), (10.6, 6.6, 8)], 0.22, LIGHT_METAL(), segs=6)
+    torus(7.0, 10.1, 9.2, 0.75, 0.1, "x", LIGHT_METAL(), segs=20, rsegs=6)
+
+
 # ---------------------------------------------------------------- heals and shields (upright; y up)
 
 def medkit():
@@ -336,11 +377,13 @@ ITEMS = {
     "gun_assault_rifle": gun("Assault Rifle", gun_assault_rifle),
     "gun_pump_shotgun": gun("Pump Shotgun", gun_pump_shotgun),
     "gun_sniper": gun("Bolt-Action Sniper", gun_sniper),
+    "gun_rocket_launcher": gun("Rocket Launcher", gun_rocket_launcher),
     "bandages": ("Bandages", bandages, HEAL),
     "medkit": ("Med Kit", medkit, HEAL),
     "small_shield": ("Mini Shield", small_shield, HEAL),
     "shield_potion": ("Shield Potion", shield_potion, HEAL),
     "slurp_juice": ("Slurp Juice", slurp_juice, HEAL),
     "chug_jug": ("Chug Jug", chug_jug, HEAL),
+    "grenade": ("Grenade", grenade, {**HEAL, "folder": "Grenades"}),
     "pickaxe": ("Pickaxe", pickaxe, {"icon": (0, 0), "ao": 1.5, "folder": "Pickaxe", "views": {"Front": 0, "Right": 270, "Back": 180, "Left": 90}}),
 }

@@ -6,7 +6,8 @@ paks, never opened). Written as Ogg Vorbis into assets/minebloxroyale/sounds (th
 assets' sounds.json:
 
   music/battle_1, music/battle_2   two seamless battle loops (A minor, 140 bpm; the second harder, for the endgame)
-  gun/<gun>_1..3                   each gun's shot, three takes so repeats don't sound copied
+  gun/<gun>_1..3                   each gun's shot, three takes so repeats don't sound copied (the rocket launcher too)
+  boom/explosion_1..3              a rocket or grenade going off; boom/grenade_bounce, a grenade knocking on the ground
   storm/warning                    the storm starting to close in
 
 python fabric/tools/audio/make_audio.py
@@ -16,6 +17,7 @@ import os
 import subprocess
 import tempfile
 import wave
+import zlib
 
 import numpy as np
 
@@ -122,7 +124,9 @@ def write_ogg(path, data, stereo=False, quality=5):
             w.setsampwidth(2)
             w.setframerate(SR)
             w.writeframes(pcm.tobytes())
-        subprocess.run([FFMPEG, "-v", "error", "-y", "-i", wav, "-c:a", "libvorbis", "-q:a", str(quality), path], check=True)
+        # (bit-exact: the same sound makes the same file, so re-running only changes what changed)
+        subprocess.run([FFMPEG, "-v", "error", "-y", "-i", wav, "-c:a", "libvorbis", "-q:a", str(quality), "-fflags", "+bitexact", "-flags:a", "+bitexact",
+                        path], check=True)
 
 
 # ------------------------------------------------------------------------------------------------- guns
@@ -167,6 +171,66 @@ def gun(name, take):
                 out[i:i + len(k)] += k * 0.45
     out = room(out, 0.5, 0.25)
     return norm(soft(out, 1.6), 0.95 * g["gain"])
+
+
+def rocket_launch(take):
+    """The rocket launcher: a hollow thump out of the tube, then the motor's rising hiss as it flies off."""
+    k = 1 + (take - 2) * 0.04
+    sec = 1.3
+    n = int(sec * SR)
+    out = np.zeros(n)
+    th = sweep(150 * k, 50, 0.4) * env(int(0.4 * SR), 0.002, 0.18)
+    out[:len(th)] += th * 0.9
+    pop = filt(noise(0.08), lo=300, hi=2500) * env(int(0.08 * SR), 0.001, 0.04)
+    out[:len(pop)] += pop * 0.8
+    hiss_len = sec - 0.05
+    m = int(hiss_len * SR)
+    hiss = noise(hiss_len)
+    parts = []
+    blocks = 12
+    for b in range(blocks):  # (the motor's whoosh brightening, then going away)
+        a_, b_ = b * m // blocks, (b + 1) * m // blocks
+        parts.append(filt(hiss[a_:b_], lo=500, hi=1800 + 2600 * (b / blocks)))
+    hiss = np.concatenate(parts) * env(m, 0.08, hiss_len * 0.7, curve=2.5)
+    i = int(0.05 * SR)
+    out[i:i + m] += hiss * 0.5
+    return norm(soft(room(out, 0.6, 0.3), 1.4), 0.95)
+
+
+def explosion(take):
+    """An explosion: a deep boom, a crack on top, rumble and debris pattering down after."""
+    k = 1 + (take - 2) * 0.05
+    sec = 2.4
+    n = int(sec * SR)
+    out = np.zeros(n)
+    boom = sweep(90 * k, 28, 1.0, shape=4) * env(int(1.0 * SR), 0.004, 0.55)
+    out[:len(boom)] += boom * 1.0
+    crack = filt(noise(0.05), lo=900, hi=7000) * env(int(0.05 * SR), 0.0005, 0.02)
+    out[:len(crack)] += crack * 0.8
+    body = filt(noise(0.6), lo=60, hi=1400) * env(int(0.6 * SR), 0.003, 0.35)
+    out[:len(body)] += body * 0.9
+    rumble = filt(noise(sec), lo=30, hi=260) * env(n, 0.05, sec * 0.6, curve=3)
+    out += rumble * 0.6
+    for _ in range(int(14 * k)):  # debris
+        at = int((0.25 + RNG.random() * 1.4) * SR)
+        f = 800 + RNG.random() * 2500
+        d = filt(noise(0.03), lo=f * 0.6, hi=f * 1.6) * env(int(0.03 * SR), 0.0005, 0.01)
+        if at + len(d) < n:
+            out[at:at + len(d)] += d * (0.12 + RNG.random() * 0.12)
+    return norm(soft(room(out, 1.0, 0.35), 1.8), 0.97)
+
+
+def grenade_bounce():
+    """A grenade knocking on the ground: a dull metal clink."""
+    sec = 0.25
+    n = int(sec * SR)
+    t = t_of(sec)
+    out = np.zeros(n)
+    for f, a in ((1650.0, 0.5), (2450.0, 0.3), (3900.0, 0.18)):
+        out += a * np.sin(2 * np.pi * f * t) * env(n, 0.0005, 0.06)
+    knock = filt(noise(0.03), lo=200, hi=1500) * env(int(0.03 * SR), 0.0005, 0.01)
+    out[:len(knock)] += knock * 0.6
+    return norm(out, 0.8)
 
 
 # ------------------------------------------------------------------------------------------------- storm
@@ -375,15 +439,32 @@ def track(intense):
 
 # ------------------------------------------------------------------------------------------------- write
 
+def seeded(name):
+    """Each sound its own random numbers (from its name): the same every run, whatever else is made before it."""
+    global RNG
+    RNG = np.random.default_rng(zlib.crc32(name.encode()))
+
+
 def main():
     snd = os.path.join(ASSETS, "sounds")
     for name in GUNS:
         for take in (1, 2, 3):
+            seeded(f"gun/{name}_{take}")
             write_ogg(os.path.join(snd, "gun", f"{name}_{take}.ogg"), gun(name, take))
         print("gun", name)
+    for take in (1, 2, 3):
+        seeded(f"gun/rocket_launcher_{take}")
+        write_ogg(os.path.join(snd, "gun", f"rocket_launcher_{take}.ogg"), rocket_launch(take))
+        seeded(f"boom/explosion_{take}")
+        write_ogg(os.path.join(snd, "boom", f"explosion_{take}.ogg"), explosion(take))
+    seeded("boom/grenade_bounce")
+    write_ogg(os.path.join(snd, "boom", "grenade_bounce.ogg"), grenade_bounce())
+    print("rocket, explosions, grenade")
+    seeded("storm/warning")
     write_ogg(os.path.join(snd, "storm", "warning.ogg"), storm_warning())
     print("storm warning")
     for i, intense in ((1, False), (2, True)):
+        seeded(f"music/battle_{i}")
         write_ogg(os.path.join(snd, "music", f"battle_{i}.ogg"), track(intense), stereo=True, quality=4)
         print("battle", i)
     # the assets' sounds.json: these alongside what's there
@@ -392,6 +473,9 @@ def main():
     for name in GUNS:
         reg[f"gun.{name}"] = {"sounds": [f"minebloxroyale:gun/{name}_{k}" for k in (1, 2, 3)]}
     reg["storm.warning"] = {"sounds": ["minebloxroyale:storm/warning"]}
+    reg["gun.rocket_launcher"] = {"sounds": [f"minebloxroyale:gun/rocket_launcher_{k}" for k in (1, 2, 3)]}
+    reg["boom.explosion"] = {"sounds": [f"minebloxroyale:boom/explosion_{k}" for k in (1, 2, 3)]}
+    reg["boom.grenade_bounce"] = {"sounds": ["minebloxroyale:boom/grenade_bounce"]}
     for i in (1, 2):
         reg[f"music.battle_{i}"] = {"sounds": [{"name": f"minebloxroyale:music/battle_{i}", "stream": True}]}
     json.dump(reg, open(p, "w", encoding="utf-8", newline="\n"), indent=2)

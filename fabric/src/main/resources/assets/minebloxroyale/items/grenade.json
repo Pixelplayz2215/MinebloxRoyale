@@ -1,0 +1,1 @@
+{"model":{"type":"minecraft:select","property":"minecraft:display_context","cases":[{"when":["gui"],"model":{"type":"minecraft:model","model":"minebloxroyale:item/grenade_icon"}}],"fallback":{"type":"minecraft:special","base":"minebloxroyale:item/grenade","model":{"type":"minebloxroyale:mesh","mesh":"grenade"}}}}

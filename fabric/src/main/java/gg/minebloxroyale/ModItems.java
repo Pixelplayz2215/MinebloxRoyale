@@ -33,6 +33,8 @@ public final class ModItems {
 	public static final Map<String, ConsumableItem> CONSUMABLES = new LinkedHashMap<>();
 	public static final Map<String, Item> AMMO = new LinkedHashMap<>();
 	public static final Map<String, Item> MATERIALS = new LinkedHashMap<>();
+	/** A grenade (v2.0.0): left click throws one (GrenadeEntity); up to 6 in a hotbar slot, as in Fortnite. */
+	public static Item GRENADE;
 	/** A teammate's reboot card (team modes): carried in the offhand, taken to a reboot van. */
 	public static Item REBOOT_CARD;
 	/** The Mineblox Royale icon (creator: a brand-new icon, also for the store pictures): the creative tab's picture. */
@@ -68,6 +70,8 @@ public final class ModItems {
 			ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, MinebloxRoyale.id("ammo_" + a.id()));
 			AMMO.put(a.id(), Registry.register(BuiltInRegistries.ITEM, key, new Item(new Item.Properties().setId(key).stacksTo(99))));
 		}
+		ResourceKey<Item> grenade = ResourceKey.create(Registries.ITEM, MinebloxRoyale.id("grenade"));
+		GRENADE = Registry.register(BuiltInRegistries.ITEM, grenade, new Item(new Item.Properties().setId(grenade).stacksTo(6)));
 		ResourceKey<Item> card = ResourceKey.create(Registries.ITEM, MinebloxRoyale.id("reboot_card"));
 		REBOOT_CARD = Registry.register(BuiltInRegistries.ITEM, card, new Item(new Item.Properties().setId(card).stacksTo(4)));
 		for (var m : Sheets.MATERIALS) {
@@ -83,6 +87,7 @@ public final class ModItems {
 				for (WeaponDef w : Sheets.WEAPONS) for (RarityDef r : Sheets.RARITIES) out.accept(Guns.make(w.id(), r.id()));
 				AMMO.values().forEach(out::accept);
 				CONSUMABLES.values().forEach(out::accept);
+				out.accept(new ItemStack(GRENADE, 6));
 				MATERIALS.values().forEach(out::accept);
 				out.accept(REBOOT_CARD);
 			})
