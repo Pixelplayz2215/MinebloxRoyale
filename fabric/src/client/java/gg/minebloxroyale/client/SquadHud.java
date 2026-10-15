@@ -39,21 +39,20 @@ public final class SquadHud {
 		HudElementDef d = Sheets.HUD_BY_ID.get("squad");
 		int x = d.x(), y = d.y(), w = d.size();
 		List<Net.Mate> mates = ClientState.squad.mates();
-		g.fill(x - 3, y - 3, x + w + 3, y + mates.size() * 22 + 1, 0x90101420);
+		Smooth.panel(g, x - 4, y - 4, w + 8, mates.size() * 22 + 4, 5, 0x8010141E, 0xA0080B12);
 		float maxHp = MinebloxRoyale.setting("maxHealth"), maxSh = MinebloxRoyale.setting("maxShield");
 		for (Net.Mate m : mates) {
 			int color = ClientState.teamColor(m.slot());
 			boolean out = m.status() == 3;
-			g.fill(x, y + 1, x + 6, y + 7, out ? 0xFF555555 : color);
+			Smooth.panel(g, x, y + 1, 6, 6, 2, out ? 0xFF555555 : color);
 			String name = m.name();
-			int nameW = mc.font.width(name);
 			// Just the name in their colour, then the shield and health bars (creator: no distance), and their eliminations.
-			g.text(mc.font, name, x + 9, y, out ? 0xFF8A8A8A : color, true);
+			float nameW = Smooth.text(g, name, x + 9, y - 0.5F, 8.5F, out ? 0xFF8A8A8A : color, Smooth.LEFT, true);
 			// Their eliminations at the row's right end (creator).
 			String k = String.valueOf(m.kills());
-			int kw = Math.round(mc.font.width(k) * 0.75F);
-			BRHud.icon(g, x + w - kw - 9, y - 1, 0xFFFF5A5A, BRHud.ELIM);
-			small(g, mc, k, x + w - kw, y + 1, 0xFFFFD45A);
+			float kw = Smooth.width(k, 7);
+			Smooth.icon(g, "kills", x + w - kw - 9, y - 0.5F, 8, -1);
+			small(g, mc, k, x + w - kw, y + 0.5F, 0xFFFFD45A);
 			int by = y + 10;
 			switch (m.status()) {
 				case 0 -> {
@@ -63,26 +62,21 @@ public final class SquadHud {
 				case 1 -> {
 					// Knocked: the red bar runs down as they bleed out.
 					bar(g, x, by + 2, w, m.health() / maxHp, 0xFFE03A3A);
-					small(g, mc, "KNOCKED " + clock(m.seconds()), x + 12 + nameW, y + 1, 0xFFFF6060);
+					small(g, mc, "KNOCKED " + clock(m.seconds()), x + 12 + nameW, y + 0.5F, 0xFFFF6060);
 				}
-				case 2 -> small(g, mc, "REBOOT CARD " + clock(m.seconds()), x + 9, by + 1, Waypoint.CARD); // the cards' cyan-blue
-				default -> small(g, mc, "OUT", x + 9, by + 1, 0xFF8A8A8A);
+				case 2 -> small(g, mc, "REBOOT CARD " + clock(m.seconds()), x + 9, by + 0.5F, Waypoint.CARD); // the cards' cyan-blue
+				default -> small(g, mc, "OUT", x + 9, by + 0.5F, 0xFF8A8A8A);
 			}
 			y += 22;
 		}
 	}
 
 	private static void bar(GuiGraphicsExtractor g, int x, int y, int w, float frac, int color) {
-		g.fill(x, y, x + w, y + 3, 0xFF000000);
-		g.fill(x, y, x + Math.round(w * Math.max(0, Math.min(1, frac))), y + 3, color);
+		Smooth.bar(g, x, y, w, 3.4F, frac, color, 1);
 	}
 
-	private static void small(GuiGraphicsExtractor g, Minecraft mc, String text, int x, int y, int color) {
-		g.pose().pushMatrix();
-		g.pose().translate(x, y);
-		g.pose().scale(0.75F, 0.75F);
-		g.text(mc.font, text, 0, 0, color, true);
-		g.pose().popMatrix();
+	private static void small(GuiGraphicsExtractor g, Minecraft mc, String text, float x, float y, int color) {
+		Smooth.text(g, text, x, y, 7, color, Smooth.LEFT, true);
 	}
 
 	/**
@@ -128,7 +122,7 @@ public final class SquadHud {
 			else prompt = "Hold " + key() + " to reboot " + String.join(", ", cards);
 			if (van == null) {
 				String carry = "Carrying " + String.join(", ", cards) + "'s reboot card - take it to a reboot van (on the map)";
-				g.centeredText(mc.font, carry, cx, y + 14, 0xFF5CE1FF);
+				Smooth.text(g, carry, cx, y + 14, 8.5F, 0xFF5CE1FF, Smooth.CENTER, true);
 			}
 		}
 		if (prompt == null) return false;
@@ -138,28 +132,23 @@ public final class SquadHud {
 
 	/** A one-line prompt on a dark strip, centred at cx. */
 	static void prompt(GuiGraphicsExtractor g, Minecraft mc, int cx, int y, String text) {
-		int w = mc.font.width(text) + 12;
-		g.fill(cx - w / 2, y - 3, cx + w / 2, y + 11, 0xB0101420);
-		g.centeredText(mc.font, text, cx, y, 0xFFFFFFFF);
+		float w = Smooth.width(text, 9) + 16;
+		Smooth.panel(g, cx - w / 2, y - 4, w, 15, 5, 0xB0182030, 0xC00C1018);
+		Smooth.text(g, text, cx, y - 0.5F, 9, 0xFFFFFFFF, Smooth.CENTER, true);
 	}
 
 	private static void banner(GuiGraphicsExtractor g, Minecraft mc, int cx, int y, String big, int bigColor, String line, int lineColor) {
-		int w = Math.max(mc.font.width(line), mc.font.width(big) * 2) + 16;
-		g.fill(cx - w / 2, y - 4, cx + w / 2, y + 24, 0xC0200808);
-		g.pose().pushMatrix();
-		g.pose().translate(cx, y);
-		g.pose().scale(1.6F, 1.6F);
-		g.centeredText(mc.font, big, 0, 0, bigColor);
-		g.pose().popMatrix();
-		g.centeredText(mc.font, line, cx, y + 14, lineColor);
+		float w = Math.max(Smooth.width(line, 9), Smooth.width(big, 15)) + 20;
+		Smooth.panel(g, cx - w / 2, y - 5, w, 31, 6, 0xC0381010, 0xD0180606);
+		Smooth.text(g, big, cx, y - 2, 15, bigColor, Smooth.CENTER, true);
+		Smooth.text(g, line, cx, y + 14, 9, lineColor, Smooth.CENTER, true);
 	}
 
 	static void progress(GuiGraphicsExtractor g, Minecraft mc, int cx, int y, int w, String label, float frac, int color) {
-		w = Math.max(w, mc.font.width(label) + 12);
-		g.fill(cx - w / 2 - 2, y - 3, cx + w / 2 + 2, y + 18, 0xC0101420);
-		g.centeredText(mc.font, label, cx, y, 0xFFFFFFFF);
-		g.fill(cx - w / 2, y + 11, cx + w / 2, y + 15, 0xFF2A2A2A);
-		g.fill(cx - w / 2, y + 11, cx - w / 2 + Math.round(w * Math.max(0, Math.min(1, frac))), y + 15, color);
+		float bw = Math.max(w, Smooth.width(label, 9) + 14);
+		Smooth.panel(g, cx - bw / 2 - 3, y - 4, bw + 6, 23, 5, 0xC0182030, 0xD00C1018);
+		Smooth.text(g, label, cx, y - 1, 9, 0xFFFFFFFF, Smooth.CENTER, true);
+		Smooth.bar(g, cx - bw / 2, y + 11, bw, 4, frac, color, 1);
 	}
 
 	// ---- in the hub ----
@@ -185,32 +174,32 @@ public final class SquadHud {
 
 	private static int rowWidth(Minecraft mc, boolean noBuild) {
 		String[] n = ClientState.hud.pads().split(",");
-		int w = noBuild ? mc.font.width(NO_BUILD) : 0, k = 0;
+		float w = noBuild ? Smooth.width(NO_BUILD, PAD_TEXT) : 0;
+		int k = 0;
 		for (int i = 0; i < Sheets.MODES.size(); i++) {
 			ModeDef m = Sheets.MODES.get(i);
 			if (m.noBuild() != noBuild) continue;
-			w += mc.font.width(shortName(m) + " " + (i < n.length ? n[i] : "0")) + (k++ > 0 ? 10 : 0);
+			w += Smooth.width(shortName(m) + " " + (i < n.length ? n[i] : "0"), PAD_TEXT) + (k++ > 0 ? 10 : 0);
 		}
-		return w;
+		return (int) Math.ceil(w);
 	}
+
+	/** The portal counts' lettering size. */
+	private static final float PAD_TEXT = 9;
 
 	static void pads(GuiGraphicsExtractor g, Minecraft mc, int cx, int y) {
 		String[] n = ClientState.hud.pads().split(",");
 		for (boolean noBuild : new boolean[] { false, true }) {
 			if (noBuild && padRows() < 2) break;
-			int x = cx - rowWidth(mc, noBuild) / 2;
-			if (noBuild) {
-				g.text(mc.font, NO_BUILD, x, y, 0xFFB8C4D6, true);
-				x += mc.font.width(NO_BUILD);
-			}
+			float x = cx - rowWidth(mc, noBuild) / 2F;
+			if (noBuild) x += Smooth.text(g, NO_BUILD, x, y - 0.5F, PAD_TEXT, 0xFFB8C4D6, Smooth.LEFT, true);
 			for (int i = 0; i < Sheets.MODES.size(); i++) {
 				ModeDef m = Sheets.MODES.get(i);
 				if (m.noBuild() != noBuild) continue;
 				String count = i < n.length ? n[i] : "0";
 				String text = shortName(m) + " " + count;
 				boolean someone = !count.equals("0");
-				g.text(mc.font, text, x, y, someone ? 0xFF000000 | m.color() : 0xFF7A8496, true);
-				x += mc.font.width(text) + 10;
+				x += Smooth.text(g, text, x, y - 0.5F, PAD_TEXT, someone ? 0xFF000000 | m.color() : 0xFF7A8496, Smooth.LEFT, true) + 10;
 			}
 			y += 11;
 		}
@@ -226,21 +215,16 @@ public final class SquadHud {
 		List<String> names = ClientState.partyNames;
 		if (names.isEmpty()) return;
 		String label = "PARTY " + names.size() + "/" + Math.round(MinebloxRoyale.setting("partyMax")) + ": ";
-		int w = mc.font.width(label);
+		float size = 9, w = Smooth.width(label, size);
 		String me = mc.player.getName().getString();
-		for (int i = 0; i < names.size(); i++) w += mc.font.width(names.get(i).equals(me) ? "You" : names.get(i)) + (i > 0 ? mc.font.width(", ") : 0);
-		int x = cx - w / 2;
-		g.fill(x - 6, y - 3, x + w + 6, y + 11, 0xB0101420);
-		g.text(mc.font, label, x, y, 0xFFB8C4D6, true);
-		x += mc.font.width(label);
+		for (int i = 0; i < names.size(); i++) w += Smooth.width(names.get(i).equals(me) ? "You" : names.get(i), size) + (i > 0 ? Smooth.width(", ", size) : 0);
+		float x = cx - w / 2;
+		Smooth.panel(g, x - 7, y - 4, w + 14, 15, 5, 0xA0182030, 0xB00C1018);
+		x += Smooth.text(g, label, x, y - 0.5F, size, 0xFFB8C4D6, Smooth.LEFT, true);
 		for (int i = 0; i < names.size(); i++) {
-			if (i > 0) {
-				g.text(mc.font, ", ", x, y, 0xFFB8C4D6, true);
-				x += mc.font.width(", ");
-			}
+			if (i > 0) x += Smooth.text(g, ", ", x, y - 0.5F, size, 0xFFB8C4D6, Smooth.LEFT, true);
 			String n = names.get(i).equals(me) ? "You" : names.get(i);
-			g.text(mc.font, n, x, y, names.get(i).equals(me) ? 0xFFFF55FF : ClientState.teamColor(i), true);
-			x += mc.font.width(n);
+			x += Smooth.text(g, n, x, y - 0.5F, size, names.get(i).equals(me) ? 0xFFFF55FF : ClientState.teamColor(i), Smooth.LEFT, true);
 		}
 	}
 }

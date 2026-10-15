@@ -64,10 +64,42 @@ public final class BRHud {
 	 */
 	public static void hotbar(GuiGraphicsExtractor g, Runnable vanilla) {
 		if (Aim.scoped()) return;
-		scaled(g, "hotbar", g.guiWidth() / 2F, g.guiHeight(), () -> {
-			vanilla.run();
-			if (ClientState.inMatch()) lockedSlots(g);
-		});
+		// v2.0.0: in a match, Fortnite's hotbar (the pickaxe and five item slots as smooth tiles); in the hub, Minecraft's.
+		if (ClientState.inMatch()) scaled(g, "hotbar", g.guiWidth() / 2F, g.guiHeight(), () -> matchHotbar(g, Minecraft.getInstance()));
+		else scaled(g, "hotbar", g.guiWidth() / 2F, g.guiHeight(), vanilla);
+	}
+
+	/**
+	 * The match's hotbar, Fortnite-style (v2.0.0, creator: "Cleaner UI"): the pickaxe and the five item slots as rounded
+	 * tiles, a gun's in its rarity's colour with its magazine count, a stack's count, each slot's number; the one in hand
+	 * raised and outlined in white. (Minecraft's three slots after them are locked in a match: not shown.)
+	 */
+	private static void matchHotbar(GuiGraphicsExtractor g, Minecraft mc) {
+		if (mc.player == null) return;
+		var inv = mc.player.getInventory();
+		int sel = inv.getSelectedSlot(), n = 0;
+		for (LoadoutDef d : Sheets.LOADOUT) if (!d.role().equals("locked")) n++;
+		float tile = 20, gap = 3, total = n * tile + (n - 1) * gap;
+		float x0 = g.guiWidth() / 2F - total / 2, y0 = g.guiHeight() - tile - 4;
+		for (int i = 0; i < n; i++) {
+			ItemStack st = inv.getItem(i);
+			boolean on = i == sel;
+			float x = x0 + i * (tile + gap), y = y0 - (on ? 3 : 0);
+			int top = 0xB0313848, bottom = 0xC0151922;
+			if (st.getItem() instanceof WeaponItem) {
+				int c = 0xFF000000 | Guns.rarity(st).color();
+				top = 0xE8000000 | Smooth.lighter(c, 0.15F) & 0xFFFFFF;
+				bottom = 0xE8000000 | Smooth.mix(c, 0xFF000000, 0.45F) & 0xFFFFFF;
+			}
+			if (on) Smooth.panel(g, x - 1.3F, y - 1.3F, tile + 2.6F, tile + 2.6F, 4.6F, 0xFFFFFFFF);
+			Smooth.panel(g, x, y, tile, tile, 3.6F, top, bottom);
+			if (!st.isEmpty()) {
+				g.item(st, Math.round(x + 2), Math.round(y + 2));
+				if (st.getItem() instanceof WeaponItem) Smooth.text(g, Guns.ammo(st) + "", x + tile - 1.4F, y + tile - 7.6F, 6.5F, 0xFFFFFFFF, Smooth.RIGHT, true);
+				else if (st.getCount() > 1) Smooth.text(g, st.getCount() + "", x + tile - 1.4F, y + tile - 7.6F, 6.5F, 0xFFFFFFFF, Smooth.RIGHT, true);
+			}
+			Smooth.text(g, (i + 1) + "", x + 1.6F, y + 0.8F, 5F, on ? 0xFFFFFFFF : 0xA0FFFFFF, Smooth.LEFT, false);
+		}
 	}
 
 	/**
@@ -173,20 +205,19 @@ public final class BRHud {
 		int w = d.size(), cx = g.guiWidth() / 2 + d.x(), y = d.y();
 		float span = 80F; // degrees visible either side of the centre
 		float heading = ((mc.player.getYRot() + 180F) % 360F + 360F) % 360F; // 0 = north, 90 = east
-		g.fill(cx - w / 2, y, cx + w / 2, y + 14, 0x80101420);
+		Smooth.panel(g, cx - w / 2F, y, w, 14, 5, 0x70101420, 0x90101420);
 		String[] names = { "N", "NE", "E", "SE", "S", "SW", "W", "NW" };
 		for (int a = 0; a < 360; a += 15) {
 			float delta = ((a - heading) % 360F + 540F) % 360F - 180F;
 			if (Math.abs(delta) > span) continue;
-			int x = Math.round(cx + delta / span * (w / 2F - 6));
+			float x = cx + delta / span * (w / 2F - 8);
 			int alpha = (int) (255 * (1F - (float) Math.pow(Math.abs(delta) / span, 3)));
 			if (alpha < 8) continue;
 			if (a % 45 == 0) {
-				String n = names[a / 45];
 				int col = (a % 90 == 0 ? 0xFFFFFF : 0xC8CDD8) | (Math.max(alpha, 40) << 24);
-				g.centeredText(mc.font, n, x, y + 3, col);
+				Smooth.text(g, names[a / 45], x, y + 2.6F, 8.5F, col, Smooth.CENTER, false);
 			} else {
-				g.fill(x, y + 4, x + 1, y + 10, (alpha / 2 << 24) | 0xFFFFFF);
+				Smooth.panel(g, x - 0.4F, y + 4.5F, 0.8F, 5, 0.4F, (alpha / 2 << 24) | 0xFFFFFF);
 			}
 		}
 		// Teammates' waypoints in their colours (team modes), then yours in red on top: a mark at its bearing (held at
@@ -194,22 +225,16 @@ public final class BRHud {
 		for (double[] t : Waypoint.teammates()) compassMark(g, cx, y, w, span, heading, Waypoint.bearingTo(mc, t[0], t[1]), (int) t[2]);
 		for (double[] c : Waypoint.cards()) compassMark(g, cx, y, w, span, heading, Waypoint.bearingTo(mc, c[0], c[1]), (int) c[2]);
 		if (Waypoint.isSet()) compassMark(g, cx, y, w, span, heading, Waypoint.bearing(mc), 0xFFFF3030);
-		// Centre marker: a small yellow notch under the bar.
-		g.fill(cx, y + 14, cx + 1, y + 17, 0xFFFFD21F);
-		g.fill(cx - 1, y + 14, cx + 2, y + 15, 0xFFFFD21F);
-		String deg = Math.round(heading) % 360 + "";
-		g.pose().pushMatrix();
-		g.pose().translate(cx, y + 18);
-		g.pose().scale(0.75F, 0.75F);
-		g.centeredText(mc.font, deg, 0, 0, 0xFFFFD21F);
-		g.pose().popMatrix();
+		// Centre marker: a small yellow notch under the bar, the heading under it.
+		Smooth.panel(g, cx - 1.5F, y + 14.3F, 3, 2.4F, 1, 0xFFFFD21F);
+		Smooth.text(g, Math.round(heading) % 360 + "", cx, y + 17.5F, 6.5F, 0xFFFFD21F, Smooth.CENTER, true);
 	}
 
 	private static void compassMark(GuiGraphicsExtractor g, int cx, int y, int w, float span, float heading, float bearing, int color) {
 		float wd = ((bearing - heading) % 360F + 540F) % 360F - 180F;
-		int wx = Math.round(cx + Math.max(-span, Math.min(span, wd)) / span * (w / 2F - 6));
-		g.fill(wx - 2, y + 1, wx + 3, y + 13, 0xC0101010);
-		g.fill(wx - 1, y + 2, wx + 2, y + 12, color);
+		float wx = cx + Math.max(-span, Math.min(span, wd)) / span * (w / 2F - 8);
+		Smooth.panel(g, wx - 2.4F, y + 1.2F, 4.8F, 11.6F, 2.2F, 0xC0101010);
+		Smooth.panel(g, wx - 1.4F, y + 2.2F, 2.8F, 9.6F, 1.4F, color);
 	}
 
 	private static String clock(int seconds) {
@@ -243,33 +268,23 @@ public final class BRHud {
 		g.pose().pushMatrix();
 		g.pose().translate(g.guiWidth() + d.x() - d.size() - 3 - (width - natural) * s, d.y());
 		g.pose().scale(s, s);
-		int x = 3, y = 3, right = x + width;
-		g.fill(x - 3, y - 3, right + 3, y + 13, 0xE0101420); // same colour as the minimap frame it hangs from
-		// Storm clock.
-		icon(g, x + 1, y, 0xFFB45CFF, new String[] { ".###.", "#...#", "#.#.#", "#..##", ".###." });
-		g.text(mc.font, hud.secondsLeft() > 0 ? clock(hud.secondsLeft()) : "--", x + 8, y + 1, hud.shrinking() ? 0xFFE6A8FF : 0xFFFFFFFF, true);
-		// Players left.
-		icon(g, x + cell + 1, y, 0xFFFFFFFF, new String[] { "..#..", ".###.", "..#..", ".###.", ".#.#." });
-		g.text(mc.font, "" + hud.alive(), x + cell + 8, y + 1, 0xFFFFFFFF, true);
-		// Eliminations: yours, then (team match) your whole team's, you included.
-		icon(g, x + 2 * cell + 1, y, 0xFFFF5A5A, ELIM);
-		g.text(mc.font, "" + hud.kills(), x + 2 * cell + 8, y + 1, 0xFFFFD45A, true);
+		float x = 3, y = 3;
+		Smooth.panel(g, x - 3, y - 3, width + 6, 16, 3, 0xE0101420, 0xE0080B12); // the minimap frame's colour, hanging from it
+		// The storm's clock, players left, your eliminations, then (team match) your whole team's, you included: each a
+		// Blender icon and a number.
+		Smooth.icon(g, "storm", x, y - 0.5F, 10, -1);
+		Smooth.text(g, hud.secondsLeft() > 0 ? clock(hud.secondsLeft()) : "--", x + 11, y + 0.6F, 8.5F, hud.shrinking() ? 0xFFE6A8FF : 0xFFFFFFFF, Smooth.LEFT, true);
+		Smooth.icon(g, "players", x + cell, y - 0.5F, 10, -1);
+		Smooth.text(g, "" + hud.alive(), x + cell + 11, y + 0.6F, 8.5F, 0xFFFFFFFF, Smooth.LEFT, true);
+		Smooth.icon(g, "kills", x + 2 * cell, y - 0.5F, 10, -1);
+		Smooth.text(g, "" + hud.kills(), x + 2 * cell + 11, y + 0.6F, 8.5F, 0xFFFFD45A, Smooth.LEFT, true);
 		if (team) {
 			int total = hud.kills();
 			for (var m : ClientState.squad.mates()) total += m.kills();
-			icon(g, x + 3 * cell + 1, y, 0xFF8FD3FF, TEAM);
-			g.text(mc.font, "" + total, x + 3 * cell + 8, y + 1, 0xFF8FD3FF, true);
+			Smooth.icon(g, "team", x + 3 * cell, y - 0.5F, 10, -1);
+			Smooth.text(g, "" + total, x + 3 * cell + 11, y + 0.6F, 8.5F, 0xFF8FD3FF, Smooth.LEFT, true);
 		}
 		g.pose().popMatrix();
-	}
-
-	/** Little pixel icons: an elimination, and two people (a team). */
-	static final String[] ELIM = { "..#..", "#.#.#", "#####", "#.#.#", "..#.." }, TEAM = { "#...#", "#...#", ".....", "##.##", "##.##" };
-
-	static void icon(GuiGraphicsExtractor g, int x, int y, int color, String[] rows) {
-		for (int r = 0; r < rows.length; r++)
-			for (int c = 0; c < rows[r].length(); c++)
-				if (rows[r].charAt(c) == '#') g.fill(x + c + 1, y + r + 2, x + c + 2, y + r + 3, color);
 	}
 
 	private static void stormBanner(GuiGraphicsExtractor g, Minecraft mc) {
@@ -279,40 +294,34 @@ public final class BRHud {
 			lastShrinking = hud.shrinking();
 			bannerAt = System.currentTimeMillis();
 		}
-		if (System.currentTimeMillis() - bannerAt > 5000 || hud.stormPhase() <= 0) return;
+		long t = System.currentTimeMillis() - bannerAt;
+		if (t > 5000 || hud.stormPhase() <= 0) return;
 		HudElementDef d = Sheets.HUD_BY_ID.get("storm_banner");
 		String text = hud.shrinking() ? "STORM EYE SHRINKING" : "STORM EYE SHRINKS IN " + clock(hud.secondsLeft());
-		int w = Math.max(d.size(), mc.font.width(text) + 20);
-		int x = g.guiWidth() / 2 + d.x() - w / 2, y = d.y();
-		g.fill(x, y, x + w, y + 16, 0xC0301060);
-		g.fill(x, y + 15, x + w, y + 16, 0xFFD58CFF);
-		g.centeredText(mc.font, text, g.guiWidth() / 2 + d.x(), y + 4, 0xFFFFFFFF);
+		float a = Math.min(1, Math.min(t / 250F, (5000 - t) / 400F)); // (fading in and out)
+		float w = Math.max(d.size(), Smooth.width(text, 10) + 34);
+		float cx = g.guiWidth() / 2F + d.x(), x = cx - w / 2, y = d.y();
+		Smooth.panel(g, x, y, w, 18, 6, Smooth.alpha(0xE0512094, a), Smooth.alpha(0xE0261046, a));
+		Smooth.panel(g, x + 6, y + 16, w - 12, 1.2F, 0.6F, Smooth.alpha(0xFFD58CFF, a));
+		Smooth.icon(g, "storm", x + 4, y + 2.5F, 13, Smooth.alpha(0xFFFFFFFF, a));
+		Smooth.text(g, text, cx + 7, y + 4, 10, Smooth.alpha(0xFFFFFFFF, a), Smooth.CENTER, true);
 	}
 
 	private static void healthShield(GuiGraphicsExtractor g, Minecraft mc) {
 		HudElementDef d = Sheets.HUD_BY_ID.get("health_shield");
-		int x = d.x(), y = g.guiHeight() + d.y(), w = d.size();
+		float x = d.x(), y = g.guiHeight() + d.y(), w = d.size();
 		float hp = mc.player.getHealth(), maxHp = mc.player.getMaxHealth();
 		float sh = ClientState.hud.shield();
-		g.fill(x - 4, y - 4, x + w + 30, y + 24, 0x90101420);
-		// Shield: blue diamond icon + bar.
-		icon(g, x - 2, y - 2, 0xFF6EC1FF, new String[] { "..#..", ".###.", "#####", ".###.", "..#.." });
-		bar(g, mc, x + 6, y, w - 6, sh / MinebloxRoyale.setting("maxShield"), 0xFF3AA0FF, 0xFF1F5E99, Math.round(sh) + "");
-		// Health: green cross + bar.
-		icon(g, x - 2, y + 10, 0xFF6CF06C, new String[] { ".###.", "#####", "#####", "#####", ".###." });
-		icon(g, x - 2, y + 10, 0xFFFFFFFF, new String[] { ".....", "..#..", ".###.", "..#..", "....." });
-		bar(g, mc, x + 6, y + 12, w - 6, hp / Math.max(1, maxHp), 0xFF55D655, 0xFF2D7A2D, Math.round(hp) + "");
+		// Fortnite-style: the shield above the health, each its Blender icon, its number and a segmented bar.
+		Smooth.panel(g, x - 5, y - 7, w + 10, 29, 6, 0x8010141E, 0xA0080B12);
+		Smooth.icon(g, "shield", x - 3, y - 6, 12, -1);
+		Smooth.text(g, Math.round(sh) + "", x + 10, y - 4.6F, 9, 0xFFFFFFFF, Smooth.LEFT, true);
+		Smooth.bar(g, x + 27, y - 3, w - 29, 6.5F, sh / MinebloxRoyale.setting("maxShield"), 0xFF2E8CFF, 4);
+		Smooth.icon(g, "health", x - 3, y + 7, 12, -1);
+		Smooth.text(g, Math.round(hp) + "", x + 10, y + 8.4F, 9, 0xFFFFFFFF, Smooth.LEFT, true);
+		Smooth.bar(g, x + 27, y + 10, w - 29, 6.5F, hp / Math.max(1, maxHp), 0xFF3DD64C, 4);
 	}
 
-	private static void bar(GuiGraphicsExtractor g, Minecraft mc, int x, int y, int w, float frac, int color, int dark, String label) {
-		g.fill(x - 1, y - 1, x + w + 1, y + 9, 0xFF000000);
-		g.fill(x, y, x + w, y + 8, 0xFF2A2A2A);
-		int fw = Math.round(w * Math.max(0, Math.min(1, frac)));
-		g.fill(x, y, x + fw, y + 8, color);
-		g.fill(x, y + 5, x + fw, y + 8, dark);
-		for (int i = 1; i < 4; i++) g.fill(x + w * i / 4, y, x + w * i / 4 + 1, y + 8, 0x60000000);
-		g.text(mc.font, label, x + w + 4, y, 0xFFFFFFFF, true);
-	}
 
 	private static void ammo(GuiGraphicsExtractor g, Minecraft mc) {
 		ItemStack stack = mc.player.getMainHandItem();
@@ -321,26 +330,22 @@ public final class BRHud {
 		RarityDef r = Guns.rarity(stack);
 		long now = mc.level.getGameTime();
 		boolean reloading = Guns.reloading(stack, now);
-		int reserve = Guns.reserve(mc.player, w.def);
+		int reserve = Guns.reserve(mc.player, w.def), loaded = Guns.ammo(stack);
 		String name = r.name().toUpperCase(Locale.ROOT) + " " + w.def.name().toUpperCase(Locale.ROOT);
-		String count = Guns.ammo(stack) + "";
-		String rest = "" + reserve;
-		int x = g.guiWidth() + d.x(), y = g.guiHeight() + d.y();
-		int width = Math.max(d.size(), mc.font.width(name) + 10);
-		g.fill(x - width, y - 4, x + 2, y + 26, 0xA0101420);
-		g.fill(x - width, y - 4, x + 2, y + 8, 0xFF000000 | r.color());
-		g.text(mc.font, name, x - mc.font.width(name) - 2, y - 2, 0xFF101010, false);
-		g.pose().pushMatrix();
-		g.pose().translate(x - width + 4, y + 10);
-		g.pose().scale(1.6F, 1.6F);
-		g.text(mc.font, count, 0, 0, Guns.ammo(stack) == 0 ? 0xFFFF6060 : 0xFFFFFFFF, true);
-		g.pose().popMatrix();
-		g.text(mc.font, "| " + rest, x - width + 6 + (int) (mc.font.width(count) * 1.6F), y + 14, reserve == 0 ? 0xFFFF6060 : 0xFFB0B0B0, true);
+		float x = g.guiWidth() + d.x(), y = g.guiHeight() + d.y();
+		float width = Math.max(d.size(), Smooth.width(name, 7.5F) + 12);
+		int rc = 0xFF000000 | r.color();
+		// The plate: the gun's name on its rarity's colour, then its ammo type's icon, the magazine big and what's left.
+		Smooth.panel(g, x - width, y - 6, width + 2, 30, 5, 0x9010141E, 0xB0080B12);
+		Smooth.panel(g, x - width, y - 6, width + 2, 11.5F, 5, Smooth.lighter(rc, 0.2F), Smooth.mix(rc, 0xFF000000, 0.25F));
+		Smooth.text(g, name, x - 4, y - 4.6F, 7.5F, 0xFFFFFFFF, Smooth.RIGHT, true);
+		Smooth.icon(g, "ammo_" + w.def.ammo(), x - width + 1, y + 7, 15, -1);
+		float cw = Smooth.text(g, loaded + "", x - width + 17, y + 6, 15, loaded == 0 ? 0xFFFF6060 : 0xFFFFFFFF, Smooth.LEFT, true);
+		Smooth.text(g, "/ " + reserve, x - width + 19 + cw, y + 11.5F, 8.5F, reserve == 0 ? 0xFFFF6060 : 0xFFB8C0CC, Smooth.LEFT, true);
 		if (reloading) {
 			long until = Guns.tag(stack).getLongOr("reloadUntil", 0L);
 			float total = w.def.reloadTicks() * r.reloadMult();
-			float frac = 1F - (until - now) / total;
-			g.fill(x - width, y + 24, x - width + Math.round((width + 2) * Math.max(0, Math.min(1, frac))), y + 26, 0xFFFFD45A);
+			Smooth.bar(g, x - width + 3, y + 20.3F, width - 4, 2.4F, 1F - (until - now) / total, 0xFFFFD45A, 1);
 		}
 	}
 
@@ -348,22 +353,23 @@ public final class BRHud {
 	private static void reloadingText(GuiGraphicsExtractor g, Minecraft mc) {
 		ItemStack stack = mc.player.getMainHandItem();
 		if (stack.getItem() instanceof WeaponItem && Guns.reloading(stack, mc.level.getGameTime()))
-			g.centeredText(mc.font, "RELOADING", g.guiWidth() / 2, g.guiHeight() / 2 + 12, 0xFFFFD45A);
+			Smooth.text(g, "RELOADING", g.guiWidth() / 2F, g.guiHeight() / 2F + 11, 8, 0xFFFFD45A, Smooth.CENTER, true);
 	}
 
 	/** Wood / Brick / Metal counts (hud sheet "materials"). */
 	private static void materials(GuiGraphicsExtractor g, Minecraft mc) {
 		HudElementDef d = Sheets.HUD_BY_ID.get("materials");
-		int x = g.guiWidth() + d.x() - d.size(), y = g.guiHeight() + d.y();
-		g.fill(x - 3, y - 3, x + d.size() + 3, y + 11, 0xA0101420);
-		int cell = d.size() / 3, i = 0;
+		float x = g.guiWidth() + d.x() - d.size(), y = g.guiHeight() + d.y();
+		Smooth.panel(g, x - 4, y - 4, d.size() + 6, 16, 5, 0x9010141E, 0xB0080B12);
+		float cell = d.size() / 3F;
+		int i = 0;
 		for (var m : Sheets.MATERIALS) {
 			var item = ModItems.MATERIALS.get(m.id());
 			int n = 0;
 			for (int s = 0; s < mc.player.getInventory().getContainerSize(); s++) if (mc.player.getInventory().getItem(s).is(item)) n += mc.player.getInventory().getItem(s).getCount();
-			int cx = x + i * cell;
-			g.fill(cx, y + 1, cx + 6, y + 7, 0xFF000000 | m.color());
-			g.text(mc.font, "" + n, cx + 9, y, 0xFFFFFFFF, true);
+			float cx = x + i * cell;
+			Smooth.icon(g, m.id(), cx - 1, y - 2.5F, 12, -1); // (wood, brick, metal: the Blender icons)
+			Smooth.text(g, "" + n, cx + 12, y - 0.6F, 8.5F, n == 0 ? 0xFF9AA2AD : 0xFFFFFFFF, Smooth.LEFT, true);
 			i++;
 		}
 	}
@@ -377,25 +383,10 @@ public final class BRHud {
 			default -> null;
 		};
 		if (text == null) return;
-		int w = mc.font.width(text) + 16;
-		int x = g.guiWidth() / 2 + d.x() - w / 2, y = g.guiHeight() + d.y();
-		g.fill(x, y, x + w, y + 16, 0xC0101420);
-		g.fill(x, y + 15, x + w, y + 16, 0xFF6EC1FF);
-		g.centeredText(mc.font, text, g.guiWidth() / 2 + d.x(), y + 4, 0xFFFFFFFF);
-	}
-
-	/** Fortnite has a pickaxe + 5 item slots: grey out the locked hotbar slots. */
-	private static void lockedSlots(GuiGraphicsExtractor g) {
-		int left = g.guiWidth() / 2 - 91, top = g.guiHeight() - 22;
-		for (LoadoutDef d : Sheets.LOADOUT) {
-			if (!d.role().equals("locked")) continue;
-			int x = left + 1 + d.slot() * 20, y = top + 1;
-			g.fill(x, y, x + 20, y + 20, 0xC0101010);
-			for (int i = 4; i < 16; i++) {
-				g.fill(x + i, y + i, x + i + 1, y + i + 1, 0xFFAA3333);
-				g.fill(x + 19 - i, y + i, x + 20 - i, y + i + 1, 0xFFAA3333);
-			}
-		}
+		float w = Smooth.width(text, 9) + 22, cx = g.guiWidth() / 2F + d.x(), y = g.guiHeight() + d.y();
+		Smooth.panel(g, cx - w / 2, y, w, 17, 6, 0xC0182030, 0xD00C1018);
+		Smooth.panel(g, cx - w / 2 + 6, y + 15.2F, w - 12, 1.2F, 0.6F, 0xFF6EC1FF);
+		Smooth.text(g, text, cx, y + 4, 9, 0xFFFFFFFF, Smooth.CENTER, true);
 	}
 
 	private static void hubHint(GuiGraphicsExtractor g, Minecraft mc) {
@@ -413,23 +404,24 @@ public final class BRHud {
 		String line2 = island ? hud.label() + "  |  B: Emotes  |  K: Locker" : "B: Emotes  |  K: Locker";
 		// The room's code, always on in the hub (creator): "Room Code:" in grey, the code in orange.
 		String code = RoomCodes.current(), label = "Room Code: ";
-		int codeW = code == null ? 0 : mc.font.width(label) + mc.font.width(code);
-		int w = Math.max(Math.max(Math.max(mc.font.width(line1), mc.font.width(line2)), codeW), pads ? SquadHud.padsWidth(mc) : 0);
+		float size = 9;
+		float codeW = code == null ? 0 : Smooth.width(label, size) + Smooth.width(code, size);
+		float w = Math.max(Math.max(Math.max(Smooth.width(line1, size), Smooth.width(line2, size)), codeW), pads ? SquadHud.padsWidth(mc) : 0);
 		int cx = g.guiWidth() / 2 + d.x();
 		int y = d.y(), rows = 2 + (pads ? SquadHud.padRows() : 0) + (code == null ? 0 : 1);
-		g.fill(cx - w / 2 - 6, y - 4, cx + w / 2 + 6, y + rows * 11, 0xB0101420);
-		g.centeredText(mc.font, line1, cx, y, 0xFFFFFFFF);
+		Smooth.panel(g, cx - w / 2 - 8, y - 5, w + 16, rows * 11 + 6, 6, 0xA0182030, 0xC00C1018);
+		Smooth.text(g, line1, cx, y - 0.5F, size, 0xFFFFFFFF, Smooth.CENTER, true);
 		y += 11;
 		if (pads) {
 			SquadHud.pads(g, mc, cx, y);
 			y += 11 * SquadHud.padRows();
 		}
-		g.centeredText(mc.font, line2, cx, y, 0xFFB8C4D6);
+		Smooth.text(g, line2, cx, y - 0.5F, size, 0xFFB8C4D6, Smooth.CENTER, true);
 		y += 11;
 		if (code != null) {
-			int x = cx - codeW / 2;
-			g.text(mc.font, label, x, y, 0xFFA0A0A0, true);
-			g.text(mc.font, code, x + mc.font.width(label), y, 0xFFFF9A1F, true);
+			float x = cx - codeW / 2;
+			x += Smooth.text(g, label, x, y - 0.5F, size, 0xFFA0A0A0, Smooth.LEFT, true);
+			Smooth.text(g, code, x, y - 0.5F, size, 0xFFFF9A1F, Smooth.LEFT, true);
 			y += 11;
 		}
 		// Your party under the banner (creator: parties of up to 4).
