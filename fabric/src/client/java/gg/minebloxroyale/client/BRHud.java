@@ -263,35 +263,44 @@ public final class BRHud {
 		}
 	}
 
-	/** One row under the map: storm timer, players left, eliminations, each with a small pixel icon. */
+	/**
+	 * One row under the map: storm timer, players left, eliminations (and in a team match the team's), each with a small
+	 * pixel icon. Always exactly as wide as the minimap's frame above it, edge to edge, in every mode (creator, 2.0.0-test3:
+	 * the team match's fourth cell made it stick out to the left).
+	 */
 	private static void statsRow(GuiGraphicsExtractor g, Minecraft mc) {
 		HudElementDef d = Sheets.HUD_BY_ID.get("stats_row");
 		var hud = ClientState.hud;
-		// Laid out at a natural 90 px width, then scaled so the row is exactly as wide as the minimap above it. In a team
-		// match a fourth cell, the team's eliminations, makes it a cell longer to the left (creator).
+		// Laid out at a natural 90 px width in equal cells, then scaled so the row is the minimap frame's width. A cell
+		// is an icon and a number; when they wouldn't fit a cell (four cells), every cell's icon and lettering shrink
+		// alike, measured on wide numbers ("0:00") so the size doesn't change as the numbers do.
 		final int natural = 90;
 		boolean team = ClientState.teamMatch();
-		int cells = team ? 4 : 3, cell = natural / 3, width = cell * cells;
+		int cells = team ? 4 : 3;
+		float cell = natural / (float) cells;
+		float fit = Math.min(1F, cell / (12 + Smooth.width("0:00", 8.5F)));
 		float s = (d.size() + 6) / (float) (natural + 6); // the minimap frame is 3 px wider on each side
 		g.pose().pushMatrix();
-		g.pose().translate(g.guiWidth() + d.x() - d.size() - 3 - (width - natural) * s, d.y());
+		g.pose().translate(g.guiWidth() + d.x() - d.size() - 3, d.y());
 		g.pose().scale(s, s);
-		float x = 3, y = 3;
-		Smooth.panel(g, x - 3, y - 3, width + 6, 16, 3, 0xE0101420, 0xE0080B12); // the minimap frame's colour, hanging from it
-		// The storm's clock, players left, your eliminations, then (team match) your whole team's, you included: each a
-		// Blender icon and a number.
-		Smooth.icon(g, "storm", x, y - 0.5F, 10, -1);
-		Smooth.text(g, hud.secondsLeft() > 0 ? clock(hud.secondsLeft()) : "--", x + 11, y + 0.6F, 8.5F, hud.shrinking() ? 0xFFE6A8FF : 0xFFFFFFFF, Smooth.LEFT, true);
-		Smooth.icon(g, "players", x + cell, y - 0.5F, 10, -1);
-		Smooth.text(g, "" + hud.alive(), x + cell + 11, y + 0.6F, 8.5F, 0xFFFFFFFF, Smooth.LEFT, true);
-		Smooth.icon(g, "kills", x + 2 * cell, y - 0.5F, 10, -1);
-		Smooth.text(g, "" + hud.kills(), x + 2 * cell + 11, y + 0.6F, 8.5F, 0xFFFFD45A, Smooth.LEFT, true);
-		if (team) {
-			int total = hud.kills();
-			for (var m : ClientState.squad.mates()) total += m.kills();
-			Smooth.icon(g, "team", x + 3 * cell, y - 0.5F, 10, -1);
-			Smooth.text(g, "" + total, x + 3 * cell + 11, y + 0.6F, 8.5F, 0xFF8FD3FF, Smooth.LEFT, true);
-		}
+		Smooth.panel(g, 0, 0, natural + 6, 16, 3, 0xE0101420, 0xE0080B12); // the minimap frame's colour, hanging from it
+		// The storm's clock, players left, your eliminations, then (team match) your whole team's, you included.
+		int total = hud.kills();
+		if (team) for (var m : ClientState.squad.mates()) total += m.kills();
+		statsCell(g, 0, cell, fit, "storm", hud.secondsLeft() > 0 ? clock(hud.secondsLeft()) : "--", hud.shrinking() ? 0xFFE6A8FF : 0xFFFFFFFF);
+		statsCell(g, 1, cell, fit, "players", "" + hud.alive(), 0xFFFFFFFF);
+		statsCell(g, 2, cell, fit, "kills", "" + hud.kills(), 0xFFFFD45A);
+		if (team) statsCell(g, 3, cell, fit, "team", "" + total, 0xFF8FD3FF);
+		g.pose().popMatrix();
+	}
+
+	/** One cell of the stats row: its Blender icon and number, at the row's fit, centred on the row's height. */
+	private static void statsCell(GuiGraphicsExtractor g, int i, float cell, float fit, String icon, String text, int color) {
+		g.pose().pushMatrix();
+		g.pose().translate(3 + i * cell, 3 + 4.5F * (1 - fit));
+		g.pose().scale(fit, fit);
+		Smooth.icon(g, icon, 0, -0.5F, 10, -1);
+		Smooth.text(g, text, 11, 0.6F, 8.5F, color, Smooth.LEFT, true);
 		g.pose().popMatrix();
 	}
 
