@@ -8,6 +8,7 @@ import gg.minebloxroyale.sheets.AvatarPartDef;
 import gg.minebloxroyale.sheets.CosmeticDef;
 import gg.minebloxroyale.sheets.EmoteDef;
 import gg.minebloxroyale.sheets.EmoteKeyDef;
+import gg.minebloxroyale.sheets.GliderDef;
 import gg.minebloxroyale.sheets.Sheets;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -36,6 +37,10 @@ public final class RobloxAvatarRenderer {
 	/** Not drawn this frame (your own avatar while the Locker shows its preview of you). */
 	public static final RenderStateDataKey<Boolean> HIDDEN = RenderStateDataKey.create(() -> "minebloxroyale:hidden");
 	public static final RenderStateDataKey<Boolean> GLIDING = RenderStateDataKey.create(() -> "minebloxroyale:gliding");
+	/** Skydiving (falling from the Battle Bus, the glider not open): trailing a contrail from the hands. */
+	public static final RenderStateDataKey<Boolean> SKYDIVING = RenderStateDataKey.create(() -> "minebloxroyale:skydiving");
+	/** The Locker's preview of you (its glider and contrail kept apart from your avatar in the world). */
+	public static final RenderStateDataKey<Boolean> PREVIEW = RenderStateDataKey.create(() -> "minebloxroyale:preview");
 	/** Knocked down (team modes): drawn crawling, holding nothing. */
 	public static final RenderStateDataKey<Boolean> KNOCKED = RenderStateDataKey.create(() -> "minebloxroyale:knocked");
 	public static final RenderStateDataKey<Boolean> IS_PLAYER = RenderStateDataKey.create(() -> "minebloxroyale:is_player");
@@ -167,8 +172,23 @@ public final class RobloxAvatarRenderer {
 		// Hats, hair, face accessories, back bling and shoes (Blender models; the lighter copies far away, so lots of
 		// bots at once stay smooth).
 		if (outfit != null && !outfit.isEmpty()) Cosmetics.submit(collector, poseStack, state, outfit, pose, state.distanceToCameraSq > 24 * 24, light, overlay);
-		// The glider (gliders sheet) above a gliding player, in root space.
-		if (state.getDataOrDefault(GLIDING, false)) Gliders.submit(collector, poseStack, Gliders.of(outfit, entityId), state.distanceToCameraSq > 32 * 32, light, overlay);
+		// The glider (gliders sheet) above a gliding player, in root space: popping open, riding the air, put away again
+		// on landing (Gliders).
+		boolean preview = state.getDataOrDefault(PREVIEW, false);
+		int track = preview ? Gliders.PREVIEW_TRACK : entityId;
+		GliderDef glider = Gliders.of(outfit, entityId);
+		Matrix4f gt = Gliders.transform(track, glider.id(), state.getDataOrDefault(GLIDING, false), state.bodyRot);
+		if (gt != null) Gliders.submit(collector, poseStack, glider, gt, state.distanceToCameraSq > 32 * 32, light, overlay);
+		// Contrails (v2.0.0): skydiving, from the hands; riding a glider, from its wingtips (Contrails).
+		boolean sky = state.getDataOrDefault(SKYDIVING, false);
+		if (preview) {
+			if (sky) Contrails.preview(collector, poseStack, outfit, handTips(state, pose));
+		} else if (sky) Contrails.record(entityId, outfit, poseStack.last().pose(), handTips(state, pose), false);
+		else if (gt != null && Gliders.riding(track)) {
+			Vector3f[] tips = Gliders.wingtips(glider);
+			for (Vector3f t : tips) ROOT.transformPosition(gt.transformPosition(t));
+			Contrails.record(entityId, outfit, poseStack.last().pose(), tips, true);
+		}
 		// Shirt and pants designs: painted pictures wrapped round the torso and legs (their own texture).
 		if (outfit != null && !outfit.isEmpty()) Cosmetics.submitClothes(collector, poseStack, state, outfit, pose, light, overlay);
 		return true;
@@ -189,6 +209,19 @@ public final class RobloxAvatarRenderer {
 		// studs (y up) -> model space, and back for the local frame: T * F * joint * F^-1 (rotation + translation
 		// only).
 		return new Matrix4f().translate(0, 1.501F - HIP * S, 0).scale(-S, -S, S).mul(joint).scale(-1F / S, -1F / S, 1F / S);
+	}
+
+	/** The ends of both hands this frame (model space): where a skydiver's contrails stream from. */
+	private static Vector3f[] handTips(LivingEntityRenderState state, Pose pose) {
+		Vector3f[] out = new Vector3f[2];
+		for (int i = 0; i < 2; i++) {
+			AvatarPartDef part = Sheets.AVATAR_PARTS_BY_ID.get(i == 0 ? "right_arm" : "left_arm");
+			Matrix4f joint = jointMatrix(part, state, pose).mul(bend(part, pose).lower());
+			// (the arm's end: a stud below its centre, from its pivot)
+			Vector3f tip = joint.transformPosition(new Vector3f(part.centerX() - part.pivotX(), part.centerY() - 1F - part.pivotY(), part.centerZ() - part.pivotZ()));
+			out[i] = ROOT.transformPosition(tip);
+		}
+		return out;
 	}
 
 	/** Roblox root space -> a body part's joint (studs): its pivot, turned as the pose says, the head also to the look. */
@@ -300,6 +333,8 @@ public final class RobloxAvatarRenderer {
 	}
 
 	private static Pose computePose(LivingEntityRenderState state) {
+		// (the Locker's Contrails tab: you, skydiving)
+		if (state.getDataOrDefault(PREVIEW, false) && state.getDataOrDefault(SKYDIVING, false)) return Moves.at("air", 1F);
 		float swing = state instanceof ArmedEntityRenderState a ? a.swingAnimation : 0;
 		int id = state.getDataOrDefault(ENTITY_ID, -1);
 		Pose emote = state.getDataOrDefault(KNOCKED, false) ? null : emotePose(id, state.walkAnimationSpeed);

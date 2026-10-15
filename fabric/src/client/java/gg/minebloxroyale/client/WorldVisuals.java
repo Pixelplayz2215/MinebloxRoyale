@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import gg.minebloxroyale.MinebloxRoyale;
+import gg.minebloxroyale.client.avatar.Contrails;
 import gg.minebloxroyale.client.media.FortniteMedia;
 import gg.minebloxroyale.client.mesh.Mesh;
 import gg.minebloxroyale.hub.HubBuilder;
@@ -20,7 +21,7 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * Hub: the parked Battle Bus and the Fortnite splash billboard. Match: the storm wall (StormVisuals), reboot vans,
- * loot beams over guns on the ground, waypoint beacons and Build mode's ghost piece.
+ * loot beams over guns on the ground, waypoint beacons, Build mode's ghost piece and contrails (v2.0.0).
  */
 public final class WorldVisuals {
 	private static final int FULL_BRIGHT = 0xF000F0, READY = 0x4CD964, RECHARGING = 0xE03A3A;
@@ -52,6 +53,7 @@ public final class WorldVisuals {
 			vans(mc, ps, out, cam);
 			Waypoint.beacon(ps, out, cam);
 			BuildMode.preview(ps, out, cam);
+			Contrails.draw(ps, out, cam);
 		}
 	}
 

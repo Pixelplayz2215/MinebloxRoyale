@@ -37,7 +37,7 @@ import org.joml.Vector3f;
  */
 public class LockerScreen extends Screen {
 	private static final String[][] TABS = { { "shop", "Shop" }, { "preset", "Presets" }, { "hat", "Hats" }, { "hair", "Hair" }, { "face", "Face" },
-		{ "back", "Back" }, { "shirt", "Shirts" }, { "pants", "Pants" }, { "shoes", "Shoes" }, { "particle", "Particles" }, { "pickaxe", "Pickaxes" },
+		{ "back", "Back" }, { "shirt", "Shirts" }, { "pants", "Pants" }, { "shoes", "Shoes" }, { "particle", "Particles" }, { "pickaxe", "Pickaxes" }, { "contrail", "Contrails" },
 		{ "emote", "Emotes" }, { "glider", "Gliders" } };
 	private static final int PANEL = 350, COLS = 3, W = 80;
 	/** True only while the Locker draws its preview of you (the in-world you is hidden while the Locker is open). */
@@ -279,6 +279,7 @@ public class LockerScreen extends Screen {
 			case "preset" -> "Whole outfits - every piece is also in its own tab (Dominus sets unlock)";
 			case "shop" -> "Spend gold from matches: eliminations, top finishes, wins, bosses";
 			case "pickaxe" -> "Your pickaxe's look in matches - looks only";
+			case "contrail" -> "Light trails from your hands skydiving, and your glider's wingtips";
 			default -> "Roblox-style catalog - looks only, no advantage";
 		};
 		g.text(this.font, info, 60, 12, 0xFFB8C4D6, true);
@@ -300,7 +301,7 @@ public class LockerScreen extends Screen {
 		CosmeticDef fx = Cosmetics.worn(mine(), "particle");
 		int cx = (x0 + x1) / 2, feet = (y0 + y1) / 2 + (int) (size * (0.9F + (glider ? 0.45F : 0.0625F)));
 		particles.draw(g, fx, cx, feet, size, false);
-		preview(g, mc, x0, y0, x1, y1, size, glider);
+		preview(g, mc, x0, y0, x1, y1, size, glider, tab.equals("contrail"));
 		frames++;
 		particles.draw(g, fx, cx, feet, size, true);
 		g.centeredText(this.font, mc.player.getName().getString(), (x0 + x1) / 2, y1 - 14, 0xFFFFFFFF);
@@ -340,7 +341,7 @@ public class LockerScreen extends Screen {
 	}
 
 	/** Draws you, facing the camera, turned by previewYaw (no up/down tilt). */
-	private static void preview(GuiGraphicsExtractor g, Minecraft mc, int x0, int y0, int x1, int y1, int size, boolean glider) {
+	private static void preview(GuiGraphicsExtractor g, Minecraft mc, int x0, int y0, int x1, int y1, int size, boolean glider, boolean contrail) {
 		previewing = true;
 		try {
 			var renderer = mc.getEntityRenderDispatcher().getRenderer(mc.player);
@@ -355,6 +356,8 @@ public class LockerScreen extends Screen {
 				l.boundingBoxHeight = l.boundingBoxHeight / l.scale;
 				l.scale = 1.0F;
 				l.setData(RobloxAvatarRenderer.GLIDING, glider); // Gliders tab: show your glider
+				l.setData(RobloxAvatarRenderer.SKYDIVING, contrail); // Contrails tab: skydiving, trailing yours
+				l.setData(RobloxAvatarRenderer.PREVIEW, true);
 			}
 			Vector3f translation = new Vector3f(0, st.boundingBoxHeight / 2.0F + (glider ? 0.45F : 0.0625F), 0);
 			// Gliders tab: seen a little from above (as when gliding), so flat gliders don't show edge-on as a line.

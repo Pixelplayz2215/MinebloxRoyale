@@ -91,6 +91,28 @@ public final class Mesh {
 		return count == 0;
 	}
 
+	private float @Nullable [] sideTips;
+
+	/**
+	 * Its furthest points out to either side (+x, then -x): the middle of every corner within 4% of each extreme
+	 * (x, y, z, x, y, z). A glider's wingtips, where its contrails stream from.
+	 */
+	public float[] sideTips() {
+		if (sideTips != null) return sideTips;
+		float[] t = new float[6];
+		for (int side = 0; side < 2; side++) {
+			float edge = side == 0 ? bounds[3] : bounds[0], span = bounds[3] - bounds[0];
+			int n = 0;
+			for (int i = 0; i < count; i++) {
+				if (Math.abs(pos[i * 3] - edge) > span * 0.04F) continue;
+				for (int k = 0; k < 3; k++) t[side * 3 + k] += pos[i * 3 + k];
+				n++;
+			}
+			for (int k = 0; k < 3; k++) t[side * 3 + k] /= Math.max(1, n);
+		}
+		return sideTips = t;
+	}
+
 	private static Mesh load(String id) {
 		try (InputStream raw = Mesh.class.getResourceAsStream("/assets/minebloxroyale/meshes/" + id + ".brm")) {
 			if (raw == null) {

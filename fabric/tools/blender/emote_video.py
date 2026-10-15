@@ -449,6 +449,8 @@ def make_videos(frames_dir, out_dir):
             target = os.path.join(out_dir, name + ".mp4")
             subprocess.run([ffmpeg, "-y", "-loglevel", "error", "-framerate", str(FPS), "-i", os.path.join(tmp, "%04d.png"), "-c:v", "libopenh264",
                             "-b:v", "4M", "-pix_fmt", "yuv420p", "-movflags", "+faststart", target], check=True)
+            if e.get("still"):  # (a titled picture of one moment too: gliders, contrails)
+                shutil.copyfile(os.path.join(tmp, f"{e['still']:04d}.png"), os.path.join(out_dir, name + ".png"))
         print("video", target, flush=True)
 
 

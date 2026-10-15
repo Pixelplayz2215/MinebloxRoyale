@@ -46,6 +46,7 @@ public abstract class LivingEntityRendererMixin {
 			state.setData(RobloxAvatarRenderer.COLORS, entity instanceof BotEntity bot ? bot.colors() : "classic");
 			state.setData(RobloxAvatarRenderer.AIMING, entity.getMainHandItem().getItem() instanceof WeaponItem);
 			state.setData(RobloxAvatarRenderer.GLIDING, gliding(entity));
+			state.setData(RobloxAvatarRenderer.SKYDIVING, skydiving(entity)); // (after gliding: that keeps who has landed)
 			state.setData(RobloxAvatarRenderer.IN_BUS, entity.getVehicle() instanceof BattleBusEntity);
 			state.setData(RobloxAvatarRenderer.KNOCKED, Knocked.CLIENT.contains(entity.getId()));
 			state.setData(RobloxAvatarRenderer.IS_PLAYER, entity instanceof Player);
@@ -108,6 +109,19 @@ public abstract class LivingEntityRendererMixin {
 		if (LANDED.contains(e.getId())) return false;
 		// Other players open and close their glider at any height: a slow, steady fall means the glider is open.
 		return dy < -0.05 && dy > -0.5 && above > 1.5;
+	}
+
+	/**
+	 * Skydiving: dropped from the Battle Bus and falling fast, the glider not out yet (contrails stream from the hands).
+	 * You: your drop says so; others: falling faster than a glider does, well above the ground, not landed since the
+	 * bus.
+	 */
+	private static boolean skydiving(LivingEntity e) {
+		var mc = Minecraft.getInstance();
+		if (e == mc.player) return DropControl.phase() == DropControl.Phase.SKYDIVE;
+		if (!ClientState.inMatch() || e.getVehicle() instanceof BattleBusEntity || LANDED.contains(e.getId()) || mc.level == null) return false;
+		int ground = mc.level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, e.getBlockX(), e.getBlockZ());
+		return e.getY() - e.yo <= -0.5 && e.getY() - ground > 3;
 	}
 
 	/** Players riding the Battle Bus are inside it: don't draw them (or their held items). */
