@@ -26,3 +26,7 @@ scrambled with its code, so only someone who has the code can read it.
 
 Mineblox Royale itself: MIT licence. Not affiliated with Mojang, Microsoft, Roblox Corporation or Epic Games.
 Roblox and Fortnite content is read from the player's own installed copies and is never included or copied.
+
+Java runtime (only in the "Prism Launcher, ready to play" package: Prism Launcher/java/java-runtime-epsilon): Mojang's Java 25
+runtime for Minecraft, the Microsoft Build of OpenJDK 25.0.1, GPL v2 with the Classpath Exception. Its own notices are in its legal
+folder. It ships so the game starts without Prism Launcher having to download Java first.
