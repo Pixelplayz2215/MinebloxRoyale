@@ -64,6 +64,12 @@
    "meaning": "once EVERY player in the hub stands on the same mode portal; anyone stepping off (or onto another portal) cancels it"
   },
   {
+   "id": "busStormMargin",
+   "value": 10,
+   "unit": "blocks",
+   "meaning": "everyone still on the Battle Bus drops when it comes this close to the storm's wall ahead (2.0.0-test3, creator: right before the storm, not in it)"
+  },
+  {
    "id": "busBelowTop",
    "value": 6,
    "unit": "blocks",

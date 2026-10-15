@@ -233,6 +233,17 @@ public final class MatchManager {
 		return Math.max(0, now - busLaunched) * (double) MinebloxRoyale.setting("busSpeed");
 	}
 
+	/**
+	 * The bus is about to fly into the storm: heading out, within busStormMargin of the storm's wall where it is right
+	 * now (2.0.0-test3). The storm's first phase starts closing before the ride is over, its centre moving towards the
+	 * next circle, so the wall can come to meet the bus before the route's end.
+	 */
+	private boolean busAtStorm(long now) {
+		Vec3 b = busPos(now);
+		double dx = b.x - cx, dz = b.z - cz;
+		return dx * busDir.x + dz * busDir.z > 0 && Math.hypot(dx, dz) > radius - MinebloxRoyale.setting("busStormMargin");
+	}
+
 	/** 0..1 along the route. */
 	public float busProgress(long now) {
 		return busLength <= 0 ? 1 : (float) Math.min(1, busTravelled(now) / busLength);
@@ -573,6 +584,13 @@ public final class MatchManager {
 
 	private void tickBus(MinecraftServer server) {
 		long now = server.overworld().getGameTime();
+		// (2.0.0-test3, creator: "make sure it's right before the storm") The ride ends right before the storm's wall: the
+		// route is cut where the bus is, and everyone still aboard drops there (players below, bots by the roster).
+		boolean storm = busLaunched >= 0 && busFlying(now) && busAtStorm(now);
+		if (storm) {
+			busLength = busTravelled(now);
+			MinebloxRoyale.LOG.info("BR: the Battle Bus is at the storm's edge: everybody out");
+		}
 		if (busLaunched >= 0 && !busFlying(now) && bus == null) {
 			busLaunched = -1;
 			MinebloxRoyale.LOG.info("BR: the Battle Bus finished its route (with nobody aboard to keep it loaded)");
@@ -597,7 +615,7 @@ public final class MatchManager {
 			for (var passenger : List.copyOf(bus.getPassengers())) {
 				passenger.stopRiding();
 				if (passenger instanceof ServerPlayer p) {
-					p.sendSystemMessage(Component.literal("End of the line - everybody out!").withStyle(ChatFormatting.AQUA), true);
+					p.sendSystemMessage(Component.literal(storm ? "The storm's ahead - everybody out!" : "End of the line - everybody out!").withStyle(ChatFormatting.AQUA), true);
 					startDrop(p);
 				}
 			}
@@ -891,12 +909,26 @@ public final class MatchManager {
 	private void checkWinner(MinecraftServer server) {
 		Set<Integer> alive = teamsAlive();
 		// Test mode plays on to the last team even with every player out (a soak test of the bots to the very end).
-		if (alivePlayers.isEmpty() && !(TEST && alive.size() > 1)) {
+		if (!playersStillIn(server) && !(TEST && alive.size() > 1)) {
 			int t = alive.size() == 1 ? alive.iterator().next() : -1;
 			end(server, t);
 		} else if (alive.size() <= 1) {
 			end(server, alive.isEmpty() ? -1 : alive.iterator().next());
 		}
+	}
+
+	/**
+	 * Real players still in the match: one standing, or (a team mode, 2.0.0-test3, creator: "It doesn't wait until my
+	 * bot team mates pickup my reboot card and try to revive me. Once i'm eliminated, it's over") one eliminated whose
+	 * reboot card is still out (on the ground or carried, not run out) while a teammate stands to bring them back. They
+	 * watch a teammate meanwhile; the match goes on until their team is out or the card runs out.
+	 */
+	private boolean playersStillIn(MinecraftServer server) {
+		if (!alivePlayers.isEmpty()) return true;
+		if (!Teams.teamMode()) return false;
+		for (UUID id : players)
+			if (server.getPlayerList().getPlayer(id) != null && Reboot.cardLeft(id.toString()) != null && teamAlive(Teams.teamOfPlayer(id))) return true;
+		return false;
 	}
 
 	private void end(MinecraftServer server, int winTeam) {
