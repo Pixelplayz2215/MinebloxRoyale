@@ -64,6 +64,12 @@
    "meaning": "once EVERY player in the hub stands on the same mode portal; anyone stepping off (or onto another portal) cancels it"
   },
   {
+   "id": "pregenQuiet",
+   "value": 120,
+   "unit": "seconds",
+   "meaning": "the next island isn't made for this long after a match starts (2.0.0-test3, less lag: the bus ride and everyone dropping in are when games are busiest); then three chunks at a time, about 3 minutes"
+  },
+  {
    "id": "busStormMargin",
    "value": 10,
    "unit": "blocks",
