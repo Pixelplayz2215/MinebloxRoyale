@@ -139,8 +139,9 @@ final class BoardRows {
 	}
 
 	/**
-	 * The row's item as its inventory picture (an item display in "gui" view, full bright), facing the reader. A gun
-	 * gets the rarity colour on its stripe (custom model data, as Guns.make does).
+	 * The row's item as the hotbar shows it (an item display in "gui" view, full bright), facing the reader: since
+	 * 2.0.0-test2 the Blender model itself, posed and fitted as in a slot (creator: "show the 3d in game models rather
+	 * than the icons"; make_items.py). A gun gets its rarity colour (custom model data, as Guns.make does).
 	 */
 	private static void item(MinecraftServer server, double x, double y, double z, Row r, String facing, float size) {
 		server.overworld().getChunk(Mth.floor(x) >> 4, Mth.floor(z) >> 4);
