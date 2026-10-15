@@ -120,7 +120,7 @@ def main():
         if len(a) == 0:
             problems.append(f"{mid}: empty")
     rows = json.load(open(os.path.join(DESIGN, "cosmetics.json"), encoding="utf-8"))["rows"]
-    shapes = {slot: sorted({r["shape"] for r in rows if r["slot"] == slot}) for slot in ("hat", "hair", "face", "shoes")}
+    shapes = {slot: sorted({r["shape"] for r in rows if r["slot"] == slot}) for slot in ("hat", "hair", "face", "shoes", "pickaxe")}
     hides = {r["shape"] for r in rows if r["slot"] in ("hat", "face") and r.get("hideHair")}
     want = ["battle_bus", "reboot_van"]
     for h in shapes["hat"]:
@@ -136,7 +136,8 @@ def main():
     want += [g["id"] for g in json.load(open(os.path.join(DESIGN, "gliders.json"), encoding="utf-8"))["rows"]]
     for kind in sorted({f.split("_")[1] for f in files if f.startswith("car_")}):
         want += [f"car_{kind}_{s}" for s in (1, 2, 3, 4)]
-    far = [w for w in want if w not in ("battle_bus", "reboot_van")]
+    want += ["pickaxe_" + s for s in shapes["pickaxe"]]  # (v2.0.0 skins: held items, no far copy, like the pickaxe itself)
+    far = [w for w in want if w not in ("battle_bus", "reboot_van") and not w.startswith("pickaxe_")]
     missing = [w for w in want if w not in have] + [w + "_far" for w in far if w + "_far" not in have]
     for m in missing:
         problems.append(f"{m}: missing")

@@ -36,8 +36,9 @@ import org.joml.Vector3f;
  * particles as in the world). Everything is purely cosmetic.
  */
 public class LockerScreen extends Screen {
-	private static final String[][] TABS = { { "preset", "Presets" }, { "hat", "Hats" }, { "hair", "Hair" }, { "face", "Face" }, { "back", "Back" },
-		{ "shirt", "Shirts" }, { "pants", "Pants" }, { "shoes", "Shoes" }, { "particle", "Particles" }, { "emote", "Emotes" }, { "glider", "Gliders" } };
+	private static final String[][] TABS = { { "shop", "Shop" }, { "preset", "Presets" }, { "hat", "Hats" }, { "hair", "Hair" }, { "face", "Face" },
+		{ "back", "Back" }, { "shirt", "Shirts" }, { "pants", "Pants" }, { "shoes", "Shoes" }, { "particle", "Particles" }, { "pickaxe", "Pickaxes" },
+		{ "emote", "Emotes" }, { "glider", "Gliders" } };
 	private static final int PANEL = 350, COLS = 3, W = 80;
 	/** True only while the Locker draws its preview of you (the in-world you is hidden while the Locker is open). */
 	public static boolean previewing;
@@ -78,6 +79,16 @@ public class LockerScreen extends Screen {
 		Map<String, String> outfit = mine();
 		UnlockRule.Stats st = ClientState.career();
 		switch (tab) {
+			case "shop" -> {
+				// v2.0.0: everything bought with gold (the "shop" items of every section), with its price; owned ones say
+				// so and are used from here too.
+				for (EmoteDef e : Sheets.EMOTES)
+					if (e.unlock().equals("shop")) out.add(shopTile(e.id(), e.name(), e.need(), "emote", st, e.id()));
+				for (CosmeticDef c : Sheets.COSMETICS)
+					if (c.unlock().equals("shop")) out.add(shopTile(c.id(), c.name(), c.need(), c.slot(), st, null));
+				for (GliderDef g : Sheets.GLIDERS)
+					if (g.unlock().equals("shop")) out.add(shopTile(g.id(), g.name(), g.need(), "glider", st, null));
+			}
 			case "preset" -> {
 				for (PresetDef p : Sheets.PRESETS) {
 					// A preset made of locked pieces (the Dominus sets) is locked until they are.
@@ -94,6 +105,10 @@ public class LockerScreen extends Screen {
 			case "emote" -> {
 				List<String> wheel = new ArrayList<>(ClientState.myEmotes());
 				for (EmoteDef e : Sheets.EMOTES) {
+					if (e.unlock().equals("shop") && !ClientState.unlocked(e)) {
+						out.add(shopTile(e.id(), e.name(), e.need(), "emote", st, e.id()));
+						continue;
+					}
 					boolean has = ClientState.unlocked(e), on = wheel.contains(e.id());
 					// Locked: the name stays hidden, only what unlocks it shows.
 					String label = !has ? UnlockRule.needs(e.unlock(), e.need()) : on ? "> " + e.name() + " <" : e.name();
@@ -112,6 +127,10 @@ public class LockerScreen extends Screen {
 			case "glider" -> {
 				String worn = mine().get("glider");
 				for (GliderDef g : Sheets.GLIDERS) {
+					if (g.unlock().equals("shop") && !ClientState.unlocked(g)) {
+						out.add(shopTile(g.id(), g.name(), g.need(), "glider", st, null));
+						continue;
+					}
 					boolean has = ClientState.unlocked(g), on = g.id().equals(worn) || worn == null && g == Sheets.GLIDERS.get(0);
 					String label = !has ? UnlockRule.needs(g.unlock(), g.need()) : on ? "> " + g.name() + " <" : g.name();
 					out.add(new Tile(label, has, () -> send("locker:glider:" + g.id()), null, has ? null : UnlockRule.hint(g.unlock(), g.need(), st)));
@@ -123,13 +142,42 @@ public class LockerScreen extends Screen {
 				for (CosmeticDef c : Sheets.COSMETICS) {
 					if (!c.slot().equals(tab)) continue;
 					boolean on = c.id().equals(worn), has = ClientState.unlocked(c);
-					if (!has) out.add(new Tile(UnlockRule.needs(c.unlock(), c.need()), false, () -> {
+					if (!has && c.unlock().equals("shop")) out.add(shopTile(c.id(), c.name(), c.need(), c.slot(), st, null));
+					else if (!has) out.add(new Tile(UnlockRule.needs(c.unlock(), c.need()), false, () -> {
 					}, null, UnlockRule.hint(c.unlock(), c.need(), st)));
 					else out.add(new Tile(on ? "> " + c.name() + " <" : c.name(), true, () -> send("locker:" + tab + ":" + (on ? "none" : c.id()))));
 				}
 			}
 		}
 		return out;
+	}
+
+	/**
+	 * A shop item (v2.0.0): not bought yet, its name and price, clicked to buy (its hint says how much gold you have);
+	 * bought, it's used like any other (an emote goes on or off your wheel, the rest is worn).
+	 */
+	private Tile shopTile(String id, String name, int price, String kind, UnlockRule.Stats st, String emote) {
+		boolean owned = ClientState.all || st.owned().contains(id);
+		if (!owned)
+			return new Tile(name + " - " + price + "g", true, () -> {
+				if (st.gold() < price) toast("Not enough gold: " + name + " costs " + price + ", you have " + st.gold());
+				else send("locker:buy:" + id);
+			}, emote, UnlockRule.hint("shop", price, st));
+		if (kind.equals("emote")) {
+			List<String> wheel = new ArrayList<>(ClientState.myEmotes());
+			boolean on = wheel.contains(id);
+			return new Tile(on ? "> " + name + " <" : name + " (owned)", true, () -> {
+				if (on) wheel.remove(id);
+				else if (wheel.size() < 8) wheel.add(id);
+				else {
+					toast("Your wheel is full (8): take one off in the Emotes tab first");
+					return;
+				}
+				send("locker:emotes:" + (wheel.isEmpty() ? "none" : String.join("+", wheel)));
+			}, id, null);
+		}
+		boolean on = id.equals(mine().get(kind));
+		return new Tile(on ? "> " + name + " <" : name + " (owned)", true, () -> send("locker:" + kind + ":" + (on ? "none" : id)));
 	}
 
 	private int rowsPerPage() {
@@ -219,6 +267,9 @@ public class LockerScreen extends Screen {
 	public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float a) {
 		super.extractRenderState(g, mouseX, mouseY, a);
 		g.text(this.font, "LOCKER", 10, 12, 0xFFFFD42A, true);
+		// Your gold (v2.0.0: the Shop tab spends it), over the grid's right edge.
+		String gold = (ClientState.all ? "all unlocked" : ClientState.career().gold() + " gold");
+		g.text(this.font, gold, PANEL - 10 - this.font.width(gold), 22, 0xFFFFC23A, true);
 		String info = switch (tab) {
 			case "emote" -> "Click to pick up to 8 for your wheel (B): " + ClientState.myEmotes().size() + "/8 - hover to preview";
 			case "glider" -> {
@@ -226,6 +277,8 @@ public class LockerScreen extends Screen {
 				yield "Yours: " + c.kills() + " kills, " + c.wins() + " wins, range best " + c.rangeBest() + ", " + c.bullseyes() + " bullseyes";
 			}
 			case "preset" -> "Whole outfits - every piece is also in its own tab (Dominus sets unlock)";
+			case "shop" -> "Spend gold from matches: eliminations, top finishes, wins, bosses";
+			case "pickaxe" -> "Your pickaxe's look in matches - looks only";
 			default -> "Roblox-style catalog - looks only, no advantage";
 		};
 		g.text(this.font, info, 60, 12, 0xFFB8C4D6, true);

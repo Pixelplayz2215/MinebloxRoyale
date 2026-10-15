@@ -1,11 +1,11 @@
 {
  "sheet": "emotes",
  "class": "EmoteDef",
- "about": "40 emotes played on the Roblox avatar; each player picks 8 for their emote wheel (B) in the Locker. unlock: default = everyone has it (the first 7); obby = finish the obby; victory = win a Victory Royale; kills = lifetime eliminations reach 'need' (150 unlocks the last one); wins = Victory Royales reach 'need'; range = score 'need' in one shooting-range round (match.rangeRoundSeconds); bullseyes = hit 'need' bullseyes at the range in all. Fairer since test9 (creator): nothing needs more than 150 kills or 8 wins, and the range unlocks only took over items that needed 100+ kills, so nobody lost one. Each loops over 'loopSeconds' through its keyframes (emote_keys).",
+ "about": "40 emotes played on the Roblox avatar; each player picks 8 for their emote wheel (B) in the Locker. unlock: default = everyone has it (the first 7); obby = finish the obby; victory = win a Victory Royale; kills = lifetime eliminations reach 'need' (150 unlocks the last one); wins = Victory Royales reach 'need'; range = score 'need' in one shooting-range round (match.rangeRoundSeconds); bullseyes = hit 'need' bullseyes at the range in all. Fairer since test9 (creator): nothing needs more than 150 kills or 8 wins, and the range unlocks only took over items that needed 100+ kills, so nobody lost one. Each loops over 'loopSeconds' through its keyframes (emote_keys). v2.0.0: shop = bought in the Locker's shop for gold; need is the price.",
  "columns": {
   "id": "string",
   "name": "string",
-  "unlock": "enum:default|obby|victory|kills|wins|range|bullseyes",
+  "unlock": "enum:default|obby|victory|kills|wins|range|bullseyes|shop",
   "need": "int",
   "loopSeconds": "float",
   "note": "string"

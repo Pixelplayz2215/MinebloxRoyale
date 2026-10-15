@@ -35,6 +35,9 @@ public final class ClientState {
 	 * bullseyes (unlocks add my other worlds).
 	 */
 	public static int kills, wins, rangeBest, bullseyes;
+	/** Gold earned and spent in this world, and the shop items bought here (v2.0.0, Gold). */
+	public static int goldEarned, goldSpent;
+	public static java.util.Set<String> owned = java.util.Set.of();
 	public static boolean obby;
 	/** The dev test account: everything unlocked. */
 	public static boolean all;
@@ -56,7 +59,7 @@ public final class ClientState {
 
 	/** My unlock stats in this world. */
 	public static UnlockRule.Stats here() {
-		return new UnlockRule.Stats(kills, wins, obby, rangeBest, bullseyes);
+		return new UnlockRule.Stats(kills, wins, obby, rangeBest, bullseyes, goldEarned, goldSpent, owned);
 	}
 
 	/** My unlock stats over every world I've played in. */
@@ -65,15 +68,15 @@ public final class ClientState {
 	}
 
 	public static boolean unlocked(EmoteDef e) {
-		return all || UnlockRule.has(e.unlock(), e.need(), career());
+		return all || UnlockRule.has(e.unlock(), e.need(), career(), e.id());
 	}
 
 	public static boolean unlocked(GliderDef g) {
-		return all || UnlockRule.has(g.unlock(), g.need(), career());
+		return all || UnlockRule.has(g.unlock(), g.need(), career(), g.id());
 	}
 
 	public static boolean unlocked(CosmeticDef c) {
-		return all || UnlockRule.has(c.unlock(), c.need(), career());
+		return all || UnlockRule.has(c.unlock(), c.need(), career(), c.id());
 	}
 
 	/** My emote wheel: the 8 picked in the Locker, or (not picked yet) the first 8 unlocked. */

@@ -32,7 +32,7 @@ def sheet(title, unlock, views, out):
         d = ImageDraw.Draw(img)
         d.text((pad, 28), title, font=font(64), fill=TEXT)
         if unlock:
-            d.text((pad, 112), "Unlock: " + unlock, font=font(40), fill=SUB)
+            d.text((pad, 112), unlock if unlock.startswith("Price:") else "Unlock: " + unlock, font=font(40), fill=SUB)
         d.rounded_rectangle((pad, top, pad + cell, top + cell + 44), radius=18, fill=PANEL)
         v = Image.open(path).convert("RGBA").resize((cell, cell), Image.LANCZOS)
         img.paste(v, (pad, top), v)
@@ -48,8 +48,8 @@ def sheet(title, unlock, views, out):
     img = Image.new("RGB", (w, h), BG)
     d = ImageDraw.Draw(img)
     d.text((pad, 28), title, font=font(64), fill=TEXT)
-    if unlock:
-        d.text((pad, 112), "Unlock: " + unlock, font=font(40), fill=SUB)
+    if unlock:  # (a shop item's line is its price: "Price: 500 gold")
+        d.text((pad, 112), unlock if unlock.startswith("Price:") else "Unlock: " + unlock, font=font(40), fill=SUB)
     for i, label in enumerate(ORDER):
         if label not in views:
             continue

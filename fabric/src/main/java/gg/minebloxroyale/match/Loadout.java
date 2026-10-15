@@ -25,6 +25,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.Tool;
 
@@ -80,6 +81,22 @@ public final class Loadout {
 		return s;
 	}
 
+	/**
+	 * The pickaxe in a skin (v2.0.0, the Locker's pickaxe slot): the skin's model name rides on the item (custom model
+	 * data), so every player's game draws it (MeshItemRenderer). null: the default pickaxe.
+	 */
+	public static ItemStack pickaxe(String skin) {
+		ItemStack s = pickaxe();
+		if (skin != null) s.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(List.of(), List.of(), List.of(skin), List.of()));
+		return s;
+	}
+
+	/** The skin a pickaxe is in (its model name), or null for the default one. */
+	public static String skinOf(ItemStack s) {
+		CustomModelData d = s.get(DataComponents.CUSTOM_MODEL_DATA);
+		return d == null || d.strings().isEmpty() ? null : d.strings().get(0);
+	}
+
 	public static boolean isPickaxe(ItemStack s) {
 		return s.has(DataComponents.UNBREAKABLE) && s.is(pickaxe().getItem());
 	}
@@ -132,7 +149,10 @@ public final class Loadout {
 			place(p, off);
 		}
 		int pickSlot = Sheets.LOADOUT.stream().filter(x -> x.role().equals("pickaxe")).findFirst().orElseThrow().slot();
-		if (!isPickaxe(inv.getItem(pickSlot))) inv.setItem(pickSlot, pickaxe());
+		// (in the skin picked in the Locker: changed there, the next check swaps it)
+		String skin = gg.minebloxroyale.hub.Locker.pickaxeSkin(p);
+		ItemStack held = inv.getItem(pickSlot);
+		if (!isPickaxe(held) || !java.util.Objects.equals(skinOf(held), skin)) inv.setItem(pickSlot, pickaxe(skin));
 	}
 
 	/**

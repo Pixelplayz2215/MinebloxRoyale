@@ -1,8 +1,11 @@
 package gg.minebloxroyale.hub;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Emote and glider unlock rules (emotes and gliders sheets), shared by the server (which checks) and the client (which
- * shows locks in the Locker). Stats are the player's, over every world they've played in: lifetime kills, Victory
+ * shows locks in the Locker). v2.0.0: "shop" items are bought with gold (Gold), need being the price. Stats are the player's, over every world they've played in: lifetime kills, Victory
  * Royales, whether the obby was finished, their best shooting-range round and their lifetime bullseyes at the range
  * (each world keeps its own; the player's game adds them up, MyUnlocks).
  */
@@ -14,16 +17,36 @@ public final class UnlockRule {
 	 * A player's unlock stats. Over several worlds: kills, wins and bullseyes add up, the best range round is the best
 	 * of them, and the obby counts once finished anywhere.
 	 */
-	public record Stats(int kills, int wins, boolean obby, int rangeBest, int bullseyes) {
+	public record Stats(int kills, int wins, boolean obby, int rangeBest, int bullseyes, int goldEarned, int goldSpent, Set<String> owned) {
 		public static final Stats NONE = new Stats(0, 0, false, 0, 0);
 
+		/** Without gold (worlds and reports from before v2.0.0). */
+		public Stats(int kills, int wins, boolean obby, int rangeBest, int bullseyes) {
+			this(kills, wins, obby, rangeBest, bullseyes, 0, 0, Set.of());
+		}
+
 		public Stats plus(Stats o) {
-			return new Stats(kills + o.kills, wins + o.wins, obby || o.obby, Math.max(rangeBest, o.rangeBest), bullseyes + o.bullseyes);
+			Set<String> both = new HashSet<>(owned);
+			both.addAll(o.owned);
+			return new Stats(kills + o.kills, wins + o.wins, obby || o.obby, Math.max(rangeBest, o.rangeBest), bullseyes + o.bullseyes, goldEarned + o.goldEarned,
+				goldSpent + o.goldSpent, both);
+		}
+
+		/** Gold to spend (v2.0.0, Gold): everything earned less everything spent, over every world. */
+		public int gold() {
+			return goldEarned - goldSpent;
 		}
 	}
 
+	/** An unlock that isn't bought (a shop item needs its id: the four-argument has). */
 	public static boolean has(String unlock, int need, Stats s) {
+		return has(unlock, need, s, null);
+	}
+
+	/** Does the player have item id (shop: bought it with gold; the rest: their stats). */
+	public static boolean has(String unlock, int need, Stats s, String id) {
 		return switch (unlock) {
+			case "shop" -> id != null && s.owned().contains(id);
 			case "default" -> true;
 			case "obby" -> s.obby();
 			case "victory" -> s.wins() >= 1;
@@ -41,6 +64,7 @@ public final class UnlockRule {
 	 */
 	public static String needs(String unlock, int need) {
 		return switch (unlock) {
+			case "shop" -> need + " gold";
 			case "obby" -> "Finish obby";
 			case "victory" -> "1 win";
 			case "kills" -> need + " kills";
@@ -54,6 +78,7 @@ public final class UnlockRule {
 	/** The line under the Locker grid while a locked item is hovered: what unlocks it and how far along you are. */
 	public static String hint(String unlock, int need, Stats s) {
 		return switch (unlock) {
+			case "shop" -> "Shop: " + need + " gold (you have " + s.gold() + ") - click to buy";
 			case "obby" -> "Locked: finish the obby in the lobby";
 			case "victory" -> "Locked: win a Victory Royale";
 			case "kills" -> "Locked: get " + need + " eliminations (you have " + s.kills() + ")";

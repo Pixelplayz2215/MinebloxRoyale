@@ -121,16 +121,16 @@ public final class Obby {
 	 * Emotes unlock by the obby, wins, kills, a range score or bullseyes, over all the player's worlds (emotes sheet).
 	 */
 	public static boolean hasEmote(ServerPlayer p, EmoteDef e) {
-		return tester(p) || UnlockRule.has(e.unlock(), e.need(), career(p));
+		return tester(p) || UnlockRule.has(e.unlock(), e.need(), career(p), e.id());
 	}
 
 	public static boolean hasGlider(ServerPlayer p, GliderDef g) {
-		return tester(p) || UnlockRule.has(g.unlock(), g.need(), career(p));
+		return tester(p) || UnlockRule.has(g.unlock(), g.need(), career(p), g.id());
 	}
 
 	/** Locker items: free, apart from the Dominus sets (cosmetics sheet unlock / need). */
 	public static boolean hasCosmetic(ServerPlayer p, CosmeticDef c) {
-		return tester(p) || UnlockRule.has(c.unlock(), c.need(), career(p));
+		return tester(p) || UnlockRule.has(c.unlock(), c.need(), career(p), c.id());
 	}
 
 	/**
@@ -138,8 +138,8 @@ public final class Obby {
 	 */
 	private static UnlockRule.Stats here(ServerPlayer p) {
 		MinecraftServer server = p.level().getServer();
-		int[] board = Leaderboard.stats(server, p.getUUID()), range = RangeStats.get(server, p.getUUID());
-		return new UnlockRule.Stats(board[0], board[1], obbyDoneHere(p), range[0], range[1]);
+		int[] board = Leaderboard.stats(server, p.getUUID()), range = RangeStats.get(server, p.getUUID()), gold = Gold.get(server, p.getUUID());
+		return new UnlockRule.Stats(board[0], board[1], obbyDoneHere(p), range[0], range[1], gold[0], gold[1], Gold.owned(server, p.getUUID()));
 	}
 
 	/** Lifetime unlock stats: this world's plus the player's other worlds. */
@@ -149,7 +149,8 @@ public final class Obby {
 
 	/**
 	 * The player's own game reports their stats from every world they've played in
-	 * ("worldId=kills,wins,obby,rangeBest,bullseyes;...", the last two missing from older builds); the other worlds'
+	 * ("worldId=kills,wins,obby,rangeBest,bullseyes,goldEarned,goldSpent,item+item;...", the later ones missing from older
+	 * builds); the other worlds'
 	 * count here too. Sent on joining, before the Locker outfit (which is checked against unlocks).
 	 */
 	public static void setCareer(ServerPlayer p, String report) {
@@ -162,13 +163,15 @@ public final class Obby {
 			if (kv.length != 2 || kv[0].equals(here)) continue;
 			String[] n = kv[1].split(",");
 			try {
-				t = t.plus(new UnlockRule.Stats(num(n, 0), num(n, 1), num(n, 2) == 1, num(n, 3), num(n, 4)));
+				// (v2.0.0 adds gold earned, gold spent and what it bought: "item+item", "-" for none)
+				Set<String> bought = n.length > 7 && !n[7].isBlank() && !n[7].trim().equals("-") ? Set.of(n[7].trim().split("[+]")) : Set.of();
+				t = t.plus(new UnlockRule.Stats(num(n, 0), num(n, 1), num(n, 2) == 1, num(n, 3), num(n, 4), num(n, 5), num(n, 6), bought));
 			} catch (RuntimeException ignored) {
 			}
 		}
 		ELSEWHERE.put(p.getUUID(), t);
-		MinebloxRoyale.LOG.info("BR: {} brings unlock stats from other worlds: {} kills, {} wins, obby {}, range best {}, {} bullseyes", p.getName().getString(), t.kills(),
-			t.wins(), t.obby() ? "done" : "not done", t.rangeBest(), t.bullseyes());
+		MinebloxRoyale.LOG.info("BR: {} brings unlock stats from other worlds: {} kills, {} wins, obby {}, range best {}, {} bullseyes, {} gold, {} bought",
+			p.getName().getString(), t.kills(), t.wins(), t.obby() ? "done" : "not done", t.rangeBest(), t.bullseyes(), t.gold(), t.owned().size());
 	}
 
 	/** A count from a career report (0 when it's missing: older builds send fewer). */
@@ -214,14 +217,15 @@ public final class Obby {
 	}
 
 	/**
-	 * The client's copy of this world's unlock stats: "kills;wins;obby(0/1);all(0/1);worldId;rangeBest;bullseyes". Its
+	 * The client's copy of this world's unlock stats: "kills;wins;obby(0/1);all(0/1);worldId;rangeBest;bullseyes;goldEarned;
+	 * goldSpent;item+item" (v2.0.0: gold and what it bought, "-" for nothing). Its
 	 * game remembers them under the world id and adds the player's other worlds (the Locker shows what's still locked).
 	 */
 	public static void sendUnlocks(ServerPlayer p) {
 		MinecraftServer server = p.level().getServer();
 		UnlockRule.Stats st = here(p);
 		ServerPlayNetworking.send(p, new Net.Unlocks(st.kills() + ";" + st.wins() + ";" + (st.obby() ? 1 : 0) + ";" + (tester(p) ? 1 : 0) + ";" + worldId(server) + ";"
-			+ st.rangeBest() + ";" + st.bullseyes()));
+			+ st.rangeBest() + ";" + st.bullseyes() + ";" + st.goldEarned() + ";" + st.goldSpent() + ";" + (st.owned().isEmpty() ? "-" : String.join("+", st.owned()))));
 	}
 
 	/** After a match or a range round: tell the player about every emote and glider their new stats just unlocked. */

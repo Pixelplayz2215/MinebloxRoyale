@@ -792,7 +792,8 @@ def _sheet():
 
 
 UNLOCK = {"kills": "Get {n} eliminations", "wins": "Win {n} Victory Royales", "range": "Score {n} in one shooting range round",
-          "bullseyes": "Hit {n} shooting range bullseyes", "obby": "Finish the obby in the lobby", "victory": "Win a Victory Royale"}
+          "bullseyes": "Hit {n} shooting range bullseyes", "obby": "Finish the obby in the lobby", "victory": "Win a Victory Royale",
+          "shop": "Price: {n} gold"}  # (v2.0.0: bought in the Locker's shop)
 
 
 def unlock_text(row):

@@ -62,6 +62,14 @@ public final class Locker {
 		broadcast(server, p, outfit);
 	}
 
+	/** The model of the pickaxe skin this player picked (v2.0.0, cosmetics slot pickaxe), or null for the default. */
+	public static String pickaxeSkin(ServerPlayer p) {
+		load(p.level().getServer());
+		String id = OUTFITS.getOrDefault(p.getUUID(), Map.of()).get("pickaxe");
+		CosmeticDef c = id == null ? null : Sheets.COSMETICS_BY_ID.get(id);
+		return c == null || !c.slot().equals("pickaxe") ? null : "pickaxe_" + c.shape();
+	}
+
 	/** On join, each player's own game sends the outfit it remembers (so it follows them to any world). */
 	public static void restore(ServerPlayer p, String encoded) {
 		MinecraftServer server = p.level().getServer();

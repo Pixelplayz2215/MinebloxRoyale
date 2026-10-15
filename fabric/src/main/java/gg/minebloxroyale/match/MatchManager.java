@@ -3,6 +3,7 @@ package gg.minebloxroyale.match;
 import gg.minebloxroyale.MeltyTest;
 import gg.minebloxroyale.MinebloxRoyale;
 import gg.minebloxroyale.bot.BotEntity;
+import gg.minebloxroyale.hub.Gold;
 import gg.minebloxroyale.hub.HubBuilder;
 import gg.minebloxroyale.hub.Leaderboard;
 import gg.minebloxroyale.hub.Locker;
@@ -717,6 +718,12 @@ public final class MatchManager {
 				Component.literal("by " + by + " - your team is still in: they can reboot you (H: hub)"), 5, 60, 10);
 		} else {
 			int place = teamsAlive().size() + 1;
+			// Gold for a good finish (v2.0.0): the team's players still in the match.
+			if (place <= 10)
+				for (UUID m : Teams.teamMode() ? Teams.playersOf(team) : List.of(victim.getUUID())) {
+					ServerPlayer q = server.getPlayerList().getPlayer(m);
+					if (q != null && players.contains(m)) Gold.award(q, place <= 5 ? "goldTop5" : "goldTop10", "top " + (place <= 5 ? 5 : 10));
+				}
 			if (Teams.teamMode()) {
 				for (UUID m : Teams.playersOf(team)) {
 					ServerPlayer q = server.getPlayerList().getPlayer(m);
@@ -863,7 +870,10 @@ public final class MatchManager {
 
 	/** An elimination for the killer: a player, a real bot, or a simulated bot known only by name (byName). */
 	private void countKill(Entity killer, String byName) {
-		if (killer instanceof ServerPlayer sp) kills.merge(sp.getUUID(), 1, Integer::sum);
+		if (killer instanceof ServerPlayer sp) {
+			kills.merge(sp.getUUID(), 1, Integer::sum);
+			Gold.award(sp, "goldElimination", "elimination");
+		}
 		else if (killer instanceof BotEntity b) roster.creditKill(b.getName().getString());
 		else if (killer == null && byName != null) roster.creditKill(byName);
 	}
@@ -906,6 +916,8 @@ public final class MatchManager {
 		for (UUID id : players) {
 			ServerPlayer p = server.getPlayerList().getPlayer(id);
 			if (p != null) Leaderboard.record(server, id, p.getName().getString(), winners.contains(id), kills.getOrDefault(id, 0));
+			if (p != null) Gold.award(p, winners.contains(id) ? Math.round(MinebloxRoyale.setting("goldWin") + MinebloxRoyale.setting("goldMatch")) : Math.round(MinebloxRoyale.setting("goldMatch")),
+				winners.contains(id) ? "Victory Royale" : "match played");
 		}
 		for (ServerPlayer p : server.getPlayerList().getPlayers()) {
 			if (winners.contains(p.getUUID())) {

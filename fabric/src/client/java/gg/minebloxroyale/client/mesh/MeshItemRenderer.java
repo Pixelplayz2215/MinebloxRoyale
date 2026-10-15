@@ -13,19 +13,31 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomModelData;
 import org.joml.Vector3f;
+import org.jspecify.annotations.Nullable;
 import org.joml.Vector3fc;
 
 /**
  * An item drawn from a Blender mesh (items/*.json: {"type": "minecraft:special", "model": {"type":
  * "minebloxroyale:mesh", "mesh": "gun_smg"}, "base": ...}; the base model gives the hold in each hand). Tint channel 1
- * takes the stack's custom model data colour (a gun's rarity, Guns.make), or the given default.
+ * takes the stack's custom model data colour (a gun's rarity, Guns.make), or the given default. A model name in the
+ * stack's custom model data draws that model instead (v2.0.0: a pickaxe skin, Loadout.pickaxe(skin)).
  */
-public record MeshItemRenderer(Mesh mesh, int tint) implements SpecialModelRenderer<Integer> {
+public record MeshItemRenderer(Mesh mesh, int tint) implements SpecialModelRenderer<MeshItemRenderer.Look> {
+	/** What one stack looks like: its tint, and the model it asks for (null: this renderer's own). */
+	public record Look(int color, @Nullable String mesh) {
+	}
+
 	@Override
-	public void submit(Integer color, PoseStack poseStack, SubmitNodeCollector collector, int light, int overlay, boolean foil, int outline) {
-		if (mesh.isEmpty()) return;
-		int c = color == null ? tint : color;
-		collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(WorldVisuals.white()), (pose, vc) -> mesh.draw(pose, null, vc, light, overlay, c, c));
+	public void submit(@Nullable Look look, PoseStack poseStack, SubmitNodeCollector collector, int light, int overlay, boolean foil, int outline) {
+		Mesh m = mesh;
+		if (look != null && look.mesh() != null) {
+			Mesh skin = Mesh.get(look.mesh());
+			if (!skin.isEmpty()) m = skin;
+		}
+		if (m.isEmpty()) return;
+		int c = look == null ? tint : look.color();
+		Mesh draw = m;
+		collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(WorldVisuals.white()), (pose, vc) -> draw.draw(pose, null, vc, light, overlay, c, c));
 	}
 
 	@Override
@@ -35,19 +47,20 @@ public record MeshItemRenderer(Mesh mesh, int tint) implements SpecialModelRende
 	}
 
 	@Override
-	public Integer extractArgument(ItemStack stack) {
+	public Look extractArgument(ItemStack stack) {
 		CustomModelData data = stack.get(DataComponents.CUSTOM_MODEL_DATA);
 		Integer c = data == null ? null : data.getColor(0);
-		return c == null ? tint : c & 0xFFFFFF;
+		String skin = data == null || data.strings().isEmpty() ? null : data.strings().get(0);
+		return new Look(c == null ? tint : c & 0xFFFFFF, skin);
 	}
 
-	public record Unbaked(String mesh, int tint) implements SpecialModelRenderer.Unbaked<Integer> {
+	public record Unbaked(String mesh, int tint) implements SpecialModelRenderer.Unbaked<Look> {
 		public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codec.STRING.fieldOf("mesh").forGetter(Unbaked::mesh),
 			Codec.INT.optionalFieldOf("tint", 0xFFFFFF).forGetter(Unbaked::tint)).apply(i, Unbaked::new));
 
 		@Override
-		public SpecialModelRenderer<Integer> bake(SpecialModelRenderer.BakingContext context) {
+		public SpecialModelRenderer<Look> bake(SpecialModelRenderer.BakingContext context) {
 			return new MeshItemRenderer(Mesh.get(mesh), tint);
 		}
 

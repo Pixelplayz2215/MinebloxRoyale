@@ -331,7 +331,7 @@ public class BotEntity extends PathfinderMob {
 	/** Hold the best gun; no gun: the pickaxe (melee). */
 	private void equipBest() {
 		ItemStack gun = bag.bestGun();
-		setItemInHand(InteractionHand.MAIN_HAND, gun != null ? gun : Loadout.pickaxe());
+		setItemInHand(InteractionHand.MAIN_HAND, gun != null ? gun : Loadout.pickaxe(pickaxeSkin()));
 	}
 
 	private boolean armed() {
@@ -622,6 +622,16 @@ public class BotEntity extends PathfinderMob {
 	}
 
 	/**
+	 * This bot's pickaxe skin (v2.0.0): one of the Locker's, or the default, picked by its id so it keeps the same one
+	 * (about half of them in the default).
+	 */
+	private String pickaxeSkin() {
+		java.util.List<gg.minebloxroyale.sheets.CosmeticDef> skins = gg.minebloxroyale.sheets.Sheets.COSMETICS.stream().filter(c -> c.slot().equals("pickaxe")).toList();
+		int n = Math.floorMod(getUUID().hashCode(), skins.size() * 2);
+		return n < skins.size() ? "pickaxe_" + skins.get(n).shape() : null;
+	}
+
+	/**
 	 * Low on materials: farm with the pickaxe like a player (creator: bots break metal, wood and stone): trees for wood,
 	 * stone and brick walls for brick, cars, copper and iron for metal, whatever is near, the material it has least of
 	 * first. A car takes several hits; the rest comes down in one.
@@ -643,7 +653,7 @@ public class BotEntity extends PathfinderMob {
 		}
 		getNavigation().stop();
 		getLookControl().setLookAt(Vec3.atCenterOf(harvestAt));
-		setItemInHand(InteractionHand.MAIN_HAND, Loadout.pickaxe());
+		setItemInHand(InteractionHand.MAIN_HAND, Loadout.pickaxe(pickaxeSkin()));
 		if (swingCooldown-- > 0) return true;
 		swingCooldown = 8;
 		swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT);

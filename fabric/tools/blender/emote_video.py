@@ -36,6 +36,8 @@ CRAWL_FLOOR = -0.3 / 0.36  # (knocked: the game lays the body flat 0.3 blocks in
 
 def unlock_line(row):
     u = row.get("unlock", "default")
+    if u == "shop":  # (v2.0.0: bought in the Locker's shop)
+        return f"Price: {row.get('need', 0)} gold"
     return "Free" if u == "default" else "Unlock: " + UNLOCK.get(u, u).format(n=row.get("need", 0))
 
 

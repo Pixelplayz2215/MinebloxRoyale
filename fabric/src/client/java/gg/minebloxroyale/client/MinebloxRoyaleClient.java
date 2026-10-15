@@ -118,6 +118,10 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 				ClientState.all = st.length > 3 && st[3].equals("1");
 				ClientState.rangeBest = st.length > 6 ? Integer.parseInt(st[5]) : 0;
 				ClientState.bullseyes = st.length > 6 ? Integer.parseInt(st[6]) : 0;
+				// (v2.0.0: gold earned and spent here, and what it bought)
+				ClientState.goldEarned = st.length > 9 ? Integer.parseInt(st[7]) : 0;
+				ClientState.goldSpent = st.length > 9 ? Integer.parseInt(st[8]) : 0;
+				ClientState.owned = st.length > 9 && !st[9].equals("-") ? java.util.Set.of(st[9].split("[+]")) : java.util.Set.of();
 				if (st.length > 4) MyUnlocks.onWorldStats(st[4], ClientState.here());
 			} catch (RuntimeException ignored) {
 			}

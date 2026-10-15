@@ -305,9 +305,10 @@ public final class Net {
 				case "hub" -> MatchManager.get().leaveToHub(player);
 				case "bus_jump" -> MatchManager.get().jumpFromBus(player);
 				case "locker" -> {
-					// locker:<slot>:<cosmetic id or none> - outside matches only
+					// locker:<slot>:<cosmetic id or none> - outside matches only; locker:buy:<item id> - the shop (v2.0.0, gold)
 					String[] a = arg.split(":");
-					if (a.length == 2 && !MatchManager.get().isAlive(player)) Locker.equip(player, a[0], a[1]);
+					if (a.length == 2 && a[0].equals("buy")) gg.minebloxroyale.hub.Gold.buy(player, a[1]);
+					else if (a.length == 2 && !MatchManager.get().isAlive(player)) Locker.equip(player, a[0], a[1]);
 				}
 				// career:<worldId=kills,wins,obby,rangeBest,bullseyes;...> - this player's stats from every world, as
 				// their own game remembers them
