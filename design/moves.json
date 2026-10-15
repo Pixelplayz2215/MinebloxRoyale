@@ -81,6 +81,20 @@
    "note": "Both hands up on the glider's grips, legs dangling"
   },
   {
+   "id": "skydive",
+   "name": "Skydiving",
+   "axis": "time",
+   "loopSeconds": 1.4,
+   "note": "Belly down in the air: arms out wide with the elbows bent, knees bent, a little flutter"
+  },
+  {
+   "id": "dive",
+   "name": "Diving",
+   "axis": "time",
+   "loopSeconds": 1.0,
+   "note": "Head first towards the ground, arms swept back along the body, legs together"
+  },
+  {
    "id": "aim",
    "name": "Aiming",
    "axis": "pitch",

@@ -113,6 +113,24 @@ MOVES = {
         K(0, rax=170, raz=-15, lax=170, laz=-15, rel=4, lel=4, rlx=10, rkn=26, llx=-2, lkn=38, hx=-4),
         K(0.5, rlx=-2, rkn=38, llx=10, lkn=26, hx=-6),
     ], plant="none"),
+    # v2.0.0-test3 (creator: "a new skydiving animation"): falling from the bus before the glider opens, Fortnite-style.
+    # Arm angles from where each part should point (the arm solver): the upper arms out to the sides, a little towards
+    # the head and the sky, the forearms towards the head; the arms take turns to reach a little further.
+    "skydive": Move("Skydiving", "Belly down in the air: arms out wide with the elbows bent, knees bent, a little flutter", "time", 1.4, [
+        K(0, flip=70, hx=-48, rax=45.0, raz=113.0, ray=-48.7, rel=52.7, lax=45.0, laz=113.0, lay=-48.7, lel=52.7,
+          rlx=-8, rlz=14, rkn=70, llx=-8, llz=14, lkn=70, tilt=0, yaw=0),
+        K(0.25, rax=26.1, raz=116.6, ray=-77.2, rel=53.0, lax=58.6, laz=112.9, lay=-29.3, lel=52.8, rkn=78, lkn=62, tilt=3, yaw=2),
+        K(0.5, rax=45.0, raz=113.0, ray=-48.7, rel=52.7, lax=45.0, laz=113.0, lay=-48.7, lel=52.7, rkn=70, lkn=70, tilt=0, yaw=0),
+        K(0.75, rax=58.6, raz=112.9, ray=-29.3, rel=52.8, lax=26.1, laz=116.6, lay=-77.2, lel=53.0, rkn=62, lkn=78, tilt=-3, yaw=-2),
+    ], plant="none"),
+    # (looking down while skydiving: the game blends from the skydive into this as you look further down)
+    "dive": Move("Diving", "Head first towards the ground, arms swept back along the body, legs together", "time", 1.0, [
+        # (the arms straight and not turned along their length: a turned arm's square corners catch the body when it's
+        # close in; straight and square, it clears at any spread, also blending to the skydive and the glider)
+        K(0, flip=145, hx=-32, rax=-19.3, raz=18, ray=0, rel=3, lax=-19.3, laz=18, lay=0, lel=3,
+          rlx=-4, rlz=4, rkn=14, llx=-4, llz=4, lkn=10, tilt=0),
+        K(0.5, rax=-16.7, raz=21, rel=3.5, lax=-16.7, laz=21, lel=3.5, rkn=10, lkn=16, tilt=1.5),
+    ], plant="none"),
 
     # ------------------------------------------------------------------------------------------- doing things
     "aim": Move("Aiming", "Holding a gun where you look (here: up, ahead, then down)", "pitch", 3.0, [

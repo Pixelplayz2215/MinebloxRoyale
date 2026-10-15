@@ -78,6 +78,8 @@ public final class RobloxAvatarRenderer {
 	private static final float WALK_STRIDE = 2.0F, RUN_STRIDE = 2.8F, CROUCH_STRIDE = 1.0F, CRAWL_STRIDE = 0.7F;
 	/** Seconds a change of move (landing, starting an emote, kneeling to revive...) takes to blend in. */
 	private static final float BLEND = 0.22F;
+	/** How far out (degrees) the arms are at least, half-way into or out of the skydive (compose). */
+	private static final float SKY_ARC = 60F;
 	/** Seconds the arm takes to go from a pickaxe swing cut short into the next one. */
 	private static final float SWING_BLEND = 0.1F;
 
@@ -340,6 +342,7 @@ public final class RobloxAvatarRenderer {
 		String useMove = "heal", useWas = "heal", mode = "";
 		float useSince = 1;
 		Pose from = Pose.ZERO, last = Pose.ZERO;
+		String fromMode = "";
 		float since = 1;
 		// the pickaxe: how far through a swing it was, and where a swing cut short left the arm and body
 		float swing, swingAt = -1, swingTwist, swingLean, lastTwist, lastLean;
@@ -365,7 +368,8 @@ public final class RobloxAvatarRenderer {
 		int id = state.getDataOrDefault(ENTITY_ID, -1);
 		Pose emote = state.getDataOrDefault(KNOCKED, false) ? null : emotePose(id, state.walkAnimationSpeed);
 		Pose p = compose(new Frame(id, state.getDataOrDefault(MOTION, Motion.STILL), state.getDataOrDefault(AIMING, false),
-			state.getDataOrDefault(ADS, false), state.getDataOrDefault(GLIDING, false), state.getDataOrDefault(KNOCKED, false), state.getDataOrDefault(SITTING, false), emote, state.x, state.y, state.z, state.ageInTicks / 20F,
+			state.getDataOrDefault(ADS, false), state.getDataOrDefault(GLIDING, false), state.getDataOrDefault(SKYDIVING, false), state.getDataOrDefault(KNOCKED, false),
+			state.getDataOrDefault(SITTING, false), emote, state.x, state.y, state.z, state.ageInTicks / 20F,
 			state.xRot, swing), System.nanoTime());
 		// Minecraft draws a crouching player 2 px lower; the crouch already stands its feet on the ground.
 		return state instanceof AvatarRenderState a && a.isCrouching ? p.add(Pose.BOB, 2F / 16F / S) : p;
@@ -375,8 +379,8 @@ public final class RobloxAvatarRenderer {
 	 * What picks an avatar's pose this frame: who (entity id), how it moves, what it holds and does, where it is,
 	 * its age (seconds), where it looks (pitch, down +) and how far through a swing it is (0..1).
 	 */
-	record Frame(int id, Motion motion, boolean aiming, boolean ads, boolean gliding, boolean knocked, boolean sitting, Pose emote, double x, double y,
-		double z, float time, float pitch, float swing) {
+	record Frame(int id, Motion motion, boolean aiming, boolean ads, boolean gliding, boolean skydiving, boolean knocked, boolean sitting, Pose emote, double x,
+		double y, double z, float time, float pitch, float swing) {
 	}
 
 	/** The pose for this frame (the avatar's track remembers how it got here; now: System.nanoTime()). */
@@ -442,6 +446,16 @@ public final class RobloxAvatarRenderer {
 		} else if (f.gliding()) {
 			mode = "glide";
 			target = Moves.loop("glide", f.time());
+		} else if (f.skydiving()) {
+			// (2.0.0-test3, creator: "a new skydiving animation") Belly down, spread out and fluttering; looking down, head
+			// first into a dive (Blender's skydive and dive moves), more the further down you look.
+			mode = "skydive";
+			float dive = Math.max(0, Math.min(1, (f.pitch() - 25) / 45F));
+			dive = dive * dive * (3 - 2 * dive);
+			// (the arms straighten and stop turning first as they come in to the dive: a turned, bent arm's square
+			// corners would catch the body)
+			Pose sky = Moves.loop("skydive", f.time()), down = Moves.loop("dive", f.time());
+			target = sky.lerp(down, dive).mix(sky.lerp(down, Math.min(1, dive * 2)), 1, Pose.REL, Pose.LEL, Pose.RAY, Pose.LAY);
 		} else if (m.swimming()) {
 			mode = "swim";
 			target = Moves.loop("swim", f.time());
@@ -459,11 +473,18 @@ public final class RobloxAvatarRenderer {
 		if (!mode.equals(tr.mode)) {
 			tr.from = tr.last;
 			tr.since = 0;
+			tr.fromMode = tr.mode;
 			tr.mode = mode;
 		}
 		tr.since += dt;
 		float k = Math.min(1, tr.since / BLEND);
 		Pose out = tr.from.lerp(target, k * k * (3 - 2 * k));
+		// (2.0.0-test3) Into or out of the skydive (out of the bus, or up onto the glider's grips), the arms go out wide
+		// round the body on the way rather than straight across it.
+		if (k < 1 && (mode.equals("skydive") || tr.fromMode.equals("skydive"))) {
+			float wide = SKY_ARC * (float) Math.sin(Math.PI * k);
+			out = out.add(Pose.RAZ, Math.max(0, wide - out.rightArmZ())).add(Pose.LAZ, Math.max(0, wide - out.leftArmZ()));
+		}
 		tr.last = out;
 		return out;
 	}
