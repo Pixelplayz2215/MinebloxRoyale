@@ -21,7 +21,7 @@ ROWS = json.load(open(os.path.join(DESIGN, "cosmetics.json"), encoding="utf-8"))
 BY_ID = {r["id"]: r for r in ROWS}
 VIEWS = {"Front": 180, "Left": 270, "Back": 0, "Right": 90}
 # (creator: Locker Items v1.0.1 \ "New Hat", "New Pants", "New Back", "New Shoes", "New Shirt", "New Presets", "New Emotes"; hair beside them)
-FOLDER = {"hat": "New Hat", "hair": "New Hair", "back": "New Back", "shoes": "New Shoes", "shirt": "New Shirt", "pants": "New Pants"}
+FOLDER = {"hat": "New Hat", "hair": "New Hair", "back": "New Back", "shoes": "New Shoes", "shirt": "New Shirt", "pants": "New Pants", "face": "New Face"}
 OVER_HAIR = ("headphones", "halo", "bunny", "cat", "tiara")
 CUT = {**{s: "b0" for s in ("cap", "backcap", "viking", "beanie", "army", "tricorne")}, **{s: "b2" for s in ("police", "fire_helmet")},
        **{s: "b4" for s in ("chef", "pith", "fedora", "cowboy")}, "witch": "b6"}
@@ -138,6 +138,15 @@ def frame(objs, joint, e, pad=0.15):
     return tuple(lo), tuple(hi)
 
 
+def item_line(row):
+    """Its picture's line: what unlocks it, its price, or (2.0.0-test3) the Shop preset it comes with."""
+    if row.get("unlock") == "preset":
+        p = next((r for r in _sheet("presets") if row["id"] in (r.get(s) for s in SLOTS)), None)
+        if p:
+            return f"Price: comes with the {p['name']} preset, {p['need']} gold"
+    return unlock_text(row)
+
+
 def cosmetic(row):
     def fn():
         objs, js = dress({row["slot"]: row})
@@ -147,7 +156,7 @@ def cosmetic(row):
             return {"frame": frame(objs, Matrix.Translation((0, 0, 0)), (-1.2, -2.05, -0.5, 1.2, -1.1, 0.5), pad=0.08)}
         return {}
     views = {"Back": 0} if row["slot"] == "back" else VIEWS  # (creator: back bling only needs the back)
-    return (row["name"], fn, {"export": False, "folder": FOLDER[row["slot"]], "unlock": unlock_text(row), "views": views})
+    return (row["name"], fn, {"export": False, "folder": FOLDER[row["slot"]], "unlock": item_line(row), "views": views})
 
 
 def pose_of(emote):
@@ -171,6 +180,8 @@ def preset(row):
     worn = {s: BY_ID[row[s]] for s in SLOTS if row.get(s) and row[s] != "-" and row[s] in BY_ID}
     # A preset with locked pieces is locked until they are (the Locker shows the first one's condition).
     lock = next((unlock_text(worn[s]) for s in SLOTS if s in worn and unlock_text(worn[s])), None)
+    if row.get("unlock") == "shop":  # (2.0.0-test3: a whole outfit for gold)
+        lock = f"Price: {row['need']} gold"
     return (row["name"], lambda: dress(worn) and None, {"export": False, "folder": "New Presets", "unlock": lock, "views": VIEWS})
 
 
@@ -182,8 +193,10 @@ def boss(row):
     """A boss (bosses sheet, v2.0.0): its outfit on the avatar, with what it carries and drops as the picture's line."""
     worn = {slot: BY_ID[cid] for slot, cid in (part.split(":") for part in row["outfit"].split(","))}
     gun = {r["id"]: r["name"] for r in _sheet("weapons")}[row["weapon"]]
-    gold = next(int(r["value"]) for r in _sheet("match") if r["id"] == "goldBoss")
-    line = f"Boss: {row['rarity'].title()} {gun} (drops it), {gold} gold"  # (the heals it drops too: too long for the line)
+    rarity = {r["id"]: r["name"] for r in _sheet("rarities")}[row["rarity"]]
+    match = {r["id"]: r["value"] for r in _sheet("match")}
+    # (2.0.0-test3: its health and shield, and its gun at Boss rarity; the heals it drops too: too long for the line)
+    line = f"Boss: {row['health']:g} health, {match['maxShield']:g} shield; drops its {rarity} {gun}, {match['goldBoss']:g} gold"
     return (row["name"], lambda: dress(worn) and None, {"export": False, "folder": "Bosses v2.0.0", "unlock": line, "views": VIEWS})
 
 

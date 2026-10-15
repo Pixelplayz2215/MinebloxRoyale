@@ -38,9 +38,12 @@ public final class Contrails {
 	private record Style(float width, float life) {
 	}
 
-	private static final Map<String, Style> STYLES = Map.of("streak", new Style(0.34F, 0.6F), "rainbow", new Style(0.38F, 0.7F), "bands",
-		new Style(0.36F, 0.6F), "neon", new Style(0.16F, 0.55F), "sparkle", new Style(0.24F, 0.75F), "flame", new Style(0.42F, 0.45F), "wave",
-		new Style(0.4F, 0.8F), "dots", new Style(0.34F, 0.7F));
+	private static final Map<String, Style> STYLES = Map.ofEntries(Map.entry("streak", new Style(0.34F, 0.6F)), Map.entry("rainbow", new Style(0.38F, 0.7F)),
+		Map.entry("bands", new Style(0.36F, 0.6F)), Map.entry("neon", new Style(0.16F, 0.55F)), Map.entry("sparkle", new Style(0.24F, 0.75F)),
+		Map.entry("flame", new Style(0.42F, 0.45F)), Map.entry("wave", new Style(0.4F, 0.8F)), Map.entry("dots", new Style(0.34F, 0.7F)),
+		// 2.0.0-test3 (creator: "more contrails"): lightning, a twisting ribbon, retro pixels, hearts
+		Map.entry("zigzag", new Style(0.2F, 0.5F)), Map.entry("ribbon", new Style(0.4F, 0.75F)), Map.entry("pixel", new Style(0.3F, 0.8F)),
+		Map.entry("hearts", new Style(0.32F, 0.8F)));
 	private static final Style STREAK = STYLES.get("streak");
 
 	/**
@@ -205,7 +208,9 @@ public final class Contrails {
 	/**
 	 * One trail as a band (p newest first, u along it): facing the camera (at the origin) or, given, across a fixed
 	 * direction; neon a white core in a wide glow, wave weaving side to side, sparkle with bright sparks, dots just
-	 * bubbles; bands cut at every stripe's edge (each piece one colour).
+	 * bubbles; bands cut at every stripe's edge (each piece one colour); zigzag a jagged bolt flickering into a new shape
+	 * twelve times a second (a core in the first colour in a glow of the second); ribbon twisting over and over, one colour a side; pixel
+	 * square blocks in the two colours by turns; hearts beating. glider_video.ribbons draws them the same.
 	 */
 	private static void band(VertexConsumer vc, PoseStack.Pose pose, Vector3f[] p, float[] u, CosmeticDef look, float width, float time,
 		@Nullable Vector3f across) {
@@ -222,8 +227,18 @@ public final class Contrails {
 		for (int k = 0; k < n; k++) lk[k] = look(style, look.color(), look.color2(), u[k], time);
 		if (style.equals("wave"))
 			for (int k = 0; k < n; k++) p[k] = new Vector3f(p[k]).fma(0.35F * S * u[k] * (float) Math.sin(u[k] * 9 - time * 6), side[k]);
+		if (style.equals("zigzag"))
+			for (int k = 0; k < n; k++) p[k] = new Vector3f(p[k]).fma(0.42F * S * zig(u[k], time), side[k]);
+		if (style.equals("pixel") || style.equals("hearts")) {
+			blocks(vc, pose, p, u, side, lk, look, width, time, across);
+			return;
+		}
+		if (style.equals("ribbon")) {
+			ribbon(vc, pose, p, u, side, lk, look, width, time);
+			return;
+		}
 		if (!style.equals("dots")) {
-			boolean neon = style.equals("neon"), bands = style.equals("bands");
+			boolean zigzag = style.equals("zigzag"), neon = style.equals("neon") || zigzag, bands = style.equals("bands");
 			float[] a = rgb(look.color()), b = rgb(look.color2());
 			for (int layer = neon ? 1 : 0; layer >= 0; layer--) {
 				float wk = layer == 1 ? 2.6F : 1, ak = layer == 1 ? 0.35F : 1;
@@ -244,7 +259,8 @@ public final class Contrails {
 						}
 						continue;
 					}
-					int c0 = argb(neon && layer == 0 ? WHITE : lk[k], lk[k][3] * ak), c1 = argb(neon && layer == 0 ? WHITE : lk[k + 1], lk[k + 1][3] * ak);
+					float[] k0 = zigzag ? layer == 0 ? a : b : neon && layer == 0 ? WHITE : lk[k], k1 = zigzag ? layer == 0 ? a : b : neon && layer == 0 ? WHITE : lk[k + 1];
+					int c0 = argb(k0, lk[k][3] * ak), c1 = argb(k1, lk[k + 1][3] * ak);
 					quad(vc, pose, new Vector3f(p[k]).fma(-h0, side[k]), new Vector3f(p[k]).fma(h0, side[k]), new Vector3f(p[k + 1]).fma(h1, side[k + 1]),
 						new Vector3f(p[k + 1]).fma(-h1, side[k + 1]), c0, c0, c1, c1);
 				}
@@ -273,6 +289,80 @@ public final class Contrails {
 	}
 
 	private static final float[] WHITE = { 1, 1, 1 };
+
+	/**
+	 * A bolt's sideways offset at u along it (about -1..1, none at the hand): two sharp zigzags of different lengths
+	 * added (so it's jagged, not a spring), jumping to a new shape twelve times a second, like lightning flickering.
+	 */
+	static float zig(float u, float time) {
+		float flick = (float) Math.floor(time * 12);
+		return (0.7F * tri(u * 3.2F + flick * 0.618F) + 0.3F * tri(u * 7.7F + flick * 0.371F)) * Math.min(1, u * 4);
+	}
+
+	/** A triangle wave: -1 up to 1 and back each 1. */
+	private static float tri(float x) {
+		return 2 * Math.abs(2 * (x - (float) Math.floor(x + 0.5F))) - 1;
+	}
+
+	/**
+	 * A ribbon twisting over and over as it streams back: its width turns through the trail's plane (cos of the twist,
+	 * so it crosses itself where the twist is edge-on), the first colour on one face and the second on the other.
+	 */
+	private static void ribbon(VertexConsumer vc, PoseStack.Pose pose, Vector3f[] p, float[] u, Vector3f[] side, float[][] lk, CosmeticDef look, float width,
+		float time) {
+		float[] a = rgb(look.color()), b = rgb(look.color2());
+		int n = p.length;
+		float[] h = new float[n];
+		int[] c = new int[n];
+		for (int k = 0; k < n; k++) {
+			float twist = (float) Math.cos(u[k] * 10 - time * 5);
+			h[k] = width * lk[k][4] / 2 * twist;
+			c[k] = argb(mix(b, a, 0.5F + 0.5F * Math.max(-1, Math.min(1, twist * 3))), lk[k][3]);
+		}
+		for (int k = 0; k + 1 < n; k++)
+			quad(vc, pose, new Vector3f(p[k]).fma(-h[k], side[k]), new Vector3f(p[k]).fma(h[k], side[k]), new Vector3f(p[k + 1]).fma(h[k + 1], side[k + 1]),
+				new Vector3f(p[k + 1]).fma(-h[k + 1], side[k + 1]), c[k], c[k], c[k + 1], c[k + 1]);
+	}
+
+	/**
+	 * The pixel and hearts trails: no band, just shapes along it facing you (or across the fixed direction), each the
+	 * right way up as it streams back (a heart's lobes towards the hand, its point trailing).
+	 */
+	private static void blocks(VertexConsumer vc, PoseStack.Pose pose, Vector3f[] p, float[] u, Vector3f[] side, float[][] lk, CosmeticDef look, float width,
+		float time, @Nullable Vector3f across) {
+		boolean hearts = look.shape().equals("hearts");
+		float[] a = rgb(look.color()), b = rgb(look.color2());
+		for (int k = 0; k < p.length; k += hearts ? 4 : 3) {
+			Vector3f view = across != null ? new Vector3f(across).normalize() : new Vector3f(p[k]).negate().normalize();
+			Vector3f up = new Vector3f(p[Math.max(0, k - 1)]).sub(p[Math.min(p.length - 1, k + 1)]);
+			up.sub(new Vector3f(view).mul(up.dot(view)));
+			if (up.lengthSquared() < 1e-12F) up.set(side[k]).cross(view);
+			up.normalize();
+			Vector3f right = new Vector3f(up).cross(view).normalize();
+			if (!hearts) { // a square block, the two colours by turns
+				float r = width * 0.5F * (1 - u[k] * 0.5F);
+				int c = argb((k / 3) % 2 == 0 ? a : b, Math.min(1, lk[k][3] * 1.3F));
+				Vector3f o = new Vector3f(p[k]);
+				quad(vc, pose, new Vector3f(o).fma(-r, right).fma(-r, up), new Vector3f(o).fma(r, right).fma(-r, up), new Vector3f(o).fma(r, right).fma(r, up),
+					new Vector3f(o).fma(-r, right).fma(r, up), c, c, c, c);
+				continue;
+			}
+			// a heart (the classic heart curve, as a fan of thin triangles), beating
+			float r = width * 0.85F * (0.85F + 0.15F * (float) Math.sin(time * 9 + k)) * (1 - u[k] * 0.5F) / 17F;
+			int c = argb(lk[k], Math.min(1, lk[k][3] * 1.3F));
+			Vector3f centre = new Vector3f(p[k]).fma(-2 * r, up), prev = null;
+			for (int i = 0; i <= HEART; i++) {
+				double t = 2 * Math.PI * i / HEART;
+				float x = (float) (16 * Math.pow(Math.sin(t), 3)), y = (float) (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+				Vector3f at = new Vector3f(p[k]).fma(x * r, right).fma(y * r, up);
+				if (prev != null) quad(vc, pose, centre, prev, at, at, c, c, c, c);
+				prev = at;
+			}
+		}
+	}
+
+	/** How many slices a heart is drawn with. */
+	private static final int HEART = 14;
 
 	/** The band between points p0 and p1 (sides s0, s1, half widths h0, h1) from fraction from to fraction to, coloured c0 to c1. */
 	private static void piece(VertexConsumer vc, PoseStack.Pose pose, Vector3f p0, Vector3f p1, Vector3f s0, Vector3f s1, float h0, float h1, float from, float to,
@@ -310,6 +400,10 @@ public final class Contrails {
 			case "sparkle" -> {
 				c = mix(a, b, u);
 				fade *= 0.45F;
+			}
+			case "ribbon" -> {
+				c = a; // (ribbon() colours each face)
+				fade *= 0.9F;
 			}
 			default -> c = mix(a, b, u);
 		}

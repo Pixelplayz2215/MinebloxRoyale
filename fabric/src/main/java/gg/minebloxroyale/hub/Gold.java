@@ -4,6 +4,7 @@ import gg.minebloxroyale.MinebloxRoyale;
 import gg.minebloxroyale.sheets.CosmeticDef;
 import gg.minebloxroyale.sheets.EmoteDef;
 import gg.minebloxroyale.sheets.GliderDef;
+import gg.minebloxroyale.sheets.PresetDef;
 import gg.minebloxroyale.sheets.Sheets;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -64,7 +65,10 @@ public final class Gold {
 		Obby.sendUnlocks(p);
 	}
 
-	/** A shop item: anything in the emotes, cosmetics or gliders sheets whose unlock is "shop" (need = its price). */
+	/**
+	 * A shop item: anything in the emotes, cosmetics, gliders or presets sheets whose unlock is "shop" (need = its price;
+	 * a preset, 2.0.0-test3, is a whole outfit).
+	 */
 	public record Item(String id, String name, int price, String kind) {
 	}
 
@@ -75,10 +79,16 @@ public final class Gold {
 		if (c != null && c.unlock().equals("shop")) return new Item(id, c.name(), c.need(), c.slot());
 		GliderDef g = Sheets.GLIDERS_BY_ID.get(id);
 		if (g != null && g.unlock().equals("shop")) return new Item(id, g.name(), g.need(), "glider");
+		PresetDef p = Sheets.PRESETS_BY_ID.get(id);
+		if (p != null && p.unlock().equals("shop")) return new Item(id, p.name(), p.need(), "preset");
 		return null;
 	}
 
-	/** The Locker's shop: buys item id, if the player has the gold and doesn't have it yet. */
+	/**
+	 * The Locker's shop: buys item id, if the player has the gold and doesn't have it yet. A preset makes every piece of
+	 * it the player's too (creator: "When a preset is purchased, the individual item gets added to it's respective
+	 * category page").
+	 */
 	public static void buy(ServerPlayer p, String id) {
 		Item it = item(id);
 		if (it == null) return;
@@ -94,7 +104,10 @@ public final class Gold {
 		}
 		load(server);
 		GOLD.computeIfAbsent(p.getUUID(), k -> new int[2])[1] += it.price();
-		OWNED.computeIfAbsent(p.getUUID(), k -> new LinkedHashSet<>()).add(id);
+		Set<String> owned = OWNED.computeIfAbsent(p.getUUID(), k -> new LinkedHashSet<>());
+		owned.add(id);
+		if (it.kind().equals("preset"))
+			for (String[] piece : Locker.pieces(Sheets.PRESETS_BY_ID.get(id))) if (piece[1] != null && !piece[1].equals("-")) owned.add(piece[1]);
 		save(server);
 		Obby.sendUnlocks(p);
 		p.sendSystemMessage(Component.literal("Bought " + it.name() + " for " + it.price() + " gold - " + (st.gold() - it.price()) + " left").withStyle(ChatFormatting.GOLD));

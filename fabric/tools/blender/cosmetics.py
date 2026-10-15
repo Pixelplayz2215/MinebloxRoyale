@@ -82,6 +82,36 @@ def hat(s, shape, h, a="a", b="b"):
         s.at(cx, base + 0.15, cz - 1.06 * hd).color(b).ellipsoid(0.09, 0.09, 0.045)
         for side in (-1, 1):
             s.at(cx + side * 0.75 * hw, base + 0.15, cz - 0.8 * hd).color(0x2E7BE8).ellipsoid(0.06, 0.06, 0.04)
+    elif shape == "victory_crown":
+        # (2.0.0-test3, the Victory Royale preset) a big crown: a thick band, five tall points each with a ball on top, a
+        # velvet cap rising inside it, gems round the band
+        base = top - 0.1
+        s.at(cx, base, cz).scale(hw, 1, hw * oval).color(a).lathe([1.0, 1.1, 1.13, 1.1, 1.0, 1.0], [0, 0, 0.17, 0.34, 0.34, 0], 32)
+        s.at(cx, base, cz).scale(hw, 1, hw * oval).color(b).lathe([0, 0.97, 0.98, 0.85, 0.5, 0], [0.3, 0.3, 0.42, 0.62, 0.72, 0.74], 32)
+        for i in range(5):
+            ang = math.pi * 2 * i / 5 + math.pi / 2
+            px, pz = cx + math.cos(ang) * 1.07 * hw, cz + math.sin(ang) * 1.07 * hd
+            s.at(px, base + 0.32, pz).color(a).lathe([0, 0.13, 0.0], [0, 0, 0.44], 14)
+            s.at(px, base + 0.8, pz).color(a).ellipsoid(0.06, 0.06, 0.06)
+        for i in range(10):
+            ang = math.pi * 2 * i / 10 + math.pi / 2 + math.pi / 10
+            s.at(cx + math.cos(ang) * 1.14 * hw, base + 0.17, cz + math.sin(ang) * 1.14 * hd).color(b).ellipsoid(0.05, 0.05, 0.03)
+        s.at(cx, base + 0.17, cz - 1.15 * hd).color(0xFF4FD8).ellipsoid(0.1, 0.1, 0.045)
+    elif shape == "storm_hood":
+        # (2.0.0-test3, the Storm Raider preset) a hood over the whole head (the hair hidden), open round the face below
+        # the brow, its opening edged with a glowing trim in the second colour
+        shell(s, h, 1.13, brow - 0.04, top + 0.13, 0.5, False, 0, 360, a)
+        shell(s, h, 1.15, h.bottom - 0.02, brow, 0.05, False, -38, 218, a)
+        edge = []
+        for i in range(17):
+            deg = 218 + (322 - 218) * i / 16
+            ang = math.radians(deg)
+            edge.append((cx + math.cos(ang) * 1.16 * hw, brow - 0.02, cz + math.sin(ang) * 1.16 * hd))
+        for deg in (218, 322):
+            ang = math.radians(deg)
+            x, z = cx + math.cos(ang) * 1.16 * hw, cz + math.sin(ang) * 1.16 * hd
+            s.at(0, 0, 0).color(b, glow=True).tube([(x, h.bottom, z), (x, brow - 0.02, z)], [0.03, 0.03])
+        s.at(0, 0, 0).color(b, glow=True).tube(edge, [0.03] * len(edge))
     elif shape == "tiara":
         y, r, dip = top - 0.18, 1.07, 0.22
         band = []

@@ -11,7 +11,7 @@
   "color2": "color",
   "rate": "int",
   "hideHair": "bool",
-  "unlock": "enum:default|obby|victory|kills|wins|range|bullseyes|shop",
+  "unlock": "enum:default|obby|victory|kills|wins|range|bullseyes|shop|preset",
   "need": "int"
  },
  "rows": [
@@ -472,6 +472,54 @@
    "need": 60
   },
   {
+   "id": "hat_victory_crown",
+   "name": "Victory Crown",
+   "slot": "hat",
+   "shape": "victory_crown",
+   "color": "#F2C230",
+   "color2": "#7B3FE4",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "preset",
+   "need": 0
+  },
+  {
+   "id": "hat_storm_hood",
+   "name": "Storm Hood",
+   "slot": "hat",
+   "shape": "storm_hood",
+   "color": "#2B2638",
+   "color2": "#B48CFF",
+   "rate": 0,
+   "hideHair": true,
+   "unlock": "preset",
+   "need": 0
+  },
+  {
+   "id": "hat_neon_cap",
+   "name": "Neon Cap",
+   "slot": "hat",
+   "shape": "backcap",
+   "color": "#16161A",
+   "color2": "#3FF2FF",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "preset",
+   "need": 0
+  },
+  {
+   "id": "hat_candy_beanie",
+   "name": "Candy Beanie",
+   "slot": "hat",
+   "shape": "beanie",
+   "color": "#FF8FC8",
+   "color2": "#FFFFFF",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "preset",
+   "need": 0
+  },
+  {
    "id": "hair_short_brown",
    "name": "Short Brown",
    "slot": "hair",
@@ -772,6 +820,42 @@
    "need": 0
   },
   {
+   "id": "hair_victory_swoop",
+   "name": "Golden Swoop",
+   "slot": "hair",
+   "shape": "swoop",
+   "color": "#F7D774",
+   "color2": "#C9A24A",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "preset",
+   "need": 0
+  },
+  {
+   "id": "hair_neon_spiky",
+   "name": "Neon Spikes",
+   "slot": "hair",
+   "shape": "spiky",
+   "color": "#3FF2FF",
+   "color2": "#1E9C9A",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "preset",
+   "need": 0
+  },
+  {
+   "id": "hair_candy_bob",
+   "name": "Bubblegum Bob",
+   "slot": "hair",
+   "shape": "bob",
+   "color": "#FF6FB5",
+   "color2": "#C44E8E",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "preset",
+   "need": 0
+  },
+  {
    "id": "face_shades",
    "name": "Cool Shades",
    "slot": "face",
@@ -1069,6 +1153,30 @@
    "rate": 0,
    "hideHair": false,
    "unlock": "default",
+   "need": 0
+  },
+  {
+   "id": "face_storm_visor",
+   "name": "Storm Visor",
+   "slot": "face",
+   "shape": "visor",
+   "color": "#1A1A22",
+   "color2": "#C9A2FF",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "preset",
+   "need": 0
+  },
+  {
+   "id": "face_neon_shades",
+   "name": "Neon Shades",
+   "slot": "face",
+   "shape": "shades",
+   "color": "#16161A",
+   "color2": "#3FF2FF",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "preset",
    "need": 0
   },
   {
@@ -1514,6 +1622,54 @@
    "hideHair": false,
    "unlock": "bullseyes",
    "need": 60
+  },
+  {
+   "id": "back_victory_banner",
+   "name": "Victory Banner",
+   "slot": "back",
+   "shape": "banner",
+   "color": "#7B3FE4",
+   "color2": "#F2C230",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "preset",
+   "need": 0
+  },
+  {
+   "id": "back_storm_tank",
+   "name": "Storm Core",
+   "slot": "back",
+   "shape": "tank",
+   "color": "#2B2638",
+   "color2": "#B48CFF",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "preset",
+   "need": 0
+  },
+  {
+   "id": "back_neon_board",
+   "name": "Hoverboard",
+   "slot": "back",
+   "shape": "hoverboard",
+   "color": "#16161A",
+   "color2": "#3FF2FF",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "preset",
+   "need": 0
+  },
+  {
+   "id": "back_candy_balloons",
+   "name": "Candy Balloons",
+   "slot": "back",
+   "shape": "balloons",
+   "color": "#FF8FC8",
+   "color2": "#9DF2C8",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "preset",
+   "need": 0
   },
   {
    "id": "shirt_red",
@@ -2944,6 +3100,54 @@
    "need": 60
   },
   {
+   "id": "shirt_victory",
+   "name": "Victory Sash Shirt",
+   "slot": "shirt",
+   "shape": "sash",
+   "color": "#7B3FE4",
+   "color2": "#F2C230",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "preset",
+   "need": 0
+  },
+  {
+   "id": "shirt_storm",
+   "name": "Storm Vest",
+   "slot": "shirt",
+   "shape": "vest",
+   "color": "#2B2638",
+   "color2": "#7B3FE4",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "preset",
+   "need": 0
+  },
+  {
+   "id": "shirt_neon",
+   "name": "Neon Stripe Shirt",
+   "slot": "shirt",
+   "shape": "stripe",
+   "color": "#16161A",
+   "color2": "#3FF2FF",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "preset",
+   "need": 0
+  },
+  {
+   "id": "shirt_candy",
+   "name": "Sprinkles Shirt",
+   "slot": "shirt",
+   "shape": "dots",
+   "color": "#FFD1E8",
+   "color2": "#FF4F9A",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "preset",
+   "need": 0
+  },
+  {
    "id": "pants_vespertilio",
    "name": "Vespertilio Pants",
    "slot": "pants",
@@ -2956,6 +3160,54 @@
    "need": 60
   },
   {
+   "id": "pants_victory",
+   "name": "Victory Pinstripes",
+   "slot": "pants",
+   "shape": "pinstripe",
+   "color": "#2A1A4A",
+   "color2": "#F2C230",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "preset",
+   "need": 0
+  },
+  {
+   "id": "pants_storm",
+   "name": "Storm Cargos",
+   "slot": "pants",
+   "shape": "cargo",
+   "color": "#3A3448",
+   "color2": "#7B3FE4",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "preset",
+   "need": 0
+  },
+  {
+   "id": "pants_neon",
+   "name": "Neon Stripe Pants",
+   "slot": "pants",
+   "shape": "stripe",
+   "color": "#16161A",
+   "color2": "#3FF2FF",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "preset",
+   "need": 0
+  },
+  {
+   "id": "pants_candy",
+   "name": "Candy Stripe Pants",
+   "slot": "pants",
+   "shape": "stripe",
+   "color": "#FF8FC8",
+   "color2": "#FFFFFF",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "preset",
+   "need": 0
+  },
+  {
    "id": "shoes_vespertilio",
    "name": "Vespertilio Shoes",
    "slot": "shoes",
@@ -2966,6 +3218,54 @@
    "hideHair": false,
    "unlock": "bullseyes",
    "need": 60
+  },
+  {
+   "id": "shoes_victory",
+   "name": "Victory Boots",
+   "slot": "shoes",
+   "shape": "boots",
+   "color": "#F2C230",
+   "color2": "#7B3FE4",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "preset",
+   "need": 0
+  },
+  {
+   "id": "shoes_storm",
+   "name": "Storm Boots",
+   "slot": "shoes",
+   "shape": "boots",
+   "color": "#2B2638",
+   "color2": "#B48CFF",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "preset",
+   "need": 0
+  },
+  {
+   "id": "shoes_neon",
+   "name": "Neon Sneakers",
+   "slot": "shoes",
+   "shape": "sneakers",
+   "color": "#16161A",
+   "color2": "#3FF2FF",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "preset",
+   "need": 0
+  },
+  {
+   "id": "shoes_candy",
+   "name": "Candy Sneakers",
+   "slot": "shoes",
+   "shape": "sneakers",
+   "color": "#FF8FC8",
+   "color2": "#FFFFFF",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "preset",
+   "need": 0
   },
   {
    "id": "fx_hearts",
@@ -3626,6 +3926,126 @@
    "hideHair": false,
    "unlock": "range",
    "need": 50
+  },
+  {
+   "id": "contrail_lightning",
+   "name": "Lightning Strike",
+   "slot": "contrail",
+   "shape": "zigzag",
+   "color": "#FFFFFF",
+   "color2": "#7FD7FF",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "shop",
+   "need": 450
+  },
+  {
+   "id": "contrail_storm",
+   "name": "Storm Surge",
+   "slot": "contrail",
+   "shape": "zigzag",
+   "color": "#E2C8FF",
+   "color2": "#7B3FE4",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "kills",
+   "need": 25
+  },
+  {
+   "id": "contrail_twister",
+   "name": "Twister",
+   "slot": "contrail",
+   "shape": "ribbon",
+   "color": "#FF6AD5",
+   "color2": "#6AE4FF",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "shop",
+   "need": 400
+  },
+  {
+   "id": "contrail_royal",
+   "name": "Royal Ribbon",
+   "slot": "contrail",
+   "shape": "ribbon",
+   "color": "#FFD54A",
+   "color2": "#7B3FE4",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "wins",
+   "need": 3
+  },
+  {
+   "id": "contrail_pixel",
+   "name": "Pixel Trail",
+   "slot": "contrail",
+   "shape": "pixel",
+   "color": "#7CFC7C",
+   "color2": "#2E8B57",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "shop",
+   "need": 300
+  },
+  {
+   "id": "contrail_arcade",
+   "name": "Arcade",
+   "slot": "contrail",
+   "shape": "pixel",
+   "color": "#FF4FD8",
+   "color2": "#4FD1FF",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "bullseyes",
+   "need": 10
+  },
+  {
+   "id": "contrail_love",
+   "name": "Lovestruck",
+   "slot": "contrail",
+   "shape": "hearts",
+   "color": "#FF4F7B",
+   "color2": "#FFB3C7",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "shop",
+   "need": 350
+  },
+  {
+   "id": "contrail_sweet",
+   "name": "Sweet Hearts",
+   "slot": "contrail",
+   "shape": "hearts",
+   "color": "#FFD1E8",
+   "color2": "#B48CFF",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "range",
+   "need": 40
+  },
+  {
+   "id": "contrail_frost",
+   "name": "Frostbite",
+   "slot": "contrail",
+   "shape": "sparkle",
+   "color": "#E8FBFF",
+   "color2": "#7FD7FF",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "kills",
+   "need": 15
+  },
+  {
+   "id": "contrail_inferno",
+   "name": "Inferno",
+   "slot": "contrail",
+   "shape": "flame",
+   "color": "#FF3B1F",
+   "color2": "#5A0A0A",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "shop",
+   "need": 500
   }
  ]
 }

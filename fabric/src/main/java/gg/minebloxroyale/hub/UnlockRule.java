@@ -43,10 +43,13 @@ public final class UnlockRule {
 		return has(unlock, need, s, null);
 	}
 
-	/** Does the player have item id (shop: bought it with gold; the rest: their stats). */
+	/**
+	 * Does the player have item id (shop: bought it with gold; preset: bought the Shop preset it comes with, which makes
+	 * every piece theirs, 2.0.0-test3; the rest: their stats).
+	 */
 	public static boolean has(String unlock, int need, Stats s, String id) {
 		return switch (unlock) {
-			case "shop" -> id != null && s.owned().contains(id);
+			case "shop", "preset" -> id != null && s.owned().contains(id);
 			case "default" -> true;
 			case "obby" -> s.obby();
 			case "victory" -> s.wins() >= 1;
@@ -65,6 +68,7 @@ public final class UnlockRule {
 	public static String needs(String unlock, int need) {
 		return switch (unlock) {
 			case "shop" -> need + " gold";
+			case "preset" -> "Shop preset";
 			case "obby" -> "Finish obby";
 			case "victory" -> "1 win";
 			case "kills" -> need + " kills";
@@ -79,6 +83,7 @@ public final class UnlockRule {
 	public static String hint(String unlock, int need, Stats s) {
 		return switch (unlock) {
 			case "shop" -> "Shop: " + need + " gold (you have " + s.gold() + ") - click to buy";
+			case "preset" -> "Locked: comes with a preset from the Shop (buy the whole outfit with gold)";
 			case "obby" -> "Locked: finish the obby in the lobby";
 			case "victory" -> "Locked: win a Victory Royale";
 			case "kills" -> "Locked: get " + need + " eliminations (you have " + s.kills() + ")";

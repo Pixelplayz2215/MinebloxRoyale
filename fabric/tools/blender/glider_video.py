@@ -77,7 +77,23 @@ CONTRAILS = {
     "flame": dict(width=0.42, life=0.45),  # flickering, hot colour to the second
     "wave": dict(width=0.4, life=0.8),  # a wide pale ribbon weaving side to side
     "dots": dict(width=0.34, life=0.7),  # just bubbles
+    # 2.0.0-test3 (creator: "more contrails")
+    "zigzag": dict(width=0.2, life=0.5),  # a forked bolt, flickering into a new shape twelve times a second
+    "ribbon": dict(width=0.4, life=0.75),  # a ribbon twisting over and over, one colour a side
+    "pixel": dict(width=0.3, life=0.8),  # square blocks in the two colours by turns
+    "hearts": dict(width=0.32, life=0.8),  # hearts, beating
 }
+HEART = 14  # (slices a heart is drawn with)
+
+
+def tri(x):
+    return 2 * abs(2 * (x - math.floor(x + 0.5))) - 1
+
+
+def zig(u, time):
+    """A bolt's sideways offset at u along it (about -1..1, none at the hand): the game's Contrails.zig."""
+    flick = math.floor(time * 12)
+    return (0.7 * tri(u * 3.2 + flick * 0.618) + 0.3 * tri(u * 7.7 + flick * 0.371)) * min(1.0, u * 4)
 
 
 def contrail_rows():
@@ -126,6 +142,9 @@ def look_at(style, c1, c2, u, time):
     elif style == "sparkle":
         rgb = tuple(a + (b - a) * u for a, b in zip(c1, c2))
         fade *= 0.45
+    elif style == "ribbon":
+        rgb = c1  # (ribbons() colours each face)
+        fade *= 0.9
     else:
         rgb = tuple(a + (b - a) * u for a, b in zip(c1, c2))
     return rgb, fade, w
@@ -311,7 +330,7 @@ def blender_main(args):
     def ribbons(trails, style, c1, c2, time, base_width, view):
         """The contrails this frame as one mesh: each trail (points in root space, head first) a flat band facing the
         camera (view: the direction it looks along, root space), its colour, opacity and width from look_at; sparks and
-        bubbles as little squares."""
+        bubbles as little squares; bolts, twisting ribbons, pixels and hearts as the game's Contrails draws them."""
         verts, faces, cols = [], [], []
 
         def quad(a, b, c, d, ca, cb):
@@ -319,6 +338,20 @@ def blender_main(args):
             verts.extend([a, b, c, d])
             cols.extend([ca, ca, cb, cb])
             faces.append((i, i + 1, i + 2, i + 3))
+
+        def tri(a, b, c, col):
+            i = len(verts)
+            verts.extend([a, b, c])
+            cols.extend([col, col, col])
+            faces.append((i, i + 1, i + 2))
+
+        def sides(pts):
+            out = []
+            for k in range(len(pts)):
+                t = pts[min(len(pts) - 1, k + 1)] - pts[max(0, k - 1)]
+                sd = t.cross(view)
+                out.append(sd.normalized() if sd.length > 1e-9 else Vector((1, 0, 0)))
+            return out
 
         for pts in trails:
             if len(pts) < 2:
@@ -330,8 +363,48 @@ def blender_main(args):
             if style == "wave":  # (weaving side to side as it goes)
                 side = Vector((1, 0, 0))
                 pts = [p + side * 0.35 * u * math.sin(u * 9 - time * 6) for p, u in zip(pts, us)]
+            if style == "zigzag":  # (a bolt, flickering)
+                pts = [p + sd * 0.42 * zig(u, time) for p, sd, u in zip(pts, sides(pts), us)]
+            if style == "ribbon":  # twisting: the width turns through the trail's plane, a colour a face
+                sd = sides(pts)
+                hs, cs = [], []
+                for (rgb, a, w), u in zip(looks, us):
+                    twist = math.cos(u * 10 - time * 5)
+                    hs.append(base_width * w / 2 * twist)
+                    f = 0.5 + 0.5 * max(-1.0, min(1.0, twist * 3))
+                    cs.append(tuple(y + (x - y) * f for x, y in zip(c1, c2)) + (a,))
+                for k in range(n - 1):
+                    quad(pts[k] - sd[k] * hs[k], pts[k] + sd[k] * hs[k], pts[k + 1] + sd[k + 1] * hs[k + 1], pts[k + 1] - sd[k + 1] * hs[k + 1], cs[k], cs[k + 1])
+                continue
+            if style in ("pixel", "hearts"):  # shapes along it, each the right way up as it streams back
+                sd = sides(pts)
+                hearts = style == "hearts"
+                for k in range(0, n, 4 if hearts else 3):
+                    rgb, a, w = looks[k]
+                    up = pts[max(0, k - 1)] - pts[min(n - 1, k + 1)]
+                    up = up - view * up.dot(view)
+                    up = up.normalized() if up.length > 1e-9 else sd[k].cross(view).normalized()
+                    right = up.cross(view).normalized()
+                    p = pts[k]
+                    if not hearts:
+                        r = base_width * 0.5 * (1 - us[k] * 0.5)
+                        col = (c1 if (k // 3) % 2 == 0 else c2) + (min(1.0, a * 1.3),)
+                        quad(p - right * r - up * r, p + right * r - up * r, p + right * r + up * r, p - right * r + up * r, col, col)
+                        continue
+                    r = base_width * 0.85 * (0.85 + 0.15 * math.sin(time * 9 + k)) * (1 - us[k] * 0.5) / 17
+                    col = rgb + (min(1.0, a * 1.3),)
+                    centre, prev = p - up * 2 * r, None
+                    for i in range(HEART + 1):
+                        t = 2 * math.pi * i / HEART
+                        x = 16 * math.sin(t) ** 3
+                        y = 13 * math.cos(t) - 5 * math.cos(2 * t) - 2 * math.cos(3 * t) - math.cos(4 * t)
+                        at = p + right * x * r + up * y * r
+                        if prev is not None:
+                            tri(centre, prev, at, col)
+                        prev = at
+                continue
             if style != "dots":
-                for layer in ((1.0, 1.0), (2.6, 0.35)) if style == "neon" else ((1.0, 1.0),):
+                for layer in ((1.0, 1.0), (2.6, 0.35)) if style in ("neon", "zigzag") else ((1.0, 1.0),):
                     wk, ak = layer
                     for k in range(n - 1):
                         p0, p1 = pts[k], pts[k + 1]
@@ -355,8 +428,12 @@ def blender_main(args):
                                 fr, stripe = to, stripe + 1
                             continue
                         core = style == "neon" and wk == 1.0
-                        ca = ((1, 1, 1) if core else r0) + (a0 * ak,)
-                        cb = ((1, 1, 1) if core else r1) + (a1 * ak,)
+                        if style == "zigzag":  # (a core in the first colour, a glow of the second)
+                            ca = (c1 if wk == 1.0 else c2) + (a0 * ak,)
+                            cb = (c1 if wk == 1.0 else c2) + (a1 * ak,)
+                        else:
+                            ca = ((1, 1, 1) if core else r0) + (a0 * ak,)
+                            cb = ((1, 1, 1) if core else r1) + (a1 * ak,)
                         quad(p0 - s0 * h0, p0 + s0 * h0, p1 + s0 * h1, p1 - s0 * h1, ca, cb)
             if style in ("sparkle", "dots"):
                 up = view.cross(Vector((1, 0, 0))).normalized()
@@ -409,13 +486,13 @@ def blender_main(args):
             SKY, DEP, GLIDE, STOW, STAND = 0.8, GLIDER_ANIMS["deploy"].seconds, GLIDER_ANIMS["glide"].seconds, GLIDER_ANIMS["stow"].seconds, 0.6
             total = SKY + DEP + GLIDE + STOW + STAND
             frames = int(round(total * FPS))
-            air = move("air", 1.0)
+            air = move("skydive", 0.0)  # (2.0.0-test3: the new skydiving animation, as in the game)
 
             def avatar_pose(sec):
                 if sec < SKY:
-                    return air
+                    return loop("skydive", sec)
                 if sec < SKY + DEP + GLIDE:
-                    return blend(air, loop("glide", sec - SKY), min(1, (sec - SKY) / 0.22))
+                    return blend(loop("skydive", sec), loop("glide", sec - SKY), min(1, (sec - SKY) / 0.22))
                 return blend(loop("glide", sec - SKY), loop("idle", sec), min(1, (sec - SKY - DEP - GLIDE) / 0.22))
 
             def glider_at(sec):
@@ -499,7 +576,7 @@ def blender_main(args):
             stage()
             look = CONTRAILS.get(row["shape"], CONTRAILS["streak"])
             frames = int(round(2.4 * FPS))
-            avatar.build(emote=move("air", 1.0))
+            avatar.build(emote=move("skydive", 0.0))
             body = [o for objs in avatar.BUILT.values() for o in objs]
             lo, hi = bounds(body)
             hi.z += 4.5  # (room above for the trails rising)
@@ -513,8 +590,8 @@ def blender_main(args):
             c1, c2 = hexrgb(row["color"]), hexrgb(row["color2"])
             for f in range(1, frames + 1):
                 sec = (f - 1) / FPS
-                # skydiving: spread out, drifting a little side to side so the trails curve
-                p = dict(move("air", 1.0))
+                # skydiving (2.0.0-test3: the new animation, as in the game), drifting a little side to side so the trails curve
+                p = dict(loop("skydive", sec))
                 p["bodyYaw"] = 8 * math.sin(sec * 2.2)
                 p["tilt"] = 6 * math.sin(sec * 1.7 + 1)
                 avatar.repose(avatar.joints(p), avatar.bends(p))

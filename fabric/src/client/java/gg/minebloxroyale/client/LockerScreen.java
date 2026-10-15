@@ -67,7 +67,10 @@ public class LockerScreen extends Screen {
 	private int toastColor;
 	/** The Shop item being bought ({id, name, its tab}), till the server says it's yours (a toast then says where it is). */
 	private static String[] buying;
-	/** Tiles on this page that hovering shows on your preview (button, "slot:id"): the Shop's, pickaxes and contrails. */
+	/**
+	 * Tiles on this page that hovering shows on your preview (button, "slot:id"; "preset:id" the whole outfit): the
+	 * Shop's, the presets, pickaxes and contrails.
+	 */
 	private final List<Map.Entry<Button, String>> tryOnButtons = new ArrayList<>();
 	/** The Shop's category titles on this page: {title, x, y}. */
 	private final List<Object[]> headers = new ArrayList<>();
@@ -111,7 +114,10 @@ public class LockerScreen extends Screen {
 				// shown on you while hovered; a bought one leaves the Shop and is used from its own tab like any other.
 				for (String[] t : TABS) {
 					List<Tile> items = new ArrayList<>();
-					if (t[0].equals("emote")) {
+					if (t[0].equals("preset")) { // (2.0.0-test3: whole outfits for gold)
+						for (PresetDef p : Sheets.PRESETS)
+							if (p.unlock().equals("shop") && !st.owned().contains(p.id())) items.add(shopTile(p.id(), p.name(), p.need(), "preset", st, null));
+					} else if (t[0].equals("emote")) {
 						for (EmoteDef e : Sheets.EMOTES)
 							if (e.unlock().equals("shop") && !st.owned().contains(e.id())) items.add(shopTile(e.id(), e.name(), e.need(), "emote", st, e.id()));
 					} else if (t[0].equals("glider")) {
@@ -129,13 +135,17 @@ public class LockerScreen extends Screen {
 			}
 			case "preset" -> {
 				for (PresetDef p : Sheets.PRESETS) {
+					if (p.unlock().equals("shop") && !ClientState.all && !st.owned().contains(p.id())) { // (2.0.0-test3: for gold)
+						out.add(shopTile(p.id(), p.name(), p.need(), "preset", st, null));
+						continue;
+					}
 					// A preset made of locked pieces (the Dominus sets) is locked until they are.
 					CosmeticDef lock = null;
 					for (String[] piece : Locker.pieces(p)) {
 						CosmeticDef c = Sheets.COSMETICS_BY_ID.get(piece[1]);
 						if (lock == null && c != null && !ClientState.unlocked(c)) lock = c;
 					}
-					if (lock == null) out.add(new Tile(p.name(), true, () -> send("locker:preset:" + p.id())));
+					if (lock == null) out.add(new Tile(p.name(), true, () -> send("locker:preset:" + p.id()), null, null, "preset:" + p.id(), false));
 					else out.add(new Tile(UnlockRule.needs(lock.unlock(), lock.need()), false, () -> {
 					}, null, UnlockRule.hint(lock.unlock(), lock.need(), st)));
 				}
@@ -479,7 +489,12 @@ public class LockerScreen extends Screen {
 				l.setData(RobloxAvatarRenderer.PREVIEW, true);
 				if (tryOn != null) {
 					int colon = tryOn.indexOf(':');
-					l.setData(RobloxAvatarRenderer.TRY_ON, Map.of(tryOn.substring(0, colon), tryOn.substring(colon + 1)));
+					String slot = tryOn.substring(0, colon), id = tryOn.substring(colon + 1);
+					PresetDef preset = slot.equals("preset") ? Sheets.PRESETS_BY_ID.get(id) : null;
+					Map<String, String> worn = new java.util.HashMap<>();
+					if (preset != null) for (String[] piece : Locker.pieces(preset)) worn.put(piece[0], piece[1]); // ("-": nothing there)
+					else worn.put(slot, id);
+					l.setData(RobloxAvatarRenderer.TRY_ON, worn);
 				}
 			}
 			if (pickaxe != null && st instanceof ArmedEntityRenderState armed) { // (in your main hand, as in a match)

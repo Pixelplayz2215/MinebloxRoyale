@@ -69,6 +69,10 @@ def draw(s, row, e=TORSO):
         balloons(s, t, a, b)
     elif sh == "pan":
         pan(s, t, a, b)
+    elif sh == "banner":
+        banner(s, t, a, b)
+    elif sh == "hoverboard":
+        hoverboard(s, t, a, b)
 
 
 # ---------------------------------------------------------------- wings
@@ -696,6 +700,54 @@ def skateboard(s, t, a, b):
         for side in (-1, 1):
             s.at(t.cx + side * 0.36, y, z + 0.14).rotZ(90).color(0xF4E8C8).lathe([0, 0.11, 0.125, 0.125, 0.11, 0], [-0.07, -0.07, -0.055, 0.055, 0.07, 0.07], 18)
             s.at(t.cx + side * 0.43, y, z + 0.14).rotZ(-side * 90).color(b).lathe([0, 0.05, 0.05, 0], [0, 0, 0.008, 0.008], 12)
+
+
+def banner(s, t, a, b):
+    """(2.0.0-test3, the Victory Royale preset) A banner on a pole slung across the back: the flag in the first colour,
+    waving from a gold cross-bar, a crown on it in the second colour, a gold finial on top."""
+    sling(s, t, LEATHER, GOLD)
+    l = Line.of(t.cx - 0.45, t.cy - 1.05, t.cx + 0.3, t.cy + 1.45, t.bk + 0.2)
+    s.at(0, 0, 0).color(0x6B4A2B).tube([l.at(0), l.at(l.len)], [0.045, 0.045])
+    to(s, l.at(l.len + 0.07)).color(GOLD).ellipsoid(0.08, 0.08, 0.08)
+    x0, y0, z0 = l.at(l.len - 0.15)
+    s.at(0, 0, 0).color(GOLD).tube([(x0 - 0.45, y0, z0 + 0.03), (x0 + 0.45, y0, z0 + 0.03)], [0.03, 0.03])
+    for side in (-1, 1):
+        s.at(x0 + side * 0.47, y0, z0 + 0.03).color(GOLD).ellipsoid(0.045, 0.045, 0.045)
+
+    def flag(u, v):
+        tail = 0.18 * max(0.0, v - 0.75) / 0.25 * (1 - abs(u * 2 - 1) * 2)  # (a notch cut up into the bottom)
+        return (x0 - 0.42 + 0.84 * u, y0 - 0.03 - 0.95 * v + tail, z0 + 0.07 + 0.045 * math.sin(u * math.pi * 2 + v * 3))
+
+    s.at(0, 0, 0).color(a).surface(flag, 16, 16)
+    # the crown: a band and three points, just proud of the flag on its outside face
+    fx, fy, fz = x0, y0 - 0.42, z0 + 0.13
+    s.at(fx, fy - 0.08, fz).color(b)
+    box(s, 0.2, 0.05, 0.012, 0.01, 0.01)
+    for dx, ht in ((-0.16, 0.16), (0.0, 0.22), (0.16, 0.16)):
+        s.at(fx + dx, fy - 0.03, fz).color(b).lathe([0, 0.05, 0.0], [0, 0, ht], 8)
+
+
+def hoverboard(s, t, a, b):
+    """(2.0.0-test3, the Neon Rider preset) A hoverboard slung on the back: a rounded deck in the first colour, glowing
+    strips down its edges and two glowing thrusters in the second colour."""
+    sling(s, t, DARK, METAL)
+    z = t.bk + 0.16
+
+    def deck(u, v, dz=0.0):
+        uu, vv = u * 2 - 1, v * 2 - 1
+        end = max(0, abs(vv) - 0.6) / 0.4
+        w = 0.5 * math.sqrt(max(0, 1 - end * end))
+        return (t.cx + uu * w, t.cy + vv * 1.22, z + 0.07 * end * end + 0.03 * uu * uu + dz)
+
+    s.at(0, 0, 0).color(0x1E1E22).surface(deck, 10, 30)
+    s.at(0, 0, 0).color(a).surface(lambda u, v: deck(u, v, 0.03), 10, 30)
+    for side in (-1, 1):
+        pts = [deck(0.5 + side * 0.42, 0.14 + 0.72 * k / 11, 0.06) for k in range(12)]
+        s.at(0, 0, 0).color(b, glow=True).tube(pts, [0.022] * len(pts))
+    for vv in (-0.55, 0.55):
+        y = t.cy + vv * 1.22
+        s.at(t.cx, y, z + 0.11).rotX(90).color(METAL).lens(0.16, 0.16, 0.03)
+        s.at(t.cx, y, z + 0.135).rotX(90).color(b, glow=True).lens(0.11, 0.11, 0.02)
 
 
 def money_bag(s, t, a, b):
