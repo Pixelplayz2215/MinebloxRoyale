@@ -401,9 +401,12 @@ for ev, d in sounds.items():
         ns, p = split(name)
         if ns == NS and not os.path.isfile(os.path.join(A, "sounds", p + ".ogg")):
             bad(f"sounds.json {ev}: {name}.ogg doesn't exist")
-for ev in set(re.findall(r'id\("((?:music|sfx|sound)\.[a-z_.]+)"\)', alltext)):
+for ev in set(re.findall(r'id\("((?:music|sfx|sound|gun|storm)\.[a-z_.]+)"\)', alltext)):
     if ev not in sounds:
         bad(f"sound event {ev} used in the code but not in sounds.json")
+for row in json.load(open(os.path.join(FAB, "..", "design", "sounds.json"), encoding="utf-8"))["rows"]:
+    if row["game"] == "mod" and row["file"] not in sounds:  # (the sounds sheet's own sounds: events in sounds.json)
+        bad(f"sounds sheet {row['id']}: event {row['file']} isn't in sounds.json")
 
 # ---- data overrides: same file exists in vanilla, same type, types vanilla knows ----
 D = os.path.join(RES, "data")

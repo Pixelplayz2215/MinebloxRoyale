@@ -347,6 +347,78 @@ EMOTES = {
         K(0.5, rax=-25, raz=158, rel=30, hy=0, bob=0),
         K(0.75, rax=0, raz=144, rel=10, hy=-8, bob=0.03),
     ], note="a rope twirled overhead, the other hand on the hip"),
+    # ---- v2.0.0 (creator: "a Griddy emote based on the viral Griddy dance"; "some OG fortnite emotes (boneless,
+    # orange justice, defult dance, etc.) ... in the locker shop"): bought with gold (emotes sheet unlock shop) ----
+    "griddy": Emote(1.0, [
+        # heels tapped out in front in turn on a little hop, arms swinging, then both hands round the eyes like goggles
+        # (every arm channel keyed on each arm key: nothing drifts between them)
+        K(0, rlx=34, rkn=0, llx=-6, lkn=24, rax=-34, raz=8, ray=0, rel=35, lax=42, laz=8, lay=0, lel=75, lean=-5, bob=-0.05, hz=4, hx=-4),
+        K(0.125, rlx=4, llx=4, rkn=16, lkn=16, bob=0.04),
+        K(0.25, llx=34, lkn=0, rlx=-6, rkn=24, lax=-34, laz=8, lay=0, lel=35, rax=42, raz=8, ray=0, rel=75, lean=-5, bob=-0.05, hz=-4, hx=-4),
+        K(0.375, rlx=4, llx=4, rkn=16, lkn=16, bob=0.04),
+        K(0.5, rlx=34, rkn=0, llx=-6, lkn=24, rax=-34, raz=8, ray=0, rel=35, lax=42, laz=8, lay=0, lel=75, lean=-5, bob=-0.05, hz=4, hx=-4),
+        K(0.625, rlx=4, llx=4, rkn=16, lkn=16, bob=0.04, rax=55, raz=45, ray=20, rel=55, lax=70, laz=45, lay=20, lel=70),
+        K(0.75, llx=34, lkn=0, rlx=-6, rkn=24, rax=103, raz=54.9, ray=62, rel=93.7, lax=103, laz=54.9, lay=62, lel=93.7, lean=-8, bob=-0.05, hx=-10,
+          hz=0),
+        K(0.875, rlx=4, llx=4, rkn=16, lkn=16, bob=0.04, rax=25, raz=40, ray=10, rel=45, lax=45, laz=40, lay=10, lel=60, hx=-4),
+    ], note="heels tapped out in front in turn, arms swinging, then hands round the eyes like goggles"),
+    "default_dance": Emote(2.0, [
+        # arms swung to one side and the other with a bounce, then pumped up and down in front, then a kick back
+        K(0, rax=40, raz=-6, rel=60, lax=10, laz=40, lel=40, tilt=-6, twist=-10, rlz=6, llz=-2, rkn=10, lkn=16, bob=-0.06),
+        K(0.125, rax=10, raz=40, rel=40, lax=40, laz=-6, lel=60, tilt=6, twist=10, rlz=-2, llz=6, rkn=16, lkn=10, bob=-0.06),
+        K(0.25, rax=40, raz=-6, rel=60, lax=10, laz=40, lel=40, tilt=-6, twist=-10, rlz=6, llz=-2, rkn=10, lkn=16, bob=-0.06),
+        K(0.375, rax=10, raz=40, rel=40, lax=40, laz=-6, lel=60, tilt=6, twist=10, rlz=-2, llz=6, rkn=16, lkn=10, bob=-0.06),
+        K(0.5, rax=95, raz=20, rel=100, lax=20, laz=20, lel=40, tilt=0, twist=0, rlz=0, llz=0, rkn=20, lkn=4, bob=-0.08, hx=6),
+        K(0.5625, rax=20, raz=20, rel=40, lax=95, laz=20, lel=100, rkn=4, lkn=20, bob=0.02, hx=-4),
+        K(0.625, rax=95, raz=20, rel=100, lax=20, laz=20, lel=40, rkn=20, lkn=4, bob=-0.08, hx=6),
+        K(0.6875, rax=20, raz=20, rel=40, lax=95, laz=20, lel=100, rkn=4, lkn=20, bob=0.02, hx=-4),
+        K(0.8, rax=60, raz=10, rel=20, lax=60, laz=10, lel=20, rlx=-40, rkn=70, llx=6, lkn=14, lean=12, bob=-0.04, hx=0),
+        K(0.9, rax=20, raz=12, rel=30, lax=20, laz=12, lel=30, rlx=0, rkn=8, llx=0, lkn=8, lean=2, bob=0),
+    ], note="arms swung side to side on a bounce, pumped up and down, then a kick back"),
+    "orange_justice": Emote(1.2, [
+        # big swinging arms, one forward and up as the other goes back, the opposite knee lifting, bouncing
+        K(0, rax=125, raz=20, rel=20, lax=-45, laz=12, lel=20, llx=55, lkn=75, rlx=0, rkn=14, lean=4, bob=0.03, hx=-6),
+        K(0.25, rax=20, raz=40, rel=30, lax=20, laz=40, lel=30, llx=6, lkn=30, rkn=30, lean=10, bob=-0.12, hx=6),
+        K(0.5, lax=125, laz=20, lel=20, rax=-45, raz=12, rel=20, rlx=55, rkn=75, llx=0, lkn=14, lean=4, bob=0.03, hx=-6),
+        K(0.75, rax=20, raz=40, rel=30, lax=20, laz=40, lel=30, rlx=6, rkn=30, lkn=30, lean=10, bob=-0.12, hx=6),
+    ], note="big arm swings, one up as the other goes back, the opposite knee lifting"),
+    "boneless": Emote(1.6, [
+        # going limp: the knees buckle and the body flops down, arms dangling and swinging loose, then springs up
+        K(0, rax=6, raz=8, rel=10, lax=6, laz=8, lel=10, lean=0, bob=0, hx=0, rkn=4, lkn=4),
+        K(0.25, rax=28, raz=14, rel=30, lax=20, laz=18, lel=20, lean=26, tilt=8, bob=-0.55, hx=34, hz=12, rkn=80, lkn=70, rlx=36, llx=30),
+        K(0.45, rax=-10, raz=24, rel=12, lax=34, laz=6, lel=40, lean=30, tilt=-10, bob=-0.6, hx=38, hz=-12, rkn=86, lkn=80, rlx=40, llx=36),
+        K(0.62, rax=30, raz=10, rel=40, lax=-8, laz=26, lel=10, lean=24, tilt=8, bob=-0.5, hx=30, hz=10, rkn=74, lkn=80, rlx=34, llx=38),
+        K(0.82, rax=10, raz=30, rel=20, lax=10, laz=30, lel=20, lean=-4, tilt=0, bob=0.05, hx=-8, hz=0, rkn=6, lkn=6, rlx=0, llx=0),
+    ], note="going limp: knees buckling, body flopping, arms dangling loose, then springing up"),
+    "take_the_l": Emote(1.0, [
+        # an L on the forehead, the legs kicked out to the sides in turn on little hops
+        K(0, rax=130.8, raz=35.7, ray=82.3, rel=65.6, lax=-20, laz=20, lel=60, rlz=34, rkn=4, llz=-2, lkn=18, yaw=20, bob=0.02, hx=-6, hy=-10),
+        K(0.25, rlz=4, llz=4, rkn=14, lkn=14, bob=-0.05),
+        K(0.5, llz=34, lkn=4, rlz=-2, rkn=18, bob=0.02),
+        K(0.75, rlz=4, llz=4, rkn=14, lkn=14, bob=-0.05),
+    ], note="an L on the forehead, legs kicked out to the sides in turn"),
+    "electro_shuffle": Emote(1.0, [
+        # feet shuffling out to the sides, forearms pumping up and down in front in turn, shoulders bouncing
+        K(0, rax=27.9, raz=14.6, ray=-8.5, rel=109.7, lax=21.3, laz=14.5, lay=-3.2, lel=79.3, rlz=20, rkn=8, llz=0, lkn=22, tilt=4, bob=-0.05),
+        K(0.25, rax=21.3, raz=14.5, ray=-3.2, rel=79.3, lax=27.9, laz=14.6, lay=-8.5, lel=109.7, rlz=0, rkn=22, llz=20, lkn=8, tilt=-4, bob=0.0),
+        K(0.5, rax=27.9, raz=14.6, ray=-8.5, rel=109.7, lax=21.3, laz=14.5, lay=-3.2, lel=79.3, rlz=20, rkn=8, llz=0, lkn=22, tilt=4, bob=-0.05),
+        K(0.75, rax=21.3, raz=14.5, ray=-3.2, rel=79.3, lax=27.9, laz=14.6, lay=-8.5, lel=109.7, rlz=0, rkn=22, llz=20, lkn=8, tilt=-4, bob=0.0),
+    ], note="feet shuffling out to the sides, forearms pumping in front in turn"),
+    "fresh": Emote(1.6, [
+        # arms swung beside the hips one way and the other, forearms forward, the hips swaying, then a snap with both
+        K(0, rax=35, raz=-2, rel=80, lax=-25, laz=24, lel=60, tilt=-8, twist=-14, rlz=6, llz=-2, rkn=8, lkn=22, bob=-0.05),
+        K(0.25, lax=35, laz=-2, lel=80, rax=-25, raz=24, rel=60, tilt=8, twist=14, llz=6, rlz=-2, lkn=8, rkn=22, bob=-0.05),
+        K(0.5, rax=35, raz=-2, rel=80, lax=-25, laz=24, lel=60, tilt=-8, twist=-14, rlz=6, llz=-2, rkn=8, lkn=22, bob=-0.05),
+        K(0.75, rax=70, raz=30, rel=90, lax=70, laz=30, lel=90, tilt=0, twist=0, rlz=0, llz=0, rkn=12, lkn=12, bob=0.02, hx=-8),
+        K(0.875, rax=60, raz=34, rel=70, lax=60, laz=34, lel=70, bob=-0.03, hx=4),
+    ], note="arms swung beside the hips one way and the other, hips swaying, then a snap"),
+    "hype": Emote(0.8, [
+        # fists thrust up overhead in turn, knees pumping, bouncing
+        K(0, rax=172, raz=10, rel=8, lax=20, laz=20, lel=90, rlx=0, rkn=10, llx=40, lkn=60, bob=0.04, hx=-10),
+        K(0.25, rax=30, raz=20, rel=80, lax=30, laz=20, lel=80, rlx=0, llx=0, rkn=24, lkn=24, bob=-0.08, hx=4),
+        K(0.5, lax=172, laz=10, lel=8, rax=20, raz=20, rel=90, llx=0, lkn=10, rlx=40, rkn=60, bob=0.04, hx=-10),
+        K(0.75, rax=30, raz=20, rel=80, lax=30, laz=20, lel=80, rlx=0, llx=0, rkn=24, lkn=24, bob=-0.08, hx=4),
+    ], note="fists thrust up overhead in turn, knees pumping"),
     "breakdance": Emote(1.2, [
         # (creator, test4: "Should spin on its head upside-down") a headspin: the whole body over (flip), the top of the
         # head on the floor (plant: touch), spinning twice a loop, legs up in a V scissoring a little, arms out low

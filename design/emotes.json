@@ -330,6 +330,70 @@
    "need": 150,
    "loopSeconds": 2.0,
    "note": "the 1000-kill emote: crouch, a spinning jump with knees tucked, land, victory pose"
+  },
+  {
+   "id": "griddy",
+   "name": "Griddy",
+   "unlock": "shop",
+   "need": 800,
+   "loopSeconds": 1.0,
+   "note": "heels tapped out in front in turn, arms swinging, then hands round the eyes like goggles"
+  },
+  {
+   "id": "default_dance",
+   "name": "Default Dance",
+   "unlock": "shop",
+   "need": 500,
+   "loopSeconds": 2.0,
+   "note": "arms swung side to side on a bounce, pumped up and down, then a kick back"
+  },
+  {
+   "id": "orange_justice",
+   "name": "Orange Justice",
+   "unlock": "shop",
+   "need": 600,
+   "loopSeconds": 1.2,
+   "note": "big arm swings, one up as the other goes back, the opposite knee lifting"
+  },
+  {
+   "id": "boneless",
+   "name": "Boneless",
+   "unlock": "shop",
+   "need": 400,
+   "loopSeconds": 1.6,
+   "note": "going limp: knees buckling, body flopping, arms dangling loose, then springing up"
+  },
+  {
+   "id": "take_the_l",
+   "name": "Take the L",
+   "unlock": "shop",
+   "need": 500,
+   "loopSeconds": 1.0,
+   "note": "an L on the forehead, legs kicked out to the sides in turn"
+  },
+  {
+   "id": "electro_shuffle",
+   "name": "Electro Shuffle",
+   "unlock": "shop",
+   "need": 500,
+   "loopSeconds": 1.0,
+   "note": "feet shuffling out to the sides, forearms pumping in front in turn"
+  },
+  {
+   "id": "fresh",
+   "name": "Fresh",
+   "unlock": "shop",
+   "need": 400,
+   "loopSeconds": 1.6,
+   "note": "arms swung beside the hips one way and the other, hips swaying, then a snap"
+  },
+  {
+   "id": "hype",
+   "name": "Hype",
+   "unlock": "shop",
+   "need": 400,
+   "loopSeconds": 0.8,
+   "note": "fists thrust up overhead in turn, knees pumping"
   }
  ]
 }

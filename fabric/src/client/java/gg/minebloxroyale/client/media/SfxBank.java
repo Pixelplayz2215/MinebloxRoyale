@@ -56,8 +56,10 @@ public final class SfxBank {
 		SoundDef s = Sheets.SOUNDS_BY_ID.get(id);
 		if (s == null) return;
 		Minecraft mc = Minecraft.getInstance();
-		if (s.game().equals("minecraft")) {
-			SoundEvent ev = BuiltInRegistries.SOUND_EVENT.getValue(Identifier.withDefaultNamespace(s.file()));
+		if (s.game().equals("minecraft") || s.game().equals("mod")) {
+			// (mod: the mod's own sound, an event in its assets' sounds.json, e.g. the guns and the storm warning)
+			SoundEvent ev = s.game().equals("mod") ? SoundEvent.createVariableRangeEvent(MinebloxRoyale.id(s.file()))
+				: BuiltInRegistries.SOUND_EVENT.getValue(Identifier.withDefaultNamespace(s.file()));
 			if (ev != null) mc.getSoundManager().play(new SimpleSoundInstance(ev, SoundSource.PLAYERS, s.volume(), s.pitch(), mc.level == null ? RandomSource.create() : mc.level.getRandom(), BlockPos.containing(at)));
 			return;
 		}

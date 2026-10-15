@@ -6,6 +6,7 @@ import gg.minebloxroyale.MinebloxRoyale;
 import gg.minebloxroyale.ModBlocks;
 import gg.minebloxroyale.bot.BotEntity;
 import gg.minebloxroyale.client.avatar.Cosmetics;
+import gg.minebloxroyale.client.media.BattleMusic;
 import gg.minebloxroyale.client.media.FortniteMedia;
 import gg.minebloxroyale.client.media.SfxBank;
 import gg.minebloxroyale.client.mesh.MeshItemRenderer;
@@ -188,6 +189,7 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 			boolean inHub = !ClientState.inMatch();
 			FortniteMedia.tick(inHub);
 			if (inHub) mc.getMusicManager().stopPlaying();
+			BattleMusic.tick(ClientState.inMatch() && ClientState.hud.phase().equals("LIVE"), ClientState.hud.stormPhase(), ClientState.hud.alive());
 			while (reload.consumeClick()) ClientPlayNetworking.send(new Net.Action("reload"));
 			boolean holding = interact.isDown() && mc.gui.screen() == null && ClientState.inMatch();
 			if (holding != interactWasDown) ClientPlayNetworking.send(new Net.Action("interact:" + (holding ? 1 : 0)));
@@ -209,6 +211,7 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 		});
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, mc) -> {
 			FortniteMedia.stopAll();
+			BattleMusic.stopAll();
 			ClientState.EMOTES.clear();
 			DamageNumbers.clear(); // (numbers still floating from the last world)
 			ClientState.squad = null;

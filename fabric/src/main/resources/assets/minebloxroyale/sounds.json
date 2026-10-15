@@ -14,5 +14,61 @@
         "stream": true
       }
     ]
+  },
+  "gun.pistol": {
+    "sounds": [
+      "minebloxroyale:gun/pistol_1",
+      "minebloxroyale:gun/pistol_2",
+      "minebloxroyale:gun/pistol_3"
+    ]
+  },
+  "gun.smg": {
+    "sounds": [
+      "minebloxroyale:gun/smg_1",
+      "minebloxroyale:gun/smg_2",
+      "minebloxroyale:gun/smg_3"
+    ]
+  },
+  "gun.assault_rifle": {
+    "sounds": [
+      "minebloxroyale:gun/assault_rifle_1",
+      "minebloxroyale:gun/assault_rifle_2",
+      "minebloxroyale:gun/assault_rifle_3"
+    ]
+  },
+  "gun.pump_shotgun": {
+    "sounds": [
+      "minebloxroyale:gun/pump_shotgun_1",
+      "minebloxroyale:gun/pump_shotgun_2",
+      "minebloxroyale:gun/pump_shotgun_3"
+    ]
+  },
+  "gun.sniper": {
+    "sounds": [
+      "minebloxroyale:gun/sniper_1",
+      "minebloxroyale:gun/sniper_2",
+      "minebloxroyale:gun/sniper_3"
+    ]
+  },
+  "storm.warning": {
+    "sounds": [
+      "minebloxroyale:storm/warning"
+    ]
+  },
+  "music.battle_1": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:music/battle_1",
+        "stream": true
+      }
+    ]
+  },
+  "music.battle_2": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:music/battle_2",
+        "stream": true
+      }
+    ]
   }
 }
