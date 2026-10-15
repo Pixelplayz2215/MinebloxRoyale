@@ -1,6 +1,7 @@
 Test 2 - Shop: items under their category's title; hover one to see it on you (pickaxe in hand, contrail, emote); buying says which tab it's in
 Test 2 - Pickaxes tab: your pickaxe shows in your hand on the preview
 Test 2 - Contrails: smooth curves, and Candy Stripe's stripes slide instead of jumping (Locker preview and skydiving)
+Test 2 - HUD about 15% bigger (health, hotbar, ammo, minimap, compass, banners, prompts); nothing should overlap
 Test 2 - Hotbar and inventory: 3D models (guns in their rarity colour); the hub's Gun Rarity and Heals & Shields boards too
 Test 2 - Reboot vans on every island, Solo too: 8, some near the middle and some at the edge, all on the map (Tab) from the start
 Test 2 - Bosses: 4 a match out of 6 (new: Sergeant Bacon, Doctor Kaboom with a rocket launcher, Sheriff Noobly)

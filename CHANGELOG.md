@@ -47,6 +47,7 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 
 ### Look and sound
 - **A cleaner, smoother HUD in Fortnite's style:** rounded panels, icons made in Blender, smooth lettering, and a Fortnite-style hotbar in matches. Fortnite's own HUD is locked in its encrypted files, so all of this is ours.
+- **A bigger HUD:** every panel is about 15% bigger: health and shield, the hotbar, ammo and materials, the minimap, the compass, the storm banner, the teammate list and the "Hold F" prompts. On a screen narrower than 1920x1080 it shrinks just enough that nothing overlaps.
 - **3D items in the hotbar and inventory:** every gun, heal, shield, grenade and pickaxe shows as its own 3D model, guns in their rarity colour, instead of a flat pixel picture. The hub's Gun Rarity and Heals & Shields boards show the 3D models too.
 - **Our own sounds:** a shot sound for each gun type (rarities sound the same), a new storm warning, rocket and grenade blasts, and two battle music tracks in matches. The harder track plays in the last circles.
 

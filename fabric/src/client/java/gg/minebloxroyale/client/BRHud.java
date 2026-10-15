@@ -31,10 +31,13 @@ public final class BRHud {
 			if (ClientState.outsideStorm(mc.player.getX(), mc.player.getZ()) && !mc.player.isSpectator()) stormTint(g);
 			Minimap.draw(g, mc);
 			statsRow(g, mc);
-			compass(g, mc);
+			scaled(g, "compass", g.guiWidth() / 2F, 0, () -> compass(g, mc));
 			Waypoint.screenMarker(g, mc);
-			SquadHud.panel(g, mc);
-			if (!SquadHud.interact(g, mc)) ChestHud.draw(g, mc); // revive / reboot first, else a chest's "Hold F to search"
+			scaled(g, "squad", 0, 0, () -> SquadHud.panel(g, mc));
+			// revive / reboot first, else a chest's "Hold F to search"
+			scaled(g, "interact", g.guiWidth() / 2F, g.guiHeight() / 2F, () -> {
+				if (!SquadHud.interact(g, mc)) ChestHud.draw(g, mc);
+			});
 			DamageNumbers.draw(g, mc);
 			BuildMode.hud(g, mc);
 			scaled(g, "storm_banner", g.guiWidth() / 2F, 0, () -> stormBanner(g, mc));
@@ -48,9 +51,13 @@ public final class BRHud {
 		if (!mc.player.isSpectator()) scaled(g, "health_shield", 0, g.guiHeight(), () -> healthShield(g, mc));
 	}
 
-	/** Draws a panel at its hud-sheet scale, shrunk towards the given anchor point. */
+	/**
+	 * Draws a panel at its hud-sheet scale, shrunk towards the given anchor point; on a screen narrower than the HUD is
+	 * laid out for (hud sheet "hud_fit"), smaller by as much, so the bottom row never overlaps (2.0.0-test2, when the
+	 * whole HUD got 15% bigger).
+	 */
 	private static void scaled(GuiGraphicsExtractor g, String id, float ax, float ay, Runnable draw) {
-		float s = Sheets.HUD_BY_ID.get(id).scale();
+		float s = Sheets.HUD_BY_ID.get(id).scale() * Math.min(1F, g.guiWidth() / (float) Sheets.HUD_BY_ID.get("hud_fit").size());
 		g.pose().pushMatrix();
 		g.pose().translate(ax, ay);
 		g.pose().scale(s, s);
