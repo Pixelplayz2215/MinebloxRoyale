@@ -11,6 +11,9 @@
   "icon": "assets/minebloxroyale/icon.png",
   "environment": "*",
   "entrypoints": {
+    "preLaunch": [
+      "gg.minebloxroyale.client.LogWatch"
+    ],
     "main": [
       "gg.minebloxroyale.MinebloxRoyale"
     ],
