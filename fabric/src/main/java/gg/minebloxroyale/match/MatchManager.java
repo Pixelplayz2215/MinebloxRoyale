@@ -1170,7 +1170,8 @@ public final class MatchManager {
 			ServerPlayNetworking.send(p, new Net.Hud(state.name(), alive, Combat.shield(p), (float) cx, (float) cz, radius, (float) toX, (float) toZ, toR, seconds, label, in, kills.getOrDefault(p.getUUID(), 0),
 				p.getVehicle() instanceof BattleBusEntity ? 1 : dropping.contains(p.getUUID()) ? 2 : 0, onPortal, hubCount, phase + 1, shrinking,
 				live || state == State.COUNTDOWN ? mode.teamSize() : 1, padText.toString(), state == State.HUB ? "" : mode.id()));
-			if (in && Teams.teamMode()) ServerPlayNetworking.send(p, SquadInfo.build(server, this, p));
+			// (every mode since 2.0.0-test2: the reboot vans are on every island; Solo has no teammates, just the vans)
+			if (in) ServerPlayNetworking.send(p, SquadInfo.build(server, this, p));
 		}
 	}
 

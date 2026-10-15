@@ -101,6 +101,11 @@ public final class ClientState {
 		return m != null && m.noBuild();
 	}
 
+	/** The island's reboot vans, in a match of any mode (2.0.0-test2; they come with the team info, Net.Squad). */
+	public static List<Net.VanMark> vans() {
+		return inMatch() && squad != null ? squad.vans() : List.of();
+	}
+
 	/** In a Duos / Trios / Squads match right now (with teammate info). */
 	public static boolean teamMatch() {
 		return inMatch() && squad != null && hud.teamSize() > 1;

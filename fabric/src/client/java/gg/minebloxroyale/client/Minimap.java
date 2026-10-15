@@ -155,7 +155,8 @@ public final class Minimap {
 				}
 			}
 		}
-		// Team modes: reboot vans, your team's cards, teammates' waypoints and teammates.
+		// The reboot vans (every mode); team modes: your team's cards, teammates' waypoints and teammates.
+		vanMarks(g, S, k, px - half / k, pz - half / k, gs);
 		teamMarks(g, S, k, px - half / k, pz - half / k, gs);
 		bossMarks(g, S, k, px - half / k, pz - half / k, gs, true);
 		// Player arrow: smooth arrowhead with a dark outline, pointing where you face (yellow; your teammate colour in
@@ -166,18 +167,13 @@ public final class Minimap {
 	}
 
 	/**
-	 * Team-mode marks on a map drawn in screen pixels: S = its size, k = pixels per block, (ox, oz) = the world point
-	 * at pixel 0,0. Reboot vans (a little blue van, greyer while recharging; only while a teammate's card is out to be
-	 * rebooted, creator: the green box blended into the grass), your team's reboot cards on the ground, teammates'
-	 * waypoints (rings in their colours) and teammates (dots in their colours; knocked ones blink red).
+	 * The island's reboot vans on a map drawn in screen pixels (S = its size, k = pixels per block, (ox, oz) = the world
+	 * point at pixel 0,0): a little blue van (creator: the green box blended into the grass), greyer while recharging.
+	 * Every mode, all the time (creator, 2.0.0-test2; before, a team mode only while a teammate's card was out).
 	 */
-	static void teamMarks(GuiGraphicsExtractor g, int S, double k, double ox, double oz, int gs) {
-		if (!ClientState.teamMatch()) return;
-		var sq = ClientState.squad;
+	static void vanMarks(GuiGraphicsExtractor g, int S, double k, double ox, double oz, int gs) {
 		double u = Math.max(1, gs / 3.0 * 2); // about 2 screen pixels per GUI pixel at GUI scale 3
-		// A teammate's card is out (on the ground or carried): only then do the vans matter.
-		boolean cardOut = !sq.cards().isEmpty() || sq.mates().stream().anyMatch(m -> m.status() == 2);
-		if (cardOut) for (var v : sq.vans()) {
+		for (var v : ClientState.vans()) {
 			int x = (int) Math.round((v.x() - ox) * k), y = (int) Math.round((v.z() - oz) * k);
 			int hw = (int) Math.round(4.5 * u), hh = (int) Math.round(2.6 * u), o = Math.max(1, (int) Math.round(u * 0.6)), wr = Math.max(1, (int) Math.round(u * 1.1));
 			if (x < -hw || y < -hh || x > S + hw || y > S + hh) continue;
@@ -192,6 +188,16 @@ public final class Minimap {
 				g.fill(wx - wr + o, y + hh - 2 * wr + o, wx + wr - o, y + hh - o, 0xFF8A8F98);
 			}
 		}
+	}
+
+	/**
+	 * Team-mode marks on a map drawn in screen pixels (as vanMarks): your team's reboot cards on the ground, teammates'
+	 * waypoints (rings in their colours) and teammates (dots in their colours; knocked ones blink red).
+	 */
+	static void teamMarks(GuiGraphicsExtractor g, int S, double k, double ox, double oz, int gs) {
+		if (!ClientState.teamMatch()) return;
+		var sq = ClientState.squad;
+		double u = Math.max(1, gs / 3.0 * 2); // about 2 screen pixels per GUI pixel at GUI scale 3
 		for (var c : sq.cards()) {
 			int x = (int) Math.round((c.x() - ox) * k), y = (int) Math.round((c.z() - oz) * k);
 			int hw = (int) Math.round(2 * u), hh = (int) Math.round(3 * u), o = Math.max(1, (int) Math.round(u * 0.6));

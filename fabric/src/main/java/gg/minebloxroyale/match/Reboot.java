@@ -63,16 +63,23 @@ public final class Reboot {
 		}
 	}
 
-	/** A reboot van on the island: where it stands, which way it faces, and when it can be used again. */
+	/**
+	 * A reboot van on the island: where it stands, which way it faces, and when it can be used again; and where it was
+	 * planned (its slice of the island, near the middle or out towards the edge), for planning it again.
+	 */
 	public static final class Van {
 		public double x, z, y;
 		public final float yaw;
 		public long readyAt;
 		boolean placed;
+		final int slice, slices;
+		final boolean outer;
+		int tries;
 
-		Van(double x, double z, float yaw) {
-			this.x = x;
-			this.z = z;
+		Van(int slice, int slices, boolean outer, float yaw) {
+			this.slice = slice;
+			this.slices = slices;
+			this.outer = outer;
 			this.yaw = yaw;
 		}
 
@@ -92,17 +99,39 @@ public final class Reboot {
 
 	// ---- vans ----
 
-	/** A new island: van spots spread inside the first circle (team modes only). Built as their chunks load. */
+	/** The island the vans are planned on (its centre and first circle's radius), for planning a van again. */
+	private static double centreX, centreZ;
+	private static float islandR;
+	/** Ticks until the next van's ground is loaded for it (prepare). */
+	private static int loadIn;
+
+	/**
+	 * A new island: van spots spread round it, one per slice, in every mode (creator, 2.0.0-test2: "all islands include
+	 * reboot vans in and out of circle"; before, team modes only): every other one near the middle, the rest out towards
+	 * the edge, so some are inside the circle and some outside it as it closes. (In Solo they stand there with no one to
+	 * bring back.) Put on the ground in the match's first seconds (prepare).
+	 */
 	static void start(double cx, double cz, float startR, RandomSource rnd) {
 		VANS.clear();
 		GROUND.clear();
-		if (!Teams.teamMode()) return;
+		centreX = cx;
+		centreZ = cz;
+		islandR = startR;
+		loadIn = 0;
 		int n = Math.round(MinebloxRoyale.setting("rebootVans"));
 		for (int i = 0; i < n; i++) {
-			// Spread round the island (one per slice), not bunched up.
-			double a = (i + rnd.nextDouble() * 0.7) / n * Math.PI * 2, d = (0.25 + rnd.nextDouble() * 0.55) * startR;
-			VANS.add(new Van(Math.floor(cx + Math.cos(a) * d) + 0.5, Math.floor(cz + Math.sin(a) * d) + 0.5, rnd.nextInt(4) * 90F));
+			Van v = new Van(i, n, i % 2 == 1, rnd.nextInt(4) * 90F);
+			plan(v, rnd);
+			VANS.add(v);
 		}
+	}
+
+	/** A spot for the van in its slice of the island (not bunched up), in its ring: near the middle, or out towards the edge. */
+	private static void plan(Van v, RandomSource rnd) {
+		double a = (v.slice + rnd.nextDouble() * 0.7) / v.slices * Math.PI * 2;
+		double d = (v.outer ? 0.55 + rnd.nextDouble() * 0.3 : 0.15 + rnd.nextDouble() * 0.3) * islandR;
+		v.x = Math.floor(centreX + Math.cos(a) * d) + 0.5;
+		v.z = Math.floor(centreZ + Math.sin(a) * d) + 0.5;
 	}
 
 	public static List<Van> vans() {
@@ -115,17 +144,28 @@ public final class Reboot {
 	/**
 	 * Vans whose chunks have loaded go on the ground, in the open near their planned spot (creator: not in trees):
 	 * invisible barrier blocks give the van its body (the island puts the spot back after the match); the van itself
-	 * is drawn by each player's game.
+	 * is drawn by each player's game. (2.0.0-test2) Every van is down within the match's first seconds, wherever the
+	 * players are, so the map shows them all: one van's ground is loaded a second (the island is made ahead, so it comes
+	 * off the disk), and a van with no open ground near its spot (a lake, thick forest) is planned again in its slice,
+	 * up to 6 times.
 	 */
 	static void prepare(ServerLevel level) {
+		Van next = null;
 		for (Van v : VANS) {
 			if (v.placed) continue;
 			int bx = (int) Math.floor(v.x), bz = (int) Math.floor(v.z), r = SEARCH + 3;
 			if (!level.hasChunk((bx - r) >> 4, (bz - r) >> 4) || !level.hasChunk((bx + r) >> 4, (bz + r) >> 4)
-				|| !level.hasChunk((bx - r) >> 4, (bz + r) >> 4) || !level.hasChunk((bx + r) >> 4, (bz - r) >> 4)) continue;
+				|| !level.hasChunk((bx - r) >> 4, (bz + r) >> 4) || !level.hasChunk((bx + r) >> 4, (bz - r) >> 4)) {
+				if (next == null) next = v;
+				continue;
+			}
 			boolean alongX = Math.round(v.yaw / 90F) % 2 == 1;
 			BlockPos at = openSpot(level, bx, bz, alongX);
-			if (at == null) at = new BlockPos(bx, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, bx, bz), bz); // (none near: as planned)
+			if (at == null && v.tries++ < 6) {
+				plan(v, level.getRandom());
+				continue;
+			}
+			if (at == null) at = new BlockPos(bx, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, bx, bz), bz); // (none found: as planned)
 			v.x = at.getX() + 0.5;
 			v.z = at.getZ() + 0.5;
 			v.y = at.getY();
@@ -139,7 +179,14 @@ public final class Reboot {
 						IslandRestore.remember(level, p);
 						level.setBlock(p, Blocks.BARRIER.defaultBlockState(), 2);
 					}
-			MinebloxRoyale.LOG.info("BR: reboot van at {} {} {}", at.getX(), at.getY(), at.getZ());
+			MinebloxRoyale.LOG.info("BR: reboot van at {} {} {} ({}, {} from the middle)", at.getX(), at.getY(), at.getZ(), v.outer ? "outer" : "inner",
+				(int) Math.hypot(at.getX() - centreX, at.getZ() - centreZ));
+		}
+		if (next != null && --loadIn <= 0) {
+			loadIn = 20;
+			int bx = (int) Math.floor(next.x), bz = (int) Math.floor(next.z), r = SEARCH + 3;
+			for (int x = (bx - r) >> 4; x <= (bx + r) >> 4; x++)
+				for (int z = (bz - r) >> 4; z <= (bz + r) >> 4; z++) level.getChunk(x, z);
 		}
 	}
 

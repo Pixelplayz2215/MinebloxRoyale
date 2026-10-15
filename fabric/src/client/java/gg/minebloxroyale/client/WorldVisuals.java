@@ -59,10 +59,12 @@ public final class WorldVisuals {
 		Tracers.draw(ps, out, cam); // (matches and the hub's shooting range)
 	}
 
-	/** Team modes: the reboot vans within 200 blocks (their Blender model), glowing green when ready and red while recharging. */
+	/**
+	 * The reboot vans within 200 blocks (their Blender model), glowing green when ready and red while recharging; every
+	 * mode since 2.0.0-test2.
+	 */
 	private static void vans(Minecraft mc, PoseStack ps, SubmitNodeCollector out, Vec3 cam) {
-		if (!ClientState.teamMatch()) return;
-		for (var v : ClientState.squad.vans()) {
+		for (var v : ClientState.vans()) {
 			if (mc.player.position().distanceToSqr(v.x(), v.y(), v.z()) > 200 * 200) continue;
 			boolean ready = v.readyIn() == 0;
 			ps.pushPose();

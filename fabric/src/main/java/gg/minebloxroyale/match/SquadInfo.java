@@ -9,7 +9,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
- * What a player's game needs to know about their team twice a second (Net.Squad): HUD panel, map, beacons, F prompts.
+ * What a player's game needs to know about their team twice a second (Net.Squad): HUD panel, map, beacons, F prompts;
+ * and the island's reboot vans (every mode).
  */
 final class SquadInfo {
 	private SquadInfo() {
