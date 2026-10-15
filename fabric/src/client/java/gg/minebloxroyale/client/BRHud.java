@@ -4,6 +4,7 @@ import gg.minebloxroyale.MinebloxRoyale;
 import gg.minebloxroyale.ModItems;
 import gg.minebloxroyale.item.Guns;
 import gg.minebloxroyale.item.WeaponItem;
+import gg.minebloxroyale.match.CarEntity;
 import gg.minebloxroyale.sheets.HudElementDef;
 import gg.minebloxroyale.sheets.LoadoutDef;
 import gg.minebloxroyale.sheets.RarityDef;
@@ -324,6 +325,10 @@ public final class BRHud {
 
 
 	private static void ammo(GuiGraphicsExtractor g, Minecraft mc) {
+		if (mc.player.getVehicle() instanceof CarEntity car) {
+			car(g, mc, car);
+			return;
+		}
 		ItemStack stack = mc.player.getMainHandItem();
 		if (!(stack.getItem() instanceof WeaponItem w)) return;
 		HudElementDef d = Sheets.HUD_BY_ID.get("ammo");
@@ -347,6 +352,29 @@ public final class BRHud {
 			float total = w.def.reloadTicks() * r.reloadMult();
 			Smooth.bar(g, x - width + 3, y + 20.3F, width - 4, 2.4F, 1F - (until - now) / total, 0xFFFFD45A, 1);
 		}
+	}
+
+	/**
+	 * In a car (v2.0.0, creator: "Fuel where the ammo shows"): in the ammo plate's place, the car's fuel left (minutes
+	 * and seconds, a bar), its boosts left (four pips) and its durability (a bar and a number, out of 600); everyone
+	 * inside sees the same.
+	 */
+	private static void car(GuiGraphicsExtractor g, Minecraft mc, CarEntity car) {
+		HudElementDef d = Sheets.HUD_BY_ID.get("ammo");
+		float x = g.guiWidth() + d.x(), y = g.guiHeight() + d.y(), width = d.size() + 10;
+		Smooth.panel(g, x - width, y - 6, width + 2, 30, 5, 0x9010141E, 0xB0080B12);
+		Smooth.panel(g, x - width, y - 6, width + 2, 11.5F, 5, 0xFF4A5A70, 0xFF2A3446);
+		boolean driver = car.getControllingPassenger() == mc.player;
+		Smooth.text(g, driver ? "DRIVING" : "RIDING ALONG", x - width + 4, y - 4.6F, 7.5F, 0xFFFFFFFF, Smooth.LEFT, true);
+		// boosts: four pips at the plate's top right, lit while left
+		for (int i = 0; i < CarEntity.MAX_BOOSTS; i++)
+			Smooth.panel(g, x - 6 - i * 6, y - 3.4F, 4.4F, 4.4F, 2.2F, i < car.boostsLeft() ? (car.boosting() ? 0xFFFFE04A : 0xFF6EC1FF) : 0x60FFFFFF);
+		int fuel = car.fuelTicks() / 20;
+		Smooth.text(g, "FUEL " + fuel / 60 + ":" + String.format(Locale.ROOT, "%02d", fuel % 60), x - width + 4, y + 7, 8, fuel == 0 ? 0xFFFF6060 : 0xFFFFFFFF, Smooth.LEFT, true);
+		Smooth.bar(g, x - width + 46, y + 8.5F, width - 50, 4.5F, car.fuelTicks() / (float) CarEntity.FUEL_TICKS, 0xFFFFB13A, 1);
+		int left = Math.round(car.durabilityLeft());
+		Smooth.text(g, "CAR " + left, x - width + 4, y + 15.5F, 8, 0xFFFFFFFF, Smooth.LEFT, true);
+		Smooth.bar(g, x - width + 46, y + 17, width - 50, 4.5F, left / gg.minebloxroyale.MinebloxRoyale.setting("carDurability"), 0xFF3DD64C, 4);
 	}
 
 	/** "RELOADING" under the crosshair (unscaled, screen centre). */

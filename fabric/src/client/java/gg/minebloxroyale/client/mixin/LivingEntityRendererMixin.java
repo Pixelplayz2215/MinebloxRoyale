@@ -13,6 +13,7 @@ import gg.minebloxroyale.client.avatar.RobloxAvatarRenderer;
 import gg.minebloxroyale.item.ConsumableItem;
 import gg.minebloxroyale.item.WeaponItem;
 import gg.minebloxroyale.match.BattleBusEntity;
+import gg.minebloxroyale.match.CarEntity;
 import gg.minebloxroyale.match.Knocked;
 import gg.minebloxroyale.net.Net;
 import java.util.HashSet;
@@ -21,6 +22,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.client.renderer.entity.state.ArmedEntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
@@ -52,6 +54,13 @@ public abstract class LivingEntityRendererMixin {
 				: shot != null && shot[0] < 1.5F);
 			state.setData(RobloxAvatarRenderer.GLIDING, gliding(entity));
 			state.setData(RobloxAvatarRenderer.SKYDIVING, skydiving(entity)); // (after gliding: that keeps who has landed)
+			// In a car (v2.0.0): sitting, hands on the wheel, nothing in them (as in Fortnite).
+			boolean inCar = entity.getVehicle() instanceof CarEntity;
+			state.setData(RobloxAvatarRenderer.SITTING, inCar);
+			if (inCar && state instanceof ArmedEntityRenderState armed) {
+				armed.rightHandItemState.clear();
+				armed.leftHandItemState.clear();
+			}
 			state.setData(RobloxAvatarRenderer.IN_BUS, entity.getVehicle() instanceof BattleBusEntity);
 			state.setData(RobloxAvatarRenderer.KNOCKED, Knocked.CLIENT.contains(entity.getId()));
 			state.setData(RobloxAvatarRenderer.IS_PLAYER, entity instanceof Player);

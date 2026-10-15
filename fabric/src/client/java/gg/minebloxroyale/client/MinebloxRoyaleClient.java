@@ -12,6 +12,7 @@ import gg.minebloxroyale.client.media.SfxBank;
 import gg.minebloxroyale.client.mesh.MeshItemRenderer;
 import gg.minebloxroyale.client.mixin.SpecialModelRenderersAccessor;
 import gg.minebloxroyale.match.BattleBusEntity;
+import gg.minebloxroyale.match.CarEntity;
 import gg.minebloxroyale.match.GrenadeEntity;
 import gg.minebloxroyale.match.RocketEntity;
 import gg.minebloxroyale.match.Knocked;
@@ -152,6 +153,12 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 		EntityRenderers.register(BattleBusEntity.TYPE, BattleBusRenderer::new);
 		EntityRenderers.register(RocketEntity.TYPE, ProjectileRenderers.Rocket::new); // (v2.0.0) rockets and grenades in flight
 		EntityRenderers.register(GrenadeEntity.TYPE, ProjectileRenderers.Grenade::new);
+		EntityRenderers.register(CarEntity.TYPE, CarEntityRenderer::new); // (v2.0.0) cars being driven
+		// the driver's keys, for the car their own game moves (CarEntity)
+		CarEntity.localInput = () -> {
+			var mc = Minecraft.getInstance();
+			return mc.player != null && mc.gui.screen() == null ? mc.player.input.keyPresses : net.minecraft.world.entity.player.Input.EMPTY;
+		};
 		BlockEntityRenderers.register(ModBlocks.CAR_ENTITY, context -> new CarRenderer()); // parked cars (smooth models)
 		BlockEntityRenderers.register(ModBlocks.LOOT_CHEST_ENTITY, context -> new ChestRenderer()); // loot chests (Blender models, lid opening)
 

@@ -8,6 +8,7 @@ import gg.minebloxroyale.match.Bosses;
 import gg.minebloxroyale.match.Builds;
 import gg.minebloxroyale.match.GrenadeEntity;
 import gg.minebloxroyale.match.CarBlock;
+import gg.minebloxroyale.match.CarEntity;
 import gg.minebloxroyale.match.Combat;
 import gg.minebloxroyale.match.Harvest;
 import gg.minebloxroyale.match.Knocked;
@@ -65,6 +66,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.OpenDoorGoal;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.SwingAnimation;
@@ -228,6 +230,11 @@ public class BotEntity extends PathfinderMob {
 
 	BotBag bag() {
 		return bag;
+	}
+
+	/** Materials into its bag (a pickaxe hit on a driven car, Harvest). */
+	public void bagMaterial(String id, int amount) {
+		bag.addMaterial(id, amount);
 	}
 
 	/** BotMovement: stuck on the way to a chest, loot or something to harvest: leave that one alone for a minute. */
@@ -405,6 +412,10 @@ public class BotEntity extends PathfinderMob {
 
 	/** One tick of play, once it's on the ground and standing. */
 	private void think(ServerLevel level) {
+		if (getVehicle() instanceof CarEntity car) { // (v2.0.0) in a car: drive it, or ride along
+			carTick(level, car);
+			return;
+		}
 		builder().tick(level);
 		ItemStack held = getMainHandItem();
 		if (held.getItem() instanceof WeaponItem w) Guns.tickReload(held, w.def, level.getGameTime(), this);
@@ -457,6 +468,8 @@ public class BotEntity extends PathfinderMob {
 		Vec3 safe = mm.safeSpot();
 		double dx = getX() - safe.x, dz = getZ() - safe.z;
 		if (dx * dx + dz * dz > mm.safeRadius() * mm.safeRadius() * 0.8) {
+			// a long way to go: a car close by, if there is one (v2.0.0, creator: bots take cars by the same rules)
+			if (Math.sqrt(dx * dx + dz * dz) - mm.safeRadius() > 70 && takeCar(level)) return;
 			headForCircle(level, safe);
 			return;
 		}
@@ -646,6 +659,89 @@ public class BotEntity extends PathfinderMob {
 	private int crowd(ServerLevel level, LivingEntity e) {
 		return level.getEntitiesOfClass(LivingEntity.class, e.getBoundingBox().inflate(5),
 			o -> o.isAlive() && o != this && !o.isSpectator() && (o instanceof Player || o instanceof BotEntity) && !Teams.sameTeam(this, o)).size();
+	}
+
+	/** Ticks a driven car has hardly moved though it's trying to; ticks backing up out of a jam. */
+	private int carStuck, carReverse;
+
+	/**
+	 * Walks to a car within 16 blocks (an empty driven one, or a parked one) and gets in when it's there (F's rules: a
+	 * parked car becomes a driven car). True while it's about that.
+	 */
+	private boolean takeCar(ServerLevel level) {
+		Vec3 best = null;
+		CarEntity driven = null;
+		BlockPos parked = null;
+		double bd = 16 * 16;
+		for (CarEntity c : level.getEntitiesOfClass(CarEntity.class, getBoundingBox().inflate(16), c -> !c.isVehicle() && c.fuelTicks() > 0)) {
+			double d = distanceToSqr(c);
+			if (d < bd) {
+				bd = d;
+				best = c.position();
+				driven = c;
+				parked = null;
+			}
+		}
+		if (tickCount % 20 == 0 || driven == null) {
+			BlockPos at = blockPosition();
+			for (BlockPos q : BlockPos.betweenClosed(at.offset(-12, -3, -12), at.offset(12, 3, 12)))
+				if (level.getBlockState(q).getBlock() instanceof CarBlock && q.distToCenterSqr(position()) < bd) {
+					bd = q.distToCenterSqr(position());
+					best = Vec3.atCenterOf(q);
+					parked = q.immutable();
+					driven = null;
+				}
+		}
+		if (best == null) return false;
+		if (best.distanceToSqr(position()) > 3.2 * 3.2) {
+			navigateTo(best);
+			return true;
+		}
+		CarEntity car = driven != null ? driven : CarEntity.fromParked(level, parked);
+		if (car == null || !startRiding(car)) return false;
+		getNavigation().stop();
+		carStuck = carReverse = 0;
+		setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY); // (nothing in hand in a car)
+		return true;
+	}
+
+	/**
+	 * In a car: the driver steers for the safe zone (boosting down long straights) and gets out once it's well inside,
+	 * when an enemy is close (no shooting from a car), out of fuel, or stuck; a passenger rides along until the car stops.
+	 */
+	private void carTick(ServerLevel level, CarEntity car) {
+		MatchManager mm = MatchManager.get();
+		Vec3 safe = mm.safeSpot();
+		double toSafe = Math.hypot(safe.x - car.getX(), safe.z - car.getZ());
+		boolean enemy = level.getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(28),
+			e -> e != this && e.isAlive() && !e.isSpectator() && (e instanceof ServerPlayer p ? mm.isAlive(p) : e instanceof BotEntity b && !b.isBoss())
+				&& !Teams.sameTeam(this, e) && !car.hasPassenger(e) && hasLineOfSight(e)).size() > 0;
+		if (car.getControllingPassenger() != this) { // riding along: out when the car has stopped a while
+			if (car.getDeltaMovement().horizontalDistanceSqr() < 0.0004 && ++carStuck > 60 || enemy) leaveCar();
+			return;
+		}
+		boolean moving = car.getDeltaMovement().horizontalDistanceSqr() > 0.01;
+		carStuck = moving ? 0 : carStuck + 1;
+		if (toSafe < mm.safeRadius() * 0.55 || enemy || car.fuelTicks() <= 0 || carStuck > 120) {
+			car.setBotInput(Input.EMPTY);
+			leaveCar();
+			return;
+		}
+		if (carStuck > 40 && carReverse == 0) carReverse = 25; // (backing out of a jam, then on again)
+		float want = (float) (Mth.atan2(safe.z - car.getZ(), safe.x - car.getX()) * (180F / Math.PI)) - 90F;
+		float diff = Mth.wrapDegrees(want - car.getYRot());
+		boolean back = carReverse > 0;
+		if (back) carReverse--;
+		// (yaw goes down turning left: steer left when the way to go is less)
+		boolean left = !back ? diff < -6 : diff > 6, right = !back ? diff > 6 : diff < -6;
+		boolean boost = !back && Math.abs(diff) < 10 && toSafe > 90 && car.boostsLeft() > 1 && getRandom().nextInt(200) == 0;
+		car.setBotInput(new Input(!back, back, left, right, boost, false, false));
+	}
+
+	private void leaveCar() {
+		stopRiding();
+		carStuck = carReverse = 0;
+		equipBest();
 	}
 
 	private void chase(double speed) {

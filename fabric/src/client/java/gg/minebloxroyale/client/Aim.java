@@ -2,6 +2,7 @@ package gg.minebloxroyale.client;
 
 import gg.minebloxroyale.ModItems;
 import gg.minebloxroyale.item.WeaponItem;
+import gg.minebloxroyale.match.CarEntity;
 import gg.minebloxroyale.net.Net;
 import gg.minebloxroyale.sheets.WeaponDef;
 import java.util.Locale;
@@ -158,7 +159,7 @@ public final class Aim {
 			while (mc.options.keyAttack.consumeClick()) {
 				// swallowed: guns don't punch or mine
 			}
-			if (down && (w.automatic() || !attackWasDown)) {
+			if (down && (w.automatic() || !attackWasDown) && !(mc.player.getVehicle() instanceof CarEntity)) { // (no shooting from a car)
 				// Send where the crosshair points, so the shot goes exactly there (the camera is over the shoulder).
 				Vec3 at = Crosshair.aimPoint(mc, w.rangeBlocks());
 				ClientPlayNetworking.send(new Net.Action(String.format(Locale.ROOT, "fire:%.3f:%.3f:%.3f", at.x, at.y, at.z)));

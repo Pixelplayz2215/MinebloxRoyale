@@ -6,6 +6,7 @@ import gg.minebloxroyale.match.Builds;
 import gg.minebloxroyale.match.CarBlock;
 import gg.minebloxroyale.match.Combat;
 import gg.minebloxroyale.match.Knocked;
+import gg.minebloxroyale.match.CarEntity;
 import gg.minebloxroyale.match.MatchManager;
 import gg.minebloxroyale.match.RocketEntity;
 import gg.minebloxroyale.match.Teams;
@@ -154,6 +155,7 @@ public final class Guns {
 	/** aim: where the player's crosshair points (null = straight along their look). */
 	public static boolean tryFire(LivingEntity shooter, ItemStack stack, WeaponDef w, float spreadMult, Vec3 aim) {
 		if (!(shooter.level() instanceof ServerLevel level) || Knocked.is(shooter)) return false;
+		if (shooter.getVehicle() instanceof CarEntity) return false; // (v2.0.0: no shooting from a car, creator)
 		long now = level.getGameTime();
 		CompoundTag tag = tag(stack);
 		if (tag.getLongOr("reloadUntil", 0L) > now || tag.getLongOr("nextShot", 0L) > now) return false;
@@ -206,7 +208,15 @@ public final class Guns {
 			EntityHitResult hit = ProjectileUtil.getEntityHitResult(shooter, eye, end, new AABB(eye, end).inflate(1.0),
 				e -> e instanceof LivingEntity le && le.isAlive() && !e.isSpectator() && e != shooter && !(hubShot && e instanceof Player) && !Teams.sameTeam(shooter, e), eye.distanceToSqr(end));
 			Vec3 impact = end;
-			if (hit != null && hit.getEntity() instanceof LivingEntity target) {
+			// (v2.0.0) a driven car in the way takes the shot: its damage counts against the car's durability
+			EntityHitResult carHit = ProjectileUtil.getEntityHitResult(shooter, eye, end, new AABB(eye, end).inflate(1.5),
+				e -> e instanceof CarEntity c && !c.hasPassenger(shooter), eye.distanceToSqr(end));
+			if (carHit != null && (hit == null || eye.distanceToSqr(carHit.getLocation()) < eye.distanceToSqr(hit.getLocation()))) {
+				((CarEntity) carHit.getEntity()).damage(level, w.damage() * r.damageMult(), shooter);
+				hit = null;
+				end = carHit.getLocation();
+				impact = end;
+			} else if (hit != null && hit.getEntity() instanceof LivingEntity target) {
 				impact = hit.getLocation();
 				if (p < 32) hits |= 1 << p;
 				boolean head = impact.y > target.getEyeY() - 0.3;

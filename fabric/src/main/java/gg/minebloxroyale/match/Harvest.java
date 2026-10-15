@@ -427,6 +427,17 @@ public final class Harvest {
 		return out;
 	}
 
+	/** A pickaxe hit on a driven car (CarEntity): its metal, as on a parked one (harvest sheet h_car). */
+	static void giveCarMetal(Player p) {
+		HarvestRuleDef r = Sheets.HARVEST_BY_ID.get("h_car");
+		if (r != null) give(p, r.material(), Math.round(r.perBlock()));
+	}
+
+	static void giveCarMetalBot(net.minecraft.world.entity.LivingEntity e) {
+		HarvestRuleDef r = Sheets.HARVEST_BY_ID.get("h_car");
+		if (r != null && e instanceof gg.minebloxroyale.bot.BotEntity b) b.bagMaterial(r.material(), Math.round(r.perBlock()));
+	}
+
 	/**
 	 * Materials go straight into their own inventory slot (Fortnite), up to maxCarry (99); past that you get no more.
 	 */

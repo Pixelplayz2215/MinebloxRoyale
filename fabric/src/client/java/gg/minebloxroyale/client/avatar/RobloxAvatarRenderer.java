@@ -42,6 +42,8 @@ public final class RobloxAvatarRenderer {
 	public static final RenderStateDataKey<Boolean> GLIDING = RenderStateDataKey.create(() -> "minebloxroyale:gliding");
 	/** Skydiving (falling from the Battle Bus, the glider not open): trailing a contrail from the hands. */
 	public static final RenderStateDataKey<Boolean> SKYDIVING = RenderStateDataKey.create(() -> "minebloxroyale:skydiving");
+	/** Riding in a car (v2.0.0, CarEntity): sitting, hands on the wheel. */
+	public static final RenderStateDataKey<Boolean> SITTING = RenderStateDataKey.create(() -> "minebloxroyale:sitting");
 	/** The Locker's preview of you (its glider and contrail kept apart from your avatar in the world). */
 	public static final RenderStateDataKey<Boolean> PREVIEW = RenderStateDataKey.create(() -> "minebloxroyale:preview");
 	/** Knocked down (team modes): drawn crawling, holding nothing. */
@@ -356,7 +358,7 @@ public final class RobloxAvatarRenderer {
 		int id = state.getDataOrDefault(ENTITY_ID, -1);
 		Pose emote = state.getDataOrDefault(KNOCKED, false) ? null : emotePose(id, state.walkAnimationSpeed);
 		Pose p = compose(new Frame(id, state.getDataOrDefault(MOTION, Motion.STILL), state.getDataOrDefault(AIMING, false),
-			state.getDataOrDefault(ADS, false), state.getDataOrDefault(GLIDING, false), state.getDataOrDefault(KNOCKED, false), emote, state.x, state.y, state.z, state.ageInTicks / 20F,
+			state.getDataOrDefault(ADS, false), state.getDataOrDefault(GLIDING, false), state.getDataOrDefault(KNOCKED, false), state.getDataOrDefault(SITTING, false), emote, state.x, state.y, state.z, state.ageInTicks / 20F,
 			state.xRot, swing), System.nanoTime());
 		// Minecraft draws a crouching player 2 px lower; the crouch already stands its feet on the ground.
 		return state instanceof AvatarRenderState a && a.isCrouching ? p.add(Pose.BOB, 2F / 16F / S) : p;
@@ -366,8 +368,8 @@ public final class RobloxAvatarRenderer {
 	 * What picks an avatar's pose this frame: who (entity id), how it moves, what it holds and does, where it is,
 	 * its age (seconds), where it looks (pitch, down +) and how far through a swing it is (0..1).
 	 */
-	record Frame(int id, Motion motion, boolean aiming, boolean ads, boolean gliding, boolean knocked, Pose emote, double x, double y, double z,
-		float time, float pitch, float swing) {
+	record Frame(int id, Motion motion, boolean aiming, boolean ads, boolean gliding, boolean knocked, boolean sitting, Pose emote, double x, double y,
+		double z, float time, float pitch, float swing) {
 	}
 
 	/** The pose for this frame (the avatar's track remembers how it got here; now: System.nanoTime()). */
@@ -414,7 +416,10 @@ public final class RobloxAvatarRenderer {
 
 		String mode;
 		Pose target;
-		if (f.emote() != null) {
+		if (f.sitting()) { // in a car (v2.0.0)
+			mode = "sit";
+			target = Moves.loop("sit", f.time());
+		} else if (f.emote() != null) {
 			mode = "emote";
 			target = f.emote();
 		} else if (f.knocked()) {

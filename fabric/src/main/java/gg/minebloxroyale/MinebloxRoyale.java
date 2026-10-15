@@ -5,6 +5,7 @@ import gg.minebloxroyale.hub.HubBuilder;
 import gg.minebloxroyale.hub.HubFun;
 import gg.minebloxroyale.hub.Obby;
 import gg.minebloxroyale.match.BattleBusEntity;
+import gg.minebloxroyale.match.CarEntity;
 import gg.minebloxroyale.match.Builds;
 import gg.minebloxroyale.match.Combat;
 import gg.minebloxroyale.match.GrenadeEntity;
@@ -84,6 +85,7 @@ public final class MinebloxRoyale implements ModInitializer {
 		BotEntity.init();
 		BattleBusEntity.init();
 		RocketEntity.init(); // (v2.0.0) rockets and grenades in flight
+		CarEntity.init(); // (v2.0.0) cars being driven
 		GrenadeEntity.init();
 		Net.init();
 		Combat.init();

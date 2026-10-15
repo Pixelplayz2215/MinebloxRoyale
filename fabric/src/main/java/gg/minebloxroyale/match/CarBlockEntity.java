@@ -70,6 +70,11 @@ public class CarBlockEntity extends BlockEntity {
 		return Direction.from2DDataValue(facing);
 	}
 
+	/** The damage it has taken so far. */
+	public float damage() {
+		return damage;
+	}
+
 	/** Damage a car takes before it's wrecked (match sheet carDurability, 600). */
 	public static float durability() {
 		return MinebloxRoyale.setting("carDurability");

@@ -102,6 +102,13 @@
    "note": "A shot's kick: the gun and arms jump up and back, the head and body with them, and settle (each gun kicks its own amount)"
   },
   {
+   "id": "sit",
+   "name": "Sitting in a car",
+   "axis": "time",
+   "loopSeconds": 2.4,
+   "note": "Sitting back in a car, hands on the wheel"
+  },
+  {
    "id": "swing",
    "name": "Pickaxe swing",
    "axis": "progress",

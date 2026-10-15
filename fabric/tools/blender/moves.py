@@ -16,14 +16,16 @@ Channels (degrees; bob in studs): as emote_anims.py, plus
   rel / lel  right / left elbow (0 straight; the forearm bends forward)
   rkn / lkn  right / left knee (0 straight; the shin bends back)
 keep: arms the hand fix leaves alone (aiming: the gun arm stays on the look)
+free: limbs allowed to touch the body (sitting: an R6 leg can't come up level without its top meeting the torso, as in
+      Roblox's own sit; in a car the doors hide it)
 """
 from emote_anims import K, mirror
 
 
 class Move:
-    def __init__(self, name, line, axis, loop, keys, plant="touch", linear=(), lying=False, keep=()):
+    def __init__(self, name, line, axis, loop, keys, plant="touch", linear=(), lying=False, keep=(), free=()):
         self.name, self.line, self.axis, self.loop, self.keys = name, line, axis, loop, keys
-        self.plant, self.linear, self.lying, self.keep = plant, set(linear), lying, tuple(keep)
+        self.plant, self.linear, self.lying, self.keep, self.free = plant, set(linear), lying, tuple(keep), tuple(free)
         self.note = line
 
     @property
@@ -148,6 +150,11 @@ MOVES = {
         K(0.5, rax=47.5, raz=4.3, rel=48, lax=87, laz=-24, lel=22, lean=-1, hx=-1.5, twist=-1),
         K(1, rax=45, raz=4, rel=44.9, lax=85, laz=-24, lel=20, lean=0, hx=0, twist=0),
     ], plant="none", keep=("right_arm",)),
+    # v2.0.0 (creator: "Drivable cars"): riding in a car, the driver and passengers alike.
+    "sit": Move("Sitting in a car", "Sitting back in a car, hands on the wheel", "time", 2.4, [
+        K(0, rlx=88, rkn=86, llx=88, lkn=86, rlz=4, llz=4, rax=58, raz=8, rel=34, lax=58, laz=8, lel=34, lean=-4, hx=0),
+        K(0.5, rax=55, rel=37, lax=61, lel=31, hx=2),
+    ], plant="none", free=("right_leg", "left_leg")),
     "swing": Move("Pickaxe swing", "Wound up over the shoulder, a big chop, follow through", "progress", 0.7, [
         K(0, rax=30, raz=6, rel=40, twist=0, lean=0, lax=12, lel=24),
         K(0.3, rax=158, raz=14, rel=72, twist=-16, lean=-6, lax=34, lel=50, hx=-4),

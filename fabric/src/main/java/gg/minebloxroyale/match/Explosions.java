@@ -48,7 +48,10 @@ public final class Explosions {
 			if (owner instanceof LivingEntity le) Combat.gunDamage(level, le, e, amount, false);
 			else e.hurtServer(level, level.damageSources().explosion(null, null), amount);
 		}
-		// builds, cars, the island's buildings
+		// driven cars (v2.0.0): their own damage, once each
+		for (CarEntity car : level.getEntitiesOfClass(CarEntity.class, new AABB(at, at).inflate(radius)))
+			if (Math.sqrt(car.getBoundingBox().distanceToSqr(at)) <= radius) car.damage(level, carDamage, owner);
+		// builds, parked cars, the island's buildings
 		Set<Object> pieces = Collections.newSetFromMap(new IdentityHashMap<>());
 		Set<BlockPos> carsDone = new HashSet<>();
 		int r = Mth.ceil(radius);

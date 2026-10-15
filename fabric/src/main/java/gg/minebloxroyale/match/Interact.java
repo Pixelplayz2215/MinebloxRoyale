@@ -36,6 +36,8 @@ public final class Interact {
 	}
 
 	public static void set(ServerPlayer p, boolean down) {
+		// (v2.0.0) F next to a car gets in, unless there's a chest in front of you to search
+		if (down && LootChests.target(p) == null && CarEntity.tryEnter(p)) return;
 		if (down) HOLDING.add(p.getUUID());
 		else {
 			HOLDING.remove(p.getUUID());

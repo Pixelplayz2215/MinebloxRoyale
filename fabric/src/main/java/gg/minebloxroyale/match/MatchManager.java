@@ -981,6 +981,7 @@ public final class MatchManager {
 		alivePlayers.clear();
 		dropping.clear();
 		Bosses.stop(server);
+		for (CarEntity car : server.overworld().getEntities(CarEntity.TYPE, c -> true)) car.discard(); // (v2.0.0: driven cars too)
 		state = State.HUB;
 		phase = -1;
 		closedAt = 0;
