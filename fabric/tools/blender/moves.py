@@ -73,6 +73,17 @@ def _crouch_walk():
     ])
 
 
+def _car_enter():
+    # the car on the right: the right hand to the roof, the right foot in, ducking under, sitting down at the wheel
+    return [
+        K(0, rel=6, lel=6, raz=4, laz=4, rkn=3, lkn=3, hx=0),
+        K(0.22, rax=70, raz=38, rel=30, lax=15, lel=20, rlx=30, rlz=22, rkn=58, lean=8),
+        K(0.45, rax=62, raz=30, rel=48, lax=30, lel=38, rlx=50, rlz=18, rkn=72, llx=20, lkn=46, lean=26, hx=6, bob=-0.15),
+        K(0.72, rax=55, raz=15, rel=40, lax=45, laz=10, lel=35, rlx=70, rlz=8, rkn=76, llx=56, lkn=70, lean=12, bob=-0.05),
+        K(1.0, rlx=88, rkn=86, llx=88, lkn=86, rlz=4, llz=4, rax=58, raz=8, rel=34, lax=58, laz=8, lel=34, lean=-4, hx=0, bob=0),
+    ]
+
+
 MOVES = {
     "idle": Move("Standing", "Breathing: elbows and knees relaxed", "time", 3.2, [
         K(0, rel=6, lel=6, raz=4, laz=4, rkn=3, lkn=3, hx=0),
@@ -173,6 +184,13 @@ MOVES = {
         K(0, rlx=88, rkn=86, llx=88, lkn=86, rlz=4, llz=4, rax=58, raz=8, rel=34, lax=58, laz=8, lel=34, lean=-4, hx=0),
         K(0.5, rax=55, rel=37, lax=61, lel=31, hx=2),
     ], plant="none", free=("right_leg", "left_leg")),
+    # 2.0.0-test3 (creator: "players should have an animation for getting inside the car (Doors open, player climbs
+    # inside, door closes)"): climbing in through the door beside the seat, from standing to sitting at the wheel. The
+    # game moves the body from outside the door to the seat as it plays (and swings the door open and shut).
+    "car_enter": Move("Getting into a car", "From the car's left: a hand on the roof, a foot in, ducking under, down onto the seat",
+                      "progress", 1.0, _car_enter(), plant="none", free=("right_leg", "left_leg")),
+    "car_enter_r": Move("Getting into a car (its right side)", "The same from the car's right", "progress", 1.0,
+                        [(t, mirror(ch)) for t, ch in _car_enter()], plant="none", free=("right_leg", "left_leg")),
     "swing": Move("Pickaxe swing", "Wound up over the shoulder, a big chop, follow through", "progress", 0.7, [
         K(0, rax=30, raz=6, rel=40, twist=0, lean=0, lax=12, lel=24),
         K(0.3, rax=158, raz=14, rel=72, twist=-16, lean=-6, lax=34, lel=50, hx=-4),

@@ -89,5 +89,30 @@
     "sounds": [
       "minebloxroyale:boom/grenade_bounce"
     ]
+  },
+  "car.engine": {
+    "sounds": [
+      "minebloxroyale:car/engine"
+    ]
+  },
+  "car.skid": {
+    "sounds": [
+      "minebloxroyale:car/skid"
+    ]
+  },
+  "car.boost": {
+    "sounds": [
+      "minebloxroyale:car/boost"
+    ]
+  },
+  "car.door_open": {
+    "sounds": [
+      "minebloxroyale:car/door_open"
+    ]
+  },
+  "car.door_close": {
+    "sounds": [
+      "minebloxroyale:car/door_close"
+    ]
   }
 }

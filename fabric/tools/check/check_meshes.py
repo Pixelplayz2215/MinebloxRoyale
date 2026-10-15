@@ -134,7 +134,7 @@ def main():
     for sh in sorted({r["shape"] for r in rows if r["slot"] == "pants"}):
         want += [f"pants_{sh}_{p}" for p in ("hips", "rleg", "lleg")]
     want += [g["id"] for g in json.load(open(os.path.join(DESIGN, "gliders.json"), encoding="utf-8"))["rows"]]
-    for kind in sorted({f.split("_")[1] for f in files if f.startswith("car_")}):
+    for kind in sorted({f.split("_")[1] for f in files if f.startswith("car_") and f.split("_")[-1] in ("1", "2", "3", "4")}):
         want += [f"car_{kind}_{s}" for s in (1, 2, 3, 4)]
     want += ["pickaxe_" + s for s in shapes["pickaxe"]]  # (v2.0.0 skins: held items, no far copy, like the pickaxe itself)
     far = [w for w in want if w not in ("battle_bus", "reboot_van") and not w.startswith("pickaxe_")]

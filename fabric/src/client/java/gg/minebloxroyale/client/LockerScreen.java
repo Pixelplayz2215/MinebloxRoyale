@@ -43,10 +43,10 @@ import org.joml.Vector3f;
 public class LockerScreen extends Screen {
 	private static final String[][] TABS = { { "shop", "Shop" }, { "preset", "Presets" }, { "hat", "Hats" }, { "hair", "Hair" }, { "face", "Face" },
 		{ "back", "Back" }, { "shirt", "Shirts" }, { "pants", "Pants" }, { "shoes", "Shoes" }, { "particle", "Particles" }, { "pickaxe", "Pickaxes" }, { "contrail", "Contrails" },
-		{ "emote", "Emotes" }, { "glider", "Gliders" } };
+		{ "boosttrail", "Boost Trails" }, { "emote", "Emotes" }, { "glider", "Gliders" } };
 	private static final int PANEL = 350, COLS = 3, W = 80;
 	/** Tabs where hovering one of your items shows it on you, like the emotes (2.0.0-test3): in your hand, or skydiving. */
-	private static final List<String> HOVER_TRY = List.of("pickaxe", "contrail");
+	private static final List<String> HOVER_TRY = List.of("pickaxe", "contrail", "boosttrail");
 	/** True only while the Locker draws its preview of you (the in-world you is hidden while the Locker is open). */
 	public static boolean previewing;
 	static String tab = "preset";
@@ -380,6 +380,7 @@ public class LockerScreen extends Screen {
 			case "shop" -> "Spend gold from matches: eliminations, top finishes, wins, bosses";
 			case "pickaxe" -> "Your pickaxe's look in matches - looks only";
 			case "contrail" -> "Light trails from your hands skydiving, and your glider's wingtips";
+			case "boosttrail" -> "Streams from the back of any car you drive while it boosts (Space)";
 			default -> "Roblox-style catalog - looks only, no advantage";
 		};
 		g.text(this.font, info, 60, 12, 0xFFB8C4D6, true);
@@ -405,6 +406,15 @@ public class LockerScreen extends Screen {
 		for (Map.Entry<Button, String> e : tryOnButtons)
 			if (e.getKey().isHovered()) tryOn = e.getValue();
 		int x0 = PANEL + 20, y0 = 30, x1 = this.width - 20, y1 = this.height - 20;
+		// (2.0.0-test3) Boost Trails (or one hovered in the Shop): a car instead of you, its trail streaming
+		if (tryOn != null ? tryOn.startsWith("boosttrail:") : tab.equals("boosttrail")) {
+			CosmeticDef trail = tryOn != null ? Sheets.COSMETICS_BY_ID.get(tryOn.substring("boosttrail:".length())) : Cosmetics.worn(mine(), "boosttrail");
+			carPreview(g, x0, y0, x1, y1, trail);
+			frames++;
+			g.centeredText(this.font, trail == null ? "No boost trail on" : trail.name() + " - on any car you drive", (x0 + x1) / 2, y1 - 14, 0xFFFFFFFF);
+			if (!LockerAudit.active()) g.centeredText(this.font, "Hold right mouse and drag to turn", (x0 + x1) / 2, y0 + 4, 0x90FFFFFF);
+			return;
+		}
 		boolean glider = tab.equals("glider") || tryOn != null && tryOn.startsWith("glider:");
 		int size = (int) Math.min((y1 - y0) * (glider ? 0.22F : 0.36F), (x1 - x0) * 0.5F);
 		// The particle effect around the preview: feet at the box's middle plus half the body (and the gliders tab
@@ -513,6 +523,19 @@ public class LockerScreen extends Screen {
 		} finally {
 			previewing = false;
 		}
+	}
+
+	/**
+	 * The Boost Trails tab's preview (2.0.0-test3, creator: "When viewing car contrails, a car should show up in a angles
+	 * back/side view and hovering over boosting contrail will show on the car"): the sports car seen from behind and to
+	 * the side, a little from above, the trail (the hovered one, else yours) streaming from its exhausts as if boosting;
+	 * right-drag turns it as it does you.
+	 */
+	private static void carPreview(GuiGraphicsExtractor g, int x0, int y0, int x1, int y1, @org.jspecify.annotations.Nullable CosmeticDef trail) {
+		var st = CarEntityRenderer.preview(trail);
+		int size = (int) Math.min((y1 - y0) * 0.16F, (x1 - x0) * 0.12F);
+		Quaternionf view = new Quaternionf().rotateZ((float) Math.PI).rotateX((float) Math.toRadians(-24)).rotateY((float) Math.toRadians(145 + previewYaw));
+		g.entity(st, size, new Vector3f(0, 0.6F, -1.2F), view, new Quaternionf(), x0, y0, x1, y1);
 	}
 
 	@Override

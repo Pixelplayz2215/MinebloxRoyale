@@ -7,8 +7,17 @@ Block units, the nose along +z, the origin on the ground in the middle, +x the c
 same space the code-drawn cars used, so the invisible car blocks still fit and the engine smoke still rises over the
 bonnet. Tint channel 1 is the paint (CarBlockEntity.color), channel 2 the trim (racing stripes and spoiler, the police
 car's white doors).
+
+A driven car (2.0.0-test3, creator: "Cars should have a driving animation ... players should have an animation for
+getting inside the car (Doors open, player climbs inside, door closes)") is drawn in pieces so they can move: its shell
+(car_<kind>_<stage>_shell: all but the wheels), four wheels (car_wheel_<kind>: the rim on the car's left, _r on its right,
+_bare the damaged one without its hubcap) that turn and steer, and the driver's door (car_door_<kind>, hinged at the
+origin; _r the front passenger's) that swings open over a dark doorway (car_doorway_<kind>, _r). Where the wheels, the hinge and the exhausts are:
+car_rigs.json, for the game (client/CarEntityRenderer).
 """
+import json
 import math
+import os
 import random
 
 from brlib import apply_modifiers, box, cut, cyl, dent, lathe, mat, mesh_from, prism, quad, sphere, torus, tube
@@ -213,25 +222,29 @@ def face_normal(face, centre):
 def wheels(c, stage):
     """Four wheels: a rounded tyre with tread grooves, a five-spoke silver rim with a centre cap. Damaged, the front left
     one has lost its hubcap: a bare dark hub and its wheel nuts."""
-    w = 0.15
     for z in (c.zf, c.zb):
         for s in (-1, 1):
-            x = s * c.wx
-            lathe([(0.0, -w), (c.r * 0.62, -w), (c.r * 0.9, -w), (c.r, -w * 0.55), (c.r, w * 0.55), (c.r * 0.9, w), (c.r * 0.62, w), (0.0, w)],
-                  x, c.r, z, TIRE(), segs=20, axis="x")
-            face = x + s * (w + 0.005)
-            if stage >= 3 and s > 0 and z == c.zf:
-                cyl(face, c.r, z, c.r * 0.42, 0.03, "x", DARK(), verts=20)
-                for i in range(5):
-                    a = i * math.pi * 2 / 5
-                    cyl(face + s * 0.02, c.r + math.cos(a) * c.r * 0.25, z + math.sin(a) * c.r * 0.25, c.r * 0.05, 0.03, "x", GREY(), verts=8)
-                continue
-            cyl(face, c.r, z, c.r * 0.62, 0.035, "x", RIM(), verts=18)
-            torus(face + s * 0.02, c.r, z, c.r * 0.6, 0.025, "x", RIM(), segs=18, rsegs=4)
-            for i in range(5):
-                a = i * math.pi * 2 / 5 + 0.3
-                tube([(face + s * 0.025, c.r, z), (face + s * 0.025, c.r + math.cos(a) * c.r * 0.56, z + math.sin(a) * c.r * 0.56)], 0.035, RIM(), segs=6)
-            cyl(face + s * 0.045, c.r, z, c.r * 0.17, 0.03, "x", DARK(), verts=14)
+            wheel(c, s * c.wx, c.r, z, s, stage >= 3 and s > 0 and z == c.zf)
+
+
+def wheel(c, x, y, z, s, bare):
+    """One wheel centred at (x, y, z), its axle along x, the rim on its outer side (s +1: the car's left)."""
+    w = 0.15
+    lathe([(0.0, -w), (c.r * 0.62, -w), (c.r * 0.9, -w), (c.r, -w * 0.55), (c.r, w * 0.55), (c.r * 0.9, w), (c.r * 0.62, w), (0.0, w)],
+          x, y, z, TIRE(), segs=20, axis="x")
+    face = x + s * (w + 0.005)
+    if bare:
+        cyl(face, y, z, c.r * 0.42, 0.03, "x", DARK(), verts=20)
+        for i in range(5):
+            a = i * math.pi * 2 / 5
+            cyl(face + s * 0.02, y + math.cos(a) * c.r * 0.25, z + math.sin(a) * c.r * 0.25, c.r * 0.05, 0.03, "x", GREY(), verts=8)
+        return
+    cyl(face, y, z, c.r * 0.62, 0.035, "x", RIM(), verts=18)
+    torus(face + s * 0.02, y, z, c.r * 0.6, 0.025, "x", RIM(), segs=18, rsegs=4)
+    for i in range(5):
+        a = i * math.pi * 2 / 5 + 0.3
+        tube([(face + s * 0.025, y, z), (face + s * 0.025, y + math.cos(a) * c.r * 0.56, z + math.sin(a) * c.r * 0.56)], 0.035, RIM(), segs=6)
+    cyl(face + s * 0.045, y, z, c.r * 0.17, 0.03, "x", DARK(), verts=14)
 
 
 def front(c, stage, kind):
@@ -413,7 +426,59 @@ def damage(c, b, stage, kind):
         buckled_bonnet(c)
 
 
-def build(kind, stage):
+def door_bounds(c):
+    """The driver's door: its back and front edges (z) and its bottom and top (y)."""
+    return c.door_start(), c.z1 - 0.05, c.bottom + 0.12, c.y0 + 0.02
+
+
+def door(kind, s=1):
+    """A front door on its own (a driven car swings it open): the driver's (s +1, the car's left) or the front
+    passenger's (s -1), its hinge (its front edge) at the origin: shut, it lies along -z from there, its outside away from
+    the car."""
+    c = KINDS[kind][1]()
+    d0, d1, ylo, yhi = door_bounds(c)
+
+    def slab(x0, x1, y0, y1, z0, z1, material, bevel=0.0):
+        return box(min(s * x0, s * x1), y0, z0, max(s * x0, s * x1), y1, z1, material, bevel=bevel)
+
+    parts = [slab(c.hx + 0.02, c.hx + 0.09, ylo, yhi, d0, d1, TRIM() if kind == "police" else PAINT(), bevel=0.03),
+             slab(c.hx + 0.09, c.hx + 0.11, c.cy + 0.08, c.cy + 0.12, d0 + 0.1, d0 + 0.3, CHROME(), bevel=0.01),
+             slab(c.hx + 0.0, c.hx + 0.02, ylo, yhi, d0, d1, INSIDE())]
+    if kind == "taxi":
+        for i in range(12):
+            z = -1.65 + i * 0.3
+            lo, hi = max(z - 0.15, d0), min(z + 0.15, d1)
+            if hi > lo:
+                parts.append(slab(c.hx + 0.09, c.hx + 0.1, 0.76, 0.88, lo, hi, DARK() if i % 2 == 0 else WHITE()))
+    for p in parts:
+        p.move(-s * (c.hx + 0.02), 0, -d1)
+
+
+def doorway(kind, s=1):
+    """The dark doorway a front door uncovers as it opens (car space; s as door())."""
+    c = KINDS[kind][1]()
+    d0, d1, ylo, yhi = door_bounds(c)
+    box(min(s * (c.hx - 0.02), s * (c.hx + 0.016)), ylo, d0, max(s * (c.hx - 0.02), s * (c.hx + 0.016)), yhi, d1, INSIDE())
+
+
+def rigs():
+    """car_rigs.json: for each kind, where its wheels are (x either side, radius = the axle's height, front and back z), the
+    driver's door hinge (x, z) and its length, and the exhausts (x, y, z) a boost trail streams from."""
+    out = {}
+    for kind in KINDS:
+        c = KINDS[kind][1]()
+        d0, d1, ylo, yhi = door_bounds(c)
+        out[kind] = {"wheelX": c.wx, "wheelR": c.r, "frontZ": c.zf, "backZ": c.zb, "hingeX": round(c.hx + 0.02, 4), "hingeZ": round(d1, 4),
+                     "doorLength": round(d1 - d0, 4), "exhausts": [[round(s * (c.hx - 0.42), 4), round(c.back_y - 0.24, 4), round(-c.hz - 0.1, 4)] for s in (1, -1)],
+                     "length": round(2 * c.hz, 4)}
+    here = os.path.dirname(os.path.abspath(__file__))
+    path = os.path.join(here, "..", "..", "src", "main", "resources", "assets", "minebloxroyale", "car_rigs.json")
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(out, f, indent=1)
+    print("car_rigs.json:", len(out), "kinds", flush=True)
+
+
+def build(kind, stage, with_wheels=True):
     c = KINDS[kind][1]()
     b = body(c, kind)
     cab, panes, centre = cabin(c, kind)
@@ -428,7 +493,8 @@ def build(kind, stage):
         else:
             state = "glass"
         window(face, centre, state, 7 + i)
-    wheels(c, stage)
+    if with_wheels:
+        wheels(c, stage)
     front(c, stage, kind)
     back(c)
     mirrors(c, stage)
@@ -446,3 +512,16 @@ def entry(kind, stage):
 
 
 ITEMS = {f"car_{k}_{s}": entry(k, s) for k in KINDS for s in STAGES}
+# (2.0.0-test3) the driven car's pieces: models only
+PIECE = {"scale": 1.0, "ao": 0.7, "lod": 0.3, "render": False}
+for _k in KINDS:
+    for _s in STAGES:
+        ITEMS[f"car_{_k}_{_s}_shell"] = (f"{KINDS[_k][0]} shell {_s}", lambda k=_k, s=_s: build(k, s, with_wheels=False), PIECE)
+    ITEMS[f"car_wheel_{_k}"] = ("wheel", lambda k=_k: wheel(KINDS[k][1](), 0, 0, 0, 1, False), PIECE)
+    ITEMS[f"car_wheel_{_k}_r"] = ("wheel", lambda k=_k: wheel(KINDS[k][1](), 0, 0, 0, -1, False), PIECE)
+    ITEMS[f"car_wheel_{_k}_bare"] = ("wheel", lambda k=_k: wheel(KINDS[k][1](), 0, 0, 0, 1, True), PIECE)
+    ITEMS[f"car_door_{_k}"] = ("door", lambda k=_k: door(k), PIECE)
+    ITEMS[f"car_door_{_k}_r"] = ("door", lambda k=_k: door(k, -1), PIECE)
+    ITEMS[f"car_doorway_{_k}"] = ("doorway", lambda k=_k: doorway(k), {"scale": 1.0, "ao": 0.7, "render": False})
+    ITEMS[f"car_doorway_{_k}_r"] = ("doorway", lambda k=_k: doorway(k, -1), {"scale": 1.0, "ao": 0.7, "render": False})
+ITEMS["car_rigs"] = ("rigs", rigs, {"export": False, "render": False})

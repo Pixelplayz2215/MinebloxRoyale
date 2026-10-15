@@ -1,0 +1,156 @@
+{
+ "sedan": {
+  "wheelX": 1.02,
+  "wheelR": 0.36,
+  "frontZ": 1.45,
+  "backZ": -1.45,
+  "hingeX": 1.14,
+  "hingeZ": 0.9,
+  "doorLength": 1.0,
+  "exhausts": [
+   [
+    0.7,
+    0.46,
+    -2.38
+   ],
+   [
+    -0.7,
+    0.46,
+    -2.38
+   ]
+  ],
+  "length": 4.56
+ },
+ "sports": {
+  "wheelX": 1.06,
+  "wheelR": 0.34,
+  "frontZ": 1.45,
+  "backZ": -1.5,
+  "hingeX": 1.18,
+  "hingeZ": 0.7,
+  "doorLength": 1.2,
+  "exhausts": [
+   [
+    0.74,
+    0.32,
+    -2.4
+   ],
+   [
+    -0.74,
+    0.32,
+    -2.4
+   ]
+  ],
+  "length": 4.6
+ },
+ "pickup": {
+  "wheelX": 1.05,
+  "wheelR": 0.42,
+  "frontZ": 1.5,
+  "backZ": -1.5,
+  "hingeX": 1.17,
+  "hingeZ": 1.15,
+  "doorLength": 1.2,
+  "exhausts": [
+   [
+    0.73,
+    0.61,
+    -2.45
+   ],
+   [
+    -0.73,
+    0.61,
+    -2.45
+   ]
+  ],
+  "length": 4.7
+ },
+ "suv": {
+  "wheelX": 1.05,
+  "wheelR": 0.42,
+  "frontZ": 1.5,
+  "backZ": -1.45,
+  "hingeX": 1.17,
+  "hingeZ": 1.25,
+  "doorLength": 1.0,
+  "exhausts": [
+   [
+    0.73,
+    0.61,
+    -2.4
+   ],
+   [
+    -0.73,
+    0.61,
+    -2.4
+   ]
+  ],
+  "length": 4.6
+ },
+ "hatchback": {
+  "wheelX": 0.98,
+  "wheelR": 0.34,
+  "frontZ": 1.2,
+  "backZ": -1.2,
+  "hingeX": 1.1,
+  "hingeZ": 0.9,
+  "doorLength": 1.0,
+  "exhausts": [
+   [
+    0.66,
+    0.48,
+    -2.05
+   ],
+   [
+    -0.66,
+    0.48,
+    -2.05
+   ]
+  ],
+  "length": 3.9
+ },
+ "police": {
+  "wheelX": 1.02,
+  "wheelR": 0.36,
+  "frontZ": 1.45,
+  "backZ": -1.45,
+  "hingeX": 1.14,
+  "hingeZ": 0.9,
+  "doorLength": 1.0,
+  "exhausts": [
+   [
+    0.7,
+    0.46,
+    -2.38
+   ],
+   [
+    -0.7,
+    0.46,
+    -2.38
+   ]
+  ],
+  "length": 4.56
+ },
+ "taxi": {
+  "wheelX": 1.02,
+  "wheelR": 0.36,
+  "frontZ": 1.45,
+  "backZ": -1.45,
+  "hingeX": 1.14,
+  "hingeZ": 0.9,
+  "doorLength": 1.0,
+  "exhausts": [
+   [
+    0.7,
+    0.46,
+    -2.38
+   ],
+   [
+    -0.7,
+    0.46,
+    -2.38
+   ]
+  ],
+  "length": 4.56
+ }
+}

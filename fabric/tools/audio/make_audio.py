@@ -9,12 +9,18 @@ assets' sounds.json:
   gun/<gun>_1..3                   each gun's shot, three takes so repeats don't sound copied (the rocket launcher too)
   boom/explosion_1..3              a rocket or grenade going off; boom/grenade_bounce, a grenade knocking on the ground
   storm/warning                    the storm starting to close in
+  car/engine, car/skid             a car's engine and its tyres squealing round a turn: seamless loops the game pitches
+                                   and fades with how fast the car goes and turns (2.0.0-test3, creator: "Cars should have
+                                   a driving animation (also sounds)")
+  car/boost, car/door_open, car/door_close
+                                   a boost kicking in, a car door opening and shutting
 
-python fabric/tools/audio/make_audio.py
+python fabric/tools/audio/make_audio.py [cars]      (cars: just the car sounds)
 """
 import json
 import os
 import subprocess
+import sys
 import tempfile
 import wave
 import zlib
@@ -265,6 +271,93 @@ def storm_warning():
     return norm(out * fade, 0.85)
 
 
+# ------------------------------------------------------------------------------------------------- cars
+
+def car_engine():
+    """An engine running, 2 s that loop without a seam: every part repeats a whole number of times in the 2 s (the noise is
+    filtered round the loop, so it wraps too). The game raises its pitch with the car's speed."""
+    sec = 2.0
+    n = int(sec * SR)
+    t = t_of(sec)
+    f0 = 40.0  # (the firing: 80 times in the loop)
+    out = np.zeros(n)
+    for k, a in ((1, 1.0), (2, 0.62), (3, 0.42), (4, 0.3), (5, 0.18), (6, 0.12), (8, 0.07)):
+        out += a * np.sin(2 * np.pi * f0 * k * t + k * 0.7)
+    out *= 0.78 + 0.22 * np.sin(2 * np.pi * 12.5 * t)  # (each cylinder's pulse)
+    out += filt(noise(sec), lo=60, hi=420) * 0.55  # (the rumble)
+    out += filt(noise(sec), lo=900, hi=2600) * 0.06 * (0.6 + 0.4 * np.sin(2 * np.pi * 25 * t))  # (a little valve chatter)
+    return norm(soft(out, 1.5), 0.8)
+
+
+def car_skid():
+    """Tyres squealing: a screech over hiss, 1 s that loops (a whole number of cycles of everything)."""
+    sec = 1.0
+    n = int(sec * SR)
+    t = t_of(sec)
+    squeal = np.sin(2 * np.pi * 1250 * t + 9 * np.sin(2 * np.pi * 6 * t)) * 0.5
+    squeal += np.sin(2 * np.pi * 2500 * t + 18 * np.sin(2 * np.pi * 6 * t)) * 0.18
+    hiss = filt(noise(sec), lo=1400, hi=4200) * 0.6
+    out = (squeal + hiss) * (0.85 + 0.15 * np.sin(2 * np.pi * 9 * t))
+    return norm(out, 0.7)
+
+
+def car_boost():
+    """A boost: a thump, a turbo whistle rising and a rush of air as it kicks in, a crackle as it settles."""
+    sec = 1.4
+    n = int(sec * SR)
+    out = np.zeros(n)
+    th = sweep(120, 45, 0.35) * env(int(0.35 * SR), 0.002, 0.16)
+    out[:len(th)] += th * 0.9
+    whistle = sweep(900, 2600, 0.9, shape=3) * env(int(0.9 * SR), 0.05, 0.5)
+    i = int(0.05 * SR)
+    out[i:i + len(whistle)] += whistle * 0.25
+    rush = noise(sec)
+    parts = []
+    blocks = 14
+    for b in range(blocks):  # (the rush of air opening up, then easing)
+        a_, b_ = b * n // blocks, (b + 1) * n // blocks
+        parts.append(filt(rush[a_:b_], lo=300, hi=1200 + 4200 * min(1.0, b / 5)))
+    out += np.concatenate(parts) * env(n, 0.12, 0.8, curve=2.5) * 0.55
+    for _ in range(10):  # crackle
+        at = int((0.7 + RNG.random() * 0.6) * SR)
+        c = filt(noise(0.02), lo=1500, hi=6000) * env(int(0.02 * SR), 0.0005, 0.006)
+        if at + len(c) < n:
+            out[at:at + len(c)] += c * (0.25 + RNG.random() * 0.25)
+    return norm(soft(room(out, 0.4, 0.2), 1.3), 0.9)
+
+
+def car_door(close):
+    """A car door: opening, the latch clicks and the hinge creaks; shutting, a solid thump and the latch."""
+    sec = 0.45 if not close else 0.4
+    n = int(sec * SR)
+    out = np.zeros(n)
+    click = filt(noise(0.015), lo=2500, hi=8000) * env(int(0.015 * SR), 0.0003, 0.004)
+    if close:
+        thump = sweep(140, 55, 0.25, shape=4) * env(int(0.25 * SR), 0.002, 0.08)
+        out[:len(thump)] += thump * 1.0
+        body = filt(noise(0.12), lo=80, hi=900) * env(int(0.12 * SR), 0.001, 0.04)
+        out[:len(body)] += body * 0.7
+        i = int(0.02 * SR)
+        out[i:i + len(click)] += click * 0.5
+    else:
+        out[:len(click)] += click * 0.7
+        i = int(0.06 * SR)
+        m = int(0.32 * SR)
+        creak = sweep(300, 430, 0.32, shape=1.5) * (0.6 + 0.4 * np.sign(np.sin(2 * np.pi * 38 * t_of(0.32))))
+        creak = filt(creak, lo=200, hi=2500) * env(m, 0.04, 0.14)
+        out[i:i + m] += creak * 0.35
+    return norm(room(out, 0.3, 0.15), 0.8)
+
+
+def cars(snd, reg):
+    for name, make in (("engine", car_engine), ("skid", car_skid), ("boost", car_boost), ("door_open", lambda: car_door(False)),
+                       ("door_close", lambda: car_door(True))):
+        seeded(f"car/{name}")
+        write_ogg(os.path.join(snd, "car", f"{name}.ogg"), make())
+        reg[f"car.{name}"] = {"sounds": [f"minebloxroyale:car/{name}"]}
+    print("car sounds")
+
+
 # ------------------------------------------------------------------------------------------------- music
 
 def note(midi):
@@ -447,6 +540,12 @@ def seeded(name):
 
 def main():
     snd = os.path.join(ASSETS, "sounds")
+    if len(sys.argv) > 1 and sys.argv[1] == "cars":  # (just the cars' sounds)
+        p = os.path.join(ASSETS, "sounds.json")
+        reg = json.load(open(p, encoding="utf-8"))
+        cars(snd, reg)
+        json.dump(reg, open(p, "w", encoding="utf-8", newline="\n"), indent=2)
+        return
     for name in GUNS:
         for take in (1, 2, 3):
             seeded(f"gun/{name}_{take}")
@@ -478,6 +577,7 @@ def main():
     reg["boom.grenade_bounce"] = {"sounds": ["minebloxroyale:boom/grenade_bounce"]}
     for i in (1, 2):
         reg[f"music.battle_{i}"] = {"sounds": [{"name": f"minebloxroyale:music/battle_{i}", "stream": True}]}
+    cars(snd, reg)
     json.dump(reg, open(p, "w", encoding="utf-8", newline="\n"), indent=2)
     print("sounds.json:", len(reg), "events")
 

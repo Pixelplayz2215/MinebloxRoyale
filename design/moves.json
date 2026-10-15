@@ -123,6 +123,20 @@
    "note": "Sitting back in a car, hands on the wheel"
   },
   {
+   "id": "car_enter",
+   "name": "Getting into a car",
+   "axis": "progress",
+   "loopSeconds": 1.0,
+   "note": "From the car's left: a hand on the roof, a foot in, ducking under, down onto the seat"
+  },
+  {
+   "id": "car_enter_r",
+   "name": "Getting into a car (its right side)",
+   "axis": "progress",
+   "loopSeconds": 1.0,
+   "note": "The same from the car's right"
+  },
+  {
    "id": "swing",
    "name": "Pickaxe swing",
    "axis": "progress",

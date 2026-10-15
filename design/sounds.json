@@ -31,6 +31,9 @@
     { "id": "knocked", "game": "minecraft", "file": "entity.player.hurt_sweet_berry_bush", "volume": 0.9, "pitch": 0.7, "use": "you or a teammate were knocked down" },
     { "id": "revived", "game": "minecraft", "file": "block.amethyst_block.chime", "volume": 1.0, "pitch": 1.2, "use": "a knocked teammate is back on their feet" },
     { "id": "card_pickup", "game": "minecraft", "file": "item.book.page_turn", "volume": 1.0, "pitch": 1.0, "use": "you picked up a teammate's reboot card" },
-    { "id": "rebooted", "game": "minecraft", "file": "block.beacon.activate", "volume": 0.9, "pitch": 1.4, "use": "a reboot van brought teammates back" }
+    { "id": "rebooted", "game": "minecraft", "file": "block.beacon.activate", "volume": 0.9, "pitch": 1.4, "use": "a reboot van brought teammates back" },
+    { "id": "car_door_open", "game": "mod", "file": "car.door_open", "volume": 0.8, "pitch": 1.0, "use": "a car door swinging open as someone gets in or out (2.0.0-test3)" },
+    { "id": "car_door_close", "game": "mod", "file": "car.door_close", "volume": 0.9, "pitch": 1.0, "use": "the car door shutting behind them (2.0.0-test3)" },
+    { "id": "car_boost", "game": "mod", "file": "car.boost", "volume": 1.0, "pitch": 1.0, "use": "a car's boost kicking in (2.0.0-test3; its engine and tyres are CarSounds' loops, car.engine and car.skid)" }
   ]
 }

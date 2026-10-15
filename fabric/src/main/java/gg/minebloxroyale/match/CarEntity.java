@@ -67,6 +67,8 @@ public class CarEntity extends Entity {
 	private static final EntityDataAccessor<Integer> BOOSTING = SynchedEntityData.defineId(CarEntity.class, EntityDataSerializers.INT);
 	/** Blocks a tick: driving (about 11 a second), boosting (about 17); how fast it gets going and slows. */
 	private static final float SPEED = 0.55F, BOOST_SPEED = 0.85F, ACCEL = 0.035F, BRAKE = 0.05F, COAST = 0.02F;
+	/** A boost kicking in (2.0.0-test3: the mod's own, make_audio.py car/boost). */
+	private static final net.minecraft.sounds.SoundEvent BOOST_SOUND = net.minecraft.sounds.SoundEvent.createVariableRangeEvent(MinebloxRoyale.id("car.boost"));
 	/** Degrees a tick it turns at speed. */
 	private static final float TURN = 4.5F;
 	public static final int FUEL_TICKS = 5 * 60 * 20, BOOST_TICKS = 60, BOOST_FUEL = 30 * 20, MAX_BOOSTS = 4, SEATS = 4;
@@ -248,7 +250,7 @@ public class CarEntity extends Entity {
 			entityData.set(BOOSTS, boostsLeft() - 1);
 			entityData.set(BOOSTING, BOOST_TICKS);
 			fuel = Math.max(0, fuel - BOOST_FUEL); // (with less than 30 s left, a boost uses up what's left)
-			level.playSound(null, getX(), getY(), getZ(), SoundEvents.FIREWORK_ROCKET_LAUNCH, SoundSource.NEUTRAL, 1.2F, 0.6F);
+			level.playSound(null, getX(), getY(), getZ(), BOOST_SOUND, SoundSource.NEUTRAL, 1.2F, 1.0F); // (2.0.0-test3: its own sound)
 		}
 		jumpWas = in.jump();
 		if (boost > 0) {

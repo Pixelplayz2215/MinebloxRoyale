@@ -46,6 +46,9 @@ public final class RobloxAvatarRenderer {
 	public static final RenderStateDataKey<Boolean> SKYDIVING = RenderStateDataKey.create(() -> "minebloxroyale:skydiving");
 	/** Riding in a car (v2.0.0, CarEntity): sitting, hands on the wheel. */
 	public static final RenderStateDataKey<Boolean> SITTING = RenderStateDataKey.create(() -> "minebloxroyale:sitting");
+	/** Getting into a car (2.0.0-test3): how far through (0..1), and whether through a door on the car's right. */
+	public static final RenderStateDataKey<Float> CAR_ENTER = RenderStateDataKey.create(() -> "minebloxroyale:car_enter");
+	public static final RenderStateDataKey<Boolean> CAR_ENTER_RIGHT = RenderStateDataKey.create(() -> "minebloxroyale:car_enter_right");
 	/** The Locker's preview of you (its glider and contrail kept apart from your avatar in the world). */
 	public static final RenderStateDataKey<Boolean> PREVIEW = RenderStateDataKey.create(() -> "minebloxroyale:preview");
 	/** The Locker's Shop (2.0.0-test2): the hovered item ({slot: id}), worn on the preview over the outfit. */
@@ -366,6 +369,9 @@ public final class RobloxAvatarRenderer {
 			state.getDataOrDefault(ADS, false), state.getDataOrDefault(GLIDING, false), state.getDataOrDefault(SKYDIVING, false), state.getDataOrDefault(KNOCKED, false),
 			state.getDataOrDefault(SITTING, false), emote, state.x, state.y, state.z, state.ageInTicks / 20F,
 			state.xRot, swing), System.nanoTime());
+		// Getting into a car: climbing in (its sitting goes on underneath, so it's seated once in)
+		Float enter = state.getDataOrDefault(CAR_ENTER, null);
+		if (enter != null && enter < 1) p = Moves.at(state.getDataOrDefault(CAR_ENTER_RIGHT, false) ? "car_enter_r" : "car_enter", enter);
 		// Minecraft draws a crouching player 2 px lower; the crouch already stands its feet on the ground.
 		return state instanceof AvatarRenderState a && a.isCrouching ? p.add(Pose.BOB, 2F / 16F / S) : p;
 	}

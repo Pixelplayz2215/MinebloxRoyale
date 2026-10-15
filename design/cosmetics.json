@@ -1,11 +1,11 @@
 {
  "sheet": "cosmetics",
  "class": "CosmeticDef",
- "about": "The Locker (key K, outside matches): a Roblox-style catalog inspired by classic Roblox avatar items, 25+ per section. Purely cosmetic, no advantage and no armour. Everyone can wear everything except the six Dominus sets (hat, back, shirt, pants, shoes), which unlock together like emotes and gliders (unlock / need as in the emotes sheet; creator: 'way too cool to be free'). Hats, hair, face and back accessories and shoes are smooth, rounded shapes made for Mineblox Royale (shape) and drawn on the R6 avatar; shirts recolour the torso and arms (color = shirt, color2 = its print); pants recolour the legs (shape = their print: jeans, stripe, cargo, plaid, belted, knee, pinstripe, bands, camo); every shirt also gets a collar and hem; particles float around you gently (one every 'rate' ticks). hideHair: full masks and helmets hide the haircut. Roblox's own catalog items aren't downloadable, so these are our own versions (Dominus included). v2.0.0: shop = bought in the Locker's shop for gold; need is the price. v2.0.0 pickaxe: a skin for the pickaxe (shape = its model after \"pickaxe_\", fabric/tools/blender/pickaxes.py); the server puts it on the player's pickaxe, so everyone sees it.",
+ "about": "The Locker (key K, outside matches): a Roblox-style catalog inspired by classic Roblox avatar items, 25+ per section. Purely cosmetic, no advantage and no armour. Everyone can wear everything except the six Dominus sets (hat, back, shirt, pants, shoes), which unlock together like emotes and gliders (unlock / need as in the emotes sheet; creator: 'way too cool to be free'). Hats, hair, face and back accessories and shoes are smooth, rounded shapes made for Mineblox Royale (shape) and drawn on the R6 avatar; shirts recolour the torso and arms (color = shirt, color2 = its print); pants recolour the legs (shape = their print: jeans, stripe, cargo, plaid, belted, knee, pinstripe, bands, camo); every shirt also gets a collar and hem; particles float around you gently (one every 'rate' ticks). hideHair: full masks and helmets hide the haircut. Roblox's own catalog items aren't downloadable, so these are our own versions (Dominus included). v2.0.0: shop = bought in the Locker's shop for gold; need is the price. v2.0.0 pickaxe: a skin for the pickaxe (shape = its model after \"pickaxe_\", fabric/tools/blender/pickaxes.py); the server puts it on the player's pickaxe, so everyone sees it. 2.0.0-test3: boosttrail, a car's boost trail (creator: \"Car should have a contrail when boosting (Unlockable only via gold in shops)\"): the driver's streams from the car's exhausts while it boosts, in a contrail look (shape) drawn wider; all bought with gold.",
  "columns": {
   "id": "string",
   "name": "string",
-  "slot": "enum:hat|hair|face|back|shirt|pants|shoes|particle|pickaxe|contrail",
+  "slot": "enum:hat|hair|face|back|shirt|pants|shoes|particle|pickaxe|contrail|boosttrail",
   "shape": "string",
   "color": "color",
   "color2": "color",
@@ -4046,6 +4046,102 @@
    "hideHair": false,
    "unlock": "shop",
    "need": 500
+  },
+  {
+   "id": "boost_nitro",
+   "name": "Nitro Flame",
+   "slot": "boosttrail",
+   "shape": "flame",
+   "color": "#FFB23A",
+   "color2": "#E0312B",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "shop",
+   "need": 400
+  },
+  {
+   "id": "boost_blue_blaze",
+   "name": "Blue Blaze",
+   "slot": "boosttrail",
+   "shape": "flame",
+   "color": "#9FE8FF",
+   "color2": "#2E6BE6",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "shop",
+   "need": 450
+  },
+  {
+   "id": "boost_rainbow",
+   "name": "Rainbow Rocket",
+   "slot": "boosttrail",
+   "shape": "rainbow",
+   "color": "#FFFFFF",
+   "color2": "#FFFFFF",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "shop",
+   "need": 600
+  },
+  {
+   "id": "boost_neon",
+   "name": "Neon Streak",
+   "slot": "boosttrail",
+   "shape": "neon",
+   "color": "#3FF2FF",
+   "color2": "#3FF2FF",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "shop",
+   "need": 500
+  },
+  {
+   "id": "boost_gold_rush",
+   "name": "Gold Rush",
+   "slot": "boosttrail",
+   "shape": "sparkle",
+   "color": "#FFD54A",
+   "color2": "#F2A81D",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "shop",
+   "need": 700
+  },
+  {
+   "id": "boost_thunder",
+   "name": "Thunder Road",
+   "slot": "boosttrail",
+   "shape": "zigzag",
+   "color": "#FFFFFF",
+   "color2": "#7FD7FF",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "shop",
+   "need": 650
+  },
+  {
+   "id": "boost_candy",
+   "name": "Candy Rush",
+   "slot": "boosttrail",
+   "shape": "bands",
+   "color": "#FF4F6A",
+   "color2": "#FFFFFF",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "shop",
+   "need": 400
+  },
+  {
+   "id": "boost_toxic",
+   "name": "Toxic Fumes",
+   "slot": "boosttrail",
+   "shape": "wave",
+   "color": "#9BF24D",
+   "color2": "#2E8B57",
+   "rate": 0,
+   "hideHair": false,
+   "unlock": "shop",
+   "need": 450
   }
  ]
 }

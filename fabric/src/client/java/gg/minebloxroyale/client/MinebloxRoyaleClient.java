@@ -181,6 +181,7 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 			RoomCodes.tick(mc);
 			SettingsLock.tick(mc);
 			RobloxSfx.tick(mc);
+			CarSounds.tick(mc);
 			LockerAudit.tick(mc);
 			WhatToTest.tick(mc);
 			if (maximizeIn > 0 && --maximizeIn == 0) SDLVideo.SDL_MaximizeWindow(mc.getWindow().handle()); // once it's left fullscreen

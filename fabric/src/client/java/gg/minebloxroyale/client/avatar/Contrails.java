@@ -56,7 +56,12 @@ public final class Contrails {
 		final double[][] head = new double[4][];
 		CosmeticDef look;
 		double seen;
+		/** A car's boost trail (2.0.0-test3): wider. */
+		boolean car;
 	}
+
+	/** How much wider (and longer lasting) a car's boost trail is than an avatar's contrail of the same look. */
+	private static final float CAR_WIDTH = 2.6F, CAR_LIFE = 1.3F;
 
 	/** Points a trail in the world is drawn with (evenly along it), and the Locker's preview. */
 	private static final int WORLD_POINTS = 64, PREVIEW_POINTS = 96;
@@ -107,6 +112,53 @@ public final class Contrails {
 		}
 	}
 
+	/**
+	 * A boosting car's boost trail this frame (2.0.0-test3, creator: "Car should have a contrail when boosting"): from its
+	 * exhausts (the car's model space), model: that space to the camera; the look is its driver's (cosmetics slot
+	 * boosttrail).
+	 */
+	public static void recordCar(int entityId, CosmeticDef look, Matrix4f model, Vector3f[] exhausts) {
+		Trails t = ALL.computeIfAbsent(entityId, k -> new Trails());
+		double time = now();
+		t.look = look;
+		t.car = true;
+		t.seen = time;
+		Vec3 cam = Minecraft.getInstance().gameRenderer.mainCamera().position();
+		Vector3f w = new Vector3f();
+		for (int i = 0; i < exhausts.length && i < 2; i++) {
+			model.transformPosition(exhausts[i], w);
+			ArrayDeque<double[]> q = t.pts[i];
+			double x = cam.x + w.x, y = cam.y + w.y, z = cam.z + w.z;
+			t.head[i] = new double[] { x, y, z, time };
+			double[] last = q.peekLast();
+			if (last != null && time - last[3] < 1 / 60.0 && (x - last[0]) * (x - last[0]) + (y - last[1]) * (y - last[1]) + (z - last[2]) * (z - last[2]) < 0.01) continue;
+			q.addLast(new double[] { x, y, z, time });
+			if (q.size() > 160) q.removeFirst();
+		}
+	}
+
+	/**
+	 * The Locker's Boost Trails preview: the trail streaming back from a standing car's exhausts (its model space) as if it
+	 * were boosting, lying flat behind it and standing up across it, so it shows from any angle.
+	 */
+	public static void carPreview(SubmitNodeCollector collector, PoseStack poseStack, CosmeticDef look, Vector3f[] exhausts) {
+		Style st = STYLES.getOrDefault(look.shape(), STREAK);
+		float tsec = (float) (now() % 1000), width = st.width() * S * CAR_WIDTH;
+		int n = PREVIEW_POINTS;
+		for (Vector3f e : exhausts) {
+			Vector3f[] p = new Vector3f[n];
+			float[] u = new float[n];
+			for (int k = 0; k < n; k++) {
+				u[k] = k / (n - 1F);
+				p[k] = new Vector3f(e.x + 0.05F * (float) Math.sin(tsec * 3 - u[k] * 6), e.y + 0.08F * u[k], e.z - 4.2F * u[k]);
+			}
+			collector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucentEmissive(WorldVisuals.white()), (pose, vc) -> {
+				band(vc, pose, p, u, look, width, tsec, new Vector3f(0, 1, 0));
+				band(vc, pose, p, u, look, width, tsec, new Vector3f(1, 0, 0));
+			});
+		}
+	}
+
 	/** Every trail in the world (WorldVisuals, camera-relative), older points dropped as they fade. */
 	public static void draw(PoseStack ps, SubmitNodeCollector out, Vec3 cam) {
 		if (ALL.isEmpty()) return;
@@ -115,9 +167,10 @@ public final class Contrails {
 		for (Iterator<Trails> it = ALL.values().iterator(); it.hasNext();) {
 			Trails t = it.next();
 			Style st = STYLES.getOrDefault(t.look.shape(), STREAK);
+			float life = st.life() * (t.car ? CAR_LIFE : 1), width = st.width() * S * (t.car ? CAR_WIDTH : 1);
 			boolean any = false;
 			for (ArrayDeque<double[]> q : t.pts) {
-				while (!q.isEmpty() && time - q.peekFirst()[3] > st.life()) q.removeFirst();
+				while (!q.isEmpty() && time - q.peekFirst()[3] > life) q.removeFirst();
 				any |= !q.isEmpty();
 			}
 			if (!any && time - t.seen > 2) {
@@ -138,12 +191,12 @@ public final class Contrails {
 				for (int k = 0; k < n; k++) {
 					double[] a = live && k == 0 ? h : d.next();
 					p[k] = new Vector3f((float) (a[0] - cam.x), (float) (a[1] - cam.y), (float) (a[2] - cam.z));
-					u[k] = (float) Math.min(1, (time - a[3]) / st.life());
+					u[k] = (float) Math.min(1, (time - a[3]) / life);
 				}
 				Strip strip = resample(p, u, WORLD_POINTS);
 				CosmeticDef look = t.look;
 				out.submitCustomGeometry(ps, RenderTypes.entityTranslucentEmissive(WorldVisuals.white()),
-					(pose, vc) -> band(vc, pose, strip.p(), strip.u(), look, st.width() * S, tsec, null));
+					(pose, vc) -> band(vc, pose, strip.p(), strip.u(), look, width, tsec, null));
 			}
 		}
 	}
