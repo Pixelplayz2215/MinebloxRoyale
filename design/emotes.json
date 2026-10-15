@@ -113,7 +113,7 @@
    "unlock": "kills",
    "need": 10,
    "loopSeconds": 0.6,
-   "note": "hands in the armpits, elbows flapping, pecking head, knees up in turns"
+   "note": "hands tucked up in front of the shoulders, elbows flapping, pecking head, knees up in turns"
   },
   {
    "id": "disco",
@@ -217,7 +217,7 @@
    "unlock": "bullseyes",
    "need": 10,
    "loopSeconds": 2.0,
-   "note": "hand on the heart, the other behind the back, a deep polite bow"
+   "note": "a hand across the waist, the other back, a polite bow"
   },
   {
    "id": "cheer",

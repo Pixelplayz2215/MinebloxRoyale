@@ -2,7 +2,7 @@
 The emotes and the avatar's moves animated in Blender (creator: "use blender to animate them and send render videos";
 then "add knees and elbows ... new walking animation, running, aiming, reviving, rebooting, etc."). For each emote in
 emote_anims.py, or move in moves.py: its key poses become Blender keyframes (smooth Bezier curves), every moment of it
-gets the two fixes in rig.py (feet on, never through, the floor; hands kept out of the body), the R6 avatar is posed
+gets the two fixes in rig.py (feet on, never through, the floor; nothing going into anything), the R6 avatar is posed
 from it frame by frame (avatar.joints, the game's own joint maths, elbows and knees bent as the game bends them) and
 rendered, and the frames become a video with its name and a line under it (what unlocks an emote, "Free" when nothing
 does; what a move is). The same poses, sampled finely, are the game's emote_keys / move_keys sheets, so the game plays
@@ -12,6 +12,7 @@ blender --background --factory-startup --python emote_video.py -- [moves] <frame
     renders frames (and frames.json for make_videos); without ids it also writes the sheets: design/emote_keys.json
     and emotes.json, or (moves) design/move_keys.json and moves.json (BR_SHEETS_ONLY=1: only those)
 python emote_video.py videos <frames dir> <out dir>       (no Blender: titles and MP4s with ffmpeg)
+python emote_video.py merge emotes|moves <rows files...>  (batches run side by side with BR_ROWS_OUT: their sheet)
 """
 import json
 import math
@@ -22,7 +23,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, "..", "..", "..")
 DESIGN = os.path.join(ROOT, "design")
 FPS = 30
-SAMPLES = 32  # sheet rows per loop
+SAMPLES = 64  # sheet rows per loop
 CHANNELS = {"rax": "rightArmX", "raz": "rightArmZ", "lax": "leftArmX", "laz": "leftArmZ", "rlx": "rightLegX", "llx": "leftLegX", "yaw": "bodyYaw",
             "bob": "bounce", "rlz": "rightLegZ", "llz": "leftLegZ", "hx": "headX", "hy": "headY", "hz": "headZ", "lean": "lean", "tilt": "tilt",
             "twist": "twist", "rel": "rightElbow", "lel": "leftElbow", "rkn": "rightKnee", "lkn": "leftKnee"}
@@ -130,19 +131,40 @@ def blender_main(args):
         return {CHANNELS[n]: fc.evaluate(frame) for n, fc in fcs.items()}
 
     def bake(e, fcs, length):
-        """The animation at evenly spaced moments (t = i / n), each with its feet and hands fixed (rig.py)."""
+        """The animation at evenly spaced moments (t = i / n), each with its feet put right and nothing going into
+        anything (rig.py)."""
         cyclic = getattr(e, "cyclic", True)
-        n = max(64, int(round(2 * length)))
+        n = max(128, int(round(4 * length)))
         poses = [pose_at(fcs, 1 + i / n * length) for i in range(n + 1)]
         plant = getattr(e, "plant", "floor")
-        poses = [rig.touch(p) if plant == "touch" else rig.floor(p) if plant == "floor" else p for p in poses]
-        fixes = [rig.clear(p, getattr(e, "keep", ())) for p in poses]
-        for col in sorted({c for d in fixes for c in d}):
-            for p, v in zip(poses, smooth([d.get(col, 0.0) for d in fixes], cyclic, max(1, n // 40))):
-                p[col] = p.get(col, 0.0) + v
-        if fixes and any(fixes):
-            print(f"  hands kept out of the body in {sum(1 for d in fixes if d)} of {len(fixes)} moments", flush=True)
+        feet = lambda p: rig.touch(p) if plant == "touch" else rig.floor(p) if plant == "floor" else p
+        poses = [feet(p) for p in poses]
+        keep = getattr(e, "keep", ())
+        r = max(1, n // 48)
+        for _ in range(3):  # (clear, put the feet right again, until both hold)
+            if not rig.fix_sequence(poses, cyclic, keep, smooth=lambda v, c: smooth(v, c, r), log=lambda m: print(m, flush=True)):
+                break
+            poses = [feet(p) for p in poses]
+        if cyclic:
+            poses[-1] = dict(poses[0])
         return poses
+
+    def verify(aid, poses, frames, tf):
+        """Every moment the game or the video shows must be clear: the sheet's rows, halfway between them (the game
+        blends straight between rows), and every video frame."""
+        checks = [at(poses, i / SAMPLES) for i in range(SAMPLES + 1)]
+        for i in range(SAMPLES):  # (the game's straight blend, halfway)
+            a_, b_ = at(poses, i / SAMPLES), at(poses, (i + 1) / SAMPLES)
+            checks.append({k: (a_.get(k, 0.0) + b_.get(k, 0.0)) / 2 for k in set(a_) | set(b_)})
+        checks += [at(poses, tf(f)) for f in range(1, frames + 1)]
+        worst, which = 0.0, None
+        for j, p in enumerate(checks):
+            d = max(rig.penetration(p, l) for l in rig.LIMBS)
+            if d > worst:
+                worst, which = d, j
+        verdict = "clear" if worst <= rig.EPS else f"CLIPS {worst:.3f} studs (check {which})"
+        print(f"VERIFY {aid}: {len(checks)} moments, {verdict}", flush=True)
+        return worst
 
     def stage():
         brlib.reset()
@@ -202,7 +224,52 @@ def blender_main(args):
                     hi = Vector(map(max, hi, w))
         return lo, hi
 
+    import roblox_body
+    from mathutils.bvhtree import BVHTree
+
+    def mesh_clips():
+        """The posed real body, triangle by triangle: which parts go into which (each surface pulled in 0.003 studs, so
+        parts that only touch don't count; where an arm or leg is joined on is left out, as rig.py leaves it)."""
+        trees, keep_tri = {}, {}
+        for part, objs in avatar.BUILT.items():
+            o = objs[0]
+            me = o.data
+            mw = o.matrix_world
+            verts = [mw @ (v.co - v.normal * 0.003) for v in me.vertices]
+            polys = [tuple(pl.vertices) for pl in me.polygons]
+            trees[part] = BVHTree.FromPolygons(verts, polys)
+            rest = roblox_body.REST.get(part)
+            if rest:  # (limbs: which triangles are below the shoulder / hip, by their joint-space height)
+                cap = rig.SHOULDER_CAP if part.endswith("arm") else rig.HIP_CAP
+                keep_tri[part] = [sum(rest[0][i][1] for i in pl) / 3 < cap for pl in polys]
+        found = []
+        pairs = [("right_arm", "torso"), ("left_arm", "torso"), ("right_arm", "head"), ("left_arm", "head"), ("right_arm", "left_arm"),
+                 ("right_arm", "right_leg"), ("right_arm", "left_leg"), ("left_arm", "right_leg"), ("left_arm", "left_leg"),
+                 ("right_leg", "left_leg"), ("right_leg", "torso"), ("left_leg", "torso")]
+        for a, b in pairs:
+            if a not in trees or b not in trees:
+                continue
+            hits = trees[a].overlap(trees[b])
+            joined = {("right_arm", "torso"), ("left_arm", "torso"), ("right_leg", "torso"), ("left_leg", "torso"), ("right_leg", "left_leg")}
+            if (a, b) in joined:
+                hits = [(i, j) for i, j in hits if keep_tri[a][i] and (b not in keep_tri or keep_tri[b][j])]
+            if hits:
+                found.append(f"{a}/{b}:{len(hits)}")
+        return found
+
     def render(name, frames, pose_fn, lying=None, ground_y=-2.0):
+        if os.environ.get("BR_MESHCHECK_ONLY"):  # (no pictures: just check every frame on the real body)
+            stage()
+            avatar.build()
+            bad = []
+            for f in range(1, frames + 1):
+                p = pose_fn(f)
+                avatar.repose(avatar.joints(p, lying=lying), avatar.bends(p))
+                hits = mesh_clips()
+                if hits:
+                    bad.append((f, hits))
+            print(f"MESHCHECK {name}: {frames} frames, " + ("clear" if not bad else f"{len(bad)} CLIP, first frame {bad[0][0]} {bad[0][1]}"), flush=True)
+            return None
         stage()
         avatar.build()
         ground(ground_y)
@@ -215,11 +282,19 @@ def blender_main(args):
         d = os.path.join(out, name)
         os.makedirs(d, exist_ok=True)
         s = bpy.context.scene
+        check = bool(os.environ.get("BR_MESHCHECK"))  # (each frame also checked on the real body as rendered)
+        bad = []
         for f in range(1, frames + 1, int(os.environ.get("BR_STEP", "1"))):
             p = pose_fn(f)
             avatar.repose(avatar.joints(p, lying=lying), avatar.bends(p))
+            if check:
+                hits = mesh_clips()
+                if hits:
+                    bad.append((f, hits))
             s.render.filepath = os.path.join(d, f"{f:04d}.png")
             bpy.ops.render.render(write_still=True)
+        if check:
+            print(f"MESHCHECK {name}: {frames} frames, " + ("clear" if not bad else f"{len(bad)} CLIP, first frame {bad[0][0]} {bad[0][1]}"), flush=True)
         return d
 
     anims = EMOTES if kind == "emotes" else MOVES
@@ -245,10 +320,13 @@ def blender_main(args):
         else:  # there and back (aiming: up to down and up again; jumping: up, falling, and back)
             frames = int(round(2 * length))
             tf = lambda f: 1 - abs(1 - 2 * ((f - 1) / frames))
+        verify(aid, poses, frames, tf)
         if os.environ.get("BR_SHEETS_ONLY"):  # (just the sheets: no pictures)
             continue
         lying = Matrix.Rotation(math.radians(-90), 4, "X") if getattr(e, "lying", False) else None
         d = render(aid, frames, lambda f: at(poses, tf(f)), lying=lying, ground_y=CRAWL_FLOOR if lying else -2.0)
+        if d is None:
+            continue
         if kind == "emotes":
             row = rows[aid]
             index.append({"id": aid, "name": row["name"], "line": unlock_line(row), "kind": "emote", "dir": d, "frames": frames})
@@ -258,6 +336,8 @@ def blender_main(args):
 
     with open(os.path.join(out, "frames.json"), "w", encoding="utf-8") as f:
         json.dump(index, f, indent=1)
+    if os.environ.get("BR_ROWS_OUT"):  # (a batch of them: its sheet rows, for merge)
+        json.dump(sheet_rows, open(os.environ["BR_ROWS_OUT"], "w", encoding="utf-8"))
     if not only:
         (write_sheets if kind == "emotes" else write_moves)(sheet_rows, anims)
 
@@ -345,8 +425,28 @@ def make_videos(frames_dir, out_dir):
         print("video", target, flush=True)
 
 
+def merge(kind, files):
+    """The sheet from batches made side by side (each a BR_ROWS_OUT file), in the emotes' / moves' own order."""
+    sys.path.insert(0, HERE)
+    if kind == "emotes":
+        from emote_anims import EMOTES as anims
+    else:
+        from moves import MOVES as anims
+    rows = [r for f in files for r in json.load(open(f, encoding="utf-8"))]
+    key = "emote" if kind == "emotes" else "move"
+    missing = [a for a in anims if not any(r[key] == a for r in rows)]
+    if missing:
+        sys.exit(f"missing from the batches: {missing}")
+    order = {a: i for i, a in enumerate(anims)}
+    rows.sort(key=lambda r: (order[r[key]], r["t"]))
+    (write_sheets if kind == "emotes" else write_moves)(rows, anims)
+    print(f"{kind}: {len(rows)} rows")
+
+
 if __name__ == "__main__":
     if "--" in sys.argv:
         blender_main(sys.argv[sys.argv.index("--") + 1:])
     elif len(sys.argv) > 1 and sys.argv[1] == "videos":
         make_videos(sys.argv[2], sys.argv[3])
+    elif len(sys.argv) > 1 and sys.argv[1] == "merge":
+        merge(sys.argv[2], sys.argv[3:])

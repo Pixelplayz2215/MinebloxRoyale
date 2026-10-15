@@ -31,15 +31,27 @@ MODS ={f"minebloxroyale-{VER}.jar": JAR, "fabric-api-0.161.0+26.3.jar": FAPI, "e
 FFMPEG = {"ffmpeg.exe": os.path.join(FF, "bin", "ffmpeg.exe"), "LICENSE.txt": os.path.join(FF, "LICENSE.txt")}
 FFMPEG.update({os.path.basename(p): p for p in glob.glob(os.path.join(FF, "bin", "*.dll"))})
 DOCS = {n: os.path.join(SP, "pkg", n) for n in ("HOW TO PLAY.txt", "THIRD-PARTY NOTICES.txt")}
+# What Prism would otherwise download from its own server before the game can start (on some players' PCs it never
+# got through, Melty 2026-10-15: "Closes right after starting", "Could not download metadata for net.minecraft 26.3"):
+# the four components' version files, as the instance's own (Prism loads an instance's patches/ from disk), and, in the
+# ready-to-play Prism, Mojang's Java 25 runtime for Minecraft with the instance pointed at it. Taken once from a Prism
+# that downloaded them (.tools/prism-bundle).
+BUNDLE = os.path.join(ROOT, ".tools", "prism-bundle")
+PATCHES = {f"patches/{f}": os.path.join(BUNDLE, "patches", f) for f in ("org.lwjgl3.json", "net.minecraft.json", "net.fabricmc.intermediary.json",
+                                                                       "net.fabricmc.fabric-loader.json")}
+JAVA = os.path.join(BUNDLE, "java", "java-runtime-epsilon")
 # The modpack's picture (creator: the high-res Mineblox Royale icon, fabric/tools/branding/make_icon.py), inside every
 # pack for the launchers that pick one up by themselves, and beside it for setting by hand.
 ICON = os.path.join(ROOT, "Branding", "Mineblox Royale icon 1024.png")
-for p in [JAR, FAPI, E4MC, PRISM, ICON, *VCRT.values(), *FFMPEG.values(), *DOCS.values()]:
+for p in [JAR, FAPI, E4MC, PRISM, ICON, JAVA, *PATCHES.values(), *VCRT.values(), *FFMPEG.values(), *DOCS.values()]:
     if not os.path.exists(p):
         sys.exit("missing: " + p)
 
 INSTANCE_CFG = "[General]\nConfigVersion=1.2\nInstanceType=OneSix\nname=Mineblox Royale\niconKey=minebloxroyale\nOverrideMemory=true\nMinMemAlloc=1024\nMaxMemAlloc=4096\n"
+# (with the Java Prism ships beside it: a path from Prism's own folder, which Prism works from)
+PRISM_CFG = INSTANCE_CFG + "AutomaticJava=false\nOverrideJavaLocation=true\nJavaPath=java/java-runtime-epsilon/bin/javaw.exe\n"
 MMC_PACK = json.dumps({"components": [
+    {"dependencyOnly": True, "uid": "org.lwjgl3", "version": "3.4.3"},
     {"important": True, "uid": "net.minecraft", "version": "26.3"},
     {"dependencyOnly": True, "uid": "net.fabricmc.intermediary", "version": "26.3"},
     {"uid": "net.fabricmc.fabric-loader", "version": "0.19.5"}], "formatVersion": 1}, indent=4)
@@ -155,7 +167,7 @@ write_zip(os.path.join(WORK, "curseforge"), cf)
 
 # Prism / MultiMC instance to import: the instance's files at the top, its icon named after its iconKey (imported with
 # it).
-inst = {"instance.cfg": INSTANCE_CFG, "mmc-pack.json": MMC_PACK, "minebloxroyale.png": ICON, "icon.png": ICON}
+inst = {"instance.cfg": INSTANCE_CFG, "mmc-pack.json": MMC_PACK, "minebloxroyale.png": ICON, "icon.png": ICON, **PATCHES}
 inst.update({f"minecraft/mods/{n}": p for n, p in MODS.items()})
 inst.update({f"minecraft/minebloxroyale/ffmpeg/{n}": p for n, p in FFMPEG.items()})
 inst.update({f"minecraft/{n}": p for n, p in docs.items()})
@@ -172,8 +184,12 @@ for d, _, fs in os.walk(PRISM):
 prism.update({f"{NAME}/Prism Launcher/{n}": p for n, p in VCRT.items()})
 prism[f"{NAME}/Prism Launcher/icons/minebloxroyale.png"] = ICON  # the instance's icon (iconKey)
 pi = f"{NAME}/Prism Launcher/instances/Mineblox Royale"
-prism[f"{pi}/instance.cfg"] = INSTANCE_CFG
+prism[f"{pi}/instance.cfg"] = PRISM_CFG
 prism[f"{pi}/mmc-pack.json"] = MMC_PACK
+prism.update({f"{pi}/{n}": p for n, p in PATCHES.items()})
+for d, _, fs in os.walk(JAVA):
+    for f in fs:
+        prism[f"{NAME}/Prism Launcher/java/java-runtime-epsilon/" + os.path.relpath(os.path.join(d, f), JAVA).replace("\\", "/")] = os.path.join(d, f)
 prism.update({f"{pi}/minecraft/mods/{n}": p for n, p in MODS.items()})
 prism.update({f"{pi}/minecraft/minebloxroyale/ffmpeg/{n}": p for n, p in FFMPEG.items()})
 prism.update({f"{NAME}/{n}": p for n, p in docs.items()})

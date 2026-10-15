@@ -66,6 +66,8 @@ public final class RobloxAvatarRenderer {
 	private static final float WALK_STRIDE = 2.0F, RUN_STRIDE = 2.8F, CROUCH_STRIDE = 1.0F, CRAWL_STRIDE = 0.7F;
 	/** Seconds a change of move (landing, starting an emote, kneeling to revive...) takes to blend in. */
 	private static final float BLEND = 0.22F;
+	/** Seconds the arm takes to go from a pickaxe swing cut short into the next one. */
+	private static final float SWING_BLEND = 0.1F;
 
 	private RobloxAvatarRenderer() {
 	}
@@ -272,9 +274,13 @@ public final class RobloxAvatarRenderer {
 		long nanos, seen;
 		float phase, speed, vy, airTime;
 		float run, crouch, air, aim, use;
-		String useMove = "heal", mode = "";
+		String useMove = "heal", useWas = "heal", mode = "";
+		float useSince = 1;
 		Pose from = Pose.ZERO, last = Pose.ZERO;
 		float since = 1;
+		// the pickaxe: how far through a swing it was, and where a swing cut short left the arm and body
+		float swing, swingAt = -1, swingTwist, swingLean, lastTwist, lastLean;
+		Pose swingFrom = Pose.ZERO, ground = Pose.ZERO;
 	}
 
 	private static final Map<Integer, Track> TRACKS = new HashMap<>();
@@ -339,7 +345,13 @@ public final class RobloxAvatarRenderer {
 		tr.air = ease(tr.air, airborne && (tr.airTime > 0.12F || tr.vy > 2) ? 1 : 0, 12, dt);
 		tr.aim = ease(tr.aim, f.aiming() ? 1 : 0, 10, dt);
 		tr.use = ease(tr.use, m.use() != null ? 1 : 0, 8, dt);
-		if (m.use() != null) tr.useMove = m.use();
+		// (from healing straight to drinking or back: one into the other)
+		if (m.use() != null && !m.use().equals(tr.useMove)) {
+			tr.useWas = tr.useMove;
+			tr.useMove = m.use();
+			tr.useSince = 0;
+		}
+		tr.useSince += dt;
 		float stride = lerp(lerp(WALK_STRIDE, RUN_STRIDE, tr.run), CROUCH_STRIDE, tr.crouch);
 		tr.phase += along / (f.knocked() ? CRAWL_STRIDE : stride);
 
@@ -408,15 +420,36 @@ public final class RobloxAvatarRenderer {
 		}
 		if (tr.use > 0) {
 			Pose use = Moves.loop(tr.useMove, time);
+			float k = tr.useSince / BLEND;
+			if (k < 1) use = Moves.loop(tr.useWas, time).lerp(use, k * k * (3 - 2 * k));
 			base = base.mix(use, tr.use * (1 - tr.aim), Pose.ARMS).add(Pose.HX, use.headX() * tr.use);
 		}
 		float swing = f.swing();
+		// (a new swing before the last one ended, as holding the button down to mine does: from where that one was)
+		if (swing < tr.swing - 0.05F && tr.mode.equals("ground")) {
+			tr.swingFrom = tr.ground;
+			tr.swingTwist = tr.lastTwist;
+			tr.swingLean = tr.lastLean;
+			tr.swingAt = f.time();
+		}
+		tr.swing = swing;
+		tr.lastTwist = tr.lastLean = 0;
 		if (swing > 0 && swing < 1 && tr.aim < 0.5F) {
-			// The pickaxe: wound up, chopped down, followed through; the body turns with it (eased in and out).
+			// The pickaxe: wound up, chopped down, followed through; the body turns and leans with it (eased in and out),
+			// standing up and still only (a stepping thigh or a sneak's lean leaves no room: the hips would sink into the legs).
 			Pose s = Moves.at("swing", swing), s0 = Moves.at("swing", 0);
 			float w = Math.min(1, Math.min(swing, 1 - swing) * 6);
-			base = base.mix(s, w, Pose.RIGHT_ARM).add(Pose.TWIST, (s.twist() - s0.twist()) * w, Pose.LEAN, (s.lean() - s0.lean()) * w);
+			float body = w * (1 - Math.max(moving, tr.crouch));
+			tr.lastTwist = (s.twist() - s0.twist()) * body;
+			tr.lastLean = (s.lean() - s0.lean()) * body;
+			base = base.mix(s, w, Pose.RIGHT_ARM).add(Pose.TWIST, tr.lastTwist, Pose.LEAN, tr.lastLean);
 		}
+		float k = (f.time() - tr.swingAt) / SWING_BLEND;
+		if (k >= 0 && k < 1) {
+			float left = 1 - k * k * (3 - 2 * k);
+			base = base.mix(tr.swingFrom, left, Pose.RIGHT_ARM).add(Pose.TWIST, tr.swingTwist * left, Pose.LEAN, tr.swingLean * left);
+		}
+		tr.ground = base;
 		return base;
 	}
 

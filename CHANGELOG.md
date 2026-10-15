@@ -28,15 +28,16 @@ A graphics update: almost everything you see in a match was remade in Blender.
   - Sneaking: low on bent knees, leaning in.
   - Jumping and falling: knees tuck on the way up, legs reach for the ground coming down, arms and legs spread when falling fast.
   - Aiming: the forearm holding the gun follows exactly where you look, whether you look up or down, while standing, walking or sprinting.
-  - Pickaxe: a big over-the-shoulder chop on every hit.
+  - Pickaxe: a big over-the-shoulder chop on every hit. The body turns and leans into it when you stand still; on the move only the arm chops, so the hips don't sink into the legs. Holding the button down to mine flows from one chop into the next.
   - Healing: bandages and med kits are wrapped in front of you; shield potions, Slurp Juice and the Chug Jug are drunk at the mouth.
   - Reviving: down on one knee next to your teammate, both hands working.
   - Rebooting: typing on the Reboot Van's screen.
   - Searching a chest: bent over it, rummaging.
   - Swimming front crawl, treading water, climbing ladders hand over hand, gliding with the legs dangling.
-  - Changing from one move to another blends smoothly.
+  - Changing from one move to another blends smoothly, including going straight from healing to drinking.
+  - The moves mixed together in the game (aiming, chopping, healing or drinking while walking, sprinting or sneaking) are checked on the real body too: nothing goes through anything.
 - **Everyone sees it:** you can see other players and bots reviving and rebooting, and other players searching chests.
-- **Emotes:** all 40 animated again in Blender, now with elbows and knees: waving from the elbow, robot arms at 90 degrees, a boxing guard, double biceps, hands on hips, knees tucked in jumps. They're smoother, with the head nodding, turning and tilting and the body leaning, twisting and bouncing. Hands never go through the body, and dips bend the knees instead of sinking the feet into the floor.
+- **Emotes:** all 40 animated again in Blender, now with elbows and knees: waving from the elbow, robot arms at 90 degrees, a boxing guard, double biceps, hands on hips, knees tucked in jumps. They're smoother, with the head nodding, turning and tilting and the body leaning, twisting and bouncing. Nothing goes through anything: every frame is checked on the real Roblox body, so arms and legs never go into the body, the head or each other, and dips bend the knees instead of sinking the feet into the floor. Emotes that crossed the arms over the body (like the Floss and Arm Swing) now swing them to the middle, in front or behind, because a Roblox R6 arm can't cross in front without going into the chest.
 - **Knocked down:** a new crawl along the ground: one arm reaches ahead while the other pulls back, the legs push, the head looks up.
 
 ### Gameplay
@@ -49,6 +50,7 @@ A graphics update: almost everything you see in a match was remade in Blender.
   - A bot you shoot will still fight back.
 
 ### Other
+- **Starting the game:** the Prism Launcher package now carries Minecraft's and Fabric's version details and Java 25, so Prism doesn't have to download them before the game starts. On some PCs that download never got through and the game closed right after starting. The same fix went to Melty as 1.0.0.1.
 - Test builds show their version on the hub's main board, for example "v1.0.1 - TEST 3".
 
 ## v1.0.0

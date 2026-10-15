@@ -109,7 +109,7 @@ def build(root, joints, colors):
         off = (part["centerX"] - part["pivotX"], part["centerY"] - part["pivotY"], part["centerZ"] - part["pivotZ"])
         kd = bend.kind(part["id"])
         if kd:  # arms and legs: cut across the elbow / knee so they bend smoothly (bend.py, as the game cuts them)
-            for cy in bend.cuts(kd):
+            for cy in bend.cuts(kd) + [-0.45 if kd == "leg" else -0.5]:  # (and where the hip / shoulder ends: the clip check)
                 pos, tris, (nrm,) = bend.split(pos, tris, cy - off[1], [nrm])
         m = C @ Matrix.Translation(off)
         nm = m.to_3x3().inverted_safe().transposed()

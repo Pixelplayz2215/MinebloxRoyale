@@ -52,11 +52,12 @@ def beat(t, ch):
 
 def _floss():
     # straight-ish arms swing across the body, in front and behind in turn; hips sway the other way on soft knees
+    # (an R6 arm turned in across the body goes into it: the arm swinging over reaches the middle, in front or behind)
     L = dict(tilt=7, twist=-10, rlz=4, llz=-2, hz=-6, rkn=4, lkn=14)  # arms to its left, hips to its right
     R = mirror(L)
-    return [K(0, rax=30, raz=-38, rel=12, lax=-30, laz=38, lel=6, **L), K(0.25, rax=-30, raz=38, rel=6, lax=30, laz=-38, lel=12, **R),
-            K(0.5, rax=-30, raz=-38, rel=6, lax=30, laz=38, lel=12, **L), K(0.75, rax=30, raz=38, rel=12, lax=-30, laz=-38, lel=6, **R),
-            K(1, rax=30, raz=-38, rel=12, lax=-30, laz=38, lel=6, **L)]
+    return [K(0, rax=36, raz=-4, rel=16, lax=-34, laz=40, lel=6, **L), K(0.25, rax=-34, raz=40, rel=6, lax=36, laz=-4, lel=16, **R),
+            K(0.5, rax=-36, raz=-4, rel=6, lax=34, laz=40, lel=16, **L), K(0.75, rax=34, raz=40, rel=16, lax=-36, laz=-4, lel=6, **R),
+            K(1, rax=36, raz=-4, rel=16, lax=-34, laz=40, lel=6, **L)]
 
 
 def _robot():
@@ -81,9 +82,9 @@ EMOTES = {
         K(0.75, raz=102, rel=112, hz=4, bob=0.02),
     ], note="right arm up, waving from the elbow, head tilted with a smile"),
     "swing": Emote(0.8, [
-        K(0, rax=25, raz=70, rel=20, lax=55, laz=-35, lel=55, twist=22, tilt=6, hy=10, bob=0, rkn=6, lkn=18),
+        K(0, rax=25, raz=70, rel=20, lax=72, laz=-6, lel=48, twist=22, tilt=6, hy=10, bob=0, rkn=6, lkn=18),
         K(0.25, rax=20, raz=10, rel=30, lax=20, laz=10, lel=30, twist=0, tilt=0, hy=0, bob=-0.1),
-        K(0.5, rax=55, raz=-35, rel=55, lax=25, laz=70, lel=20, twist=-22, tilt=-6, hy=-10, bob=0, rkn=18, lkn=6),
+        K(0.5, rax=72, raz=-6, rel=48, lax=25, laz=70, lel=20, twist=-22, tilt=-6, hy=-10, bob=0, rkn=18, lkn=6),
         K(0.75, rax=20, raz=10, rel=30, lax=20, laz=10, lel=30, twist=0, tilt=0, hy=0, bob=-0.1),
     ], note="both arms swing side to side, elbows easing, dipping in the middle"),
     "robot": Emote(1.6, _robot(), note="stiff, snapping 90 degree elbows with holds"),
@@ -91,9 +92,9 @@ EMOTES = {
     "dab": Emote(1.6, [
         K(0, raz=4, laz=4, rel=8, lel=8, lean=0, hx=0, hy=0, hz=0, tilt=0, bob=0),
         K(0.15, rax=-25, lax=-25, raz=10, laz=10, rel=40, lel=40, lean=-6, bob=-0.12),
-        # the right arm straight out and up, the left folded across, the face down into its elbow
-        K(0.24, rax=20, raz=138, rel=0, lax=112, laz=-50, lel=100, lean=12, tilt=10, hx=32, hy=-28, hz=12, bob=0.04, rkn=10, lkn=4),
-        K(0.7, rax=22, raz=142, rel=0, lax=114, laz=-50, lel=104, lean=13, tilt=11, hx=34, hy=-28, hz=12, bob=0),
+        # the right arm straight out and up, the left forearm up in front of the left shoulder, the face turned down to it
+        K(0.24, rax=20, raz=138, rel=0, lax=95, laz=0, lel=110, lean=12, tilt=10, hx=25, hy=-30, hz=12, bob=0.04, rkn=10, lkn=4),
+        K(0.7, rax=22, raz=142, rel=0, lax=96, laz=0, lel=112, lean=13, tilt=11, hx=27, hy=-30, hz=12, bob=0),
         K(0.85, raz=4, laz=4, rax=0, lax=0, rel=8, lel=8, lean=0, tilt=0, hx=0, hy=0, hz=0, bob=0, rkn=0, lkn=0),
     ], note="a wind-up, then the dab snapped and held"),
     "jumping_jacks": Emote(0.8, [
@@ -152,12 +153,12 @@ EMOTES = {
         K(0.72, rax=0, raz=4, rel=6, lax=0, laz=4, lel=6, bob=0, hz=0, lean=0, hy=0),
     ], note="elbows in, forearms out, palms up, shoulders up, head tilted"),
     "chicken": Emote(0.6, [
-        # hands tucked up by the armpits, elbows flapping; a knee comes up in turn
-        K(0, rax=-15, raz=55, rel=150, lax=-15, laz=55, lel=150, hx=-12, lean=4, rlx=0, llx=0, rkn=4, lkn=4, bob=0),
-        K(0.25, rax=-10, raz=18, rel=150, lax=-10, laz=18, lel=150, hx=22, lean=14, rlx=40, rkn=70, bob=0.06),
-        K(0.5, rax=-15, raz=55, rel=150, lax=-15, laz=55, lel=150, hx=-12, lean=4, rlx=0, llx=0, rkn=4, lkn=4, bob=0),
-        K(0.75, rax=-10, raz=18, rel=150, lax=-10, laz=18, lel=150, hx=22, lean=14, llx=40, lkn=70, bob=0.06),
-    ], note="hands in the armpits, elbows flapping, pecking head, knees up in turns"),
+        # hands tucked up in front of the shoulders, elbows out and flapping; a knee comes up in turn
+        K(0, rax=40, raz=90, rel=120, lax=40, laz=90, lel=120, hx=-12, lean=4, rlx=0, llx=0, rkn=4, lkn=4, bob=0),
+        K(0.25, rax=40, raz=58, rel=120, lax=40, laz=58, lel=120, hx=22, lean=14, rlx=40, rkn=70, bob=0.06),
+        K(0.5, rax=40, raz=90, rel=120, lax=40, laz=90, lel=120, hx=-12, lean=4, rlx=0, llx=0, rkn=4, lkn=4, bob=0),
+        K(0.75, rax=40, raz=58, rel=120, lax=40, laz=58, lel=120, hx=22, lean=14, llx=40, lkn=70, bob=0.06),
+    ], note="hands tucked up in front of the shoulders, elbows flapping, pecking head, knees up in turns"),
     "disco": Emote(0.9, [
         # pointing up and down across with a straight arm; the other hand on the hip
         K(0, rax=35, raz=140, rel=0, lax=-25, laz=40, lel=100, tilt=-9, yaw=12, hx=-22, hy=12, rlz=8, rkn=4, lkn=18, bob=0),
@@ -241,19 +242,19 @@ EMOTES = {
         K(0.14, rax=90, raz=96, rel=110, lax=90, laz=96, lel=110, lean=-6, bob=0.05, hx=-8),
         K(0.42, rax=90, raz=100, rel=122, lax=90, laz=100, lel=122, lean=-7, bob=0.05, hx=-8),
         # the most-muscular crunch: fists together low in front, leaning in on bent knees
-        K(0.55, rax=36, raz=-30, rel=60, lax=36, laz=-30, lel=60, lean=16, bob=-0.14, hx=10, rkn=10, lkn=10),
-        K(0.82, rax=38, raz=-32, rel=64, lax=38, laz=-32, lel=64, lean=17, bob=-0.14, hx=10),
+        K(0.55, rax=40, raz=0, rel=60, lax=40, laz=0, lel=60, lean=16, bob=-0.14, hx=10, rkn=10, lkn=10),
+        K(0.82, rax=41, raz=0, rel=64, lax=41, laz=0, lel=64, lean=17, bob=-0.14, hx=10),
         K(0.94, raz=4, laz=4, rax=0, lax=0, rel=6, lel=6, lean=0, bob=0, hx=0, rkn=0, lkn=0),
     ], note="double biceps, then the most-muscular crunch"),
     "bow": Emote(2.0, [
         K(0, rax=0, raz=4, rel=6, lax=0, laz=4, lel=6, lean=0, hx=0),
-        # the right hand to the heart, the left behind the back, then a deep bow
-        K(0.15, rax=34, raz=-34, rel=110, lax=-30, laz=-10, lel=60),
-        K(0.38, lean=48, hx=18, bob=-0.05, rkn=6, lkn=6),
-        K(0.62, lean=50, hx=20, bob=-0.05),
-        K(0.82, rax=34, raz=-34, rel=110, lean=0, hx=0, bob=0, rkn=0, lkn=0),
+        # the right forearm across the front of the waist, the left arm a little back, then a bow
+        K(0.15, rax=35, raz=0, rel=110, lax=-15, laz=5, lel=10),
+        K(0.38, lean=26, hx=24, bob=-0.05, rkn=6, lkn=6),
+        K(0.62, lean=28, hx=26, bob=-0.05),
+        K(0.82, rax=35, raz=0, rel=110, lean=0, hx=0, bob=0, rkn=0, lkn=0),
         K(0.95, rax=0, raz=4, rel=6, lax=0, laz=4, lel=6),
-    ], note="hand on the heart, the other behind the back, a deep polite bow"),
+    ], note="a hand across the waist, the other back, a polite bow"),
     "cheer": Emote(0.5, [
         K(0, rax=10, raz=168, rel=8, lax=30, laz=20, lel=70, bob=0.12, hx=-14, tilt=-5, rkn=20, lkn=4),
         K(0.25, bob=0, rel=40, lel=40),
@@ -329,9 +330,9 @@ EMOTES = {
     ], note="a rope twirled overhead, the other hand on the hip"),
     "breakdance": Emote(0.9, [
         # low on bent knees, spinning, a leg kicking out straight in turn
-        K(0, yaw=0, lean=30, raz=80, laz=80, rax=40, lax=40, rel=30, lel=30, rlz=40, llz=6, rkn=0, lkn=70, bob=-0.35),
-        K(0.5, rlz=10, llz=38, rkn=70, lkn=0, bob=-0.42),
-        K(1, yaw=360, rlz=40, llz=6, rkn=0, lkn=70, bob=-0.35),
+        K(0, yaw=0, lean=15, raz=80, laz=80, rax=40, lax=40, rel=30, lel=30, rlz=26, llz=6, rkn=0, lkn=70, bob=-0.35),
+        K(0.5, rlz=6, llz=26, rkn=70, lkn=0, bob=-0.42),
+        K(1, yaw=360, rlz=26, llz=6, rkn=0, lkn=70, bob=-0.35),
     ], linear=("yaw",), note="low spin, arms out, legs kicking out in turn"),
     "ripple": Emote(0.9, [
         # a wave rolls from one hand through the elbows and shoulders to the other

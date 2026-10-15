@@ -115,15 +115,15 @@ MOVES = {
     # ------------------------------------------------------------------------------------------- doing things
     "aim": Move("Aiming", "Holding a gun where you look (here: up, ahead, then down)", "pitch", 3.0, [
         # The right forearm carries the gun exactly along the look (solved for each pitch with rig.py: the shoulder
-        # forward 45 - pitch / 2, the elbow bent to match; 84 degrees up or down at most); the left arm reaches in along
-        # the gun (an R6 arm can't get across to its front).
-        K(0, rax=100.0, raz=-5, rel=74.1, lax=166, laz=-24, lel=20),
-        K(0.1667, rax=75.0, raz=-5, rel=75.0, lax=139, laz=-24, lel=20),
-        K(0.3333, rax=60.0, raz=-5, rel=59.9, lax=112, laz=-24, lel=20),
-        K(0.5, rax=45.0, raz=-5, rel=44.9, lax=85, laz=-24, lel=20),
-        K(0.6667, rax=30.0, raz=-5, rel=29.8, lax=58, laz=-24, lel=20),
-        K(0.8333, rax=15.0, raz=-5, rel=14.6, lax=31, laz=-24, lel=20),
-        K(1, rax=0.0, raz=-5, rel=3.3, lax=4, laz=-24, lel=20),
+        # forward 45 - pitch / 2 and 4 degrees out, so the upper arm stays out of the chest, the elbow bent to match; 84
+        # degrees up or down at most); the left arm reaches in along the gun (an R6 arm can't get across to its front).
+        K(0, rax=100.0, raz=4, rel=74.1, lax=166, laz=-24, lel=20),
+        K(0.1667, rax=75.0, raz=4, rel=75.0, lax=139, laz=-24, lel=20),
+        K(0.3333, rax=60.0, raz=4, rel=60.0, lax=112, laz=-24, lel=20),
+        K(0.5, rax=45.0, raz=4, rel=44.9, lax=85, laz=-24, lel=20),
+        K(0.6667, rax=30.0, raz=4, rel=29.9, lax=58, laz=-24, lel=20),
+        K(0.8333, rax=15.0, raz=4, rel=14.7, lax=31, laz=-24, lel=20),
+        K(1, rax=0.0, raz=4, rel=4.5, lax=4, laz=-24, lel=20),
     ], plant="none", linear=("rax", "rel", "lax"), keep=("right_arm",)),
     "swing": Move("Pickaxe swing", "Wound up over the shoulder, a big chop, follow through", "progress", 0.7, [
         K(0, rax=30, raz=6, rel=40, twist=0, lean=0, lax=12, lel=24),
