@@ -432,8 +432,8 @@ public final class BRHud {
 			case "LIVE", "ENDED" -> "Match in progress - " + hud.alive() + " left";
 			default -> "Everyone on the same portal starts the match (" + hud.onPortal() + "/" + hud.hubCount() + ")";
 		};
-		// How many stand on each mode portal (Solo, Duos, Trios, Squads), in the hub only.
-		boolean pads = hud.phase().equals("HUB") || hud.phase().equals("COUNTDOWN");
+		// (No counts per mode portal any more, 2.0.0-test3, creator: "remove the game mode numbers": the first line says
+		// how many stand on the same portal.)
 		// The island countdown (creator: in place of "Blue pad: Obby"), while players wait in the hub.
 		boolean island = hud.label().startsWith("Island") || hud.label().startsWith("Finding");
 		String line2 = island ? hud.label() + "  |  B: Emotes  |  K: Locker" : "B: Emotes  |  K: Locker";
@@ -441,16 +441,12 @@ public final class BRHud {
 		String code = RoomCodes.current(), label = "Room Code: ";
 		float size = 9;
 		float codeW = code == null ? 0 : Smooth.width(label, size) + Smooth.width(code, size);
-		float w = Math.max(Math.max(Math.max(Smooth.width(line1, size), Smooth.width(line2, size)), codeW), pads ? SquadHud.padsWidth(mc) : 0);
+		float w = Math.max(Math.max(Smooth.width(line1, size), Smooth.width(line2, size)), codeW);
 		int cx = g.guiWidth() / 2 + d.x();
-		int y = d.y(), rows = 2 + (pads ? SquadHud.padRows() : 0) + (code == null ? 0 : 1);
+		int y = d.y(), rows = 2 + (code == null ? 0 : 1);
 		Smooth.panel(g, cx - w / 2 - 8, y - 5, w + 16, rows * 11 + 6, 6, 0xA0182030, 0xC00C1018);
 		Smooth.text(g, line1, cx, y - 0.5F, size, 0xFFFFFFFF, Smooth.CENTER, true);
 		y += 11;
-		if (pads) {
-			SquadHud.pads(g, mc, cx, y);
-			y += 11 * SquadHud.padRows();
-		}
 		Smooth.text(g, line2, cx, y - 0.5F, size, 0xFFB8C4D6, Smooth.CENTER, true);
 		y += 11;
 		if (code != null) {

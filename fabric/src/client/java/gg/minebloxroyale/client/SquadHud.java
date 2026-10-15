@@ -5,7 +5,6 @@ import gg.minebloxroyale.match.Knocked;
 import gg.minebloxroyale.match.Reboot;
 import gg.minebloxroyale.net.Net;
 import gg.minebloxroyale.sheets.HudElementDef;
-import gg.minebloxroyale.sheets.ModeDef;
 import gg.minebloxroyale.sheets.Sheets;
 import java.util.ArrayList;
 import java.util.List;
@@ -152,58 +151,6 @@ public final class SquadHud {
 	}
 
 	// ---- in the hub ----
-
-	/**
-	 * "Solo 1 Duos 0 Trios 2 Squads 0": how many stand on each mode portal, in each mode's colour; the build modes on
-	 * one row, the No Build ones (v2.0.0) on the next ("NO BUILD: Solo 0 ..."). Width in pixels of the wider row.
-	 */
-	static int padsWidth(Minecraft mc) {
-		return Math.max(rowWidth(mc, false), rowWidth(mc, true));
-	}
-
-	/** How many rows of portal counts: one, or two with the No Build portals. */
-	static int padRows() {
-		return Sheets.MODES.stream().anyMatch(ModeDef::noBuild) ? 2 : 1;
-	}
-
-	private static final String NO_BUILD = "NO BUILD: ";
-
-	private static String shortName(ModeDef m) {
-		return m.noBuild() ? m.name().replace("No Build ", "") : m.name();
-	}
-
-	private static int rowWidth(Minecraft mc, boolean noBuild) {
-		String[] n = ClientState.hud.pads().split(",");
-		float w = noBuild ? Smooth.width(NO_BUILD, PAD_TEXT) : 0;
-		int k = 0;
-		for (int i = 0; i < Sheets.MODES.size(); i++) {
-			ModeDef m = Sheets.MODES.get(i);
-			if (m.noBuild() != noBuild) continue;
-			w += Smooth.width(shortName(m) + " " + (i < n.length ? n[i] : "0"), PAD_TEXT) + (k++ > 0 ? 10 : 0);
-		}
-		return (int) Math.ceil(w);
-	}
-
-	/** The portal counts' lettering size. */
-	private static final float PAD_TEXT = 9;
-
-	static void pads(GuiGraphicsExtractor g, Minecraft mc, int cx, int y) {
-		String[] n = ClientState.hud.pads().split(",");
-		for (boolean noBuild : new boolean[] { false, true }) {
-			if (noBuild && padRows() < 2) break;
-			float x = cx - rowWidth(mc, noBuild) / 2F;
-			if (noBuild) x += Smooth.text(g, NO_BUILD, x, y - 0.5F, PAD_TEXT, 0xFFB8C4D6, Smooth.LEFT, true);
-			for (int i = 0; i < Sheets.MODES.size(); i++) {
-				ModeDef m = Sheets.MODES.get(i);
-				if (m.noBuild() != noBuild) continue;
-				String count = i < n.length ? n[i] : "0";
-				String text = shortName(m) + " " + count;
-				boolean someone = !count.equals("0");
-				x += Smooth.text(g, text, x, y - 0.5F, PAD_TEXT, someone ? 0xFF000000 | m.color() : 0xFF7A8496, Smooth.LEFT, true) + 10;
-			}
-			y += 11;
-		}
-	}
 
 	/**
 	 * Under the hub banner: your party, each name in its teammate colour. Nothing when you're not in one (creator: the
