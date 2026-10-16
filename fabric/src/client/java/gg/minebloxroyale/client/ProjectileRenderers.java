@@ -15,7 +15,8 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 
 /**
  * Rockets and grenades in flight (v2.0.0): their Blender models (the rocket from fabric/tools/blender/vehicles.py, a
- * block long, pointing the way it flies; the grenade the item's own model, tumbling as it goes).
+ * block long, pointing the way it flies; the grenade the item's own model, tumbling as it goes and lying on its side
+ * once it stops, until it goes off).
  */
 public final class ProjectileRenderers {
 	private ProjectileRenderers() {
@@ -75,16 +76,24 @@ public final class ProjectileRenderers {
 			state.spin = entity.spin(partialTicks);
 		}
 
+		/**
+		 * The item's model (0..1 of a block, upright: 0.34 across, 0.47 tall, its middle at 0.445 up) drawn this much
+		 * bigger, about a third of a block tall. (2.0.0-test4: it was drawn as if it were in item pixels, 0..16, so a
+		 * fiftieth of its size: nobody could see a grenade fly or lie on the ground.)
+		 */
+		private static final float SIZE = 0.7F, MID_Y = 0.445F, HALF_TALL = 0.235F * SIZE, HALF_THICK = 0.17F * SIZE;
+
 		@Override
 		public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
 			int light = state.lightCoords;
 			poseStack.pushPose();
-			poseStack.translate(0, 0.15F, 0);
+			// (its lowest point on the ground however it's turned: upright it stands on its base, on its side on its body)
+			float a = (float) Math.toRadians(state.spin);
+			poseStack.translate(0, Math.abs(Math.cos(a)) * HALF_TALL + Math.abs(Math.sin(a)) * HALF_THICK, 0);
 			poseStack.rotate(Axis.YP.rotationDegrees(-state.yaw));
 			poseStack.rotate(Axis.XP.rotationDegrees(state.spin));
-			// the item model is in item pixels (0..16, upright): a third of a block across here, centred
-			poseStack.scale(0.05F, 0.05F, 0.05F);
-			poseStack.translate(-8F, -6.4F, -8F);
+			poseStack.scale(SIZE, SIZE, SIZE);
+			poseStack.translate(-0.5F, -MID_Y, -0.5F);
 			Mesh mesh = Mesh.lod("grenade", state.distanceToCameraSq, 0.4F);
 			collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(WorldVisuals.white()),
 				(pose, vc) -> mesh.draw(pose, null, vc, light, OverlayTexture.NO_OVERLAY, 0xFFFFFF, 0xFFFFFF));

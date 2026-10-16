@@ -14,8 +14,12 @@ assets' sounds.json:
                                    a driving animation (also sounds)")
   car/boost, car/door_open, car/door_close
                                    a boost kicking in, a car door opening and shutting
+  use/heal_1..3, use/shield_1..3   using a heal (a bandage wrapping, cloth rustling) and drinking a shield (a gulp of
+                                   something that fizzes and shimmers), played over and over while it's used; and
+  use/heal_done, use/shield_done   a warm chime as the health goes up, a bright rising shimmer as the shield charges
+                                   (2.0.0-test4, creator: "shield sounds and healing sounds when using proper items")
 
-python fabric/tools/audio/make_audio.py [cars]      (cars: just the car sounds)
+python fabric/tools/audio/make_audio.py [cars|use]      (cars, use: just those sounds)
 """
 import json
 import os
@@ -358,6 +362,107 @@ def cars(snd, reg):
     print("car sounds")
 
 
+# ------------------------------------------------------------------------------------------------- heals and shields
+
+def heal_use(take):
+    """A bandage wrapping round: two or three soft swishes of cloth, a crinkle of the wrapper."""
+    sec = 0.3
+    n = int(sec * SR)
+    out = np.zeros(n)
+    at = 0.0
+    for k in range(2 + take % 2):
+        d = 0.07 + RNG.random() * 0.05
+        m = int(d * SR)
+        hi = 3200 + RNG.random() * 2400
+        sw = filt(noise(d), lo=700 + RNG.random() * 400, hi=hi) * env(m, d * 0.45, d * 0.3, curve=3)
+        i = int(at * SR)
+        if i + m <= n:
+            out[i:i + m] += sw * (0.8 - 0.2 * k)
+        at += d * (0.7 + RNG.random() * 0.3)
+    for _ in range(6):  # crinkle
+        i = int(RNG.random() * (sec - 0.02) * SR)
+        c = filt(noise(0.006), lo=3000, hi=9000) * env(int(0.006 * SR), 0.0003, 0.002)
+        out[i:i + len(c)] += c * (0.15 + RNG.random() * 0.15)
+    return norm(room(out, 0.25, 0.12), 0.7)
+
+
+def shield_use(take):
+    """A gulp of shield: a low bloop as it goes down, a fizz, and a faint shimmer of what's in it."""
+    sec = 0.32
+    n = int(sec * SR)
+    out = np.zeros(n)
+    f0 = 260 * (1 + (take - 2) * 0.08)
+    g = sweep(f0, f0 * 0.55, 0.11, shape=3) * env(int(0.11 * SR), 0.008, 0.05)
+    out[:len(g)] += g * 0.9
+    fizz = filt(noise(sec), lo=2500, hi=9000) * env(n, 0.03, 0.12, curve=2)
+    out += fizz * 0.12
+    t = t_of(sec)
+    shimmer = sum(np.sin(2 * np.pi * f * t + RNG.random() * 6) for f in (2637.0 * (1 + (take - 2) * 0.03), 3520.0, 4699.0))
+    out += shimmer * (0.5 + 0.5 * np.sin(2 * np.pi * 23 * t)) * env(n, 0.06, 0.12, curve=2) * 0.06
+    return norm(room(out, 0.3, 0.15), 0.7)
+
+
+def bell(freq, sec, bright=1.0):
+    """A soft bell: a few partials dying away, the higher ones sooner."""
+    n = int(sec * SR)
+    t = t_of(sec)
+    out = np.zeros(n)
+    for mult, amp, die in ((1.0, 1.0, 1.0), (2.0, 0.35 * bright, 0.5), (3.01, 0.18 * bright, 0.33), (4.2, 0.08 * bright, 0.25)):
+        out += amp * np.sin(2 * np.pi * freq * mult * t) * env(n, 0.004, sec * die, curve=5)
+    return out
+
+
+def heal_done():
+    """Health going up: two warm notes rising (C5, G5) over a soft hum."""
+    sec = 0.9
+    n = int(sec * SR)
+    out = np.zeros(n)
+    for at, f in ((0.0, 523.25), (0.12, 783.99)):
+        b = bell(f, sec - at, bright=0.6)
+        i = int(at * SR)
+        out[i:i + len(b)] += b * 0.6
+    hum = (np.sin(2 * np.pi * 261.63 * t_of(sec)) + 0.5 * np.sin(2 * np.pi * 392.0 * t_of(sec))) * env(n, 0.08, 0.35, curve=3)
+    out += hum * 0.18
+    return norm(room(out, 0.6, 0.3), 0.75)
+
+
+def shield_done():
+    """The shield charging: a rising whoosh and a bright arpeggio (E5 B5 E6 G#6) that shimmers away."""
+    sec = 1.1
+    n = int(sec * SR)
+    out = np.zeros(n)
+    rush = noise(0.45)
+    parts = []
+    blocks = 9
+    m = len(rush)
+    for b in range(blocks):  # (the whoosh rising)
+        a_, b_ = b * m // blocks, (b + 1) * m // blocks
+        parts.append(filt(rush[a_:b_], lo=400 + 300 * b, hi=1500 + 900 * b))
+    w = np.concatenate(parts) * env(m, 0.3, 0.08, curve=3)
+    out[:m] += w * 0.3
+    for k, f in enumerate((659.25, 987.77, 1318.51, 1661.22)):
+        at = 0.22 + k * 0.07
+        b = bell(f, sec - at, bright=1.0)
+        i = int(at * SR)
+        out[i:i + len(b)] += b * (0.45 - 0.05 * k)
+    t = t_of(sec)
+    out += np.sin(2 * np.pi * 3951.0 * t) * (0.5 + 0.5 * np.sin(2 * np.pi * 17 * t)) * env(n, 0.35, 0.4, curve=3) * 0.05
+    return norm(room(out, 0.7, 0.35), 0.8)
+
+
+def uses(snd, reg):
+    for kind, make in (("heal", heal_use), ("shield", shield_use)):
+        for take in (1, 2, 3):
+            seeded(f"use/{kind}_{take}")
+            write_ogg(os.path.join(snd, "use", f"{kind}_{take}.ogg"), make(take))
+        reg[f"use.{kind}"] = {"sounds": [f"minebloxroyale:use/{kind}_{k}" for k in (1, 2, 3)]}
+    for name, make in (("heal_done", heal_done), ("shield_done", shield_done)):
+        seeded(f"use/{name}")
+        write_ogg(os.path.join(snd, "use", f"{name}.ogg"), make())
+        reg[f"use.{name}"] = {"sounds": [f"minebloxroyale:use/{name}"]}
+    print("heal and shield sounds")
+
+
 # ------------------------------------------------------------------------------------------------- music
 
 def note(midi):
@@ -540,10 +645,10 @@ def seeded(name):
 
 def main():
     snd = os.path.join(ASSETS, "sounds")
-    if len(sys.argv) > 1 and sys.argv[1] == "cars":  # (just the cars' sounds)
+    if len(sys.argv) > 1 and sys.argv[1] in ("cars", "use"):  # (just the cars' sounds, or the heals' and shields')
         p = os.path.join(ASSETS, "sounds.json")
         reg = json.load(open(p, encoding="utf-8"))
-        cars(snd, reg)
+        (cars if sys.argv[1] == "cars" else uses)(snd, reg)
         json.dump(reg, open(p, "w", encoding="utf-8", newline="\n"), indent=2)
         return
     for name in GUNS:
@@ -578,6 +683,7 @@ def main():
     for i in (1, 2):
         reg[f"music.battle_{i}"] = {"sounds": [{"name": f"minebloxroyale:music/battle_{i}", "stream": True}]}
     cars(snd, reg)
+    uses(snd, reg)
     json.dump(reg, open(p, "w", encoding="utf-8", newline="\n"), indent=2)
     print("sounds.json:", len(reg), "events")
 

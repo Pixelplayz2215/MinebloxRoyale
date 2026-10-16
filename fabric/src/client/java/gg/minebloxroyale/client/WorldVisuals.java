@@ -60,6 +60,7 @@ public final class WorldVisuals {
 			Contrails.draw(ps, out, cam);
 		}
 		Tracers.draw(ps, out, cam); // (matches and the hub's shooting range)
+		GrenadeAim.draw(ps, out, cam); // (2.0.0-test4)
 	}
 
 	/**

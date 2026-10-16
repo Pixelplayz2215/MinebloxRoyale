@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.0.0 (in testing: 2.0.0-test3, not released yet)
+## v2.0.0 (in testing: 2.0.0-test4, not released yet)
 
 A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and a new look and sound.
 
@@ -30,6 +30,8 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 - **Visible bullets:** tracers fly from the muzzle to where each shot lands, with a muzzle flash, sparks and dust on impact, and a red puff on a hit. The sniper leaves a smoke trail.
 - **Rocket launcher:** a slow rocket you can see, which explodes where it hits. It hurts players and bots, breaks builds and buildings, and does 300 damage to cars. Rockets have their own ammo slot, never a hotbar slot.
 - **Grenades:** left click throws one in an arc. It bounces and explodes after 2.5 seconds. Up to 6 fit in one slot.
+- **Aim grenades with a blue arc:** while you hold a grenade, a blue line shows exactly where it will fly, with a ring where it first lands. The grenade follows the line, bounces and all.
+- **You can see grenades:** a thrown grenade tumbles through the air, bounces a little like a real one, then lies on its side until it goes off. Before, it was drawn far too small to see.
 - Bots use both: grenades against players behind cover, rockets against players among builds or in groups.
 - Rocket launchers, rockets and grenades turn up about twice as often as in the first test.
 
@@ -39,13 +41,15 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 - **No shooting from a car.** Boosting smashes through buildings, but hills and water stop you.
 - **Car HUD:** the fuel, boosts and the car's durability (out of 600) show where the ammo usually is.
 - **Bots drive too,** heading for the safe zone.
-- **Cars come alive:** the wheels turn with the speed and the front ones steer, and the body leans out of turns and dips when braking. Getting in, the door swings open, you climb in and it shuts behind you.
+- **Cars come alive:** the wheels turn with the speed and the front ones steer, and the body leans out of turns and dips when braking. Getting in, the door swings open, you climb in and it shuts behind you. This works for parked cars too.
+- **Riders sit inside every car:** players and bots sit at the same height, and each kind of car has its own seats. A Roblox avatar sitting down is taller than most cars, so riders are drawn a little smaller once they're in, and nothing pokes through the roof. In a pickup truck, the two in the back ride in the open bed.
+- **The camera pulls back while you drive,** so you can see your whole car and its boost trail.
 - **Car sounds:** an engine that revs with your speed, squealing tyres in fast turns, a boost of its own, and doors opening and shutting.
 - **Boost trails:** a new Locker tab, all for gold. Your trail streams from the back of any car you drive while it boosts: Nitro Flame, Blue Blaze, Rainbow Rocket, Neon Streak, Gold Rush, Thunder Road, Candy Rush and Toxic Fumes. The tab shows a car from behind and the side with the trail you hover.
 
 ### Bosses
 - **Four bosses per match, out of six:** The Blockbuster (pump shotgun), Captain Bloxbeard (sniper), Agent Noob (assault rifle), Sergeant Bacon (SMG), Doctor Kaboom (rocket launcher) and Sheriff Noobly (pistol). They guard lairs you can see from a distance, and their icons show on the minimap and the map.
-- **Boss health:** 200 health and 100 shield, shown on a bar over the boss's name (shield over health).
+- **Boss health:** 200 health and 100 shield, shown on a bar over the boss's name (shield over health, both bars the same size).
 - **Boss rarity:** a new red rarity above Mythic. Each boss holds and drops its own gun at Boss rarity, plus its loot and 50 gold for whoever eliminates it. Boss guns never come from chests. The hub's Gun Rarity board has the new row.
 
 ### The island
@@ -66,6 +70,7 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 - **3D items in the hotbar and inventory:** every gun, heal, shield, grenade and pickaxe shows as its own 3D model, guns in their rarity colour, instead of a flat pixel picture. The hub's Gun Rarity and Heals & Shields boards show the 3D models too.
 - **3D ammo, materials and reboot card, made in Blender:** open ammo boxes with their rounds standing in them (Light, Medium and Heavy Bullets), three shotgun shells, a rocket lying across its slot with its fins and a pointed red warhead, a crossed stack of planks, a pile of bricks, riveted steel plates with an I-beam, and the reboot card with its portrait and gold chip. The HUD's rocket icon is the new rocket too.
 - **Our own sounds:** a shot sound for each gun type (rarities sound the same), a new storm warning, rocket and grenade blasts, and two battle music tracks in matches. The harder track plays in the last circles.
+- **Heal and shield sounds:** a bandage rustling while you heal and a fizzing gulp while you drink a shield (instead of Minecraft's eating and drinking), then a warm chime as your health goes up or a bright shimmer as your shield charges. You hear bots and other players heal too.
 
 ### Fixes
 - Opening the creative inventory crashed the game (2.0.0-test1).

@@ -310,14 +310,47 @@ public class CarEntity extends Entity {
 		return InteractionResult.PASS;
 	}
 
-	/** The seats: the driver front left, then front right, back left, back right (hips on the seat). */
+	/**
+	 * A seat (2.0.0-test4, creator: "When me or bots get inside some of the cars, we show on top rather than inside"): how
+	 * far its middle is to the car's left (side) and forwards (along), how high the rider's feet are over the car's base,
+	 * and how much smaller the rider is drawn sitting there (RobloxAvatarRenderer.SEAT_SCALE). A Roblox avatar sitting is
+	 * 1.54 blocks tall, taller than every car's inside (a sedan's is 1.18, a sports car's 0.92), so it's drawn just small
+	 * enough that nothing pokes through the car's shell; the windows are solid, so it's never seen in there. From
+	 * fabric/tools/blender/seat_fit.py (cars.py's shapes, the game's own sit poses).
+	 */
+	public record Seat(float side, float along, float feet, float scale) {
+	}
+
+	/** Each kind's seats (CarBlockEntity.Kind order): the front row, the back row (the pickup: its bed, two places). */
+	private static final Seat[][] SEAT_ROWS = {
+		{ new Seat(0.34F, 0.15F, 0.13F, 0.72F), new Seat(0.34F, -0.70F, 0.13F, 0.72F) }, // SEDAN
+		{ new Seat(0.42F, -0.05F, 0.11F, 0.54F), new Seat(0.42F, -0.80F, 0.11F, 0.54F) }, // SPORTS
+		{ new Seat(0.30F, 0.15F, 0.10F, 0.88F), new Seat(0F, -0.90F, 0.75F, 1F), new Seat(0F, -1.80F, 0.75F, 1F) }, // PICKUP
+		{ new Seat(0.26F, 0.15F, 0.11F, 0.92F), new Seat(0.26F, -0.85F, 0.11F, 0.92F) }, // SUV
+		{ new Seat(0.26F, 0.15F, 0.10F, 0.74F), new Seat(0.26F, -0.85F, 0.10F, 0.74F) }, // HATCHBACK
+		{ new Seat(0.34F, 0.15F, 0.13F, 0.72F), new Seat(0.34F, -0.70F, 0.13F, 0.72F) }, // POLICE
+		{ new Seat(0.34F, 0.15F, 0.13F, 0.72F), new Seat(0.34F, -0.70F, 0.13F, 0.72F) }, // TAXI
+	};
+
+	/** Where this rider sits: the driver front left, then front right, back left, back right. */
+	public Seat seat(Entity passenger) {
+		int i = Math.max(0, getPassengers().indexOf(passenger));
+		Seat[] rows = SEAT_ROWS[kind().ordinal()];
+		if (i >= 2 && rows.length > 2) return rows[i - 1]; // (the pickup's bed: one behind the other, in the middle)
+		Seat s = rows[i < 2 ? 0 : 1];
+		return i % 2 == 0 ? s : new Seat(-s.side(), s.along(), s.feet(), s.scale());
+	}
+
+	/**
+	 * The seats (seat): the rider's feet at the seat's height whoever they are. (Minecraft lowers a riding player by its
+	 * vehicle attachment, 0.6, and a bot by nothing: they sat 0.6 apart before 2.0.0-test4.)
+	 */
 	@Override
 	protected Vec3 getPassengerAttachmentPoint(Entity passenger, EntityDimensions dimensions, float scale) {
-		int i = Math.max(0, getPassengers().indexOf(passenger));
-		double side = i % 2 == 0 ? 0.42 : -0.42, along = i < 2 ? 0.15 : -0.85;
+		Seat s = seat(passenger);
 		double yaw = Math.toRadians(getYRot());
 		double fx = -Math.sin(yaw), fz = Math.cos(yaw);
-		return new Vec3(fx * along + fz * side, 0.42, fz * along - fx * side);
+		return new Vec3(fx * s.along() + fz * s.side(), s.feet() + passenger.getVehicleAttachmentPoint(this).y, fz * s.along() - fx * s.side());
 	}
 
 	/** Passengers turn with the car (and can look round, as in a boat). */

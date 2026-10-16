@@ -197,7 +197,7 @@ public final class Tracers {
 	}
 
 	/** A band from a to b (camera-relative), width across, facing the camera; alpha from a's end to b's. */
-	private static void band(VertexConsumer vc, PoseStack.Pose pose, Vector3f a, Vector3f b, float width, int rgb, int alphaA, int alphaB) {
+	static void band(VertexConsumer vc, PoseStack.Pose pose, Vector3f a, Vector3f b, float width, int rgb, int alphaA, int alphaB) {
 		Vector3f along = new Vector3f(b).sub(a), mid = new Vector3f(a).add(b).mul(0.5F);
 		Vector3f side = along.cross(mid.negate(new Vector3f()));
 		if (side.lengthSquared() < 1e-10F) return;
@@ -224,7 +224,7 @@ public final class Tracers {
 		}
 	}
 
-	private static void quad(VertexConsumer vc, PoseStack.Pose pose, Vector3f a, Vector3f b, Vector3f c, Vector3f d, int ca, int cb, int cc, int cd) {
+	static void quad(VertexConsumer vc, PoseStack.Pose pose, Vector3f a, Vector3f b, Vector3f c, Vector3f d, int ca, int cb, int cc, int cd) {
 		v(vc, pose, a, ca);
 		v(vc, pose, b, cb);
 		v(vc, pose, c, cc);

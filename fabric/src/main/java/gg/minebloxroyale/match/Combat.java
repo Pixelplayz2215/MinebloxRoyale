@@ -190,6 +190,7 @@ public final class Combat {
 	}
 
 	public static void applyConsumable(LivingEntity e, ConsumableDef def) {
+		done(e, def);
 		if (def.maxUses() > 0) USES.computeIfAbsent(e.getUUID(), k -> new ConcurrentHashMap<>()).merge(def.id(), 1, Integer::sum);
 		if (def.overTimeTicks() > 0) {
 			REGEN.put(e.getUUID(), new Regen(def.kind().equals("shield") ? 0 : def.amount(), def.kind().equals("heal") ? 0 : def.amount(), def.overTimeTicks(), def.cap()));
@@ -204,6 +205,16 @@ public final class Combat {
 				setShield(e, Math.min(def.cap(), shield(e) + (def.amount() - toHealth)));
 			}
 		}
+	}
+
+	/**
+	 * A heal or shield used up (2.0.0-test4, creator: "shield sounds and healing sounds when using proper items"): a warm
+	 * chime as health goes up, a rising shimmer as a shield charges (Slurp Juice and the Chug Jug too), heard by everyone
+	 * near.
+	 */
+	public static void done(LivingEntity e, ConsumableDef def) {
+		if (e.level() instanceof net.minecraft.server.level.ServerLevel level)
+			gg.minebloxroyale.net.Net.sfxAll(level.getServer(), def.kind().equals("heal") ? "heal_done" : "shield_done", e.position().add(0, 1, 0));
 	}
 
 	/**

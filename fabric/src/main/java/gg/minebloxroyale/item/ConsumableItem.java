@@ -68,11 +68,15 @@ public class ConsumableItem extends Item {
 		float left = pointsLeft(stack);
 		if (left > 0 && Combat.canUse(entity, def)) left -= Combat.applyStep(entity, def, Math.min(def.stepAmount(), left));
 		if (left <= 0.001F) {
+			Combat.done(entity, def);
 			entity.stopUsingItem();
 			stack.shrink(1);
 		} else {
 			setPointsLeft(stack, left);
-			if (!Combat.canUse(entity, def)) entity.stopUsingItem();
+			if (!Combat.canUse(entity, def)) {
+				Combat.done(entity, def); // (full up: the jug keeps the rest)
+				entity.stopUsingItem();
+			}
 		}
 	}
 

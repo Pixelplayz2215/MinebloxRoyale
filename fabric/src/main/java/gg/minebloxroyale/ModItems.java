@@ -57,9 +57,11 @@ public final class ModItems {
 			ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, MinebloxRoyale.id(c.id()));
 			// The vanilla CONSUMABLE component only supplies Minecraft's drinking/eating animation, sound and particles
 			// while the item is used; what it does (and that 1 is used up) is ConsumableItem's own logic.
-			var sound = BuiltInRegistries.SOUND_EVENT.get(Identifier.withDefaultNamespace(Sheets.SOUNDS_BY_ID.get(c.useSound()).file()))
-				.map(h -> (Holder<SoundEvent>) h)
-				.orElse(c.anim().equals("eat") ? SoundEvents.GENERIC_EAT : SoundEvents.GENERIC_DRINK);
+			// (2.0.0-test4: the mod's own heal and shield sounds, make_audio.py use/; a Minecraft one by its name)
+			var def = Sheets.SOUNDS_BY_ID.get(c.useSound());
+			Holder<SoundEvent> sound = def.game().equals("mod") ? Holder.direct(SoundEvent.createVariableRangeEvent(MinebloxRoyale.id(def.file())))
+				: BuiltInRegistries.SOUND_EVENT.get(Identifier.withDefaultNamespace(def.file())).map(h -> (Holder<SoundEvent>) h)
+					.orElse(c.anim().equals("eat") ? SoundEvents.GENERIC_EAT : SoundEvents.GENERIC_DRINK);
 			var effects = Consumable.builder().consumeSeconds(c.useTicks() / 20F)
 				.animation(c.anim().equals("eat") ? ItemUseAnimation.EAT : ItemUseAnimation.DRINK)
 				.sound(sound).hasConsumeParticles(c.anim().equals("eat")).build();

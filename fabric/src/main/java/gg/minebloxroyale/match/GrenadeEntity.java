@@ -27,6 +27,12 @@ import net.minecraft.world.phys.Vec3;
  * damage and they break builds"): it flies in an arc, bounces off the ground and walls (losing speed each time, with a
  * knock), rolls to a stop, and goes off (Explosions) grenadeFuseTicks after the throw. Both sides move it the same way;
  * only the server's goes off. Not saved with the world.
+ * <p>
+ * 2.0.0-test4 (creator: "Grenades should be aimable with a blue aimtrail that the grenade follows. Grenades should also be
+ * shown when thrown and when on the floor before exploding. (Grenades should have a slight bounce like real grenades
+ * do)"): the throw (launch) and each tick's flight and bounce (step) are shared with the client's aim arc (GrenadeAim),
+ * which flies a copy of the grenade ahead of time, so the grenade follows the arc exactly. A slight bounce: a third of
+ * its fall back up off the ground, losing speed along the ground at each knock.
  */
 public class GrenadeEntity extends Entity {
 	public static EntityType<GrenadeEntity> TYPE;
@@ -63,42 +69,32 @@ public class GrenadeEntity extends Entity {
 
 	/** Thrown by `who` towards `at` (where they aim): in an arc, a little upwards. */
 	public static void throwFrom(ServerLevel level, LivingEntity who, Vec3 at) {
-		Vec3 eye = who.getEyePosition();
-		Vec3 dir = at != null && at.distanceToSqr(eye) > 1e-4 ? at.subtract(eye).normalize() : who.getLookAngle();
+		Vec3[] go = launch(who.getEyePosition(), at, who.getLookAngle());
 		GrenadeEntity g = new GrenadeEntity(TYPE, level);
 		g.owner = who.getUUID();
-		Vec3 start = eye.add(dir.scale(0.6)).add(0, -0.2, 0);
-		g.snapTo(start.x, start.y, start.z, who.getYRot(), 0F);
-		g.setDeltaMovement(dir.scale(MinebloxRoyale.setting("grenadeThrow")).add(0, 0.2, 0).add(who.getDeltaMovement().multiply(1, 0, 1)));
+		g.snapTo(go[0].x, go[0].y, go[0].z, who.getYRot(), 0F);
+		// (a bot's own run carries its throw; a player's isn't known here, and their aim arc shows the throw without it)
+		g.setDeltaMovement(who instanceof net.minecraft.world.entity.player.Player ? go[1] : go[1].add(who.getDeltaMovement().multiply(1, 0, 1)));
 		level.addFreshEntity(g);
-		level.playSound(null, start.x, start.y, start.z, SoundEvents.SNOWBALL_THROW, SoundSource.PLAYERS, 0.8F, 0.6F);
+		level.playSound(null, go[0].x, go[0].y, go[0].z, SoundEvents.SNOWBALL_THROW, SoundSource.PLAYERS, 0.8F, 0.6F);
 	}
+
+	/**
+	 * Where a grenade thrown from `eye` towards `at` starts and how fast it goes: {start, speed a tick}. Shared by the
+	 * throw and the client's aim arc.
+	 */
+	public static Vec3[] launch(Vec3 eye, @org.jspecify.annotations.Nullable Vec3 at, Vec3 look) {
+		Vec3 dir = at != null && at.distanceToSqr(eye) > 1e-4 ? at.subtract(eye).normalize() : look;
+		return new Vec3[] { eye.add(dir.scale(0.6)).add(0, -0.2, 0), dir.scale(MinebloxRoyale.setting("grenadeThrow")).add(0, 0.2, 0) };
+	}
+
+	/** step()'s result: the move was stopped across x, up or down, across z; and it hit hard enough to knock. */
+	public static final int HIT_X = 1, HIT_Y = 2, HIT_Z = 4, KNOCK = 8;
 
 	@Override
 	public void tick() {
 		super.tick();
-		Vec3 want = getDeltaMovement().add(0, -0.05, 0);
-		Vec3 before = position();
-		move(MoverType.SELF, want);
-		Vec3 got = position().subtract(before);
-		// bounces: what the move stopped short is turned back, softer
-		double vx = want.x, vy = want.y, vz = want.z;
-		boolean knock = false;
-		if (Math.abs(got.x - want.x) > 1e-4) {
-			vx = -want.x * 0.45;
-			knock |= Math.abs(want.x) > 0.08;
-		}
-		if (Math.abs(got.z - want.z) > 1e-4) {
-			vz = -want.z * 0.45;
-			knock |= Math.abs(want.z) > 0.08;
-		}
-		if (Math.abs(got.y - want.y) > 1e-4) {
-			knock |= Math.abs(want.y) > 0.12;
-			vy = want.y < 0 && Math.abs(want.y) > 0.12 ? -want.y * 0.4 : 0;
-			vx *= 0.75;
-			vz *= 0.75;
-		}
-		setDeltaMovement(vx * 0.99, vy * 0.99, vz * 0.99);
+		boolean knock = (step() & KNOCK) != 0;
 		if (level() instanceof ServerLevel level) {
 			if (knock) Net.sfxAll(level.getServer(), "grenade_bounce", position());
 			if (++age >= MinebloxRoyale.setting("grenadeFuseTicks")) {
@@ -107,13 +103,64 @@ public class GrenadeEntity extends Entity {
 					MinebloxRoyale.setting("grenadeBuildDamage"), MinebloxRoyale.setting("grenadeCarDamage"));
 				discard();
 			}
-		} else age++;
+		} else {
+			age++;
+			turn();
+		}
 	}
 
-	/** Spinning while it flies (the renderer's turn), resting when it lies still. */
+	/**
+	 * One tick of flight: falling, moving, and bouncing off what stopped it (softer each time: a third of its fall back
+	 * up off the ground, sliding on at three quarters; walls turn it back at under half). HIT_ and KNOCK bits.
+	 */
+	public int step() {
+		Vec3 want = getDeltaMovement().add(0, -0.05, 0);
+		Vec3 before = position();
+		move(MoverType.SELF, want);
+		Vec3 got = position().subtract(before);
+		// bounces: what the move stopped short is turned back, softer
+		double vx = want.x, vy = want.y, vz = want.z;
+		int hit = 0;
+		if (Math.abs(got.x - want.x) > 1e-4) {
+			vx = -want.x * 0.4;
+			hit |= HIT_X | (Math.abs(want.x) > 0.08 ? KNOCK : 0);
+		}
+		if (Math.abs(got.z - want.z) > 1e-4) {
+			vz = -want.z * 0.4;
+			hit |= HIT_Z | (Math.abs(want.z) > 0.08 ? KNOCK : 0);
+		}
+		if (Math.abs(got.y - want.y) > 1e-4) {
+			hit |= HIT_Y | (Math.abs(want.y) > 0.12 ? KNOCK : 0);
+			vy = want.y < 0 && Math.abs(want.y) > 0.12 ? -want.y * 0.33 : 0;
+			vx *= 0.72;
+			vz *= 0.72;
+		}
+		setDeltaMovement(vx * 0.99, vy * 0.99, vz * 0.99);
+		return hit;
+	}
+
+	/** Its tumble (client): degrees now and last tick. Over and over in the air, then it rolls onto its side and lies still. */
+	private float turn, turnWas;
+
+	private void turn() {
+		turnWas = turn;
+		double v = getDeltaMovement().length();
+		if (onGround() && v < 0.06) {
+			// lying on its side: the nearest way down (90 or 270), settling
+			float rest = (float) (Math.floor(turn / 180F) * 180F + 90F);
+			turn += (rest - turn) * 0.35F;
+		} else turn += (float) Math.min(40, v * 110);
+	}
+
+	/** Tumbling while it flies, lying on its side once it stops (the renderer's turn, degrees about its side). */
 	public float spin(float partialTicks) {
-		Vec3 v = getDeltaMovement();
-		return (age + partialTicks) * (float) Math.min(40, v.length() * 120);
+		return turnWas + (turn - turnWas) * partialTicks;
+	}
+
+	/** No footsteps or vibrations as it rolls. */
+	@Override
+	protected Entity.MovementEmission getMovementEmission() {
+		return Entity.MovementEmission.NONE;
 	}
 
 	@Override

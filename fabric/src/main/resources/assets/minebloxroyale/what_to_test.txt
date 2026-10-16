@@ -1,3 +1,8 @@
+Test 4 - Grenades: hold one to see the blue arc and the ring where it lands; throw it: it follows the arc, bounces, lies there till it goes off
+Test 4 - Heals and shields: a bandage rustle or a fizzing gulp while you use one, a chime when it's done (bots too)
+Test 4 - Cars: you and bots sit inside every kind of car, nothing sticking out (try the sports car, SUV and pickup: the back two ride in its bed)
+Test 4 - Cars: getting into a parked car swings its door open; driving, the camera is further back so you can see your boost trail
+Test 4 - Bosses: the bar is a little bigger, and the shield bar is the same size as health
 Test 3 - Duos/Trios/Squads: get eliminated with a bot teammate up: the match goes on while your card is out; they can reboot you
 Test 3 - The Battle Bus: everyone still aboard drops just before the storm wall, not inside it
 Test 3 - Lag: is it smoother? (far bots, cars and items use lighter models; the HUD is drawn in a few pieces)
@@ -35,4 +40,4 @@ Sounds (new): each gun its own shot, the storm warning, explosions, battle music
 HUD (new look): smooth panels, Blender icons and lettering, Fortnite-style hotbar in a match; check it's all readable
 The parked Battle Bus in the hub is solid (you can't walk through it)
 With a friend: host a game, and your friend joins with Melty's Join or your room code (/rc)
-Hub: the main board shows v2.0.0 - TEST 3 next to MINEBLOX ROYALE
+Hub: the main board shows v2.0.0 - TEST 4 next to MINEBLOX ROYALE

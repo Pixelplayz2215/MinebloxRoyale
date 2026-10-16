@@ -49,6 +49,11 @@ public final class RobloxAvatarRenderer {
 	/** Getting into a car (2.0.0-test3): how far through (0..1), and whether through a door on the car's right. */
 	public static final RenderStateDataKey<Float> CAR_ENTER = RenderStateDataKey.create(() -> "minebloxroyale:car_enter");
 	public static final RenderStateDataKey<Boolean> CAR_ENTER_RIGHT = RenderStateDataKey.create(() -> "minebloxroyale:car_enter_right");
+	/**
+	 * Sitting in a car (2.0.0-test4): drawn this much smaller, about its feet, so it fits inside that car (CarEntity.Seat;
+	 * a Roblox avatar sitting is taller than most cars' insides). 1 on foot.
+	 */
+	public static final RenderStateDataKey<Float> SEAT_SCALE = RenderStateDataKey.create(() -> "minebloxroyale:seat_scale");
 	/** The Locker's preview of you (its glider and contrail kept apart from your avatar in the world). */
 	public static final RenderStateDataKey<Boolean> PREVIEW = RenderStateDataKey.create(() -> "minebloxroyale:preview");
 	/** The Locker's Shop (2.0.0-test2): the hovered item ({slot: id}), worn on the preview over the outfit. */
@@ -160,6 +165,14 @@ public final class RobloxAvatarRenderer {
 	public static boolean submit(LivingEntityRenderState state, PoseStack poseStack, SubmitNodeCollector collector, int light, int overlay) {
 		if (!RobloxAssets.ready()) return false;
 		boolean crawl = state.getDataOrDefault(KNOCKED, false) && !state.getDataOrDefault(IS_PLAYER, false);
+		float seat = state.getDataOrDefault(SEAT_SCALE, 1F);
+		boolean scaled = seat < 0.999F;
+		if (scaled) { // (about the feet: 1.501 down in the model's space)
+			poseStack.pushPose();
+			poseStack.translate(0, 1.501F, 0);
+			poseStack.scale(seat, seat, seat);
+			poseStack.translate(0, -1.501F, 0);
+		}
 		if (crawl) {
 			poseStack.pushPose();
 			poseStack.mulPose(CRAWL);
@@ -168,6 +181,7 @@ public final class RobloxAvatarRenderer {
 			return draw(state, poseStack, collector, light, overlay);
 		} finally {
 			if (crawl) poseStack.popPose();
+			if (scaled) poseStack.popPose();
 		}
 	}
 

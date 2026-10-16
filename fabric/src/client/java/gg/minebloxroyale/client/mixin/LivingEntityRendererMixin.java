@@ -58,6 +58,8 @@ public abstract class LivingEntityRendererMixin {
 			// In a car (v2.0.0): sitting, hands on the wheel, nothing in them (as in Fortnite).
 			boolean inCar = entity.getVehicle() instanceof CarEntity;
 			state.setData(RobloxAvatarRenderer.SITTING, inCar);
+			// (sitting: the size that fits that car's inside, 2.0.0-test4; climbing in, growing back towards full size outside)
+			state.setData(RobloxAvatarRenderer.SEAT_SCALE, entity.getVehicle() instanceof CarEntity car ? car.seat(entity).scale() : 1F);
 			// Getting in (2.0.0-test3): for its first second in a car, climbing in from outside its door (the car_enter
 			// move, from the side its seat is on; the car swings that door open and shut, CarEntityRenderer).
 			if (inCar && entity.getVehicle() instanceof CarEntity car) minebloxroyale$entering(entity, car, state);
@@ -117,6 +119,8 @@ public abstract class LivingEntityRendererMixin {
 		state.x += Math.cos(yaw) * side * away;
 		state.z += Math.sin(yaw) * side * away;
 		state.y += (car.getY() - entity.getY()) * away;
+		float seat = car.seat(entity).scale();
+		state.setData(RobloxAvatarRenderer.SEAT_SCALE, seat + (1 - seat) * away);
 	}
 
 	/** Seen out of a car this frame (drawn on foot): a car next time means it just got in. */

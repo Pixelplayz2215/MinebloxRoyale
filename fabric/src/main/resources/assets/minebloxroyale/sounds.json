@@ -114,5 +114,29 @@
     "sounds": [
       "minebloxroyale:car/door_close"
     ]
+  },
+  "use.heal": {
+    "sounds": [
+      "minebloxroyale:use/heal_1",
+      "minebloxroyale:use/heal_2",
+      "minebloxroyale:use/heal_3"
+    ]
+  },
+  "use.shield": {
+    "sounds": [
+      "minebloxroyale:use/shield_1",
+      "minebloxroyale:use/shield_2",
+      "minebloxroyale:use/shield_3"
+    ]
+  },
+  "use.heal_done": {
+    "sounds": [
+      "minebloxroyale:use/heal_done"
+    ]
+  },
+  "use.shield_done": {
+    "sounds": [
+      "minebloxroyale:use/shield_done"
+    ]
   }
 }
