@@ -23,7 +23,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
-import net.minecraft.client.renderer.entity.state.ArmedEntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
@@ -49,6 +48,7 @@ public abstract class LivingEntityRendererMixin {
 			state.setData(RobloxAvatarRenderer.ENTITY_ID, entity.getId());
 			state.setData(RobloxAvatarRenderer.COLORS, entity instanceof BotEntity bot ? bot.colors() : "classic");
 			state.setData(RobloxAvatarRenderer.AIMING, entity.getMainHandItem().getItem() instanceof WeaponItem);
+			state.setData(RobloxAvatarRenderer.GUN, entity.getMainHandItem().getItem() instanceof WeaponItem w ? w.def.id() : "");
 			// Aiming down the sights: a player holding right mouse with a gun; a bot while it's shooting (it fired lately).
 			float[] shot = Tracers.lastShot(entity.getId());
 			state.setData(RobloxAvatarRenderer.ADS, entity instanceof Player ? entity.isUsingItem() && entity.getUseItem().getItem() instanceof WeaponItem
@@ -64,10 +64,6 @@ public abstract class LivingEntityRendererMixin {
 			// move, from the side its seat is on; the car swings that door open and shut, CarEntityRenderer).
 			if (inCar && entity.getVehicle() instanceof CarEntity car) minebloxroyale$entering(entity, car, state);
 			else minebloxroyale$onFoot(entity);
-			if (inCar && state instanceof ArmedEntityRenderState armed) {
-				armed.rightHandItemState.clear();
-				armed.leftHandItemState.clear();
-			}
 			state.setData(RobloxAvatarRenderer.IN_BUS, entity.getVehicle() instanceof BattleBusEntity);
 			state.setData(RobloxAvatarRenderer.KNOCKED, Knocked.CLIENT.contains(entity.getId()));
 			state.setData(RobloxAvatarRenderer.IS_PLAYER, entity instanceof Player);

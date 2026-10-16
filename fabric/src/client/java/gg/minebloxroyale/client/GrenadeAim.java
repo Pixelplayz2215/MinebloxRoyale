@@ -17,8 +17,9 @@ import org.joml.Vector3f;
 
 /**
  * The grenade's aim arc (2.0.0-test4, creator: "Grenades should be aimable with a blue aimtrail that the grenade
- * follows"): while a grenade is in your hand, a blue line from your hand along exactly where it will fly if you throw it
- * now (towards the crosshair, Aim), with a ring where it first lands. The arc is a copy of the grenade flown ahead of
+ * follows"): while you aim with a grenade in your hand (right mouse held: 2.0.0-test5, creator: "the grenade aim arc
+ * should only be visible when aim button is held"), a blue line from your hand along exactly where it will fly if you
+ * throw it now (towards the crosshair, Aim), with a ring where it first lands. The arc is a copy of the grenade flown ahead of
  * time with the grenade's own throw and flight (GrenadeEntity.launch, step), so the real one follows it, bounces and
  * all; after its first landing the line goes faint along its bounces and roll to where it will go off.
  */
@@ -32,10 +33,11 @@ public final class GrenadeAim {
 	private GrenadeAim() {
 	}
 
-	/** Is a grenade's arc to be shown now: one in your hand, on foot, not building, knocked or watching. */
+	/** Is a grenade's arc to be shown now: aiming (right mouse) with one in your hand, on foot, not building, knocked or watching. */
 	private static boolean showing(Minecraft mc) {
 		var p = mc.player;
-		return p != null && mc.level != null && p.getMainHandItem().is(ModItems.GRENADE) && !BuildMode.active() && p.getVehicle() == null && !p.isSpectator()
+		return p != null && mc.level != null && p.getMainHandItem().is(ModItems.GRENADE) && mc.options.keyUse.isDown() && mc.gui.screen() == null
+			&& !BuildMode.active() && p.getVehicle() == null && !p.isSpectator()
 			&& !Knocked.is(p);
 	}
 

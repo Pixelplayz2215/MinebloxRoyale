@@ -47,7 +47,7 @@ public final class Tracers {
 
 	private static final List<Bullet> BULLETS = new ArrayList<>();
 	private static final List<Flash> FLASHES = new ArrayList<>();
-	/** Each avatar's gun hand lately (world x, y, z, seconds): where its bullets leave from. */
+	/** Each avatar's gun lately: the end of its barrel (world x, y, z, seconds), where its bullets leave from. */
 	private static final Map<Integer, double[]> HANDS = new HashMap<>();
 	/** Each shooter's last shot: {seconds, the gun's kick}. */
 	private static final Map<Integer, double[]> KICKS = new HashMap<>();
@@ -61,7 +61,7 @@ public final class Tracers {
 		return System.nanoTime() / 1e9;
 	}
 
-	/** Where an avatar's gun hand was drawn this frame (world): RobloxAvatarRenderer. */
+	/** Where the end of an avatar's gun barrel was drawn this frame (world): RobloxAvatarRenderer.muzzle. */
 	public static void hand(int entityId, double x, double y, double z) {
 		HANDS.put(entityId, new double[] { x, y, z, now() });
 	}
@@ -96,17 +96,14 @@ public final class Tracers {
 	}
 
 	/**
-	 * Where a shot leaves from: the end of the gun in the shooter's hand as just drawn (the hand, then half a block on
-	 * towards where it hit), or near the eye when its avatar wasn't drawn (your own scope view; off screen).
+	 * Where a shot leaves from: the end of the barrel of the gun in the shooter's hand as just drawn (2.0.0-test5: it
+	 * was half a block on from the hand, towards where it hit), or near the eye when its avatar wasn't drawn (your own
+	 * scope view; off screen).
 	 */
 	private static Vec3 muzzle(Minecraft mc, int shooter, Vec3 eye, Vec3 at, double time) {
 		boolean mine = mc.player != null && shooter == mc.player.getId();
 		double[] h = HANDS.get(shooter);
-		if (h != null && time - h[3] < 0.25 && !(mine && Aim.scoped())) {
-			Vec3 hand = new Vec3(h[0], h[1], h[2]);
-			Vec3 d = at.subtract(hand);
-			return d.lengthSqr() < 1e-4 ? hand : hand.add(d.normalize().scale(0.55));
-		}
+		if (h != null && time - h[3] < 0.25 && !(mine && Aim.scoped())) return new Vec3(h[0], h[1], h[2]);
 		Vec3 d = at.subtract(eye);
 		Vec3 dir = d.lengthSqr() < 1e-4 ? new Vec3(0, 0, 1) : d.normalize();
 		return eye.add(dir.scale(0.5)).add(0, -0.18, 0);

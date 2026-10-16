@@ -25,7 +25,9 @@ public class WeaponItem extends Item {
 
 	@Override
 	public InteractionResult use(Level level, Player player, InteractionHand hand) {
-		// Right mouse = aim down sights (Fortnite). Firing is left mouse (Net action "fire").
+		// Right mouse = aim down sights (Fortnite). Firing is left mouse (Net action "fire"). Never from a car
+		// (2.0.0-test5, creator: "Guns I can still use aim"): nothing is held in one.
+		if (player.getVehicle() instanceof gg.minebloxroyale.match.CarEntity) return InteractionResult.PASS;
 		player.startUsingItem(hand);
 		return InteractionResult.CONSUME;
 	}

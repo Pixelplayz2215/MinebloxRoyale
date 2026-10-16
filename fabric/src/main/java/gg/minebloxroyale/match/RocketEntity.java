@@ -53,14 +53,19 @@ public class RocketEntity extends Entity {
 			EntityType.Builder.<RocketEntity>of(RocketEntity::new, MobCategory.MISC).sized(0.3F, 0.3F).clientTrackingRange(10).updateInterval(1).build(key));
 	}
 
-	/** Fired from a launcher: from the shooter's eye towards aim (null: where they look). */
+	/**
+	 * Fired from a launcher: towards aim (null: where they look), leaving from the launcher's tube over the right shoulder
+	 * (2.0.0-test5: it came out of the face).
+	 */
 	public static void fire(ServerLevel level, LivingEntity shooter, WeaponDef w, RarityDef r, Vec3 aim) {
 		Vec3 eye = shooter.getEyePosition();
 		Vec3 dir = aim != null && aim.distanceToSqr(eye) > 1e-4 ? aim.subtract(eye).normalize() : shooter.getLookAngle();
 		RocketEntity rk = new RocketEntity(TYPE, level);
 		rk.owner = shooter.getUUID();
 		rk.mult = r.damageMult();
-		Vec3 start = eye.add(dir.scale(0.8)).add(0, -0.15, 0);
+		double yaw = Math.toRadians(shooter.getYRot());
+		Vec3 right = new Vec3(-Math.cos(yaw), 0, -Math.sin(yaw));
+		Vec3 start = eye.add(dir.scale(1.0)).add(right.scale(0.3)).add(0, -0.22, 0);
 		rk.snapTo(start.x, start.y, start.z, 0F, 0F);
 		rk.setDeltaMovement(dir.scale(MinebloxRoyale.setting("rocketSpeed")));
 		rk.face();

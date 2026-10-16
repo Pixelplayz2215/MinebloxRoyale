@@ -22,14 +22,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * Held items (guns) follow the Roblox arm that holds them instead of Minecraft's hidden arm. A reboot card in the
- * offhand is never drawn (creator: hidden in third person), and a knocked fighter holds nothing.
+ * offhand is never drawn (creator: hidden in third person), and a knocked fighter holds nothing; nor does anyone in a
+ * car, getting in included (2.0.0-test5, creator: "items still stick out when holding them": the hands were emptied
+ * before Minecraft's player and mob renderers filled them, and an item is drawn at the full-size arm while the rider
+ * sits shrunk to fit).
  */
 @Mixin(ItemInHandLayer.class)
 public abstract class ItemInHandLayerMixin {
 	@Inject(method = "submitArmWithItem", at = @At("HEAD"), cancellable = true)
 	private void minebloxroyale$hidden(ArmedEntityRenderState state, ItemStackRenderState item, ItemStack stack, HumanoidArm arm, PoseStack poseStack,
 		SubmitNodeCollector collector, int light, CallbackInfo ci) {
-		if (Reboot.isCard(stack) || state.getDataOrDefault(RobloxAvatarRenderer.KNOCKED, false)) ci.cancel();
+		if (Reboot.isCard(stack) || state.getDataOrDefault(RobloxAvatarRenderer.KNOCKED, false) || state.getDataOrDefault(RobloxAvatarRenderer.SITTING, false))
+			ci.cancel();
 	}
 
 	@WrapOperation(method = "submitArmWithItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/ArmedModel;translateToHand(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lnet/minecraft/world/entity/HumanoidArm;Lcom/mojang/blaze3d/vertex/PoseStack;)V"))

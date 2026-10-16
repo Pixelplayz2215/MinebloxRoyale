@@ -36,6 +36,8 @@ public final class RobloxAvatarRenderer {
 	public static final RenderStateDataKey<Integer> ENTITY_ID = RenderStateDataKey.create(() -> "minebloxroyale:entity_id");
 	public static final RenderStateDataKey<String> COLORS = RenderStateDataKey.create(() -> "minebloxroyale:colors");
 	public static final RenderStateDataKey<Boolean> AIMING = RenderStateDataKey.create(() -> "minebloxroyale:aiming");
+	/** The gun in its hand (weapons sheet id; empty: none): where its shots leave from (muzzle). */
+	public static final RenderStateDataKey<String> GUN = RenderStateDataKey.create(() -> "minebloxroyale:gun");
 	/** Aiming down the sights (right mouse; bots while they're shooting): the gun raised from the hip into the aim. */
 	public static final RenderStateDataKey<Boolean> ADS = RenderStateDataKey.create(() -> "minebloxroyale:ads");
 	public static final RenderStateDataKey<Boolean> IN_BUS = RenderStateDataKey.create(() -> "minebloxroyale:in_bus");
@@ -221,11 +223,11 @@ public final class RobloxAvatarRenderer {
 		GliderDef glider = Gliders.of(outfit, entityId);
 		Matrix4f gt = Gliders.transform(track, glider.id(), state.getDataOrDefault(GLIDING, false), state.bodyRot);
 		if (gt != null) Gliders.submit(collector, poseStack, glider, gt, distSq, light, overlay);
-		// (a gun in hand: where its bullets leave from, Tracers)
+		// (a gun in hand: where its bullets leave from, the end of its barrel: Tracers)
 		if (!preview && state.getDataOrDefault(AIMING, false)) {
-			Vector3f hand = poseStack.last().pose().transformPosition(handTips(state, pose)[0]);
+			Vector3f end = poseStack.last().pose().transformPosition(muzzle(state, state.getDataOrDefault(GUN, "")));
 			var cam = net.minecraft.client.Minecraft.getInstance().gameRenderer.mainCamera().position();
-			Tracers.hand(entityId, cam.x + hand.x, cam.y + hand.y, cam.z + hand.z);
+			Tracers.hand(entityId, cam.x + end.x, cam.y + end.y, cam.z + end.z);
 		}
 		// Contrails (v2.0.0): skydiving, from the hands; riding a glider, from its wingtips (Contrails).
 		boolean sky = state.getDataOrDefault(SKYDIVING, false);
@@ -257,6 +259,28 @@ public final class RobloxAvatarRenderer {
 		// studs (y up) -> model space, and back for the local frame: T * F * joint * F^-1 (rotation + translation
 		// only).
 		return new Matrix4f().translate(0, 1.501F - HIP * S, 0).scale(-S, -S, S).mul(joint).scale(-1F / S, -1F / S, 1F / S);
+	}
+
+	/**
+	 * Where the end of each gun's barrel is in its model (item pixels: x along the barrel to the muzzle, y up; z is 8,
+	 * the middle): the front of the muzzle in fabric/tools/blender/items.py.
+	 */
+	private static final Map<String, float[]> MUZZLE = Map.of("pistol", new float[] { 12.62F, 10.55F }, "smg", new float[] { 15.54F, 9.15F },
+		"assault_rifle", new float[] { 16.29F, 9.7F }, "pump_shotgun", new float[] { 15.94F, 9.55F }, "sniper", new float[] { 16.93F, 8.95F },
+		"rocket_launcher", new float[] { 16.19F, 10.2F });
+
+	/**
+	 * The end of the barrel of the gun in the right hand, this frame (model space; 2.0.0-test5, creator: "Bullets appear
+	 * to be shooting out of players hand rather than out of the gun itself"): the hand's frame (handMatrix), then exactly
+	 * what Minecraft's ItemInHandLayer and the guns' item models do to it (thirdperson_righthand: turned 90 about y,
+	 * moved 1.5 up and 2 along, 0.9 the size), then the muzzle point in the gun's model. Without a gun: the hand's tip.
+	 */
+	static Vector3f muzzle(LivingEntityRenderState state, String gun) {
+		float[] m = MUZZLE.get(gun);
+		if (m == null) return handTips(state, pose(state))[0];
+		Matrix4f t = handMatrix(state, true).rotateX((float) Math.toRadians(-90)).rotateY((float) Math.toRadians(180)).translate(1 / 16F, 2 / 16F, -10 / 16F)
+			.translate(0, 1.5F / 16F, 2 / 16F).rotateXYZ(0, (float) Math.toRadians(90), 0).scale(0.9F).translate(-0.5F, -0.5F, -0.5F);
+		return t.transformPosition(new Vector3f(m[0] / 16F, m[1] / 16F, 0.5F));
 	}
 
 	/** The ends of both hands this frame (model space): where a skydiver's contrails stream from. */

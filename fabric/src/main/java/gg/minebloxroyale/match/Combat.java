@@ -172,6 +172,8 @@ public final class Combat {
 	/** Why this item can't be used right now (shown to the player), or null when it can. */
 	public static String whyNot(LivingEntity e, ConsumableDef def) {
 		if (Knocked.is(e)) return "You can't use items while knocked";
+		// (2.0.0-test5, creator: "no using healing or shield items in cars"; bots ask the same)
+		if (e.getVehicle() instanceof CarEntity) return "You can't heal or shield in a car";
 		if (def.maxUses() > 0) {
 			if (shield(e) <= 0) USES.remove(e.getUUID()); // the shield broke: Mini Shields count again from zero
 			// Slurp Juice: usable again once the shield is down to reuseShield (25) or less.

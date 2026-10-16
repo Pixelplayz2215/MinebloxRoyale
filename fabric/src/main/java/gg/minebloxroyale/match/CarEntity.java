@@ -304,6 +304,13 @@ public class CarEntity extends Entity {
 		return first == null || Teams.sameTeam(first, passenger);
 	}
 
+	/** Getting in stops whatever the rider was using (a heal, a shield, aiming): nothing is used in a car (2.0.0-test5). */
+	@Override
+	protected void addPassenger(Entity passenger) {
+		super.addPassenger(passenger);
+		if (passenger instanceof LivingEntity le) le.stopUsingItem();
+	}
+
 	/** Getting in is F (tryEnter), never a right click: right mouse aims a gun, which shouldn't pull you into a car. */
 	@Override
 	public InteractionResult interact(Player player, InteractionHand hand, Vec3 location) {

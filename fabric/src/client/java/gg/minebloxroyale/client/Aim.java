@@ -47,7 +47,7 @@ public final class Aim {
 
 	public static boolean aiming() {
 		Player p = Minecraft.getInstance().player;
-		return p != null && heldGun() != null && p.isUsingItem() && p.getUseItem().getItem() instanceof WeaponItem;
+		return p != null && heldGun() != null && p.isUsingItem() && p.getUseItem().getItem() instanceof WeaponItem && !(p.getVehicle() instanceof CarEntity);
 	}
 
 	/** Aiming a scoped gun: scoping in or already in the scope. */

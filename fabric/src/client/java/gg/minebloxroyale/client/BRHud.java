@@ -52,6 +52,18 @@ public final class BRHud {
 	}
 
 	/**
+	 * How far up Minecraft's chat goes (GUI pixels) to clear the health and shield panel in the bottom left corner
+	 * (2.0.0-test5, creator: "Chat overlaps with HUD health and shield"): the chat ends 40 above the bottom, the panel
+	 * reaches 31 up at its own scale (bigger since 2.0.0-test2), and a little gap between. ChatComponentMixin.
+	 */
+	public static int chatLift(int guiWidth) {
+		Minecraft mc = Minecraft.getInstance();
+		if (mc.player == null || mc.player.isSpectator()) return 0;
+		float s = Sheets.HUD_BY_ID.get("health_shield").scale() * Math.min(1F, guiWidth / (float) Sheets.HUD_BY_ID.get("hud_fit").size());
+		return Math.max(0, (int) Math.ceil(31 * s + 5 - 40));
+	}
+
+	/**
 	 * Draws a panel at its hud-sheet scale, shrunk towards the given anchor point; on a screen narrower than the HUD is
 	 * laid out for (hud sheet "hud_fit"), smaller by as much, so the bottom row never overlaps (2.0.0-test2, when the
 	 * whole HUD got 15% bigger).
