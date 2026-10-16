@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.0.0 (in testing: 2.0.0-test4, not released yet)
+## v2.0.0 (in testing: 2.0.0-test5, not released yet)
 
 A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and a new look and sound.
 
@@ -16,6 +16,11 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 - **Pickaxe skins, all made in Blender:** candy, ice, lava, lollipop and neon, plus Fortnite-style designs of our own. The Royal Cleaver (a gold crescent axe with a crown, it was the Golden Pick) and the Prism Breaker (a crystal axe, it was the Diamond Pick) keep their unlocks. New for gold: Riff Ripper (an electric guitar), Scoop Smasher (an ice cream cone), Pizza Slicer and Boom Pick (a firework rocket). New to unlock: Storm Splitter (5 wins), Bone Breaker (100 eliminations), Bullseye Breaker (30 bullseyes) and Flint Hunter (range 55).
 - **Presets for gold:** Victory Royale (1500), Storm Raider (1200), Neon Rider (1000) and Sweet Tooth (900), with 25 new items among them: a Victory Crown, a Storm Hood, a Victory Banner and a Hoverboard made in Blender, and new looks for hair, faces, back bling, shirts, pants and shoes. Buying a preset makes every piece yours, each in its own tab. Those pieces only come with their preset. Hovering a preset shows the whole outfit on you. The old presets haven't changed.
 - **New emotes:** the Griddy, Default Dance, Orange Justice, Boneless, Take the L, Electro Shuffle, Fresh and Hype (400 to 800 gold). All are animated in Blender with nothing clipping.
+
+### Emotes
+- **18 emotes redone after testing:** Wave and Double Wave (the arm up and out, waving from the elbow, no longer stubby), Salute (fingertips to the brow), Clap (the hands meet), Disco Point (from high overhead right down to the other hip), Drum Solo (at a drum kit), Air Guitar (the strumming arm across the body), Karate Chop (a jumping chop that lands in a wide stance), Swim (a real front crawl, no windmill), Flex (just flexing), Raise the Roof (pumping straight up with little jumps), Hula (hands on hips, the hips circling all the way round), Smooth Slide (one foot steps out, the other drags in, and the body moves with them), Wave Ripple (the arm wave), Griddy (slower, hands to the eyes), and Orange Justice, Boneless and Fresh (the Carlton) made like Fortnite's.
+- **Emotes with props, made in Blender:** Drum Solo plays a drum kit with sticks; Rock Out plays a guitar (now a strumming rock emote, with a big overhead strum); Tap Dance has a top hat and a cane; Lasso Twirl has a rope; Boxing has gloves; Cheer has pom-poms; Breakdance Spin has a cardboard mat and a boombox; Hero Fly has a cape; Electro Shuffle has glow sticks. They show in matches, in the hub and in the Locker preview.
+- **Emote music:** every emote has its own music, made from scratch in a style that suits it (disco, rock, electro, hip-hop, chiptune, island, swing, a march and more), in step with the dance. While you dance, your own game music goes quiet and comes back when you stop. Players near you hear your emote music coming from you, and their own music keeps playing. The Locker preview plays it too.
 
 ### Gliders and contrails
 - **Gliders now animate:** they pop open out of your back, sway as they ride the air, bank into turns, and fold away when you land. The animation is keyframed in Blender.
@@ -35,6 +40,9 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 - Bots use both: grenades against players behind cover, rockets against players among builds or in groups.
 - Rocket launchers, rockets and grenades turn up about twice as often as in the first test.
 
+- **Shots come out of the barrel:** tracers and the muzzle flash start at the end of each gun's barrel, at the hip and aiming, and rockets leave the launcher's tube.
+- **The grenade arc shows only while you aim** (right mouse held). Left click still throws.
+
 ### Cars
 - **Drivable cars:** F gets in, W A S D drive, Space boosts and Shift gets out. Up to 4 fit in a car: the first one in drives, and only their teammates can join.
 - **Fuel:** about 5 minutes per car, with no refuelling. Each car has 4 boosts, and each boost costs 30 seconds of fuel.
@@ -47,6 +55,8 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 - **Car sounds:** an engine that revs with your speed, squealing tyres in fast turns, a boost of its own, and doors opening and shutting.
 - **Boost trails:** a new Locker tab, all for gold. Your trail streams from the back of any car you drive while it boosts: Nitro Flame, Blue Blaze, Rainbow Rocket, Neon Streak, Gold Rush, Thunder Road, Candy Rush and Toxic Fumes. The tab shows a car from behind and the side with the trail you hover.
 
+- **Nothing in your hands in a car:** no held item poking through the roof, no aiming, and no heals or shields while you ride.
+
 ### Bosses
 - **Four bosses per match, out of six:** The Blockbuster (pump shotgun), Captain Bloxbeard (sniper), Agent Noob (assault rifle), Sergeant Bacon (SMG), Doctor Kaboom (rocket launcher) and Sheriff Noobly (pistol). They guard lairs you can see from a distance, and their icons show on the minimap and the map.
 - **Boss health:** 200 health and 100 shield, shown on a bar over the boss's name (shield over health, both bars the same size).
@@ -56,10 +66,16 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 - **Bigger buildings:** warehouses, two-storey houses and forts, with more chests. There are now 26 buildings per island.
 - **Reboot vans on every island, in every mode:** 8 of them, half near the middle and half out towards the edge, so some are inside the circle and some outside. They're all on the map and the minimap from the start. In Solo they're just there, with no one to bring back.
 
+- **Buildings spread out:** at least about 16 blocks between buildings, on open, level ground with room round them. Trees in the way are felled whole and the ground round a building is sloped, so there are no half trees or sheer cuts.
+
 ### Matches
 - **Your team can still bring you back:** in Duos, Trios and Squads the match no longer ends the moment you (the only real player) are eliminated. While your reboot card is out and a teammate still stands, you watch your team and the match goes on; it ends when your team is out or the card runs out.
 - **A picked-up reboot card never runs out:** a card only runs out while it lies on the ground (90 seconds, from the start again if whoever carries it is eliminated and drops it). The squad list says CARD PICKED UP while a teammate carries yours.
 - **The Battle Bus drops everyone before the storm:** anyone still aboard jumps just before the bus would fly into the storm's wall, bots included.
+
+- **A new Victory Royale screen.** Solo: a slanted gold #1 VICTORY ROYALE banner over the game, with light rays and confetti while the camera circles you, then a results card: eliminations, total damage, time survived and placement, the gold you earned counting up, and how close you are to the next Shop item. Duos, Trios and Squads: movie bars and your whole team on a stage with name plates, then the results with a row for each teammate (eliminations, damage, revives, reboots) and the team's totals. With a victory fanfare of our own.
+- **Winners stand still:** after a Victory Royale you can't move, shoot, build or use items, but you can emote as much as you like, and bot teammates emote too.
+- **Bots move like players:** they walk and sprint at a player's speeds, sprint-jump across open ground, crouch now and then, turn their aim smoothly, look around, and climb out of water.
 
 ### Look and sound
 - **A cleaner, smoother HUD in Fortnite's style:** rounded panels, icons made in Blender, smooth lettering, and a Fortnite-style hotbar in matches. Fortnite's own HUD is locked in its encrypted files, so all of this is ours.
@@ -71,6 +87,9 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 - **3D ammo, materials and reboot card, made in Blender:** open ammo boxes with their rounds standing in them (Light, Medium and Heavy Bullets), three shotgun shells, a rocket lying across its slot with its fins and a pointed red warhead, a crossed stack of planks, a pile of bricks, riveted steel plates with an I-beam, and the reboot card with its portrait and gold chip. The HUD's rocket icon is the new rocket too.
 - **Our own sounds:** a shot sound for each gun type (rarities sound the same), a new storm warning, rocket and grenade blasts, and two battle music tracks in matches. The harder track plays in the last circles.
 - **Heal and shield sounds:** a bandage rustling while you heal and a fizzing gulp while you drink a shield (instead of Minecraft's eating and drinking), then a warm chime as your health goes up or a bright shimmer as your shield charges. You hear bots and other players heal too.
+
+- **Chat sits above the health and shield panel** instead of over it.
+- **The Soldier preset redone:** a real woodland camo with big patches in four colours, the same size on the shirt, its sleeves, the pants and the helmet, and a plain webbed army pack.
 
 ### Fixes
 - Opening the creative inventory crashed the game (2.0.0-test1).

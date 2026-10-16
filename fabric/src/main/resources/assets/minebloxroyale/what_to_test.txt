@@ -1,3 +1,20 @@
+Test 5 - Victory Royale, Solo: a gold banner over the game, then the results card (total damage, gold counting up, Hub/Spectate)
+Test 5 - Victory Royale, teams: your team on the stage, then results with a row per teammate and the team's totals
+Test 5 - After winning you can't move, shoot or build, but your emote key and wheel work; bot teammates emote; a fanfare plays
+Test 5 - Emotes redone: Wave, Double Wave, Salute, Clap, Disco Point, Air Guitar, Karate Chop, Swim, Flex, Raise the Roof, Hula
+Test 5 - Emotes redone: Smooth Slide (steps sideways), Wave Ripple, Griddy, Orange Justice, Boneless, Fresh
+Test 5 - Emote props: Drum Solo (kit and sticks), Rock Out (guitar), Tap Dance (hat, cane), Lasso, Boxing gloves, Cheer pom-poms
+Test 5 - Emote props: Breakdance (cardboard, boombox), Hero Fly (cape), Electro Shuffle (glow sticks); Locker preview and in game
+Test 5 - Emote music: every emote has its own; your game music goes quiet while you dance and comes back after
+Test 5 - Emote music with a friend: they hear yours coming from you, and their own music keeps playing; the Locker preview plays it
+Test 5 - Cars: nothing in your hands, no aiming or zoom, no heals or shields while in a car
+Test 5 - Grenades: the blue arc shows only while you hold right mouse; left click throws
+Test 5 - Shots start at the gun's barrel (every gun, at the hip and aiming; the rocket leaves the launcher's tube)
+Test 5 - Chat sits above the health and shield panel
+Test 5 - Buildings: spread out, on open ground, no half trees or cut cliffs round them
+Test 5 - Bots walk and sprint like players: sprint-jumps, crouching, smooth aim, looking round; they climb out of water
+Test 5 - The Soldier preset: a new woodland camo on the shirt, sleeves, pants and helmet; a plain webbed pack
+Test 5 - Heal and shield sounds from test 4 (the game was muted in Windows' mixer last time)
 Test 4 - Grenades: hold one to see the blue arc and the ring where it lands; throw it: it follows the arc, bounces, lies there till it goes off
 Test 4 - Heals and shields: a bandage rustle or a fizzing gulp while you use one, a chime when it's done (bots too)
 Test 4 - Cars: you and bots sit inside every kind of car, nothing sticking out (try the sports car, SUV and pickup: the back two ride in its bed)
@@ -40,4 +57,4 @@ Sounds (new): each gun its own shot, the storm warning, explosions, battle music
 HUD (new look): smooth panels, Blender icons and lettering, Fortnite-style hotbar in a match; check it's all readable
 The parked Battle Bus in the hub is solid (you can't walk through it)
 With a friend: host a game, and your friend joins with Melty's Join or your room code (/rc)
-Hub: the main board shows v2.0.0 - TEST 4 next to MINEBLOX ROYALE
+Hub: the main board shows v2.0.0 - TEST 5 next to MINEBLOX ROYALE
