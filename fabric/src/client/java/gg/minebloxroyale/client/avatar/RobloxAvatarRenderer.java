@@ -190,6 +190,23 @@ public final class RobloxAvatarRenderer {
 		}
 	}
 
+	/**
+	 * Upside down (Breakdance Spin's headspin): the whole avatar lifted, as it turns over, by how far the hat or hair on
+	 * its head reaches past the top of it, so that rests on the mat rather than going down through it (2.0.0-test6,
+	 * creator: "Breakdance emote: head should not go through the mat"; the bare head is put on the mat by the emote's own
+	 * bounce, emote_anims.py lift). Things on the ground (the mat) stay where they are.
+	 */
+	private static Pose restOnHat(Pose pose, LivingEntityRenderState state, Map<String, String> outfit) {
+		if (outfit == null || outfit.isEmpty()) return pose;
+		float down = -jointMatrix(Sheets.AVATAR_PARTS_BY_ID.get("head"), state, pose).m11(); // (the head's up, pointing down: 1 upside down)
+		if (down <= 0.05F) return pose;
+		float reach = Cosmetics.headReach(outfit);
+		if (reach <= 0) return pose;
+		float[] v = pose.values();
+		v[Pose.BOB] += reach * Math.min(1F, down);
+		return Pose.of(v);
+	}
+
 	private static boolean draw(LivingEntityRenderState state, PoseStack poseStack, SubmitNodeCollector collector, int light, int overlay) {
 		AvatarColorDef colors = Sheets.AVATAR_COLORS_BY_ID.getOrDefault(state.getDataOrDefault(COLORS, "classic"), Sheets.AVATAR_COLORS.get(0));
 		int entityId = state.getDataOrDefault(ENTITY_ID, -1);
@@ -202,6 +219,8 @@ public final class RobloxAvatarRenderer {
 			outfit.putAll(tryOn);
 		}
 		CosmeticDef shirt = Cosmetics.worn(outfit, "shirt"), pants = Cosmetics.worn(outfit, "pants");
+		pose = restOnHat(pose, state, outfit);
+		Pose posed = pose;
 		collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(RobloxAssets.TEXTURE), (ps, vc) -> {
 			for (AvatarPartDef part : Sheets.AVATAR_PARTS) {
 				RobloxMesh mesh = RobloxAssets.mesh(part.id());
@@ -212,7 +231,7 @@ public final class RobloxAvatarRenderer {
 					case "arms" -> shirt != null ? shirt.color() : colors.arms();
 					default -> pants != null ? pants.color() : colors.legs();
 				};
-				drawMesh(vc, ps, jointMatrix(part, state, pose), part, bend(part, pose), mesh, color, light, overlay);
+				drawMesh(vc, ps, jointMatrix(part, state, posed), part, bend(part, posed), mesh, color, light, overlay);
 			}
 		});
 		// Hats, hair, face accessories, back bling and shoes (Blender models; the lighter copies further away, so lots of
@@ -613,7 +632,9 @@ public final class RobloxAvatarRenderer {
 	 * accessories for more emotes: a guitar, a top hat and cane, a lasso, boxing gloves, pom-poms, a cardboard mat and a
 	 * boombox, a cape, glow sticks): Blender models (fabric/tools/blender/props.py), each in its own space: @ground the
 	 * avatar's own (staying put while the body bounces), @body the upper body's, @head the head's, @right_hand /
-	 * @left_hand a hand's below the elbow, following the forearm.
+	 * @left_hand a hand's below the elbow, following the forearm. "/n" after it spins the prop n times a loop round its
+	 * own up-and-down line (2.0.0-test6, creator: "Animated Lasso on the emote": the lasso's loop turning about the
+	 * forearm, the rope going round like a spoke).
 	 */
 	private static void submitProps(SubmitNodeCollector collector, PoseStack poseStack, LivingEntityRenderState state, Pose pose, int entityId, double distSq,
 		int light, int overlay) {
@@ -625,11 +646,14 @@ public final class RobloxAvatarRenderer {
 			List<String[]> out = new ArrayList<>();
 			for (String spec : def.props().split(",")) {
 				String[] mw = spec.trim().split("@");
-				if (mw.length == 2) out.add(new String[] { mw[0].trim(), mw[1].trim() });
+				if (mw.length != 2) continue;
+				String[] wt = mw[1].split("/"); // (where, then how many turns it spins each loop: 2.0.0-test6, the lasso)
+				out.add(new String[] { mw[0].trim(), wt[0].trim(), wt.length > 1 ? wt[1].trim() : "0" });
 			}
 			return out;
 		});
 		List<Matrix4f> frames = new ArrayList<>();
+		float phase = ((System.currentTimeMillis() - playing.getValue()) / 1000F / def.loopSeconds()) % 1F; // (as emotePose times the dance)
 		for (String[] prop : props) {
 			Matrix4f m = new Matrix4f(ROOT);
 			switch (prop[1]) {
@@ -642,6 +666,8 @@ public final class RobloxAvatarRenderer {
 				default -> {
 				}
 			}
+			float turns = Float.parseFloat(prop[2]);
+			if (turns != 0) m.rotateY(phase * turns * (float) (Math.PI * 2)); // (round its own up-and-down line: the lasso's loop about the forearm)
 			frames.add(m);
 		}
 		collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(WorldVisuals.white()), (ps, vc) -> {

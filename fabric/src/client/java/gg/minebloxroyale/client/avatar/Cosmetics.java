@@ -119,8 +119,7 @@ public final class Cosmetics {
 			if (isHead && (hat != null || hair != null || face != null)) {
 				Matrix4f fit = fit(part, HEAD);
 				if (hair != null) pieces.add(new Piece(hairMesh(hair, hat), fit, joint, bend, part.id(), hair));
-				if (hat != null) pieces.add(new Piece("hat_" + hat.shape() + (hair != null && hair.shape().equals("afro") && OVER_HAIR.contains(hat.shape()) ? "_afro" : ""), fit,
-					joint, bend, part.id(), hat));
+				if (hat != null) pieces.add(new Piece(hatMesh(hat, hair), fit, joint, bend, part.id(), hat));
 				if (face != null) pieces.add(new Piece("face_" + face.shape(), fit, joint, bend, part.id(), face));
 			} else if (isLeg && (shoes != null || pants != null)) {
 				Matrix4f fit = fit(part, LEG);
@@ -150,6 +149,30 @@ public final class Cosmetics {
 				mesh.fitted(mesh.id + "@" + p.part(), p.fit(), planes).drawBent(ps, bend, p.joint(), vc, light, overlay, a, b);
 			}
 		});
+	}
+
+	/** The hat's model (over an afro, the one shaped to sit on it). */
+	private static String hatMesh(CosmeticDef hat, CosmeticDef hair) {
+		return "hat_" + hat.shape() + (hair != null && hair.shape().equals("afro") && OVER_HAIR.contains(hat.shape()) ? "_afro" : "");
+	}
+
+	/**
+	 * How far the worn hat or hair reaches past the top of the head (the head's joint space; 0 bare-headed, or a hat
+	 * that sits lower): a headspin rests the avatar on it rather than through it (2.0.0-test6, creator: "Breakdance
+	 * emote: head should not go through the mat"). From each model's own size, put where it's drawn (fit).
+	 */
+	static float headReach(Map<String, String> outfit) {
+		CosmeticDef hat = worn(outfit, "hat"), hair = worn(outfit, "hair"), face = worn(outfit, "face");
+		if (hat != null && hat.hideHair() || face != null && face.hideHair()) hair = null;
+		if (hat == null && hair == null) return 0;
+		AvatarPartDef head = Sheets.AVATAR_PARTS_BY_ID.get("head");
+		Matrix4f fit = fit(head, HEAD);
+		float top = bounds(head)[4], reach = 0;
+		for (String id : new String[] { hair == null ? null : hairMesh(hair, hat), hat == null ? null : hatMesh(hat, hair) }) {
+			Mesh m = id == null ? null : Mesh.optional(id);
+			if (m != null && !m.isEmpty()) reach = Math.max(reach, m.bounds[4] * fit.m11() + fit.m31() - top);
+		}
+		return reach;
 	}
 
 	/**

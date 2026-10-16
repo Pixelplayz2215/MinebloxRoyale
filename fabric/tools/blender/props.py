@@ -153,12 +153,30 @@ def lasso():
     s.at(0, -2.55, 0.85).color(0xA8844A).ellipsoid(0.07, 0.06, 0.09)  # (the honda knot)
 
 
+def rounded_box(cx, cy, cz, a, b, c, side=0.4, ends=0.6):
+    """A rounded box (a superellipsoid) for S.surface: half sizes a, b, c round (cx, cy, cz); side and ends (under 1)
+    square off its sides and its top and bottom."""
+    sgn = lambda x: (x > 0) - (x < 0)
+
+    def f(u, v):
+        th, ph = 2 * math.pi * u, math.pi * (v - 0.5)
+        k = abs(math.cos(ph)) ** ends
+        return (cx + a * k * sgn(math.cos(th)) * abs(math.cos(th)) ** side, cy + b * sgn(math.sin(ph)) * abs(math.sin(ph)) ** ends,
+                cz + c * k * sgn(math.sin(th)) * abs(math.sin(th)) ** side)
+    return f
+
+
 def glove():
-    """Boxing (@right_hand / @left_hand): a big red boxing glove over the hand, its thumb along the side, a white cuff."""
+    """Boxing (@right_hand / @left_hand): a big red boxing glove holding the whole hand (2.0.0-test6, creator: "Gloves
+    should not clip through the hands"): a Roblox hand is the square end of the arm, a stud across with its corners
+    0.71 from the middle, which poked out of test5's round glove. Now a rounded boxy mitt wider than the hand on every
+    side, corners and all (0.6 out along the diagonal), from the wrist to well past the fingertips, the thumb along the
+    front, and a white padded cuff round the forearm outside its corners (checked: no corner of the hand or the forearm
+    under the cuff's top reaches either surface)."""
     s = S()
-    s.at(0, -1.55, -0.06).color(RED).ellipsoid(0.62, 0.48, 0.64)
-    s.at(0.5, -1.45, -0.32).color(RED).ellipsoid(0.17, 0.3, 0.17)
-    s.at(0, -1.12, 0).color(WHITE).lathe([0.56, 0.58, 0.58, 0.56], [0, 0.03, 0.17, 0.2], 24)
+    s.at(0, 0, 0).color(RED).surface(rounded_box(0, -1.55, -0.03, 0.72, 0.56, 0.73, 0.4, 0.6), 36, 22, one_sided=True)
+    s.at(0, 0, 0).color(RED).surface(rounded_box(0, -1.38, -0.74, 0.24, 0.32, 0.17, 0.7, 0.7), 16, 12, one_sided=True)  # the thumb
+    s.at(0, 0, 0).color(WHITE).surface(rounded_box(0, -1.06, 0, 0.64, 0.17, 0.64, 0.35, 0.3), 36, 10, one_sided=True)  # the cuff
 
 
 def pompom():
@@ -196,7 +214,8 @@ def boombox():
     box(s, 0.85, 0.5, 0.26, 0.06, 0.06)
     for side in (-1, 1):
         s.at(cx, cy, cz).rotY(-30).move(side * 0.5, -0.02, -0.27).rotX(90).color(BLACK).lathe([0, 0.3, 0.33, 0.33, 0], [0.02, 0.02, 0.0, -0.03, -0.03], 24)
-        s.at(cx, cy, cz).rotY(-30).move(side * 0.5, -0.02, -0.29).rotX(90).color(SILVER).lathe([0, 0.08, 0.08, 0], [0.02, 0.02, -0.01, -0.01], 14)
+        # (the silver cap 0.02 proud of the cone's front: flush, the two faces fought, 2.0.0-test6)
+        s.at(cx, cy, cz).rotY(-30).move(side * 0.5, -0.02, -0.29).rotX(90).color(SILVER).lathe([0, 0.08, 0.08, 0], [0.02, 0.02, -0.03, -0.03], 14)
     s.at(cx, cy, cz).rotY(-30).move(0, 0.12, -0.27).color(SILVER)
     box(s, 0.16, 0.12, 0.02, 0.01, 0.01)
     s.at(cx, cy, cz).rotY(-30).color(SILVER).tube([(-0.6, 0.5, 0), (-0.55, 0.72, 0), (0.55, 0.72, 0), (0.6, 0.5, 0)], [0.04] * 4, caps=True, sides=8)
@@ -224,7 +243,8 @@ def glowstick(color):
     def make():
         s = S()
         s.at(0, 0, 0).color(color, glow=True).tube([(0, -1.25, 0.1), (0, -2.55, -0.2)], [0.07, 0.07], caps=True, sides=12)
-        s.at(0, 0, 0).color(0xE8E8E8).tube([(0, -2.55, -0.2), (0, -2.65, -0.22)], [0.072, 0.06], caps=True, sides=12)
+        # (the cap starting a little up the stick: its end and the stick's end were one face, fighting, 2.0.0-test6)
+        s.at(0, 0, 0).color(0xE8E8E8).tube([(0, -2.53, -0.195), (0, -2.65, -0.22)], [0.082, 0.066], caps=True, sides=12)
     return make
 
 

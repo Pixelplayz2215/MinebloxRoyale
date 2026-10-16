@@ -37,6 +37,7 @@ import net.minecraft.world.phys.Vec3;
  * <li>/br give &lt;item&gt; [rarity or count]: any gun (with a stack of its ammo) at any rarity, or any other item;</li>
  * <li>/br tp &lt;parking_lot|container_yard|shack|watchtower|supply_depot|ruins|chest|van|bot&gt;: to the nearest one;</li>
  * <li>/br storm: the storm skips ahead one step;</li>
+ * <li>/br win: the match ends as a win for your team (2.0.0-test6: checking the Victory Royale screens).</li>
  * <li>/br hub, /br status.</li>
  * </ul>
  */
@@ -69,6 +70,8 @@ public final class DevCommands {
 				.then(Commands.argument("what", StringArgumentType.word()).suggests((c, b) -> SharedSuggestionProvider.suggest(tpNames(), b))
 					.executes(c -> tp(c, StringArgumentType.getString(c, "what")))))
 			.then(Commands.literal("storm").executes(c -> reply(c, MatchManager.get().skipStorm())))
+			.then(Commands.literal("win").executes(c -> c.getSource().getPlayer() == null ? fail(c, "Players only.")
+				: reply(c, MatchManager.get().devWin(c.getSource().getServer(), c.getSource().getPlayer()))))
 			.then(Commands.literal("hub").executes(c -> {
 				if (c.getSource().getPlayer() != null) MatchManager.get().sendToHub(c.getSource().getPlayer());
 				return 1;

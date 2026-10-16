@@ -181,6 +181,7 @@ def props(row, js, pose):
         if "@" not in spec:
             continue
         mesh, where = (x.strip() for x in spec.split("@", 1))
+        where = where.partition("/")[0].strip()  # (a spinning prop's turns: a still picture shows it as it starts)
         obj = brm_import.load(os.path.join(MESHES, mesh + ".brm"), 0xFFFFFF, 0xFFFFFF, None, mesh)
         m = avatar.hand(js, bd, where == "right_hand") if where.endswith("_hand") else js["torso"] if where == "body" else js["head"] if where == "head" \
             else Matrix.Identity(4)

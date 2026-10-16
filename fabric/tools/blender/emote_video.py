@@ -143,7 +143,8 @@ def blender_main(args):
         n = SAMPLES * max(2, math.ceil(4 * length / SAMPLES))
         poses = [pose_at(fcs, 1 + i / n * length) for i in range(n + 1)]
         plant = getattr(e, "plant", "floor")
-        feet = lambda p: rig.touch(p) if plant == "touch" else rig.floor(p) if plant == "floor" else p
+        lift = getattr(e, "lift", 0.0)  # (2.0.0-test6: a headspin's head on top of its mat)
+        feet = lambda p: {**rig.touch(p), "bounce": rig.touch(p)["bounce"] + lift} if plant == "touch" else rig.floor(p) if plant == "floor" else p
         poses = [feet(p) for p in poses]
         keep = getattr(e, "keep", ())
         r = max(1, n // 48)
@@ -200,7 +201,7 @@ def blender_main(args):
         s = bpy.context.scene
         s.render.engine = "BLENDER_EEVEE"
         s.render.film_transparent = True  # (the videos put the dark panel behind; the world stays the soft light)
-        s.render.resolution_x = s.render.resolution_y = int(os.environ.get("BR_RES", "720"))  # (BR_RES, BR_STEP: quick looks)
+        s.render.resolution_x = s.render.resolution_y = int(os.environ.get("BR_RES", "720"))  # (BR_RES, BR_STEP: quick looks; BR_YAW: the camera's angle, 180 straight in front)
         brlib._lights()
         sun = bpy.data.objects.new("sun", bpy.data.lights.new("sun", "SUN"))
         sun.data.energy = 2.5
@@ -286,7 +287,8 @@ def blender_main(args):
         return found
 
     def props_of(name):
-        """The emote's props (emotes sheet, props: "mesh@where, ..."; props.py), loaded once: [(object, where)]."""
+        """The emote's props (emotes sheet, props: "mesh@where[/turns], ..."; props.py), loaded once: [(object, where,
+        turns a loop)]."""
         import brm_import
         row = rows.get(name) if kind == "emotes" else None
         out = []
@@ -294,22 +296,25 @@ def blender_main(args):
             if "@" not in spec:
                 continue
             mesh, where = (x.strip() for x in spec.split("@", 1))
+            where, _, turns = where.partition("/")  # (2.0.0-test6: a prop that spins, the lasso)
             path = os.path.join(ROOT, "fabric", "src", "main", "resources", "assets", "minebloxroyale", "meshes", mesh + ".brm")
-            out.append((brm_import.load(path, 0xFFFFFF, 0xFFFFFF, None, mesh), where))
+            out.append((brm_import.load(path, 0xFFFFFF, 0xFFFFFF, None, mesh), where.strip(), float(turns or 0)))
         return out
 
-    def place_props(props, p):
+    def place_props(props, p, phase=0.0):
         """Each prop where it goes this frame: the avatar's own space (ground), the upper body's, the head's or a hand's
-        (following the forearm)."""
+        (following the forearm); a spinning one turned round its own up-and-down line for where the loop is (phase)."""
         if not props:
             return
         js, bd = avatar.joints(p), avatar.bends(p)
-        for obj, where in props:
+        for obj, where, turns in props:
             m = avatar.hand(js, bd, where == "right_hand") if where.endswith("_hand") else js["torso"] if where == "body" else js["head"] if where == "head" \
                 else Matrix.Identity(4)
+            if turns:
+                m = m @ Matrix.Rotation(phase * turns * 2 * math.pi, 4, "Y")
             obj.matrix_world = avatar.C @ m @ avatar.C.inverted()
 
-    def render(name, frames, pose_fn, lying=None, ground_y=-2.0):
+    def render(name, frames, pose_fn, lying=None, ground_y=-2.0, phase_fn=lambda f: 0.0):
         if os.environ.get("BR_MESHCHECK_ONLY"):  # (no pictures: just check every frame on the real body)
             stage()
             avatar.build()
@@ -330,9 +335,9 @@ def blender_main(args):
         for f in range(1, frames + 1, 3):
             p = pose_fn(f)
             avatar.repose(avatar.joints(p, lying=lying), avatar.bends(p))
-            place_props(props, p)
+            place_props(props, p, phase_fn(f))
             boxes.append(box_now())
-        camera(boxes, yaw=150 if kind == "emotes" else 125)  # (moves a little more from the side: the legs show)
+        camera(boxes, yaw=float(os.environ.get("BR_YAW", 150 if kind == "emotes" else 125)))  # (moves a little more from the side: the legs show)
         d = os.path.join(out, name)
         os.makedirs(d, exist_ok=True)
         s = bpy.context.scene
@@ -341,7 +346,7 @@ def blender_main(args):
         for f in range(1, frames + 1, int(os.environ.get("BR_STEP", "1"))):
             p = pose_fn(f)
             avatar.repose(avatar.joints(p, lying=lying), avatar.bends(p))
-            place_props(props, p)
+            place_props(props, p, phase_fn(f))
             if check:
                 hits = mesh_clips()
                 if hits:
@@ -380,7 +385,7 @@ def blender_main(args):
         if os.environ.get("BR_SHEETS_ONLY"):  # (just the sheets: no pictures)
             continue
         lying = Matrix.Rotation(math.radians(-90), 4, "X") if getattr(e, "lying", False) else None
-        d = render(aid, frames, lambda f: at(poses, tf(f)), lying=lying, ground_y=CRAWL_FLOOR if lying else -2.0)
+        d = render(aid, frames, lambda f: at(poses, tf(f)), lying=lying, ground_y=CRAWL_FLOOR if lying else -2.0, phase_fn=tf)
         if d is None:
             continue
         if kind == "emotes":

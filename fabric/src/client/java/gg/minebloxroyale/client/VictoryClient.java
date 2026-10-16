@@ -7,6 +7,7 @@ import gg.minebloxroyale.bot.BotEntity;
 import gg.minebloxroyale.client.media.SfxBank;
 import java.util.Locale;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.util.RandomSource;
@@ -24,11 +25,15 @@ import org.jspecify.annotations.Nullable;
  * (Net.Victory, MatchStats.results); held still meanwhile, a winner can only look round and emote.
  */
 public final class VictoryClient {
-	/** How long the banner or the stage plays before the results card (seconds). */
-	static final float INTRO = 4.5F;
 	private static @Nullable JsonObject data;
-	private static long startNanos;
+	private static long startNanos, receivedNanos;
 	private static boolean opened;
+	/**
+	 * The winners' moment can start: at once in Solo; in a team mode once the team's stage is there to see (2.0.0-test6,
+	 * creator: "the camera doesn't show us on a podium": the team is moved across the island to it as the results come,
+	 * so the stage wasn't loaded yet and the camera showed sky). A black screen meanwhile.
+	 */
+	private static boolean ready;
 	/** Which way the winner faced when it began (the camera starts in front of them). */
 	private static float startYaw;
 
@@ -38,10 +43,27 @@ public final class VictoryClient {
 	public static void receive(String json) {
 		Minecraft mc = Minecraft.getInstance();
 		data = JsonParser.parseString(json).getAsJsonObject();
-		startNanos = System.nanoTime();
+		receivedNanos = startNanos = System.nanoTime();
 		opened = false;
+		ready = false;
 		startYaw = mc.player == null ? 0 : mc.player.getYRot();
+		if (!won() || stage() == null) begin(mc);
+	}
+
+	private static void begin(Minecraft mc) {
+		ready = true;
+		startNanos = System.nanoTime();
 		if (won() && mc.player != null) SfxBank.play("victory_fanfare", mc.player.position());
+	}
+
+	/** How long the banner (Solo) or the team on its stage (teams: longer, 2.0.0-test6) plays before the results card. */
+	static float introSeconds() {
+		return stage() != null ? 8F : 4.5F;
+	}
+
+	/** Moved to the team's stage, waiting for it to be there to see (a black screen meanwhile). */
+	static boolean waiting() {
+		return data != null && !ready;
 	}
 
 	static @Nullable JsonObject data() {
@@ -49,7 +71,7 @@ public final class VictoryClient {
 	}
 
 	static float seconds() {
-		return (System.nanoTime() - startNanos) / 1e9F;
+		return ready ? (System.nanoTime() - startNanos) / 1e9F : 0;
 	}
 
 	static boolean won() {
@@ -67,14 +89,22 @@ public final class VictoryClient {
 
 	/** The banner or the stage is playing now (a winner's first seconds). */
 	public static boolean intro() {
-		return won() && seconds() < INTRO;
+		return won() && (waiting() || seconds() < introSeconds());
 	}
 
 	/** Each tick: confetti for the winners, the results card when it's time, forgotten back in the hub. */
 	public static void tick(Minecraft mc) {
 		if (data == null || mc.player == null || mc.level == null) return;
-		if (!ClientState.inMatch() && seconds() > 2) {
+		float since = (System.nanoTime() - receivedNanos) / 1e9F;
+		if (!ClientState.inMatch() && since > 2) {
 			data = null;
+			if (mc.gui.screen() instanceof VictoryScreen) mc.gui.setScreen(null); // (back in the hub: the card goes too, 2.0.0-test6)
+			return;
+		}
+		if (!ready) { // (the team's stage: its blocks loaded here and us standing on it, a moment to settle; 6 s at most)
+			Vec3 s = stage();
+			boolean there = s != null && mc.level.hasChunkAt(BlockPos.containing(s)) && mc.player.position().distanceToSqr(s) < 12 * 12;
+			if (there && since > 0.8F || since > 6) begin(mc);
 			return;
 		}
 		float t = seconds();
@@ -86,7 +116,7 @@ public final class VictoryClient {
 				mc.level.addParticle(new DustParticleOptions(colors[r.nextInt(colors.length)], 1.4F), c.x + r.nextGaussian() * (stage() != null ? 7 : 3), c.y + 5 + r.nextDouble() * 3,
 					c.z + r.nextGaussian() * 3, 0, -0.05, 0);
 		}
-		if (!opened && mc.gui.screen() == null && (won() ? t >= INTRO : t >= 1.5F)) {
+		if (!opened && mc.gui.screen() == null && (won() ? t >= introSeconds() : t >= 1.5F)) {
 			opened = true;
 			mc.gui.setScreen(new VictoryScreen(data));
 		}
@@ -98,17 +128,19 @@ public final class VictoryClient {
 	 */
 	public static double @Nullable [] camera(float partialTicks) {
 		Minecraft mc = Minecraft.getInstance();
-		if (!won() || mc.player == null || !(intro() || mc.gui.screen() instanceof VictoryScreen)) return null;
-		float t = seconds();
+		if (!won() || mc.player == null || waiting() || !(intro() || mc.gui.screen() instanceof VictoryScreen)) return null;
+		float t = seconds(), intro = introSeconds();
 		Vec3 c;
 		double r, h, a;
 		Vec3 stage = stage();
 		if (stage != null) {
 			int n = Math.max(1, data.getAsJsonArray("teamRows").size());
 			c = stage.add(0, 1.3, 0);
-			r = 7 + 1.6 * n;
+			r = 8 + 1.6 * n;
 			h = 1.8;
-			a = 0.5 * Math.sin(t * 0.35); // (sweeping across the front of the stage)
+			// (sweeping across the front of the stage while it plays, then drifting slowly back)
+			float e = Math.min(1F, t / intro);
+			a = t < intro ? -0.55 + 1.1 * e * e * (3 - 2 * e) : 0.55 * Math.cos((t - intro) * 0.12);
 		} else {
 			c = mc.player.getPosition(partialTicks).add(0, 1.1, 0);
 			r = 4.2;
@@ -118,6 +150,9 @@ public final class VictoryClient {
 		double x = c.x + Math.sin(a) * r, y = c.y + h, z = c.z + Math.cos(a) * r;
 		double dx = c.x - x, dy = c.y - y, dz = c.z - z;
 		float yaw = (float) Math.toDegrees(Math.atan2(-dx, dz)), pitch = (float) -Math.toDegrees(Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)));
+		// With the results card up (on the right), the winners framed on the left: the view turned a little right.
+		float f = mc.gui.screen() instanceof VictoryScreen ? Math.min(1F, Math.max(0F, (t - intro) / 1.2F)) : 0;
+		yaw += 17 * f * f * (3 - 2 * f);
 		return new double[] { x, y, z, yaw, pitch };
 	}
 
@@ -128,6 +163,11 @@ public final class VictoryClient {
 	public static boolean hud(GuiGraphicsExtractor g, Minecraft mc) {
 		if (!intro()) return false;
 		float t = seconds(), in = Math.min(1, t / 0.35F), w = g.guiWidth(), h = g.guiHeight();
+		if (waiting()) { // (getting to the stage: black, the title waiting)
+			g.fill(0, 0, (int) Math.ceil(w), (int) Math.ceil(h), 0xFF000000);
+			Smooth.text(g, "VICTORY ROYALE", w / 2, h / 2 - 8, 16, GOLD, Smooth.CENTER, true);
+			return true;
+		}
 		if (stage() != null) podium(g, mc, t, w, h);
 		else banner(g, t, in, w, h);
 		return true;

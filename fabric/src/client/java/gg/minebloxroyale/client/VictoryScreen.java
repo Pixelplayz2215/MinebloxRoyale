@@ -58,10 +58,12 @@ public class VictoryScreen extends Screen {
 	public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float a) {
 		hits.clear();
 		actions.clear();
-		g.fill(0, 0, this.width, this.height, 0x8C05070A);
-		float W = team ? 450 : 312, H = team ? 318 : 282;
-		float k = Math.min(1F, Math.min((this.height - 16) / H, (this.width - 16) / W));
-		float x0 = (this.width - W * k) / 2, y0 = (this.height - H * k) / 2;
+		// (winners: the card on the right, the camera framing them on the left, the game left bright; anyone else: the
+		// card in the middle over a dimmed game)
+		if (!won) g.fill(0, 0, this.width, this.height, 0x8C05070A);
+		float W = WIDTH, H = height();
+		float k = Math.min(1F, Math.min((this.height - 16) / H, (this.width * (won ? 0.62F : 1F) - 16) / W));
+		float x0 = won ? this.width - W * k - 14 : (this.width - W * k) / 2, y0 = (this.height - H * k) / 2;
 		g.pose().pushMatrix();
 		g.pose().translate(x0, y0);
 		g.pose().scale(k, k);
@@ -75,6 +77,23 @@ public class VictoryScreen extends Screen {
 			r[3] *= k;
 		}
 		super.extractRenderState(g, mouseX, mouseY, a);
+	}
+
+	/** The card's width; its height is worked out from what's on it (height()), so nothing overlaps. */
+	private static final float WIDTH = 320, TOP = 58, TILES = 60, GAP = 16, GOLD_H = 84, EMOTES = 25, BUTTONS = 20;
+
+	/** The team's table: a header, a row each, the total (team modes). */
+	private float tableHeight() {
+		return 22 + 13 * (d.getAsJsonArray("teamRows").size() + 1) + 6;
+	}
+
+	/**
+	 * Laid out down the card (2.0.0-test6, creator: "Elimination screen, some assets overlap": test5's card was a fixed
+	 * height the emote row and the buttons didn't both fit in): the title, your match, the team's results (team modes),
+	 * the gold, the emote row, then the buttons.
+	 */
+	private float height() {
+		return TOP + TILES + (team ? tableHeight() + GAP : 0) + GOLD_H + GAP + EMOTES + 14 + BUTTONS + 12;
 	}
 
 	private void card(GuiGraphicsExtractor g, float W, float H, float mx, float my, float k) {
@@ -92,9 +111,11 @@ public class VictoryScreen extends Screen {
 			for (JsonElement e : d.getAsJsonArray("winners")) w.add(e.getAsString());
 			if (!w.isEmpty()) sub += "   -   won by " + String.join(", ", w);
 		}
-		Smooth.text(g, sub, W / 2, 41, 8, MUTED, Smooth.CENTER, false);
+		float size = 8;
+		while (size > 5 && Smooth.width(sub, size) > W - 24) size -= 0.5F;
+		Smooth.text(g, sub, W / 2, 41, size, MUTED, Smooth.CENTER, false);
 		// your match
-		float y = 58;
+		float y = TOP;
 		Smooth.text(g, "YOUR MATCH", 14, y, 6.5F, MUTED, Smooth.LEFT, false);
 		long secs = d.get("seconds").getAsLong();
 		String time = secs / 60 + ":" + String.format(Locale.ROOT, "%02d", secs % 60);
@@ -109,19 +130,21 @@ public class VictoryScreen extends Screen {
 			boolean dmg = tiles[i][0].equals("TOTAL DAMAGE");
 			Smooth.panel(g, tx, y + 9, tw, 40, 7, dmg ? 0xFF3A3320 : TILE);
 			if (dmg) Smooth.panel(g, tx, y + 46, tw, 3, 0, GOLD);
-			Smooth.text(g, tiles[i][1], tx + tw / 2, y + 14, 15, dmg ? GOLD : WHITE, Smooth.CENTER, false);
-			Smooth.text(g, tiles[i][0], tx + tw / 2, y + 36, 5.5F, MUTED, Smooth.CENTER, false);
+			float vs = 15;
+			while (vs > 8 && Smooth.width(tiles[i][1], vs) > tw - 6) vs -= 0.5F;
+			Smooth.text(g, tiles[i][1], tx + tw / 2, y + 14 + (15 - vs) / 2, vs, dmg ? GOLD : WHITE, Smooth.CENTER, false);
+			float ls = 5.5F;
+			while (ls > 4 && Smooth.width(tiles[i][0], ls) > tw - 4) ls -= 0.25F;
+			Smooth.text(g, tiles[i][0], tx + tw / 2, y + 36, ls, MUTED, Smooth.CENTER, false);
 		}
-		y += 60;
-		// the team's rows (team modes), then the gold
-		float gx = 14, gw = W - 28, boxH = 104;
+		y += TILES;
+		// the team's rows (team modes), each teammate and the team's totals
 		if (team) {
-			float tx = 14, tableW = 268;
+			float tx = 14, tableW = W - 28, boxH = tableHeight();
 			Smooth.text(g, "TEAM RESULTS", tx, y, 6.5F, MUTED, Smooth.LEFT, false);
 			var rows = d.getAsJsonArray("teamRows");
-			boxH = Math.max(104, 22 + 13 * (rows.size() + 1) + 6);
 			Smooth.panel(g, tx, y + 9, tableW, boxH, 7, TILE);
-			float[] cx = { tx + 10, tx + 150, tx + 188, tx + 226, tx + 256 };
+			float[] cx = { tx + 10, tx + tableW - 132, tx + tableW - 92, tx + tableW - 54, tx + tableW - 20 };
 			String[] head = { "PLAYER", "ELIMS", "DAMAGE", "REVIVES", "REBOOTS" };
 			for (int i = 0; i < head.length; i++) Smooth.text(g, head[i], cx[i], y + 14, 5.5F, MUTED, i == 0 ? Smooth.LEFT : Smooth.CENTER, false);
 			int[] tot = new int[4];
@@ -132,7 +155,9 @@ public class VictoryScreen extends Screen {
 				if (you) Smooth.panel(g, tx + 3, ry - 1.5F, tableW - 6, 12, 4, 0xFF3A3320);
 				Smooth.panel(g, cx[0], ry + 1.5F, 6, 6, 1.5F, 0xFF000000 | row.get("color").getAsInt());
 				String name = row.get("name").getAsString() + (you ? "  (you)" : "");
-				Smooth.text(g, name, cx[0] + 10, ry, 7, you ? GOLD : WHITE, Smooth.LEFT, false);
+				float ns = 7;
+				while (ns > 5 && Smooth.width(name, ns) > cx[1] - cx[0] - 30) ns -= 0.5F;
+				Smooth.text(g, name, cx[0] + 10, ry + (7 - ns) / 2, ns, you ? GOLD : WHITE, Smooth.LEFT, false);
 				int[] v = { row.get("kills").getAsInt(), row.get("damage").getAsInt(), row.get("revives").getAsInt(), row.get("reboots").getAsInt() };
 				for (int i = 0; i < 4; i++) {
 					tot[i] += v[i];
@@ -143,11 +168,10 @@ public class VictoryScreen extends Screen {
 			Smooth.panel(g, tx + 4, ty - 2, tableW - 8, 0.8F, 0, 0xFF4A5366);
 			Smooth.text(g, "Team total", cx[0], ty + 1, 7.5F, WHITE, Smooth.LEFT, true);
 			for (int i = 0; i < 4; i++) Smooth.text(g, i == 1 ? num(tot[i]) : String.valueOf(tot[i]), cx[i + 1], ty + 1, i == 1 ? 8 : 7.5F, i == 1 ? GOLD : WHITE, Smooth.CENTER, true);
-			gx = tx + tableW + 8;
-			gw = W - 14 - gx;
+			y += boxH + GAP;
 		}
-		gold(g, gx, y, gw, boxH);
-		y += boxH + 16;
+		gold(g, 14, y, W - 28, GOLD_H - 9);
+		y += GOLD_H + GAP;
 		// your emotes, a page at a time
 		Smooth.text(g, "EMOTE", 14, y, 6.5F, MUTED, Smooth.LEFT, false);
 		float cy = y + 9, chipGap = 5, arrow = 14, cw = (W - 28 - 2 * (arrow + chipGap) - chipGap * (CHIPS - 1)) / CHIPS;
@@ -164,13 +188,13 @@ public class VictoryScreen extends Screen {
 			});
 		}
 		button(g, W - 14 - arrow, cy, arrow, 16, ">", false, mx, my, () -> page++);
-		// leave or watch
-		float by = H - 30;
-		button(g, W / 2 - 110, by, 104, 20, "Back to hub", true, mx, my, () -> {
+		// leave or watch, under it all
+		float by = y + EMOTES + 14;
+		button(g, W / 2 - 110, by, 104, BUTTONS, "Back to hub", true, mx, my, () -> {
 			ClientPlayNetworking.send(new Net.Action("hub"));
 			this.onClose();
 		});
-		button(g, W / 2 + 6, by, 104, 20, "Spectate", false, mx, my, this::onClose);
+		button(g, W / 2 + 6, by, 104, BUTTONS, "Spectate", false, mx, my, this::onClose);
 	}
 
 	/** The gold earned, each reason on its own line, and what it goes towards in the Shop. */
@@ -182,7 +206,7 @@ public class VictoryScreen extends Screen {
 		for (JsonElement e : lines) total += e.getAsJsonObject().get("gold").getAsInt();
 		Smooth.icon(g, "gold", x + 8, y + 15, 16, -1);
 		Smooth.text(g, "+" + total, x + 28, y + 14, 17, GOLD, Smooth.LEFT, true);
-		boolean side = !team; // (Solo: the lines beside the total; teams: under it)
+		boolean side = true; // (the lines beside the total, what it goes towards under it)
 		float lx = side ? x + w / 2 + 4 : x + 8, ly = side ? y + 15 : y + 38;
 		int i = 0;
 		for (JsonElement e : lines) {
@@ -196,9 +220,9 @@ public class VictoryScreen extends Screen {
 		int price = d.get("nextPrice").getAsInt(), have = d.get("goldNow").getAsInt();
 		if (side && !next.isEmpty()) {
 			float bw = w / 2 - 16;
-			Smooth.text(g, "Next in the Shop:  " + next, x + 8, y + 50, 6.5F, LIGHT, Smooth.LEFT, false);
-			Smooth.bar(g, x + 8, y + 62, bw, 5, Math.min(1F, have / (float) Math.max(1, price)), GOLD, 1);
-			Smooth.text(g, have >= price ? "You can buy it now (" + have + " gold)" : have + " / " + price + " gold", x + 8, y + 71, 6, MUTED, Smooth.LEFT, false);
+			Smooth.text(g, "Next in the Shop:  " + next, x + 8, y + 42, 6.5F, LIGHT, Smooth.LEFT, false);
+			Smooth.bar(g, x + 8, y + 54, bw, 5, Math.min(1F, have / (float) Math.max(1, price)), GOLD, 1);
+			Smooth.text(g, have >= price ? "You can buy it now (" + have + " gold)" : have + " / " + price + " gold", x + 8, y + 63, 6, MUTED, Smooth.LEFT, false);
 		}
 	}
 

@@ -1,10 +1,14 @@
 """
 Each emote's own music (2.0.0-test5, creator: "Add emote music!"): a seamless loop per emote, made from nothing but
 maths like the rest of make_audio.py (no recording, nothing from any song or game: Fortnite's emote music is in its
-encrypted paks, never opened). Each emote has a style that suits the dance (disco for Disco Point, a rock band for
-Rock Out, a drum solo for Drum Solo, chiptune for the Obby Hop, a march for the Salute...), and its own key, chords
-and tune (picked from its name, so every emote sounds different and the same every run). Its tempo fits the dance:
-a whole number of beats to each loop of the moves (emote_anims.py), and both start together, so they keep in step.
+encrypted paks, never opened). Each emote has its own brief (EMOTES: the style, the lead and the mood that suit the dance: a whistled tune
+for the Wave, a robotic synth for the Robot, a stomp-and-clap for the Clap, a cowboy banjo for the Lasso Twirl...), and
+its own key, chords and tune (picked from its name, so every emote sounds different and the same every run). Its tempo
+fits the dance: 1, 2, 4, 8 or 16 beats to each loop of the moves (emote_anims.py), so the music's eight bars hold a
+whole number of them, and both start together, so they keep in step; and the dance's own moments make sounds (hits,
+from its keyframes: a clap on each Clap, the Drum Solo's stick strikes on the kit, Rock Out's strums on the guitar,
+the Tap Dance's taps, a whoosh on each turn of the lasso), every time round (2.0.0-test6, creator: "please try to
+match the sound to the emote").
 
 Eight bars of 4/4 each (two runs round the chords: the tune, then its answer), joined up seamlessly; written mono, so
 the game can play it from the player who's dancing, to sounds/emote/<id>.ogg as the event emote.<id>.
@@ -139,6 +143,54 @@ def strings(freq, sec):
     return supersaw(freq, sec, attack=min(0.35, sec / 3), bright=2200) * 0.8
 
 
+def piano(freq, sec):
+    """A piano: a hammer's knock, the bright partials dying faster than the low ones."""
+    x = partials(freq, sec, [(1, 1.0, 1.2), (2, 0.5, 2.0), (3, 0.25, 3.0), (4, 0.15, 4.5), (5, 0.08, 6), (6, 0.05, 8)], attack=0.002)
+    knock = filt(noise(0.01), lo=800, hi=5000) * env(int(0.01 * SR), 0.0003, 0.003)
+    x[:len(knock)] += knock * 0.15
+    return x
+
+
+def sax(freq, sec):
+    """A breathy saxophone: a reedy saw with vibrato and air."""
+    t = t_of(sec)
+    vib = 1 + 0.008 * np.sin(2 * np.pi * 5.3 * t) * np.clip(t / 0.3, 0, 1)
+    ph = np.cumsum(freq * vib) / SR
+    x = 2 * (ph - np.floor(ph + 0.5)) * 0.7 + 0.3 * np.sign(np.sin(2 * np.pi * ph))
+    x = filt(x, lo=180, hi=2400) + filt(noise(sec), lo=freq, hi=freq * 4) * 0.06
+    return x * np.clip(t / 0.03, 0, 1) * np.clip((sec - t) / 0.04, 0, 1) * 0.6
+
+
+def clarinet(freq, sec):
+    """A woody clarinet: its odd harmonics, a touch of vibrato."""
+    t = t_of(sec)
+    x = sum(a * np.sin(2 * np.pi * freq * m * t) for m, a in ((1, 1.0), (3, 0.45), (5, 0.22), (7, 0.1)) if freq * m < SR / 2.3)
+    return x * (1 + 0.04 * np.sin(2 * np.pi * 5 * t)) * np.clip(t / 0.03, 0, 1) * np.clip((sec - t) / 0.04, 0, 1) * 0.7
+
+
+def kazoo(freq, sec):
+    """A kazoo: buzzy and nasal, scooping up into each note (goofy)."""
+    t = t_of(sec)
+    f = freq * (1 - 0.06 * np.exp(-t / 0.05)) * (1 + 0.012 * np.sin(2 * np.pi * 6 * t))
+    ph = np.cumsum(f) / SR
+    x = np.sign(np.sin(2 * np.pi * ph)) * 0.6 + 2 * (ph - np.floor(ph + 0.5)) * 0.4
+    return filt(x, lo=400, hi=3200) * np.clip(t / 0.02, 0, 1) * np.clip((sec - t) / 0.03, 0, 1) * 0.5
+
+
+def surf_guitar(freq, sec):
+    """A twangy surf guitar: a bright pluck shaking with tremolo, a spring-reverb echo."""
+    t = t_of(sec)
+    return ma.echo(pluck(freq, sec, 1.8, 2.5) * (1 + 0.25 * np.sin(2 * np.pi * 9 * t)), 0.09, 0.35, 3)
+
+
+def robot_voice(freq, sec):
+    """A robot: a thin square stepping between two pitches, crushed to a few levels."""
+    t = t_of(sec)
+    ph = np.cumsum(freq * (1 + 0.03 * np.sign(np.sin(2 * np.pi * 8 * t)))) / SR
+    x = np.round(np.where((ph % 1.0) < 0.3, 1.0, -1.0) * 4) / 4
+    return filt(x, hi=3500) * np.clip(t / 0.005, 0, 1) * np.clip((sec - t) / 0.02, 0, 1) * 0.45
+
+
 INSTR = {"pluck": lambda f, s: pluck(f, s), "uke": lambda f, s: pluck(f, s, 1.3, 4.5), "banjo": lambda f, s: pluck(f, s, 2.4, 7.0),
          "koto": lambda f, s: pluck(f, s, 1.6, 2.2), "guitar": lambda f, s: pluck(f, s, 1.0, 2.0), "epiano": epiano, "organ": organ,
          "clav": clav, "supersaw": supersaw, "chip": chip, "chip50": lambda f, s: chip(f, s, 0.5), "triangle": triangle, "power": power,
@@ -146,7 +198,9 @@ INSTR = {"pluck": lambda f, s: pluck(f, s), "uke": lambda f, s: pluck(f, s, 1.3,
          "accordion": accordion, "brass": brass_note, "strings": strings,
          "saw": lambda f, s: filt(saw(f, s) + saw(f, s, 0.004), hi=2800) * env(int(s * SR), 0.004, s, curve=1.6) * 0.5,
          "square": lambda f, s: filt(square(f, s, 0.35), hi=3000) * env(int(s * SR), 0.004, s, curve=1.4) * 0.5,
-         "bell": lambda f, s: ma.bell(f, s)}
+         "bell": lambda f, s: ma.bell(f, s), "piano": piano, "sax": sax, "clarinet": clarinet, "kazoo": kazoo,
+         "pizz": lambda f, s: pluck(f, min(s, 0.35), 1.1, 9.0), "harpsichord": lambda f, s: pluck(f, s, 2.6, 3.5) * 0.8, "surf_guitar": surf_guitar,
+         "robot": robot_voice, "tuba": lambda f, s: filt(ma.brass(f, s, attack=0.02), hi=800)}
 
 # ------------------------------------------------------------------------------------------------- drums
 
@@ -238,6 +292,86 @@ def drumset(style):
             "tom_hi": tom(196), "tom_mid": tom(147), "tom_lo": tom(104)}
 
 
+# ------------------------------------------------------------------------------------------------- the dance's sounds
+
+
+def whoosh(up=True):
+    """Air rushing past (a jump, a turn, the lasso going round): noise swept up (or down) through the bands."""
+    sec, k = 0.4, 8
+    x = noise(sec)
+    m = len(x)
+    w = np.concatenate([filt(x[b * m // k:(b + 1) * m // k], lo=300 * 1.5 ** (b if up else k - 1 - b), hi=1200 * 1.5 ** (b if up else k - 1 - b)) for b in range(k)])
+    return w * np.sin(np.pi * t_of(sec)[:len(w)] / sec) * 0.7
+
+
+def boing():
+    """A spring: a twang rising and wobbling (a hop)."""
+    sec = 0.45
+    t = t_of(sec)
+    f = 180 * (1 + 2.2 * (1 - np.exp(-t / 0.12))) * (1 + 0.08 * np.sin(2 * np.pi * 14 * t))
+    return np.sin(2 * np.pi * np.cumsum(f) / SR) * env(len(t), 0.005, 0.3, curve=3) * 0.7
+
+
+def punch():
+    """A glove landing: a deep thud and a slap."""
+    sec = 0.25
+    x = sweep(140, 45, sec, shape=8) * env(int(sec * SR), 0.001, 0.12)
+    hit = filt(noise(0.03), lo=500, hi=3500) * env(int(0.03 * SR), 0.0005, 0.012)
+    x[:len(hit)] += hit * 0.9
+    return x
+
+
+def tap(low=False):
+    """A tap shoe on the floor (the toe; low: the heel)."""
+    sec, f = 0.07, 1500 if low else 2600
+    return (np.sin(2 * np.pi * f * t_of(sec)) * 0.4 + filt(noise(sec), lo=f * 0.8, hi=f * 3)) * env(int(sec * SR), 0.0003, 0.015) * 0.8
+
+
+def scratch():
+    """A record scratched: pushed forward and pulled back."""
+    sec = 0.32
+    t = t_of(sec)
+    ph = np.cumsum(300 + 900 * np.sin(np.pi * t / sec)) / SR
+    x = filt(filt(noise(sec), lo=600, hi=4000) * 0.5 + np.sign(np.sin(2 * np.pi * ph)) * 0.25, lo=250, hi=5000)
+    return x * np.sqrt(np.sin(np.pi * t / sec)) * 0.8
+
+
+def blip():
+    """A robot's bleep."""
+    sec = 0.09
+    return np.where((t_of(sec) * 1180) % 1 < 0.5, 1.0, -1.0) * env(int(sec * SR), 0.001, 0.05) * 0.35
+
+
+def roll():
+    """A snare roll building up to the moment (placed to end on it)."""
+    sec = 0.3
+    out = np.zeros(int(sec * SR))
+    for k in range(10):
+        i = int(k * 0.03 * SR)
+        h = filt(noise(0.04), lo=1800, hi=7000) * env(int(0.04 * SR), 0.0005, 0.015) * (0.2 + 0.08 * k)
+        out[i:i + len(h)] += h[:len(out) - i]
+    return out
+
+
+def hit_sound(name, root, tones):
+    """One of the dance's sounds; the ones in tune take the chord playing then (root, its intervals)."""
+    voice = [root + 12 + iv for iv in tones[:3]]
+    if name == "stab":  # a short brass chord
+        return sum(ma.brass(note(v), 0.28, attack=0.01) for v in voice) / 2
+    if name in ("power", "power_up"):  # a guitar chord, a downstroke (or the lighter upstroke)
+        return power(note(root - 12 if root >= 52 else root), 0.32 if name == "power" else 0.16) * (1 if name == "power" else 0.6)
+    if name == "chime":  # a sparkle of bells up the chord
+        out = np.zeros(int(0.9 * SR))
+        for k, v in enumerate(voice + [voice[0] + 12]):
+            b = ma.bell(note(v + 12), 0.8 - k * 0.05)
+            out[int(k * 0.05 * SR):int(k * 0.05 * SR) + len(b)] += b * 0.5
+        return out
+    return {"clap": clap, "snare": snare, "hat": hat, "kick": kick, "crash": crash, "gong": gong, "taiko": taiko, "shaker": shaker, "snap": snap,
+            "wood": woodblock, "tom_hi": lambda: tom(196), "tom_mid": lambda: tom(147), "tom_lo": lambda: tom(104), "whoosh": whoosh,
+            "whoosh_down": lambda: whoosh(False), "boing": boing, "punch": punch, "tap": tap, "heel": lambda: tap(True), "scratch": scratch, "blip": blip,
+            "roll": roll}[name]()
+
+
 # ------------------------------------------------------------------------------------------------- styles
 
 SCALES = {"major": [0, 2, 4, 5, 7, 9, 11], "minor": [0, 2, 3, 5, 7, 8, 10], "dorian": [0, 2, 3, 5, 7, 9, 10], "mixo": [0, 2, 4, 5, 7, 9, 10],
@@ -255,7 +389,9 @@ PROGS = {"pop": [(0, "maj"), (7, "maj"), (9, "min"), (5, "maj")], "pop2": [(0, "
          "edm": [(9, "min"), (5, "maj"), (0, "maj"), (7, "maj")], "edm2": [(0, "min"), (8, "maj"), (3, "maj"), (10, "maj")],
          "hiphop": [(0, "min7"), (8, "maj7"), (5, "min7"), (7, "min7")], "hiphop2": [(0, "min7"), (5, "min7"), (0, "min7"), (10, "dom7")],
          "smooth": [(0, "maj7"), (4, "min7"), (9, "min7"), (5, "maj7")], "chip": [(0, "maj"), (9, "min"), (5, "maj"), (7, "maj")],
-         "western": [(0, "maj"), (5, "maj"), (0, "maj"), (7, "dom7")], "heroic": [(0, "min"), (8, "maj"), (10, "maj"), (0, "min")]}
+         "western": [(0, "maj"), (5, "maj"), (0, "maj"), (7, "dom7")], "heroic": [(0, "min"), (8, "maj"), (10, "maj"), (0, "min")],
+         "latin": [(0, "min"), (5, "min"), (7, "dom7"), (0, "min")], "surf": [(0, "min"), (10, "maj"), (8, "maj"), (7, "maj")],
+         "stomp": [(0, "maj"), (5, "maj"), (0, "maj"), (7, "maj")]}
 
 # Drum patterns: 16 steps a bar ("x" a hit, "o" a soft one), the fill in the last half of bar 8.
 X = "x---x---x---x---"
@@ -279,8 +415,9 @@ STYLES = {
     "montage": dict(bpm=(110, 130), scale="minor", progs=("epic", "rock2"), keys=(52, 55, 50), swing=0.0,
                     drums={"kick": "x-----x-x-------", "snare": "----x-------x---", "hat": "x-x-x-x-x-x-x-x-"},
                     bass="eighths", bass_instr="saw", comp="eighths", comp_instr=("power",), lead_instr=("brass",), density=0.45, fill="toms"),
-    "drums": dict(bpm=(100, 130), scale="pmin", progs=("rock",), keys=(45,), swing=0.0, drums={}, bass=None, bass_instr="saw",
-                  comp=None, comp_instr=(), lead_instr=(), density=0.0, fill="solo"),
+    # (the Drum Solo: the dance plays the kit, its stick strikes: EMOTES hits; just the bass drum under it)
+    "drums": dict(bpm=(100, 160), scale="pmin", progs=("rock",), keys=(45,), swing=0.0, drums={"kick": "x---x---x---x---"}, bass=None, bass_instr="saw",
+                  comp=None, comp_instr=(), lead_instr=(), density=0.0, fill="none"),
     "chip": dict(bpm=(130, 160), scale="major", progs=("chip", "pop2"), keys=(60, 62, 65, 57), swing=0.0,
                  drums={"ckick": "x-------x-x-----", "csnare": "----x-------x---", "chat": "x-x-x-x-x-x-x-x-"},
                  bass="chip", bass_instr="triangle", comp="arp", comp_instr=("chip",), lead_instr=("chip50", "chip"), density=0.65, fill="chip"),
@@ -308,38 +445,123 @@ STYLES = {
     "western": dict(bpm=(100, 130), scale="major", progs=("western",), keys=(55, 57, 52), swing=0.1,
                     drums={"kick": "x-------x-------", "snare": "----x-------x---", "wood": "x-x-x-x-x-x-x-x-"},
                     bass="oompah", bass_instr="pluck", comp="arp", comp_instr=("banjo",), lead_instr=("whistle",), density=0.5, fill="snare"),
+    "cheerful": dict(bpm=(100, 128), scale="major", progs=("pop", "pop2"), keys=(60, 62, 65, 67), swing=0.0,
+                     drums={"kick": "x-------x-------", "clap": "----x-------x---", "shaker": "xoxoxoxoxoxoxoxo"},
+                     bass="bouncy", bass_instr="pluck", comp="strum", comp_instr=("uke", "piano"), lead_instr=("whistle",), density=0.55, fill="rim"),
+    "workout": dict(bpm=(118, 135), scale="major", progs=("edm", "pop"), keys=(60, 62, 57), swing=0.0,
+                    drums={"kick": X, "clap": "----x-------x---", "ohat": "--x---x---x---x-", "hat": "x-x-x-x-x-x-x-x-"},
+                    bass="offbeat", bass_instr="saw", comp="stabs", comp_instr=("supersaw",), lead_instr=("square", "saw"), density=0.5, fill="snare_roll"),
+    "rocknroll": dict(bpm=(130, 200), scale="mixo", progs=("blues",), keys=(55, 57, 52), swing=0.33,
+                      drums={"kick": "x-------x-------", "snare": "----x-------x---", "ride": "x-x-x-x-x-x-x-x-"},
+                      bass="walk", bass_instr="pluck", comp="boogie", comp_instr=("piano",), lead_instr=("sax", "brass"), density=0.55, fill="snare"),
+    "stomp": dict(bpm=(95, 130), scale="major", progs=("stomp", "pop"), keys=(55, 57, 60), swing=0.0,
+                  drums={"kick": "x-------x-------", "shaker": "--x---x---x---x-"},
+                  bass="bouncy", bass_instr="pluck", comp="quarters", comp_instr=("piano",), lead_instr=("whistle", "flute"), density=0.4, fill="none"),
+    "playful": dict(bpm=(95, 130), scale="major", progs=("oompah", "pop2"), keys=(58, 60, 62), swing=0.12,
+                    drums={"wood": "x---x---x---x---", "rim": "----x-------x---"},
+                    bass="oompah", bass_instr="tuba", comp="offbeat", comp_instr=("pizz",), lead_instr=("clarinet",), density=0.6, fill="rim"),
+    "latin": dict(bpm=(90, 125), scale="harm", progs=("latin",), keys=(57, 52, 55), swing=0.0,
+                  drums={"kick": "x-------x-------", "cow": "x---x-x---x-x---", "wood": "x--x--x---x-x---", "tom_hi": "--x-x--x--x-x--x", "shaker": "xoxoxoxoxoxoxoxo"},
+                  bass="tumbao", bass_instr="pluck", comp="montuno", comp_instr=("piano",), lead_instr=("brass", "flute"), density=0.5, fill="toms"),
+    "surf": dict(bpm=(130, 175), scale="pmin", progs=("surf",), keys=(52, 57, 50), swing=0.0,
+                 drums={"kick": "x-x---x-x-x---x-", "snare": "----x-------x---", "tom_lo": "x-------x-------", "hat": "x-x-x-x-x-x-x-x-"},
+                 bass="eighths", bass_instr="pluck", comp="trem", comp_instr=("guitar",), lead_instr=("surf_guitar",), density=0.55, fill="toms"),
+    "classical": dict(bpm=(80, 125), scale="major", progs=("march", "pop"), keys=(60, 62, 65), swing=0.0, drums={"tom_lo": "x-------x-------"},
+                      bass="held", bass_instr="saw", comp="harpsi", comp_instr=("harpsichord",), lead_instr=("flute", "strings"), density=0.45, fill="none"),
+    "goofy": dict(bpm=(95, 130), scale="major", progs=("oompah",), keys=(55, 58, 60), swing=0.1,
+                  drums={"kick": "x-------x-------", "snare": "----x-------x---", "wood": "--x---x---x---x-"},
+                  bass="oompah", bass_instr="tuba", comp="oom", comp_instr=("pizz",), lead_instr=("kazoo",), density=0.6, fill="snare"),
+    "robot": dict(bpm=(105, 130), scale="minor", progs=("edm2", "edm"), keys=(57, 53, 55), swing=0.0,
+                  drums={"kick": X, "clap": "----x-------x---", "chat": "x-x-x-x-x-x-x-x-", "rim": "--x---x---x---x-"},
+                  bass="octave", bass_instr="square", comp="stabs", comp_instr=("square",), lead_instr=("robot",), density=0.5, fill="snare_roll"),
     "smooth": dict(bpm=(72, 90), scale="major", progs=("smooth",), keys=(53, 51, 56), swing=0.15,
                    drums={"kick": "x------x--x-----", "rim": "----x-------x---", "hat": "x-x-x-x-x-x-x-x-"},
                    bass="boom", bass_instr="saw", comp="pad", comp_instr=("epiano",), lead_instr=("saw", "flute"), density=0.4, fill="hats"),
 }
 
-# Which style each emote dances to.
-EMOTE_STYLE = {
-    "wave": "island", "swing": "hiphop", "robot": "electro", "floss": "electro", "dab": "electro", "jumping_jacks": "chip", "twist": "funk",
-    "obby_hop": "chip", "victory_dance": "funk", "clap": "swing", "salute": "march", "shrug": "hiphop", "chicken": "polka", "disco": "funk",
-    "running_man": "hiphop", "karate": "eastern", "air_guitar": "rock", "drum": "drums", "boxing": "montage", "spin": "electro",
-    "helicopter": "electro", "hip_shake": "funk", "swim": "island", "zombie": "spooky", "flex": "trap", "bow": "heroic", "cheer": "march",
-    "raise_roof": "hiphop", "penguin": "chip", "slide": "smooth", "fly_pose": "heroic", "star_jump": "chip", "hula": "island",
-    "wave_both": "island", "rock_out": "rock", "tap_dance": "swing", "lasso": "western", "breakdance": "hiphop", "ripple": "electro",
-    "legendary": "heroic", "griddy": "trap", "default_dance": "funk", "orange_justice": "electro", "boneless": "hiphop", "take_the_l": "electro",
-    "electro_shuffle": "electro", "fresh": "funk", "hype": "electro"}
-STYLE_NAMES = {"funk": "disco funk", "electro": "electro dance", "hiphop": "a hip-hop beat", "trap": "a slow trap beat", "rock": "a rock band",
+# Each emote's brief (2.0.0-test6): its style, the lead that suits it (else the style's), what it's meant to sound like,
+# and hits: (when in the dance's loop, 0..1, its keyframes in emote_anims.py; the sound; how loud), every time round.
+DRUM_HITS = [(0, "snare", 0.6), (0.0625, "snare", 0.45), (0.125, "snare", 0.6), (0.1875, "snare", 0.45), (0.25, "snare", 0.6), (0.3125, "hat", 0.35),
+             (0.375, "snare", 0.6), (0.4375, "hat", 0.35), (0.5, "tom_lo", 0.6), (0.5625, "snare", 0.5), (0.625, "tom_lo", 0.6), (0.6875, "tom_mid", 0.55),
+             (0.82, "crash", 0.5), (0.82, "snare", 0.5)]
+ROCK_HITS = [(t, "power", 0.5) for t in (0, 0.125, 0.25, 0.375, 0.875)] + [(t, "power_up", 0.3) for t in (0.0625, 0.1875, 0.3125, 0.8125, 0.9375)] \
+    + [(0.75, "power", 0.75), (0.75, "crash", 0.5), (0.5, "whoosh", 0.3)]
+TAPS = [(0, "tap", 0.6), (0.12, "heel", 0.45), (0.25, "tap", 0.6), (0.375, "heel", 0.3), (0.5, "tap", 0.6), (0.62, "heel", 0.45), (0.75, "tap", 0.6),
+        (0.875, "heel", 0.3)]
+EMOTES = {
+    "wave": dict(style="cheerful", lead="whistle", brief="a cheerful whistled tune over ukulele and light claps"),
+    "wave_both": dict(style="cheerful", lead="whistle", brief="a bright, bouncy whistled tune, waving to everyone"),
+    "swing": dict(style="swing", lead="sax", brief="swing jazz with a walking bass and a sax, swinging along with the arms"),
+    "robot": dict(style="robot", hits=[(0, "blip", 0.5), (0.25, "blip", 0.5), (0.5, "blip", 0.6), (0.75, "blip", 0.5)],
+                  brief="a robotic synth groove with a robot-voice lead, a bleep on each snap of the arms"),
+    "floss": dict(style="electro", lead="square", brief="a bouncy electro beat"),
+    "dab": dict(style="trap", hits=[(0.24, "stab", 0.6)], brief="a trap beat, a horn blast on the dab"),
+    "jumping_jacks": dict(style="workout", hits=[(0.25, "clap", 0.6), (0.75, "clap", 0.6)], brief="an aerobics workout beat, a clap at the top of each jump"),
+    "twist": dict(style="rocknroll", lead="sax", brief="60s rock 'n' roll with a honking sax, made for twisting"),
+    "obby_hop": dict(style="chip", hits=[(0.2, "boing", 0.5)], brief="chiptune, a boing on each hop"),
+    "victory_dance": dict(style="funk", lead="brass", brief="triumphant disco funk with brass"),
+    "clap": dict(style="stomp", hits=[(0.5, "clap", 0.9)], brief="a stomp-and-clap singalong, the clap on each clap"),
+    "salute": dict(style="march", hits=[(0.22, "roll", 0.5), (0.22, "crash", 0.45)], brief="a brass march, a snare roll and a cymbal on the salute"),
+    "shrug": dict(style="playful", lead="clarinet", brief="a light, shrugging pizzicato tune with clarinet"),
+    "chicken": dict(style="polka", hits=[(0.25, "wood", 0.45), (0.75, "wood", 0.45)], brief="an oompah polka, a woodblock peck on each step"),
+    "disco": dict(style="funk", lead="saw", brief="disco funk, four on the floor"),
+    "running_man": dict(style="hiphop", lead="square", brief="a 90s hip-hop bounce"),
+    "karate": dict(style="eastern", hits=[(0.16, "whoosh", 0.45), (0.24, "taiko", 0.8), (0.24, "crash", 0.3), (0.66, "whoosh", 0.45), (0.74, "taiko", 0.8),
+                                          (0.74, "crash", 0.3)], brief="koto and taiko, a whoosh on each jump and a big drum on each chop"),
+    "air_guitar": dict(style="rock", hits=[(0.25, "power", 0.5), (0.75, "power", 0.5)], brief="a rock riff, the guitar on each strum"),
+    "drum": dict(style="drums", hits=DRUM_HITS, brief="a drum solo played by the dance itself: every strike of the sticks on the kit"),
+    "boxing": dict(style="montage", hits=[(0.12, "punch", 0.7), (0.45, "punch", 0.8), (0.7, "punch", 0.7)], brief="a training-montage anthem, a thud on every punch"),
+    "spin": dict(style="electro", hits=[(0, "whoosh", 0.4)], brief="electro, a whoosh as it turns"),
+    "helicopter": dict(style="electro", hits=[(0, "whoosh", 0.35), (0.5, "whoosh", 0.35)], brief="driving electro with the rotor blades whooshing round"),
+    "hip_shake": dict(style="latin", brief="a Latin groove: congas, cowbell and a piano montuno"),
+    "swim": dict(style="surf", brief="surf rock, a twangy reverb guitar riding the waves"),
+    "zombie": dict(style="spooky", brief="a spooky organ shuffle with a wailing theremin"),
+    "flex": dict(style="montage", hits=[(0.12, "stab", 0.6), (0.52, "stab", 0.6), (0.78, "stab", 0.6)], brief="a pumped-up gym anthem, a horn blast on each pose"),
+    "bow": dict(style="classical", hits=[(0.38, "chime", 0.4)], brief="a polite classical flourish, harpsichord and strings, a chime as it bows"),
+    "cheer": dict(style="march", lead="brass", hits=[(0, "shaker", 0.6), (0.25, "clap", 0.5), (0.5, "shaker", 0.6), (0.75, "clap", 0.5)],
+                  brief="a pep band, pom-poms shaking and claps"),
+    "raise_roof": dict(style="hiphop", hits=[(0.25, "stab", 0.55), (0.75, "stab", 0.55)], brief="a party hip-hop beat, horns on each push"),
+    "penguin": dict(style="playful", lead="clarinet", brief="a waddling tuba-and-clarinet tune"),
+    "slide": dict(style="smooth", brief="smooth R&B"),
+    "fly_pose": dict(style="heroic", brief="a superhero theme"),
+    "star_jump": dict(style="workout", hits=[(0.2, "whoosh", 0.4), (0.42, "chime", 0.4)], brief="an upbeat workout beat, a sparkle at the top of the jump"),
+    "hula": dict(style="island", brief="island ukulele and steel pans"),
+    "rock_out": dict(style="rock", hits=ROCK_HITS, brief="a rock band, the guitar on every strum and a crash on the big one"),
+    "tap_dance": dict(style="swing", lead="clarinet", hits=TAPS, brief="swing jazz with the tap shoes on every tap"),
+    "lasso": dict(style="western", hits=[(0, "whoosh", 0.35), (0.5, "whoosh", 0.35)], brief="a cowboy banjo tune, the rope whooshing round"),
+    "breakdance": dict(style="hiphop", hits=[(0, "scratch", 0.45), (0.5, "scratch", 0.35)], brief="an old-school breakbeat with record scratches"),
+    "ripple": dict(style="robot", lead="square", brief="popping electro"),
+    "legendary": dict(style="heroic", hits=[(0.15, "whoosh", 0.4), (0.58, "crash", 0.5), (0.58, "taiko", 0.7)], brief="an epic orchestral build, a crash on the landing"),
+    "griddy": dict(style="trap", hits=[(0, "snap", 0.45), (0.25, "snap", 0.45), (0.5, "snap", 0.45), (0.75, "snap", 0.45)], brief="a trap beat, snaps on the heel taps"),
+    "default_dance": dict(style="cheerful", lead="square", brief="a jaunty synth-pop tune"),
+    "orange_justice": dict(style="electro", lead="supersaw", brief="upbeat EDM"),
+    "boneless": dict(style="goofy", brief="a goofy, floppy tuba-and-kazoo tune"),
+    "take_the_l": dict(style="goofy", brief="a cheeky, bouncy taunt on the kazoo"),
+    "electro_shuffle": dict(style="electro", brief="electro house to shuffle to"),
+    "fresh": dict(style="rocknroll", lead="brass", brief="a swinging 60s brass pop tune"),
+    "hype": dict(style="trap", hits=[(0, "stab", 0.5), (0.5, "stab", 0.5)], brief="a hype trap beat, horns on each fist pump"),
+}
+EMOTE_STYLE = {eid: e["style"] for eid, e in EMOTES.items()}
+STYLE_NAMES = {"funk": "disco funk", "electro": "electro dance", "hiphop": "a hip-hop beat", "trap": "a trap beat", "rock": "a rock band",
                "montage": "a training-montage rock anthem", "drums": "a drum solo", "chip": "chiptune", "island": "island ukulele and steel pans",
                "march": "a brass march", "heroic": "heroic brass and drums", "swing": "swing jazz", "polka": "an oompah polka",
-               "eastern": "koto and taiko", "spooky": "a spooky organ shuffle", "western": "a cowboy banjo tune", "smooth": "smooth R&B"}
+               "eastern": "koto and taiko", "spooky": "a spooky organ shuffle", "western": "a cowboy banjo tune", "smooth": "smooth R&B",
+               "cheerful": "cheerful pop", "workout": "a workout beat", "rocknroll": "rock 'n' roll", "stomp": "stomp and clap", "playful": "a playful tune",
+               "latin": "a Latin groove", "surf": "surf rock", "classical": "a classical flourish", "goofy": "a goofy tune", "robot": "robot electro"}
 
 # ------------------------------------------------------------------------------------------------- the engine
 
 
 def tempo(loop_sec, lo, hi):
-    """A tempo in the style's range with a whole number of beats to each loop of the dance (even counts preferred)."""
+    """A tempo in the style's range with 1, 2, 4, 8 or 16 beats to each loop of the dance (so the eight bars hold a
+    whole number of loops, and the dance's hits come round in step): (bpm, beats a loop)."""
     best = None
-    for beats in (1, 2, 3, 4, 6, 8, 12, 16):
+    for beats in (1, 2, 4, 8, 16):
         bpm = 60 * beats / loop_sec
-        cost = (0 if lo <= bpm <= hi else 10 * min(abs(bpm - lo), abs(bpm - hi))) + 0.05 * abs(bpm - (lo + hi) / 2) + (0 if beats % 2 == 0 or beats == 1 else 2)
+        cost = (0 if lo <= bpm <= hi else 10 * min(abs(bpm - lo), abs(bpm - hi))) + 0.05 * abs(bpm - (lo + hi) / 2)
         if best is None or cost < best[0]:
-            best = (cost, bpm)
-    return best[1]
+            best = (cost, bpm, beats)
+    return best[1], best[2]
 
 
 def scale_notes(key, scale, lo, hi):
@@ -354,9 +576,10 @@ def scale_notes(key, scale, lo, hi):
 
 def song(eid, style_id, loop_sec):
     st = STYLES[style_id]
+    brief = EMOTES.get(eid, {})
     rng = np.random.default_rng(zlib.crc32(("emote:" + eid).encode()))
     pick = lambda xs: xs[int(rng.integers(len(xs)))] if xs else None
-    bpm = tempo(loop_sec, *st["bpm"])
+    bpm, per_loop = tempo(loop_sec, *st["bpm"])
     beat = 60.0 / bpm
     step = beat / 4
     bars = 8
@@ -426,6 +649,14 @@ def song(eid, style_id, loop_sec):
                     place(buf, kit["tom_hi"], a, 0.4)
             if bar % 4 == 0:
                 place(buf, kit["crash"], at(bar, 0), 0.4)
+    # the dance's own moments, every time round it (its keyframes: emote_anims.py)
+    for k in range(32 // per_loop):
+        for t, name, gain in brief.get("hits", ()):
+            beat_at = (k + t) * per_loop
+            root, tones = chord(int(beat_at // 4))
+            snd = hit_sound(name, root, tones)
+            pos = int(round(beat_at * beat * SR)) - (len(snd) if name == "roll" else 0)
+            place(buf, snd, pos % n, gain)
     # bass
     bi = INSTR.get(st["bass_instr"]) or (lambda f, s: k808() * 0)
     for bar in range(bars if st["bass"] else 0):  # (the drum solo: just the drums)
@@ -447,12 +678,14 @@ def song(eid, style_id, loop_sec):
             "island": [(0, 3, 0), (3, 1, 0), (6, 2, 7), (8, 3, 0), (11, 1, 0), (14, 2, 7)],
             "chip": [(s, 2, (0, 7, 12, 7)[(s // 2) % 4]) for s in range(0, 16, 2)],
             "held": [(0, 16, 0)],
+            "bouncy": [(s, 2, (0, 7)[(s // 4) % 2]) for s in range(0, 16, 2)],
+            "tumbao": [(3, 3, 7), (6, 6, 0), (12, 4, 0)],
         }[st["bass"]]
         for s, ln, iv in pattern:
             sec = ln * step * 0.92
             if st["bass_instr"] == "808":
                 b = sweep(note(r + iv) * 1.5, note(r + iv), sec, shape=30) * env(int(sec * SR), 0.003, sec, curve=1.5)
-            elif st["bass_instr"] == "brass":
+            elif st["bass_instr"] in ("brass", "tuba"):
                 b = filt(ma.brass(note(r + iv), sec, attack=0.01), hi=900)
             else:
                 b = filt(bi(note(r + iv), sec), hi=700) * env(int(sec * SR), 0.004, sec, curve=1.8)
@@ -467,11 +700,23 @@ def song(eid, style_id, loop_sec):
                 voice = [v + 12 for v in voice]
             hits = {"offbeat": [(s, 1) for s in (2, 6, 10, 14)], "stabs": [(0, 2), (3, 1), (6, 2), (10, 2), (12, 1)],
                     "pad": [(0, 16)], "eighths": [(s, 2) for s in range(0, 16, 2)], "strum": [(0, 2), (3, 1), (6, 2), (8, 2), (11, 1), (14, 2)],
-                    "oom": [(4, 2), (12, 2)], "charleston": [(0, 3), (6, 4), (11, 3)], "arp": None}[st["comp"]]
-            if hits is None:  # an arpeggio up and down the chord in eighths
+                    "oom": [(4, 2), (12, 2)], "charleston": [(0, 3), (6, 4), (11, 3)], "arp": None, "harpsi": None, "montuno": None, "trem": None,
+                    "boogie": [(0, 2), (3, 1), (6, 2), (8, 2), (11, 1), (14, 2)], "quarters": [(0, 3), (4, 3), (8, 3), (12, 3)]}[st["comp"]]
+            if st["comp"] in ("arp", "harpsi"):  # an arpeggio up and down the chord, in eighths (harpsichord: sixteenths)
                 seq = voice + [voice[0] + 12] + voice[1:][::-1]
-                for k, s in enumerate(range(0, 16, 2)):
-                    place(buf, ci(note(seq[k % len(seq)]), 2 * step * 1.4), at(bar, s), 0.16)
+                d = 1 if st["comp"] == "harpsi" else 2
+                for k, s in enumerate(range(0, 16, d)):
+                    place(buf, ci(note(seq[k % len(seq)]), d * step * 1.4), at(bar, s), 0.16 if d == 2 else 0.11)
+                continue
+            if st["comp"] == "montuno":  # the salsa piano's off-beat figure, up and down the chord in octaves
+                for k, s in enumerate((0, 3, 6, 8, 10, 13)):
+                    v = voice[k % len(voice)]
+                    place(buf, ci(note(v), step * 1.6), at(bar, s), 0.12)
+                    place(buf, ci(note(v + 12), step * 1.6), at(bar, s), 0.07)
+                continue
+            if st["comp"] == "trem":  # tremolo picking on the root and fifth, sixteenths
+                for s in range(16):
+                    place(buf, ci(note(voice[0] - 12 + (7 if s % 2 else 0)), step * 0.9), at(bar, s), 0.08)
                 continue
             for s, ln in hits:
                 sec = ln * step * (0.9 if st["comp"] != "pad" else 1.0)
@@ -482,7 +727,7 @@ def song(eid, style_id, loop_sec):
                     spread = int((0.012 * k if st["comp"] == "strum" else 0) * SR)
                     place(buf, ci(note(v), sec), at(bar, s) + spread, (0.09 if st["comp"] == "pad" else 0.11))
     # the tune: a two-bar phrase and its answer, then both again with the answer ending home on the key
-    li = INSTR.get(pick(st["lead_instr"]) or "", None)
+    li = INSTR.get(brief.get("lead") or pick(st["lead_instr"]) or "", None)
     if li and st["density"] > 0:
         pool = scale_notes(key, st["scale"], key + 7, key + 24)
 
@@ -545,7 +790,7 @@ def write_all(snd, reg):
         ma.write_ogg(os.path.join(snd, "emote", f"{eid}.ogg"), data, quality=2)
         reg[f"emote.{eid}"] = {"sounds": [{"name": f"minebloxroyale:emote/{eid}", "stream": True, "attenuation_distance": 24}]}
         sounds["rows"].append({"id": f"emote_{eid}", "game": "mod", "file": f"emote.{eid}", "volume": 0.6, "pitch": 1.0,
-                               "use": f"{row['name']}'s music while it's danced: {STYLE_NAMES[style]}, {bpm:.0f} bpm (2.0.0-test5)"})
+                               "use": f"{row['name']}'s music while it's danced: {EMOTES[eid]['brief']}, {bpm:.0f} bpm (2.0.0-test5; fitted to it in test6)"})
         row["music"] = f"emote_{eid}"
         print("emote", eid, style, f"{bpm:.0f} bpm")
     emotes["columns"]["music"] = "string"

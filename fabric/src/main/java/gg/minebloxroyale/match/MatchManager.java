@@ -13,6 +13,8 @@ import gg.minebloxroyale.net.RoomCode;
 import gg.minebloxroyale.sheets.ModeDef;
 import gg.minebloxroyale.sheets.Sheets;
 import gg.minebloxroyale.sheets.EmoteDef;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -1060,9 +1062,12 @@ public final class MatchManager {
 	}
 
 	/**
-	 * The winning team's stage (team modes, 2.0.0-test5): a platform floating over the island's middle, clear of
+	 * The winning team's stage (team modes, 2.0.0-test5): a podium floating over the island's middle, clear of
 	 * everything, with the whole team on it facing south: its players (those eliminated earlier too) in the middle,
 	 * its bots either side (an eliminated or far-off one stood up again for it). Its blocks go with the island.
+	 * 2.0.0-test6 (creator: "the camera doesn't show us on a podium"): a real podium, not a flat slab: three stepped
+	 * tiers with gold trim, each teammate on a pad of their own colour, lights along the front step, and a tall backdrop
+	 * behind them, blue with a gold frame and lights, so it reads from the camera in front.
 	 */
 	private double[] victoryStage(MinecraftServer server, int team, Set<UUID> winners) {
 		ServerLevel level = server.overworld();
@@ -1078,12 +1083,23 @@ public final class MatchManager {
 			for (int dz = -16; dz <= 16; dz += 4) top = Math.max(top, level.getHeight(Heightmap.Types.MOTION_BLOCKING, (int) cx + dx, (int) cz + dz));
 		int y = top + 16, half = n * 2 + 1;
 		BlockPos c = BlockPos.containing(cx, y, cz);
-		BlockState floor = Blocks.POLISHED_DEEPSLATE.defaultBlockState(), trim = Blocks.GOLD_BLOCK.defaultBlockState();
+		BlockState floor = Blocks.POLISHED_DEEPSLATE.defaultBlockState(), trim = Blocks.GOLD_BLOCK.defaultBlockState(),
+			step = Blocks.POLISHED_BLACKSTONE.defaultBlockState(), base = Blocks.DEEPSLATE_TILES.defaultBlockState(), light = Blocks.SEA_LANTERN.defaultBlockState(),
+			back = concrete(0x3C44AA);
+		// three tiers, each a block lower and a block wider all round: the top one (they stand on it) trimmed in gold,
+		// the middle one lit along its front edge
+		for (int tier = 0; tier < 3; tier++)
+			for (int dx = -half - tier; dx <= half + tier; dx++)
+				for (int dz = -2 - tier; dz <= 2 + tier; dz++) {
+					boolean edge = Math.abs(dx) == half + tier || Math.abs(dz) == 2 + tier;
+					BlockState st = tier == 0 ? (edge ? trim : floor) : tier == 1 ? (dz == 2 + tier && Math.floorMod(dx, 2) == 0 ? light : step) : base;
+					put(level, c.offset(dx, -1 - tier, dz), st);
+				}
+		// the backdrop behind them: blue in a gold frame, a row of lights across its top
 		for (int dx = -half; dx <= half; dx++)
-			for (int dz = -3; dz <= 3; dz++) {
-				BlockPos b = c.offset(dx, -1, dz);
-				IslandRestore.remember(level, b);
-				level.setBlock(b, dz == 3 || Math.abs(dx) == half ? trim : floor, 2 | 16);
+			for (int dy = -1; dy <= 5; dy++) {
+				boolean frame = Math.abs(dx) == half || dy == 5;
+				put(level, c.offset(dx, dy, -3), frame ? trim : dy == 4 && Math.floorMod(dx, 3) == 0 ? light : back);
 			}
 		// places 3 apart, the players in the middle, then bots left and right in turn
 		List<Object> line = new ArrayList<>(ps);
@@ -1093,6 +1109,9 @@ public final class MatchManager {
 		}
 		for (int i = 0; i < line.size(); i++) {
 			double x = c.getX() + 0.5 + (i - (line.size() - 1) / 2.0) * 3, z = c.getZ() + 0.5;
+			// (a pad in the teammate's own colour under them)
+			int slot = line.get(i) instanceof ServerPlayer sp ? Teams.slotOfPlayer(sp.getUUID()) : ((BotRoster.Sim) line.get(i)).slot;
+			put(level, BlockPos.containing(x, y - 1, z), concrete(Teams.color(slot)));
 			if (line.get(i) instanceof ServerPlayer p) {
 				p.stopRiding();
 				p.setCamera(p);
@@ -1117,6 +1136,36 @@ public final class MatchManager {
 		}
 		MinebloxRoyale.LOG.info("BR: the winners' stage at {} {} {}: {} players, {} bots", c.getX(), y, c.getZ(), ps.size(), stageBots.size());
 		return new double[] { c.getX() + 0.5, y, c.getZ() + 0.5 };
+	}
+
+	private static void put(ServerLevel level, BlockPos b, BlockState state) {
+		IslandRestore.remember(level, b);
+		level.setBlock(b, state, 2 | 16);
+	}
+
+	/** The concrete nearest a colour (0xRRGGBB): a teammate's pad on the podium. */
+	private static BlockState concrete(int rgb) {
+		DyeColor best = DyeColor.WHITE;
+		double bestD = Double.MAX_VALUE;
+		for (DyeColor dye : DyeColor.values()) {
+			int c = dye.getTextureDiffuseColor();
+			double d = Math.pow(((c >> 16) & 255) - ((rgb >> 16) & 255), 2) + Math.pow(((c >> 8) & 255) - ((rgb >> 8) & 255), 2) + Math.pow((c & 255) - (rgb & 255), 2);
+			if (d < bestD) {
+				bestD = d;
+				best = dye;
+			}
+		}
+		return BuiltInRegistries.BLOCK.getValue(Identifier.withDefaultNamespace(best.getName() + "_concrete")).defaultBlockState();
+	}
+
+	/**
+	 * /br win (the development account, 2.0.0-test6): the match ends here and now as a win for your team, so the
+	 * Victory Royale screens can be checked without playing a whole match.
+	 */
+	public String devWin(MinecraftServer server, ServerPlayer p) {
+		if (state != State.LIVE || !players.contains(p.getUUID())) return "Not in a live match.";
+		end(server, Teams.teamOfPlayer(p.getUUID()));
+		return "Your team wins.";
 	}
 
 	/**

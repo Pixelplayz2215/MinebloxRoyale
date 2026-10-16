@@ -289,7 +289,7 @@
    "file": "emote.wave",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Wave's music while it's danced: island ukulele and steel pans, 120 bpm (2.0.0-test5)"
+   "use": "Wave's music while it's danced: a cheerful whistled tune over ukulele and light claps, 120 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_swing",
@@ -297,7 +297,7 @@
    "file": "emote.swing",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Arm Swing's music while it's danced: a hip-hop beat, 75 bpm (2.0.0-test5)"
+   "use": "Arm Swing's music while it's danced: swing jazz with a walking bass and a sax, swinging along with the arms, 150 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_robot",
@@ -305,7 +305,7 @@
    "file": "emote.robot",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Robot's music while it's danced: electro dance, 112 bpm (2.0.0-test5)"
+   "use": "Robot's music while it's danced: a robotic synth groove with a robot-voice lead, a bleep on each snap of the arms, 150 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_floss",
@@ -313,7 +313,7 @@
    "file": "emote.floss",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Floss's music while it's danced: electro dance, 129 bpm (2.0.0-test5)"
+   "use": "Floss's music while it's danced: a bouncy electro beat, 86 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_dab",
@@ -321,7 +321,7 @@
    "file": "emote.dab",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Dab's music while it's danced: electro dance, 112 bpm (2.0.0-test5)"
+   "use": "Dab's music while it's danced: a trap beat, a horn blast on the dab, 75 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_jumping_jacks",
@@ -329,7 +329,7 @@
    "file": "emote.jumping_jacks",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Jumping Jacks's music while it's danced: chiptune, 150 bpm (2.0.0-test5)"
+   "use": "Jumping Jacks's music while it's danced: an aerobics workout beat, a clap at the top of each jump, 150 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_twist",
@@ -337,7 +337,7 @@
    "file": "emote.twist",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Twist's music while it's danced: disco funk, 100 bpm (2.0.0-test5)"
+   "use": "Twist's music while it's danced: 60s rock 'n' roll with a honking sax, made for twisting, 200 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_obby_hop",
@@ -345,7 +345,7 @@
    "file": "emote.obby_hop",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Obby Hop's music while it's danced: chiptune, 120 bpm (2.0.0-test5)"
+   "use": "Obby Hop's music while it's danced: chiptune, a boing on each hop, 120 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_victory_dance",
@@ -353,7 +353,7 @@
    "file": "emote.victory_dance",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Victory Dance's music while it's danced: disco funk, 100 bpm (2.0.0-test5)"
+   "use": "Victory Dance's music while it's danced: triumphant disco funk with brass, 100 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_clap",
@@ -361,7 +361,7 @@
    "file": "emote.clap",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Clap's music while it's danced: swing jazz, 133 bpm (2.0.0-test5)"
+   "use": "Clap's music while it's danced: a stomp-and-clap singalong, the clap on each clap, 120 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_salute",
@@ -369,7 +369,7 @@
    "file": "emote.salute",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Salute's music while it's danced: a brass march, 100 bpm (2.0.0-test5)"
+   "use": "Salute's music while it's danced: a brass march, a snare roll and a cymbal on the salute, 133 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_shrug",
@@ -377,7 +377,7 @@
    "file": "emote.shrug",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Shrug's music while it's danced: a hip-hop beat, 86 bpm (2.0.0-test5)"
+   "use": "Shrug's music while it's danced: a light, shrugging pizzicato tune with clarinet, 86 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_chicken",
@@ -385,7 +385,7 @@
    "file": "emote.chicken",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Chicken Dance's music while it's danced: an oompah polka, 100 bpm (2.0.0-test5)"
+   "use": "Chicken Dance's music while it's danced: an oompah polka, a woodblock peck on each step, 100 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_disco",
@@ -393,7 +393,7 @@
    "file": "emote.disco",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Disco Point's music while it's danced: disco funk, 120 bpm (2.0.0-test5)"
+   "use": "Disco Point's music while it's danced: disco funk, four on the floor, 120 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_running_man",
@@ -401,7 +401,7 @@
    "file": "emote.running_man",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Running Man's music while it's danced: a hip-hop beat, 86 bpm (2.0.0-test5)"
+   "use": "Running Man's music while it's danced: a 90s hip-hop bounce, 86 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_karate",
@@ -409,7 +409,7 @@
    "file": "emote.karate",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Karate Chop's music while it's danced: koto and taiko, 100 bpm (2.0.0-test5)"
+   "use": "Karate Chop's music while it's danced: koto and taiko, a whoosh on each jump and a big drum on each chop, 100 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_air_guitar",
@@ -417,7 +417,7 @@
    "file": "emote.air_guitar",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Air Guitar's music while it's danced: a rock band, 120 bpm (2.0.0-test5)"
+   "use": "Air Guitar's music while it's danced: a rock riff, the guitar on each strum, 120 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_drum",
@@ -425,7 +425,7 @@
    "file": "emote.drum",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Drum Solo's music while it's danced: a drum solo, 112 bpm (2.0.0-test5)"
+   "use": "Drum Solo's music while it's danced: a drum solo played by the dance itself: every strike of the sticks on the kit, 150 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_boxing",
@@ -433,7 +433,7 @@
    "file": "emote.boxing",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Boxing's music while it's danced: a training-montage rock anthem, 86 bpm (2.0.0-test5)"
+   "use": "Boxing's music while it's danced: a training-montage anthem, a thud on every punch, 86 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_spin",
@@ -441,7 +441,7 @@
    "file": "emote.spin",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Spin's music while it's danced: electro dance, 100 bpm (2.0.0-test5)"
+   "use": "Spin's music while it's danced: electro, a whoosh as it turns, 100 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_helicopter",
@@ -449,7 +449,7 @@
    "file": "emote.helicopter",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Helicopter's music while it's danced: electro dance, 100 bpm (2.0.0-test5)"
+   "use": "Helicopter's music while it's danced: driving electro with the rotor blades whooshing round, 100 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_hip_shake",
@@ -457,7 +457,7 @@
    "file": "emote.hip_shake",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Hip Shake's music while it's danced: disco funk, 120 bpm (2.0.0-test5)"
+   "use": "Hip Shake's music while it's danced: a Latin groove: congas, cowbell and a piano montuno, 120 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_swim",
@@ -465,7 +465,7 @@
    "file": "emote.swim",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Swim's music while it's danced: island ukulele and steel pans, 86 bpm (2.0.0-test5)"
+   "use": "Swim's music while it's danced: surf rock, a twangy reverb guitar riding the waves, 171 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_zombie",
@@ -473,7 +473,7 @@
    "file": "emote.zombie",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Zombie Walk's music while it's danced: a spooky organ shuffle, 86 bpm (2.0.0-test5)"
+   "use": "Zombie Walk's music while it's danced: a spooky organ shuffle with a wailing theremin, 86 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_flex",
@@ -481,7 +481,7 @@
    "file": "emote.flex",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Flex's music while it's danced: a slow trap beat, 75 bpm (2.0.0-test5)"
+   "use": "Flex's music while it's danced: a pumped-up gym anthem, a horn blast on each pose, 150 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_bow",
@@ -489,7 +489,7 @@
    "file": "emote.bow",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Bow's music while it's danced: heroic brass and drums, 90 bpm (2.0.0-test5)"
+   "use": "Bow's music while it's danced: a polite classical flourish, harpsichord and strings, a chime as it bows, 120 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_cheer",
@@ -497,7 +497,7 @@
    "file": "emote.cheer",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Cheer's music while it's danced: a brass march, 120 bpm (2.0.0-test5)"
+   "use": "Cheer's music while it's danced: a pep band, pom-poms shaking and claps, 120 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_raise_roof",
@@ -505,7 +505,7 @@
    "file": "emote.raise_roof",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Raise the Roof's music while it's danced: a hip-hop beat, 75 bpm (2.0.0-test5)"
+   "use": "Raise the Roof's music while it's danced: a party hip-hop beat, horns on each push, 75 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_penguin",
@@ -513,7 +513,7 @@
    "file": "emote.penguin",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Penguin Waddle's music while it's danced: chiptune, 120 bpm (2.0.0-test5)"
+   "use": "Penguin Waddle's music while it's danced: a waddling tuba-and-clarinet tune, 120 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_slide",
@@ -521,7 +521,7 @@
    "file": "emote.slide",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Smooth Slide's music while it's danced: smooth R&B, 75 bpm (2.0.0-test5)"
+   "use": "Smooth Slide's music while it's danced: smooth R&B, 75 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_fly_pose",
@@ -529,7 +529,7 @@
    "file": "emote.fly_pose",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Hero Fly's music while it's danced: heroic brass and drums, 80 bpm (2.0.0-test5)"
+   "use": "Hero Fly's music while it's danced: a superhero theme, 80 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_star_jump",
@@ -537,7 +537,7 @@
    "file": "emote.star_jump",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Star Jump's music while it's danced: chiptune, 120 bpm (2.0.0-test5)"
+   "use": "Star Jump's music while it's danced: an upbeat workout beat, a sparkle at the top of the jump, 120 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_hula",
@@ -545,7 +545,7 @@
    "file": "emote.hula",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Hula's music while it's danced: island ukulele and steel pans, 100 bpm (2.0.0-test5)"
+   "use": "Hula's music while it's danced: island ukulele and steel pans, 100 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_wave_both",
@@ -553,7 +553,7 @@
    "file": "emote.wave_both",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Double Wave's music while it's danced: island ukulele and steel pans, 75 bpm (2.0.0-test5)"
+   "use": "Double Wave's music while it's danced: a bright, bouncy whistled tune, waving to everyone, 150 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_rock_out",
@@ -561,7 +561,7 @@
    "file": "emote.rock_out",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Rock Out's music while it's danced: a rock band, 133 bpm (2.0.0-test5)"
+   "use": "Rock Out's music while it's danced: a rock band, the guitar on every strum and a crash on the big one, 133 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_tap_dance",
@@ -569,7 +569,7 @@
    "file": "emote.tap_dance",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Tap Dance's music while it's danced: swing jazz, 120 bpm (2.0.0-test5)"
+   "use": "Tap Dance's music while it's danced: swing jazz with the tap shoes on every tap, 120 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_lasso",
@@ -577,7 +577,7 @@
    "file": "emote.lasso",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Lasso Twirl's music while it's danced: a cowboy banjo tune, 100 bpm (2.0.0-test5)"
+   "use": "Lasso Twirl's music while it's danced: a cowboy banjo tune, the rope whooshing round, 100 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_breakdance",
@@ -585,7 +585,7 @@
    "file": "emote.breakdance",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Breakdance Spin's music while it's danced: a hip-hop beat, 100 bpm (2.0.0-test5)"
+   "use": "Breakdance Spin's music while it's danced: an old-school breakbeat with record scratches, 100 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_ripple",
@@ -593,7 +593,7 @@
    "file": "emote.ripple",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Wave Ripple's music while it's danced: electro dance, 129 bpm (2.0.0-test5)"
+   "use": "Wave Ripple's music while it's danced: popping electro, 86 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_legendary",
@@ -601,7 +601,7 @@
    "file": "emote.legendary",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Legendary Royale's music while it's danced: heroic brass and drums, 90 bpm (2.0.0-test5)"
+   "use": "Legendary Royale's music while it's danced: an epic orchestral build, a crash on the landing, 60 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_griddy",
@@ -609,7 +609,7 @@
    "file": "emote.griddy",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Griddy's music while it's danced: a slow trap beat, 75 bpm (2.0.0-test5)"
+   "use": "Griddy's music while it's danced: a trap beat, snaps on the heel taps, 75 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_default_dance",
@@ -617,7 +617,7 @@
    "file": "emote.default_dance",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Default Dance's music while it's danced: disco funk, 120 bpm (2.0.0-test5)"
+   "use": "Default Dance's music while it's danced: a jaunty synth-pop tune, 120 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_orange_justice",
@@ -625,7 +625,7 @@
    "file": "emote.orange_justice",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Orange Justice's music while it's danced: electro dance, 120 bpm (2.0.0-test5)"
+   "use": "Orange Justice's music while it's danced: upbeat EDM, 120 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_boneless",
@@ -633,7 +633,7 @@
    "file": "emote.boneless",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Boneless's music while it's danced: a hip-hop beat, 100 bpm (2.0.0-test5)"
+   "use": "Boneless's music while it's danced: a goofy, floppy tuba-and-kazoo tune, 100 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_take_the_l",
@@ -641,7 +641,7 @@
    "file": "emote.take_the_l",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Take the L's music while it's danced: electro dance, 120 bpm (2.0.0-test5)"
+   "use": "Take the L's music while it's danced: a cheeky, bouncy taunt on the kazoo, 120 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_electro_shuffle",
@@ -649,7 +649,7 @@
    "file": "emote.electro_shuffle",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Electro Shuffle's music while it's danced: electro dance, 120 bpm (2.0.0-test5)"
+   "use": "Electro Shuffle's music while it's danced: electro house to shuffle to, 120 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_fresh",
@@ -657,7 +657,7 @@
    "file": "emote.fresh",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Fresh's music while it's danced: disco funk, 112 bpm (2.0.0-test5)"
+   "use": "Fresh's music while it's danced: a swinging 60s brass pop tune, 150 bpm (2.0.0-test5; fitted to it in test6)"
   },
   {
    "id": "emote_hype",
@@ -665,7 +665,7 @@
    "file": "emote.hype",
    "volume": 0.6,
    "pitch": 1.0,
-   "use": "Hype's music while it's danced: electro dance, 150 bpm (2.0.0-test5)"
+   "use": "Hype's music while it's danced: a hype trap beat, horns on each fist pump, 75 bpm (2.0.0-test5; fitted to it in test6)"
   }
  ]
 }

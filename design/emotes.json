@@ -1,7 +1,7 @@
 {
  "sheet": "emotes",
  "class": "EmoteDef",
- "about": "40 emotes played on the Roblox avatar; each player picks 8 for their emote wheel (B) in the Locker. unlock: default = everyone has it (the first 7); obby = finish the obby; victory = win a Victory Royale; kills = lifetime eliminations reach 'need' (150 unlocks the last one); wins = Victory Royales reach 'need'; range = score 'need' in one shooting-range round (match.rangeRoundSeconds); bullseyes = hit 'need' bullseyes at the range in all. Fairer since test9 (creator): nothing needs more than 150 kills or 8 wins, and the range unlocks only took over items that needed 100+ kills, so nobody lost one. Each loops over 'loopSeconds' through its keyframes (emote_keys). v2.0.0: shop = bought in the Locker's shop for gold; need is the price. props (2.0.0-test5): things the emote brings out while it plays, \"model@where, ...\" (fabric/tools/blender/props.py; - for none): @ground in the avatar's own space, @body the upper body's, @head the head's, @right_hand / @left_hand a hand's, following the forearm. music: the sounds-sheet row of the emote's own music (2.0.0-test5: fabric/tools/audio/emote_music.py), looping while it's danced: the dancer hears it and their own game music goes quiet till they stop; everyone near hears it coming from them, over their own music.",
+ "about": "40 emotes played on the Roblox avatar; each player picks 8 for their emote wheel (B) in the Locker. unlock: default = everyone has it (the first 7); obby = finish the obby; victory = win a Victory Royale; kills = lifetime eliminations reach 'need' (150 unlocks the last one); wins = Victory Royales reach 'need'; range = score 'need' in one shooting-range round (match.rangeRoundSeconds); bullseyes = hit 'need' bullseyes at the range in all. Fairer since test9 (creator): nothing needs more than 150 kills or 8 wins, and the range unlocks only took over items that needed 100+ kills, so nobody lost one. Each loops over 'loopSeconds' through its keyframes (emote_keys). v2.0.0: shop = bought in the Locker's shop for gold; need is the price. props (2.0.0-test5): things the emote brings out while it plays, \"model@where, ...\" (fabric/tools/blender/props.py; - for none; \"model@where/n\" spins it n times a loop round its own up-and-down line, 2.0.0-test6: the lasso): @ground in the avatar's own space, @body the upper body's, @head the head's, @right_hand / @left_hand a hand's, following the forearm. music: the sounds-sheet row of the emote's own music (2.0.0-test5: fabric/tools/audio/emote_music.py), looping while it's danced: the dancer hears it and their own game music goes quiet till they stop; everyone near hears it coming from them, over their own music.",
  "columns": {
   "id": "string",
   "name": "string",
@@ -19,7 +19,7 @@
    "unlock": "default",
    "need": 0,
    "loopSeconds": 1.0,
-   "note": "right arm up and out, the forearm upright beside the head, waving from the elbow",
+   "note": "right arm up and out, the forearm swinging side to side from the elbow, in line and then upright beside the head",
    "props": "-",
    "music": "emote_wave"
   },
@@ -108,8 +108,8 @@
    "name": "Clap",
    "unlock": "kills",
    "need": 3,
-   "loopSeconds": 0.45,
-   "note": "hands clapping together in front of the chest with a little nod",
+   "loopSeconds": 0.5,
+   "note": "hands clapping together in front of the chest and apart again, smoothly, with a little nod and bounce",
    "props": "-",
    "music": "emote_clap"
   },
@@ -349,7 +349,7 @@
    "unlock": "wins",
    "need": 5,
    "loopSeconds": 0.8,
-   "note": "both arms up and out, forearms upright, waving from the elbows, swaying",
+   "note": "both arms up and out, the forearms swinging side to side from the elbows, swaying",
    "props": "-",
    "music": "emote_wave_both"
   },
@@ -380,7 +380,7 @@
    "need": 50,
    "loopSeconds": 0.6,
    "note": "a rope twirled overhead, the other hand on the hip",
-   "props": "prop_lasso@right_hand",
+   "props": "prop_lasso@right_hand/2",
    "music": "emote_lasso"
   },
   {
