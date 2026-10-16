@@ -6,6 +6,10 @@ Test 6 - The emote wheel (B) in the same style
 Test 6 - The results card: nothing overlaps (emote row, buttons); it closes by itself when you're back in the hub
 Test 6 - A team Victory Royale: black while the podium loads, your team on a podium, then the card on the right with them in view
 Test 6 - Dev only: /br win ends the match as a win for your team (to check the Victory screens quickly)
+Test 6 - Hats with hair: Fire Helmet, Explorer Hat, Top Hat: no hair on the brim; Party Hat: no bald ring (it is wider now)
+Test 6 - Hats with an afro: Top Hat, Traffic Cone, Fedora and Party Hat sit on top of it; ears and Tiara round it
+Test 6 - Headphones with Curly or Pigtails, Halo with Spiky or Mohawk, a crown with a Mohawk: nothing goes through
+Test 6 - Bunny and Cat Ears (no band ends at the temples), Storm Hood trim, Dominus wings on a brooch
 Test 5 - Victory Royale, Solo: a gold banner over the game, then the results card (total damage, gold counting up, Hub/Spectate)
 Test 5 - Victory Royale, teams: your team on the stage, then results with a row per teammate and the team's totals
 Test 5 - After winning you can't move, shoot or build, but your emote key and wheel work; bot teammates emote; a fanfare plays

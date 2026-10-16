@@ -93,6 +93,16 @@ public final class Cosmetics {
 	public static final float AVATAR_SIZE = 1F;
 	/** Hats worn over the hair rather than on the head: the haircut stays whole (over an afro they have their own, bigger model). */
 	private static final List<String> OVER_HAIR = List.of("headphones", "halo", "bunny", "cat", "tiara");
+	/**
+	 * Hats that sit on top of an afro, the afro whole under them, with their own model raised onto it (2.0.0-test6,
+	 * creator's check of every hat with every haircut: the afro is wider than their brims and its curls came up through
+	 * them when it was cut under them).
+	 */
+	private static final List<String> AFRO_ON_TOP = List.of("tophat", "cone", "fedora", "party");
+	/** Haircuts standing up past where the halo floats: it floats higher over them (hat_halo_tall). */
+	private static final List<String> TALL_HAIR = List.of("spiky", "mohawk");
+	/** Haircuts with their own form under headphones (hair_<shape>_phones): no ringlets by the ear cups; pigtails tied behind them. */
+	private static final List<String> PHONES_HAIR = List.of("curly", "pigtails");
 
 	/** A worn model: made on the default part, fitted (`fit`) to this part, on its joint (`joint`), bent with it. */
 	private record Piece(String mesh, Matrix4f fit, Matrix4f joint, Bend.Of bend, String part, CosmeticDef c) {
@@ -151,9 +161,12 @@ public final class Cosmetics {
 		});
 	}
 
-	/** The hat's model (over an afro, the one shaped to sit on it). */
+	/** The hat's model (over an afro, the one shaped to sit round it or on it; the halo over spikes or a crest, a higher one). */
 	private static String hatMesh(CosmeticDef hat, CosmeticDef hair) {
-		return "hat_" + hat.shape() + (hair != null && hair.shape().equals("afro") && OVER_HAIR.contains(hat.shape()) ? "_afro" : "");
+		String h = hat.shape(), r = hair == null ? "" : hair.shape();
+		if (r.equals("afro") && (OVER_HAIR.contains(h) || AFRO_ON_TOP.contains(h))) return "hat_" + h + "_afro";
+		if (h.equals("halo") && TALL_HAIR.contains(r)) return "hat_halo_tall";
+		return "hat_" + h;
 	}
 
 	/**
@@ -196,15 +209,20 @@ public final class Cosmetics {
 	 * which depends on where the hat's lower edge sits (cosmetics.py CUTS: the brow, a little above it, or the top).
 	 */
 	private static String hairMesh(CosmeticDef hair, CosmeticDef hat) {
-		if (hair.shape().equals("curly") && hat != null && hat.shape().equals("tiara")) return "hair_curly_tiara"; // (curls at the sides and back only)
-		String cut = hat == null || OVER_HAIR.contains(hat.shape()) ? "full" : switch (hat.shape()) {
-			case "cap", "backcap", "viking", "beanie", "army", "tricorne" -> "b0";
-			case "police", "fire_helmet" -> "b2";
-			case "chef", "pith", "fedora", "cowboy" -> "b4";
+		String r = hair.shape(), h = hat == null ? null : hat.shape();
+		if (r.equals("curly") && "tiara".equals(h)) return "hair_curly_tiara"; // (curls at the sides and back only)
+		if ("headphones".equals(h) && PHONES_HAIR.contains(r)) return "hair_" + r + "_phones";
+		boolean whole = h == null || OVER_HAIR.contains(h) || r.equals("afro") && AFRO_ON_TOP.contains(h);
+		// (2.0.0-test6: the fire helmet and the explorer hat cut with the caps, level with the brow: their brims are low
+		// and flat and hair cut higher came up through them)
+		String cut = whole ? "full" : switch (h) {
+			case "cap", "backcap", "viking", "beanie", "army", "tricorne", "fire_helmet", "pith" -> "b0";
+			case "police" -> "b2";
+			case "chef", "fedora", "cowboy" -> "b4";
 			case "witch" -> "b6";
 			default -> "top";
 		};
-		return "hair_" + hair.shape() + "_" + cut;
+		return "hair_" + r + "_" + cut;
 	}
 
 	// ---- shirts and pants: a painted design (ClothingTextures) wrapped round the torso / each leg ----

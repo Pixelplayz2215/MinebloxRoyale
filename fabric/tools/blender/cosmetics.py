@@ -38,8 +38,25 @@ def shell(s, h, grow, y0, y1, rc, closed, a0, a1, color):
         for i in range(6):
             t = math.radians(-90 + 90 * i / 5)
             p.append((R - rr + rr * math.cos(t), y0 + rc + rc * math.sin(t)))
+    elif y1 - rc < y0:
+        # (2.0.0-test6: a top rounder than the shell is tall starts rounding at its bottom edge; it went straight on down
+        # past the edge and folded back up, a doubled strip hanging under the hat with its shading facing down, lying
+        # on the hair under it, which flickered with it)
+        t0 = math.asin((y0 - (y1 - rc)) / rc)
+        for i in range(7):
+            t = t0 + (math.pi / 2 - t0) * i / 6
+            p.append((R - rr + rr * math.cos(t), y1 - rc + rc * math.sin(t)))
+        p.append((0, y1))
+        s.at(h.cx, 0, h.cz).scale(h.hw, 1, h.hd).color(color).lathe([q[0] for q in p], [q[1] for q in p], 32, a0, a1)
+        return
     else:
         p.append((R, y0))
+    # (2.0.0-test6: the straight side in rows at most 0.1 apart, not one tall strip: the baked shadows are kept per
+    # corner, and over one tall strip a feather's or a horn's shadow smeared into a long dark triangle, a dent)
+    ya, yb = p[-1][1], y1 - rc
+    rows = max(1, math.ceil((yb - ya) / 0.1))
+    for i in range(1, rows):
+        p.append((R, ya + (yb - ya) * i / rows))
     for i in range(7):
         t = math.radians(90 * i / 6)
         p.append((R - rr + rr * math.cos(t), y1 - rc + rc * math.sin(t)))
@@ -57,6 +74,42 @@ def wrap(s, h, grow, y0, y1, a0, a1, color):
 
 
 # ---------------------------------------------------------------- hats
+
+PARTY_TILT = -6
+KNIGHT = 1.14  # the knight's helmet: how far out round the head (head widths)
+TOP_CUT = 0.06  # haircuts under a hat that sits on the top of the head end this far under the top (hair2.hair)
+
+
+def party_cone(h):
+    """The party hat's cone: the middle of its foot (x, y), the foot's radius and its height. Its high side's edge is
+    level with the cut of the hair under it (hair2.TOP_CUT) and it covers the head's top down to there."""
+    rb = h.hw
+    return h.cx, h.top - TOP_CUT - rb * math.sin(math.radians(-PARTY_TILT)), rb, 1.35
+
+
+def headband(s, h, color):
+    """The bunny and cat ears' band (2.0.0-test6, creator's check of every hat with every haircut: its ends stuck out
+    below the hair at the temples): over the head following its shape, a box with rounded top edges (the circle it
+    was went inside the head at the corners and came out only at the top and at its ends, by the ears), its ends
+    sinking into the head above the ears, where every haircut covers them. Over an afro (over_afro), round the afro's
+    ball with its ends among the curls (they hung in the air beside the face)."""
+    if h.top > HEAD.top + 0.5:
+        yc, rx, ry = h.top - 0.7, h.hw + 0.04, 0.76
+        pts = [(h.cx + math.cos(t) * rx, yc + math.sin(t) * ry, h.cz) for t in [math.radians(25 + 130 * i / 28) for i in range(29)]]
+    else:
+        bev = 0.22  # (the head's rounded top edge, avatar.HEAD: 1.2 across with a 0.22 bevel)
+        w, top, y_end = h.hw + 0.04, h.top + 0.04, h.cy + 0.12
+        half = [(h.hw - 0.04, y_end - 0.03), (w - 0.01, y_end + 0.04), (w, y_end + 0.12)]
+        y0 = h.top - bev
+        half += [(w, y_end + 0.12 + (y0 - y_end - 0.12) * k / 3) for k in (1, 2, 3)]
+        half += [(h.hw - bev + (bev + 0.04) * math.cos(math.radians(a)), y0 + (bev + 0.04) * math.sin(math.radians(a))) for a in range(15, 91, 15)]
+        half += [((h.hw - bev) * k / 3, top) for k in (2, 1, 0)]
+        pts = [(h.cx + x, y, h.cz) for x, y in half] + [(h.cx - x, y, h.cz) for x, y in reversed(half[:-1])]
+    rad = [0.035] * len(pts)
+    rad[0] = rad[-1] = 0.018
+    rad[1] = rad[-2] = 0.03
+    s.at(0, 0, 0).color(color).tube(pts, rad)
+
 
 def hat(s, shape, h, a="a", b="b"):
     hw, hd, cx, cz, top, cy, brow = h.hw, h.hd, h.cx, h.cz, h.top, h.cy, h.brow
@@ -102,29 +155,37 @@ def hat(s, shape, h, a="a", b="b"):
         # the brow, its opening edged with a glowing trim in the second colour
         shell(s, h, 1.13, brow - 0.04, top + 0.13, 0.5, False, 0, 360, a)
         shell(s, h, 1.15, h.bottom - 0.02, brow, 0.05, False, -38, 218, a)
+        # (2.0.0-test6: the trim half sunk into the hood's edges (the top one rounds in to 1.11 out), so it doesn't
+        # stand out past the hood seen from the side)
         edge = []
         for i in range(17):
             deg = 218 + (322 - 218) * i / 16
             ang = math.radians(deg)
-            edge.append((cx + math.cos(ang) * 1.16 * hw, brow - 0.02, cz + math.sin(ang) * 1.16 * hd))
+            edge.append((cx + math.cos(ang) * 1.1 * hw, brow - 0.03, cz + math.sin(ang) * 1.1 * hd))
         for deg in (218, 322):
             ang = math.radians(deg)
-            x, z = cx + math.cos(ang) * 1.16 * hw, cz + math.sin(ang) * 1.16 * hd
-            s.at(0, 0, 0).color(b, glow=True).tube([(x, h.bottom, z), (x, brow - 0.02, z)], [0.03, 0.03])
-        s.at(0, 0, 0).color(b, glow=True).tube(edge, [0.03] * len(edge))
+            x, z = cx + math.cos(ang) * 1.15 * hw, cz + math.sin(ang) * 1.15 * hd
+            x1, z1 = cx + math.cos(ang) * 1.1 * hw, cz + math.sin(ang) * 1.1 * hd
+            s.at(0, 0, 0).color(b, glow=True).tube([(x, h.bottom, z), (x, brow - 0.06, z), (x1, brow - 0.03, z1)], [0.025, 0.025, 0.025])
+        s.at(0, 0, 0).color(b, glow=True).tube(edge, [0.025] * len(edge))
     elif shape == "tiara":
         y, r, dip = top - 0.18, 1.07, 0.22
         band = []
+        # (2.0.0-test6: out over the hair towards the sides, where it went down into it, and ending before the sides,
+        # where its ends stood out past an afro)
         for i in range(25):
-            ang = math.radians(180 + 180 * i / 24)
+            ang = math.radians(196 + 148 * i / 24)
             c2 = math.cos(ang) ** 2
-            band.append((cx + math.cos(ang) * r * hw, y - dip * c2, cz + math.sin(ang) * r * hd))
+            rr = r + 0.07 * c2
+            band.append((cx + math.cos(ang) * rr * hw, y - dip * c2, cz + math.sin(ang) * rr * hd))
         rad = [0.032] * len(band)
-        rad[0] = rad[-1] = 0.02
+        rad[0] = rad[-1] = 0.012
+        rad[1] = rad[-2] = 0.024
         s.at(0, 0, 0).color(a).tube(band, rad)
         for deg, ht in ((270, 0.36), (247, 0.25), (293, 0.25), (224, 0.15), (316, 0.15)):
             ang = math.radians(deg)
-            px, pz = cx + math.cos(ang) * r * hw, cz + math.sin(ang) * r * hd
+            rr = r + 0.07 * math.cos(ang) ** 2
+            px, pz = cx + math.cos(ang) * rr * hw, cz + math.sin(ang) * rr * hd
             py = y - dip * math.cos(ang) ** 2
             s.at(px, py, pz).rotY(-deg + 270).scale(1, 1, 0.45).color(a).lathe([0, 0.08, 0], [0, 0, ht], 12)
             s.at(px, py + ht + 0.025, pz).color(b if deg == 270 else a).ellipsoid(0.04, 0.04, 0.04)
@@ -162,13 +223,13 @@ def hat(s, shape, h, a="a", b="b"):
     elif shape == "halo":
         s.at(cx, top + 0.38, cz).rotX(8).color(a, glow=True).torus(0.55, 0.055, 0, 360)
     elif shape == "bunny":
-        s.at(cx, cy, cz).rotX(90).color(a).torus(hw + 0.04, 0.035, 180, 360)
+        headband(s, h, a)
         for side in (-1, 1):
             s.at(cx + side * 0.3, top + 0.42, cz + 0.05).rotZ(-side * 12).color(a).ellipsoid(0.13, 0.5, 0.07)
             # (the inside stands a little proud of the ear: sunk level with it, the two flickered along its rim)
             s.at(cx + side * 0.3, top + 0.42, cz - 0.045).rotZ(-side * 12).color(b).ellipsoid(0.07, 0.38, 0.035)
     elif shape == "cat":
-        s.at(cx, cy, cz).rotX(90).color(a).torus(hw + 0.04, 0.035, 180, 360)
+        headband(s, h, a)
         for side in (-1, 1):
             s.at(cx + side * 0.62 * hw, top - 0.06, cz).rotZ(-side * 15).scale(1, 1, 0.45).color(a).lathe([0, 0.22, 0], [0, 0, 0.4], 16)
             s.at(cx + side * 0.62 * hw, top - 0.03, cz - 0.06).rotZ(-side * 15).scale(1, 1, 0.3).color(b).lathe([0, 0.13, 0], [0, 0, 0.27], 16)
@@ -178,10 +239,14 @@ def hat(s, shape, h, a="a", b="b"):
                                     [1.03 * hw, 0.66 * hw, 0.38 * hw, 0.2 * hw, 0], caps=False, sides=24)
         s.at(cx, brow + 0.08, cz).scale(hw, 1, hw).color(b).lathe([1.045, 1.0], [0.02, 0.2], 32)
     elif shape == "party":
-        s.at(cx + 0.08, top - 0.08, cz).rotZ(-10).color(a).lathe([0, 0.55 * hw, 0], [0, 0, 1.0], 24)
+        # (2.0.0-test6: as wide as the head at its foot, where it was half that: the haircut under it is cut level
+        # just under the head's top and the small cone left a bald ring round it; tipped less, so its high side still
+        # covers the cut)
+        x0, y0, rb, ht = party_cone(h)
+        s.at(x0, y0, cz).rotZ(PARTY_TILT).color(a).lathe([0, rb, 0], [0, 0, ht], 32)
         for y in (0.25, 0.58):
-            s.at(cx + 0.08, top - 0.08, cz).rotZ(-10).color(b).lathe([0.55 * hw * (1 - y) + 0.01, 0.55 * hw * (0.88 - y) + 0.01], [y, y + 0.12], 24)
-        s.at(cx + 0.08, top - 0.08, cz).rotZ(-10).move(0, 1.02, 0).color(b).ellipsoid(0.12, 0.12, 0.12)
+            s.at(x0, y0, cz).rotZ(PARTY_TILT).color(b).lathe([rb * (1 - y) + 0.01, rb * (0.88 - y) + 0.01], [y * ht, (y + 0.12) * ht], 32)
+        s.at(x0, y0, cz).rotZ(PARTY_TILT).move(0, ht + 0.02, 0).color(b).ellipsoid(0.11, 0.11, 0.11)  # (the pompom's tufts stand out of it: hats2)
     elif shape == "chef":
         shell(s, h, 1.05, brow + 0.04, top + 0.2, 0.1, False, 0, 360, a)
         s.at(cx, top + 0.45, cz).color(a).ellipsoid(1.15 * hw, 0.36, 1.15 * hd)
@@ -205,14 +270,16 @@ def hat(s, shape, h, a="a", b="b"):
         s.at(cx, cy + 0.04, cz).scale(1.43 * hw, 1.31 * h.hh, 1.43 * hd).color(b).sphere(-28, 42, 32, 215, 325)
         s.at(cx, h.bottom - 0.05, cz).scale(1, 1, oval).color(0xB8C4D6).torus(1.25 * hw, 0.08, 0, 360)
     elif shape == "knight":
-        shell(s, h, 1.1, h.bottom - 0.04, top + 0.08, 0.4, False, 0, 360, a)
-        s.at(cx, h.eye, cz - hd * 1.1).color(0x111114).ellipsoid(0.75 * hw, 0.05, 0.04)
+        # (2.0.0-test6: 1.14 out, was 1.1: a beard lies 1.1 out, on the same surface, and flickered through it)
+        shell(s, h, KNIGHT, h.bottom - 0.04, top + 0.08, 0.4, False, 0, 360, a)
+        s.at(cx, h.eye, cz - hd * KNIGHT).color(0x111114).ellipsoid(0.75 * hw, 0.05, 0.04)
         for i in range(4):
-            s.at(cx + 0.18 * (i - 1.5) * hw, h.cy - 0.22, cz - hd * 1.1).color(0x111114).ellipsoid(0.03, 0.03, 0.03)
+            s.at(cx + 0.18 * (i - 1.5) * hw, h.cy - 0.22, cz - hd * KNIGHT).color(0x111114).ellipsoid(0.03, 0.03, 0.03)
         s.at(0, 0, 0).color(b).tube([(cx, top + 0.06, cz - 0.3 * hd), (cx, top + 0.35, cz), (cx, top + 0.3, cz + 0.5 * hd), (cx, top - 0.05, cz + 1.0 * hd)], [0.06, 0.12, 0.12, 0.04])
     elif shape == "fire_helmet":
         shell(s, h, 1.09, brow + 0.02, top + 0.18, 0.45, False, 0, 360, a)
-        s.at(cx, brow + 0.02, cz + 0.15).color(a).ellipsoid(1.4 * hw, 0.035, 1.4 * hd)
+        # (2.0.0-test6: a little higher and wider, over the hair cut level with the brow under it: hair_<shape>_b0)
+        s.at(cx, brow + 0.03, cz + 0.15).color(a).ellipsoid(1.43 * hw, 0.035, 1.43 * hd)
         s.at(0, 0, 0).color(a).tube([(cx, brow + 0.12, cz - hd * 1.05), (cx, top + 0.22, cz), (cx, brow + 0.25, cz + hd * 1.08)], [0.05, 0.06, 0.05])
         s.at(cx, brow + 0.25, cz - hd * 1.1).color(b).ellipsoid(0.17, 0.2, 0.04)
     elif shape == "army":
@@ -243,8 +310,12 @@ def hat(s, shape, h, a="a", b="b"):
         s.at(0, 0, 0).color(b).tube(crest, [0.06] * len(crest))
         for side in (-1, 1):
             if shape == "dominus":
+                # (2.0.0-test6: the three feathers fanning out from one brooch on the hood's side; they started a step
+                # apart up the side, lying across it, and their shadows on the hood read as a pinched dent)
+                x, y, z = cx + side * 1.2 * hw, cy + 0.27, cz + 0.15
                 for k in range(3):
-                    s.at(cx + side * 1.18 * hw, cy + 0.12 + 0.14 * k, cz + 0.15).rotY(-side * 35).rotZ(side * (12 + 20 * k)).move(side * 0.36, 0, 0).color(b).ellipsoid(0.42 - 0.06 * k, 0.08, 0.035)
+                    s.at(x, y, z).rotY(-side * 35).rotZ(side * (2 + 25 * k)).move(side * 0.4, 0, 0).color(b).ellipsoid(0.42 - 0.06 * k, 0.08, 0.035)
+                s.at(x, y, z).rotY(-side * 35).rotZ(90).color(b).lathe([0, 0.1, 0.115, 0.1, 0], [-0.045, -0.045, 0, 0.045, 0.045], 24)
             else:
                 x = cx + side * 1.15 * hw
                 s.at(0, 0, 0).color(b).tube([(x, cy + 0.25, cz), (x + side * 0.25, cy + 0.42, cz + 0.15), (x + side * 0.3, cy + 0.8, cz + 0.32), (x + side * 0.18, cy + 1.1, cz + 0.45)],
@@ -267,19 +338,46 @@ def afro_headphones(s, h, a="a", b="b"):
 
 def over_afro(shape, h):
     """The head a hat measures itself against when it's worn over an afro (Cosmetics.draw)."""
+    if shape in AFRO_ON_TOP:
+        return on_afro(shape, h)
     if shape == "tiara":
         return Head(h.cx, h.cy, h.cz + 0.25, h.hw * 1.38, h.hh, h.hd * 1.38, h.top + 0.3, h.bottom, h.front, h.back, h.eye, h.brow)
     return Head(h.cx, h.cy + 0.12, h.cz + 0.25, h.hw * 1.45, h.hh, h.hd * 1.45, h.top + 0.8, h.bottom, h.front, h.back, h.eye, h.brow)
 
 
+# (2.0.0-test6, creator's check of every hat with every haircut) Hats that sit on top of an afro, the afro whole under
+# them (hair_afro_full, hat_<shape>_afro), rather than the afro cut under them: it's wider than their brims and its
+# curls came up through them. Each: (size, raised by) - over the afro's middle (it sits back on the head), as big as on
+# a head times size, raised so its brim or foot rests on the curls (measured from hair_afro_full: the highest curl
+# under the brim, foot or flange is just inside it; inside the crown or cone the afro's top is hidden). The party hat
+# sits down among the curls.
+AFRO_ON_TOP = {"tophat": (1.1, 0.87), "cone": (1.1, 0.8), "fedora": (1.1, 0.88), "party": (1.0, 0.66)}
+# Haircuts that stand up past where a halo floats get a halo floating higher (hat_halo_tall).
+TALL_HAIR, HALO_TALL_LIFT = ("spiky", "mohawk"), 0.42
+# Haircuts with their own form under headphones (hair_<shape>_phones): no ringlets by the ear cups (curly); the ties
+# behind the cups, not through them (pigtails).
+PHONES_HAIR = ("curly", "pigtails")
+
+
+def on_afro(shape, h):
+    size, lift = AFRO_ON_TOP[shape]
+    return Head(h.cx, h.cy + lift, h.cz + 0.25, h.hw * size, h.hh, h.hd * size, h.top + lift, h.bottom + lift, h.front, h.back, h.eye + lift, h.brow + lift)
+
+
+def halo_tall(h):
+    return Head(h.cx, h.cy, h.cz, h.hw, h.hh, h.hd, h.top + HALO_TALL_LIFT, h.bottom, h.front, h.back, h.eye, h.brow)
+
+
 # ---------------------------------------------------------------- hair
 
 def hat_edge(shape, h):
-    if shape in ("cap", "backcap", "viking", "beanie", "army", "tricorne"):
+    # (2.0.0-test6: the fire helmet and the explorer hat with the caps, cut level with the brow: their brims are low and
+    # flat and the hair cut higher came up through them)
+    if shape in ("cap", "backcap", "viking", "beanie", "army", "tricorne", "fire_helmet", "pith"):
         return h.brow
-    if shape in ("police", "fire_helmet"):
+    if shape == "police":
         return h.brow + 0.02
-    if shape in ("chef", "pith", "fedora", "cowboy"):
+    if shape in ("chef", "fedora", "cowboy"):
         return h.brow + 0.04
     if shape == "witch":
         return h.brow + 0.06
@@ -322,7 +420,7 @@ def hair(s, shape, h, hat_shape=None, a="a", b="b"):
     hw, hd, cx, cz, top, cy = h.hw, h.hd, h.cx, h.cz, h.top, h.cy
     front, back = h.top - 0.13, (cy - 0.05 if shape == "buzz" else cy - 0.32)
     edge = hat_edge(hat_shape, h) if under_hat else top
-    hat_top = (top + 0.05) if not under_hat else (top if edge >= top - 0.1 else edge + 0.03)
+    hat_top = (top + 0.05) if not under_hat else (top - TOP_CUT if edge >= top - 0.1 else edge + 0.03)
     grow = 1.025 if shape == "buzz" or under_hat else 1.045
     brim = under_hat and hat_top < top
     hair_cap(s, h, grow, front, back, hat_top, 0.02 if brim else 0.3 if under_hat else 0.4, a)
@@ -451,7 +549,8 @@ def face(s, shape, h, a="a", b="b"):
             for i in range(5):
                 s.at(cx + (i - 2) * 0.13, cy - 0.2 + (i % 2) * 0.08, front - 0.05).color(b).ellipsoid(0.025, 0.025, 0.01)
     elif shape == "domino":
-        s.at(cx, ey, cz).scale(hw, 1, hd).color(a).lathe([1.04, 1.04], [-0.1, 0.1], 24, 200, 340)
+        # (2.0.0-test6: 1.05 out, was 1.04: the ponytail's smooth layer of hair lay 1.04 out and the two flickered)
+        s.at(cx, ey, cz).scale(hw, 1, hd).color(a).lathe([1.05, 1.05], [-0.1, 0.1], 24, 200, 340)
         for sd in (-1, 1):
             s.at(cx + sd * 0.2, ey, front - 0.045).color(0xF4F4F4).ellipsoid(0.08, 0.06, 0.012)
     elif shape == "nose":

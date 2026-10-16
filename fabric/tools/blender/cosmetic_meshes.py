@@ -12,7 +12,7 @@ import hair2
 import hats2
 import shoes2
 import shapes
-from cosmetics import CUTS, HEAD, OVER_HAIR, afro_headphones, face, over_afro
+from cosmetics import AFRO_ON_TOP, CUTS, HEAD, OVER_HAIR, PHONES_HAIR, afro_headphones, face, halo_tall, over_afro
 from shapes import S
 
 ROWS = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "design", "cosmetics.json"), encoding="utf-8"))["rows"]
@@ -27,12 +27,15 @@ NO_RENDER = {"render": False, "scale": 1.0, "ao": 0.25, "lod": 0.35}  # (the lig
 ITEMS = {}
 for sh in shapes_of("hat"):
     ITEMS["hat_" + sh] = (sh, lambda sh=sh: hats2.hat(sh, HEAD), NO_RENDER)
-    if sh in OVER_HAIR:
+    if sh in OVER_HAIR or sh in AFRO_ON_TOP:  # (over an afro, or on top of one)
         ITEMS["hat_" + sh + "_afro"] = (sh, (lambda: afro_headphones(S(), HEAD)) if sh == "headphones" else (lambda sh=sh: hats2.hat(sh, over_afro(sh, HEAD))), NO_RENDER)
+ITEMS["hat_halo_tall"] = ("halo", lambda: hats2.hat("halo", halo_tall(HEAD)), NO_RENDER)  # (over spikes and a mohawk's crest)
 for sh in shapes_of("hair"):
     for cut, hat_shape in CUTS.items():
         ITEMS[f"hair_{sh}_{cut}"] = (sh, lambda sh=sh, hs=hat_shape: hair2.hair(sh, HEAD, hs), NO_RENDER)
 ITEMS["hair_curly_tiara"] = ("curly", lambda: hair2.hair("curly", HEAD, "tiara"), NO_RENDER)
+for sh in PHONES_HAIR:  # (under headphones: clear of the cups)
+    ITEMS[f"hair_{sh}_phones"] = (sh, lambda sh=sh: hair2.hair(sh, HEAD, "headphones"), NO_RENDER)
 for sh in shapes_of("face"):
     ITEMS["face_" + sh] = (sh, lambda sh=sh: face(S(), sh, HEAD), NO_RENDER)
 for sh in shapes_of("shoes"):

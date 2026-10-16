@@ -22,8 +22,10 @@ import brm  # noqa: E402
 MESHES = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, "..", "..", "src", "main", "resources", "assets", "minebloxroyale", "meshes")
 DESIGN = sys.argv[2] if len(sys.argv) > 2 else os.path.join(HERE, "..", "..", "..", "design")
 OVER_HAIR = ("headphones", "halo", "bunny", "cat", "tiara")
-CUT = {**{s: "b0" for s in ("cap", "backcap", "viking", "beanie", "army", "tricorne")}, **{s: "b2" for s in ("police", "fire_helmet")},
-       **{s: "b4" for s in ("chef", "pith", "fedora", "cowboy")}, "witch": "b6"}
+AFRO_ON_TOP = ("tophat", "cone", "fedora", "party")
+TALL_HAIR, PHONES_HAIR = ("spiky", "mohawk"), ("curly", "pigtails")
+CUT = {**{s: "b0" for s in ("cap", "backcap", "viking", "beanie", "army", "tricorne", "fire_helmet", "pith")}, "police": "b2",
+       **{s: "b4" for s in ("chef", "fedora", "cowboy")}, "witch": "b6"}
 problems, notes = [], []
 cache = {}
 
@@ -50,9 +52,22 @@ def same_colour(p, q):
 
 
 def hair_mesh(hair, hat):
+    """Cosmetics.hairMesh."""
     if hair == "curly" and hat == "tiara":
         return "hair_curly_tiara"
-    return f"hair_{hair}_{'full' if hat is None or hat in OVER_HAIR else CUT.get(hat, 'top')}"
+    if hat == "headphones" and hair in PHONES_HAIR:
+        return f"hair_{hair}_phones"
+    whole = hat is None or hat in OVER_HAIR or hair == "afro" and hat in AFRO_ON_TOP
+    return f"hair_{hair}_{'full' if whole else CUT.get(hat, 'top')}"
+
+
+def hat_mesh(hat, hair):
+    """Cosmetics.hatMesh."""
+    if hair == "afro" and (hat in OVER_HAIR or hat in AFRO_ON_TOP):
+        return f"hat_{hat}_afro"
+    if hat == "halo" and hair in TALL_HAIR:
+        return "hat_halo_tall"
+    return "hat_" + hat
 
 
 def overlap_2d(p, q, eps):
@@ -124,10 +139,11 @@ def main():
     hides = {r["shape"] for r in rows if r["slot"] in ("hat", "face") and r.get("hideHair")}
     want = ["battle_bus", "reboot_van"]
     for h in shapes["hat"]:
-        want += ["hat_" + h] + (["hat_" + h + "_afro"] if h in OVER_HAIR else [])
+        want += ["hat_" + h] + (["hat_" + h + "_afro"] if h in OVER_HAIR or h in AFRO_ON_TOP else [])
     for r in shapes["hair"]:
         want += [f"hair_{r}_{c}" for c in ("full", "b0", "b2", "b4", "b6", "top")]
-    want += ["hair_curly_tiara"] + ["face_" + f for f in shapes["face"]] + ["shoes_" + s for s in shapes["shoes"]]
+    want += ["hair_curly_tiara", "hat_halo_tall"] + [f"hair_{r}_phones" for r in PHONES_HAIR]
+    want += ["face_" + f for f in shapes["face"]] + ["shoes_" + s for s in shapes["shoes"]]
     want += [r["id"] for r in rows if r["slot"] == "back"]
     for sh in sorted({r["shape"] for r in rows if r["slot"] == "shirt"}):
         want += [f"shirt_{sh}_{p}" for p in ("torso", "rarm", "larm")]
@@ -155,7 +171,7 @@ def main():
     for h in shapes["hat"]:
         for r in shapes["hair"]:
             if h not in hides:
-                combos.append(("hat_" + h + ("_afro" if r == "afro" and h in OVER_HAIR else ""), hair_mesh(r, h)))
+                combos.append((hat_mesh(h, r), hair_mesh(r, h)))
         for f in shapes["face"]:
             combos.append(("hat_" + h, "face_" + f))
     for r in shapes["hair"]:

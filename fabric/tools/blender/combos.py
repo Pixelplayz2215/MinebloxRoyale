@@ -7,6 +7,7 @@ looks is checked by eye from these.)
 
 blender --background --factory-startup --python combos.py -- <out dir> [hat ids...]
     <out dir>/<hat>/<hair>_<View>.png, and <out dir>/<hat>/models.json: the hat's and haircut's models for each.
+    BR_HAIRS=id,id...: only those haircuts; BR_RES: the pictures' size (400).
 """
 import json
 import os
@@ -20,7 +21,7 @@ import locker  # noqa: E402
 args = sys.argv[sys.argv.index("--") + 1:]
 OUT, ONLY = args[0], set(args[1:])
 HATS = [r for r in locker.ROWS if r["slot"] == "hat" and (not ONLY or r["id"] in ONLY)]
-HAIRS = [r for r in locker.ROWS if r["slot"] == "hair"]
+HAIRS = [r for r in locker.ROWS if r["slot"] == "hair" and (not os.environ.get("BR_HAIRS") or r["id"] in os.environ["BR_HAIRS"].split(","))]
 VIEWS = {"Front": 180, "Left": 270, "Back": 0, "Right": 90}
 SIZE = int(os.environ.get("BR_RES", "400"))
 

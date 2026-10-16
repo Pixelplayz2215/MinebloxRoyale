@@ -13,7 +13,7 @@ import bpy
 from mathutils import Vector
 
 import brlib
-from cosmetics import OVER_HAIR, hair_cap, hat_edge
+from cosmetics import OVER_HAIR, PHONES_HAIR, TOP_CUT, hair_cap, hat_edge
 from shapes import C, _mesh, material, shade
 
 
@@ -76,6 +76,7 @@ class Hair:
     def __init__(self, h, seed, color="a"):
         self.h, self.sc, self.rnd, self.color = h, Scalp(h), random.Random(seed), color
         self.parts = []
+        self.count = 0
 
     def shade(self):
         return (self.color, 0.86 + 0.2 * self.rnd.random()) if self.color in ("a", "b") else self.color
@@ -117,6 +118,11 @@ class Hair:
         """A lock lying on the head from (th0, lat0) to (th1, lat1); flick lifts its tip off; hang: (dy, out) to carry
         on straight down past its end (long hair)."""
         pts, ups = [], []
+        # (2.0.0-test6: each lock a hair's breadth higher or lower than the last, in nine steps of 0.0014: locks
+        # starting side by side lay with their flat sides on one surface and flickered, two shades taking turns; the
+        # locks lifted by other amounts over them are set between two steps)
+        self.count += 1
+        lift += 0.0014 * (self.count % 9)
         for i in range(steps):
             f = i / (steps - 1)
             th = th0 + (th1 - th0) * f
@@ -160,12 +166,13 @@ def cover(hr, n, front_y, side_y, back_y, width=0.12, thick=0.045, swirl=0.35, f
         hr.surface_lock(th, 89.5, th + 1.1, 74, width * 0.9, thick, lift=lift + 0.012, bulge=0.02)
 
 
-def base(hr, front_y, back_y, grow=1.035, y1=None, shade=0.62, tuft=True):
+def base(hr, front_y, back_y, grow=1.035, y1=None, shade=0.62, tuft=True, rc=0.4):
     """The layer under the locks (darker: shadow between them), so no scalp shows between them, and a tuft over the
-    crown where the locks start."""
+    crown where the locks start. rc: how round its top edge is (the head's own is 0.22 round: rounder cuts in across
+    the head's corner, under the locks)."""
     s = __import__("shapes").S()
     y1 = y1 if y1 is not None else hr.h.top + 0.04
-    hair_cap(s, hr.h, grow, front_y, back_y, y1, 0.4, (hr.color, shade))
+    hair_cap(s, hr.h, grow, front_y, back_y, y1, rc, (hr.color, shade))
     if tuft:
         s.at(hr.h.cx, y1 + 0.035, hr.h.cz).color((hr.color, 0.9)).ellipsoid(0.2, 0.05, 0.2)
 
@@ -209,11 +216,13 @@ def tail(hr, knot, path, radii, locks=12, spread=1.0):
         hr.lock(pts, ups, 0.075, 0.04, n=16, taper=2.2)
 
 
-def sleek(hr, shape, h, tie):
+def sleek(hr, shape, h, tie, phones=False):
     """Hair pulled back smooth to a tie (ponytail), a bun, or parted down the middle to two ties (pigtails): a smooth
-    base in the hair's own colour and fine combed strands over it, all running to the tie(s)."""
+    base in the hair's own colour and fine combed strands over it, all running to the tie(s). phones: worn with
+    headphones, the pigtails tied further back, behind the ear cups (they came out through them)."""
     top, cy = h.top, h.cy
-    base(hr, top - 0.13, cy - 0.3, grow=1.04, shade=0.93, tuft=False)
+    # (2.0.0-test6: 1.03 out, was 1.04, as far out as the beanie's cuff inside and the domino mask: they flickered)
+    base(hr, top - 0.13, cy - 0.3, grow=1.03, shade=0.93, tuft=False)
     s = __import__("shapes").S()
 
     def hairline(th):
@@ -242,7 +251,10 @@ def sleek(hr, shape, h, tie):
                 hr.lock(pts, ups, 0.08, 0.05, n=44, ends="both")
             s.at(knot.x, knot.y - 0.04, knot.z).color(tie).torus(0.2, 0.03, 0, 360)
     else:  # pigtails
-        knots = {side: Vector((h.cx + side * 1.1 * h.hw, cy + 0.14, h.cz + 0.12)) for side in (-1, 1)}
+        if phones:  # (on the head's round side, 0.67 out, behind the cups: Cosmetics' cups reach 0.33 back)
+            knots = {side: Vector((h.cx + side * 0.45, cy + 0.14, h.cz + 0.5)) for side in (-1, 1)}
+        else:
+            knots = {side: Vector((h.cx + side * 1.1 * h.hw, cy + 0.14, h.cz + 0.12)) for side in (-1, 1)}
         for i in range(84):
             th = TAU * i / 84
             if math.sin(th) < -0.35:  # (over the forehead the hair comes from the parting instead: no strands across the temples)
@@ -263,8 +275,9 @@ def sleek(hr, shape, h, tie):
         s.at(0, 0, 0).color((hr.color, 0.6)).tube(pts, [0.012] * len(pts), caps=False, sides=6)
 
 
-def build(shape, h, color="a", tie="b", tiara=False):
-    """A haircut, whole (no hat; tiara: worn with one, which sits over the front of the hair)."""
+def build(shape, h, color="a", tie="b", tiara=False, under=False, phones=False):
+    """A haircut, whole (no hat; tiara: worn with one, which sits over the front of the hair; under: to be cut under a
+    hat; phones: worn with headphones, clear of the ear cups and the band)."""
     hr = Hair(h, seed=shape)
     top, cy, brow = h.top, h.cy, h.brow
     if shape == "buzz":
@@ -275,7 +288,7 @@ def build(shape, h, color="a", tie="b", tiara=False):
             hr.surface_lock(th + 0.2, 84, th, lat1 + 4, 0.07, 0.014, lift=0.012, bulge=0.004)
         for i in range(14):  # the crown, where they all start
             th = TAU * i / 14
-            hr.surface_lock(th, 89.8, th + 0.9, 74, 0.07, 0.014, lift=0.016, bulge=0.004)
+            hr.surface_lock(th, 89.8, th + 0.9, 74, 0.07, 0.014, lift=0.0155, bulge=0.004)  # (between two of surface_lock's steps)
         return hr
     if shape == "afro":
         base(hr, top - 0.13, cy - 0.32)
@@ -293,10 +306,12 @@ def build(shape, h, color="a", tie="b", tiara=False):
             s.at(x, y, z).color(hr.shade()).scale(r, r, r).sphere(-90, 90, 8)
         return hr
     if shape in ("ponytail", "bun", "pigtails"):
-        sleek(hr, shape, h, tie)
+        sleek(hr, shape, h, tie, phones)
         return hr
     if shape == "mohawk":  # (shaved sides: light, low on top, no crown tuft under the crest)
-        base(hr, top - 0.13, cy - 0.32, y1=top + 0.02, shade=0.8, tuft=False)
+        # (2.0.0-test6: its top edge as round as the head's: rounder, the head's corner showed through behind the
+        # crest, where no short locks lie)
+        base(hr, top - 0.13, cy - 0.32, y1=top + 0.02, shade=0.8, tuft=False, rc=0.24)
     else:
         base(hr, top - 0.13, cy - 0.32)
     if shape == "short":
@@ -325,13 +340,15 @@ def build(shape, h, color="a", tie="b", tiara=False):
     elif shape == "mohawk":
         for i in range(40):  # the shaved sides: very short locks
             th = TAU * i / 40
-            if abs(math.cos(th)) < 0.25:
+            if abs(math.cos(th)) < 0.25 and not under:  # (under the crest; under a hat, which has none, all round)
                 continue
             hr.surface_lock(th, 86, th, hr.line_lat(th, top - 0.1, cy + 0.02, cy - 0.3), 0.08, 0.015, lift=0.012, bulge=0.004)
         for i in range(14):  # the crown, where the short locks start, under the crest (no bare top)
             th = TAU * i / 14
-            hr.surface_lock(th, 89.8, th + 0.9, 76, 0.08, 0.015, lift=0.016, bulge=0.004)
-        for i in range(15):  # the crest, front to back along the middle of the head
+            hr.surface_lock(th, 89.8, th + 0.9, 76, 0.08, 0.015, lift=0.0155, bulge=0.004)  # (between two of surface_lock's steps)
+        for i in range(0 if under else 15):  # the crest, front to back along the middle of the head
+            # (2.0.0-test6: none under a hat: it's all under the hat but its ends, low at the front and the back, which
+            # came out through a crown's band)
             f = i / 14
             z = h.cz + (-0.92 + 1.84 * f) * h.hd
             rz = min(0.999, abs(z - h.cz) / hr.sc.d)
@@ -373,7 +390,10 @@ def build(shape, h, color="a", tie="b", tiara=False):
             lat = hr.rnd.uniform(48, 86)
             if math.sin(th) < -0.6 and lat < 62 or tiara and math.sin(th) < -0.3:
                 continue
-            p, n = hr.on(th, lat, 0.05)
+            # (phones: none where the headphones' band goes over, across the top from ear to ear)
+            if phones and abs(math.sin(th)) * math.cos(math.radians(lat)) ** 0.5 < 0.3:
+                continue
+            p, n = hr.on(th, lat, 0.05 + 0.0012 * (i % 13))  # (2.0.0-test6: not all level: two undersides flickered)
             side = n.cross(Vector((0, 1, 0)) if abs(n.y) < 0.9 else Vector((1, 0, 0))).normalized()
             fwd = n.cross(side).normalized()
             pts = [p + side * math.cos(TAU * j / 7) * 0.075 + fwd * math.sin(TAU * j / 7) * 0.075 + n * 0.012 * j for j in range(9)]
@@ -381,6 +401,8 @@ def build(shape, h, color="a", tie="b", tiara=False):
         for i in range(22):  # ringlets: corkscrews hanging all round but the face
             th = TAU * i / 22 + 0.07
             if math.sin(th) < -0.55:
+                continue
+            if phones and abs(math.cos(th)) > 0.8:  # (none by the ear cups: they went through them)
                 continue
             p, n = hr.on(th, hr.line_lat(th, top - 0.1, cy + 0.05, cy - 0.2), 0.06)
             radial = Vector((n.x, 0, n.z)).normalized()
@@ -412,15 +434,21 @@ def cut(y):
 def hair(shape, h, hat_shape=None):
     """The haircut for a hat with this edge (cosmetics.CUTS), as the game picks it (Cosmetics.hairMesh)."""
     under = hat_shape is not None and hat_shape not in OVER_HAIR
-    if not under and not (shape == "curly" and hat_shape == "tiara"):
-        build(shape, h)
-        return
     if shape == "curly" and hat_shape == "tiara":
         build(shape, h, tiara=True)  # (no curls over the front, where the tiara's band goes)
         return
+    if hat_shape == "headphones" and shape in PHONES_HAIR:
+        build(shape, h, phones=True)
+        return
+    if not under:
+        build(shape, h)
+        return
+    # Under a hat on the top of the head, cut a little under the top, inside its brim, band or foot (2.0.0-test6: it
+    # was cut level with the top, the top hat's brim's top: the ends showed on the brim); under the rest, just up into
+    # the hat past its edge.
     edge = hat_edge(hat_shape, h)
-    y = h.top if edge >= h.top - 0.1 else edge + 0.03
-    build(shape, h)
+    y = h.top - TOP_CUT if edge >= h.top - 0.1 else edge + 0.03
+    build(shape, h, under=True)
     cut(y)
     if shape == "bun":  # under a hat the bun sits low at the back
         s = __import__("shapes").S()

@@ -23,8 +23,10 @@ VIEWS = {"Front": 180, "Left": 270, "Back": 0, "Right": 90}
 # (creator: Locker Items v1.0.1 \ "New Hat", "New Pants", "New Back", "New Shoes", "New Shirt", "New Presets", "New Emotes"; hair beside them)
 FOLDER = {"hat": "New Hat", "hair": "New Hair", "back": "New Back", "shoes": "New Shoes", "shirt": "New Shirt", "pants": "New Pants", "face": "New Face"}
 OVER_HAIR = ("headphones", "halo", "bunny", "cat", "tiara")
-CUT = {**{s: "b0" for s in ("cap", "backcap", "viking", "beanie", "army", "tricorne")}, **{s: "b2" for s in ("police", "fire_helmet")},
-       **{s: "b4" for s in ("chef", "pith", "fedora", "cowboy")}, "witch": "b6"}
+AFRO_ON_TOP = ("tophat", "cone", "fedora", "party")
+TALL_HAIR, PHONES_HAIR = ("spiky", "mohawk"), ("curly", "pigtails")
+CUT = {**{s: "b0" for s in ("cap", "backcap", "viking", "beanie", "army", "tricorne", "fire_helmet", "pith")}, "police": "b2",
+       **{s: "b4" for s in ("chef", "fedora", "cowboy")}, "witch": "b6"}
 HEAD = (-0.6, 0.0, -0.6, 0.6, 1.2, 0.6)
 TORSO, LEG, ARM = (-1, -1, -0.5, 1, 1, 0.5), (-0.5, -2, -0.5, 0.5, 0, 0.5), (-0.5, -1.5, -0.5, 0.5, 0.5, 0.5)
 C = avatar.C
@@ -39,7 +41,19 @@ def hair_mesh(hair, hat):
     """Cosmetics.hairMesh: the haircut's model for the hat worn with it."""
     if hair == "curly" and hat == "tiara":
         return "hair_curly_tiara"
-    return f"hair_{hair}_{'full' if hat is None or hat in OVER_HAIR else CUT.get(hat, 'top')}"
+    if hat == "headphones" and hair in PHONES_HAIR:
+        return f"hair_{hair}_phones"
+    whole = hat is None or hat in OVER_HAIR or hair == "afro" and hat in AFRO_ON_TOP
+    return f"hair_{hair}_{'full' if whole else CUT.get(hat, 'top')}"
+
+
+def hat_mesh(hat, hair):
+    """Cosmetics.hatMesh: the hat's model for the haircut worn with it."""
+    if hair == "afro" and (hat in OVER_HAIR or hat in AFRO_ON_TOP):
+        return f"hat_{hat}_afro"
+    if hat == "halo" and hair in TALL_HAIR:
+        return "hat_halo_tall"
+    return "hat_" + hat
 
 
 def pieces(worn):
@@ -51,7 +65,7 @@ def pieces(worn):
     if hair:
         out.append((hair_mesh(hair["shape"], hat["shape"] if hat else None), "head", hair))
     if hat:
-        out.append(("hat_" + hat["shape"] + ("_afro" if hair and hair["shape"] == "afro" and hat["shape"] in OVER_HAIR else ""), "head", hat))
+        out.append((hat_mesh(hat["shape"], hair["shape"] if hair else None), "head", hat))
     if face:
         out.append(("face_" + face["shape"], "head", face))
     if back:

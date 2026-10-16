@@ -8,6 +8,7 @@ rivets, straps and lights on helmets.
 import math
 import random
 
+from cosmetics import KNIGHT, PARTY_TILT, party_cone
 from cosmetics import hat as base_hat
 from shapes import S, shade
 
@@ -118,7 +119,7 @@ def details(s, shape, h, a="a", b="b"):
     elif shape == "crown":
         base = top - 0.08
         s.at(cx, base + 0.18, cz).color(b).ellipsoid(0.9 * hw, 0.3, 0.9 * hd)  # the velvet cushion inside
-        s.at(0, 0, 0).color(PEARL).tube(ring_pts(cx, base + 0.005, cz, 1.07 * hw, 1.07 * hd, 48), [0.035] * 49, caps=False)
+        s.at(0, 0, 0).color(PEARL).tube(ring_pts(cx, base + 0.005, cz, 1.075 * hw, 1.075 * hd, 48), [0.035] * 49, caps=False)  # (2.0.0-test6: 1.075 out, was 1.07: a curl under it lay on it)
         for k in range(18):  # pearls round the top of the band
             t = TAU * k / 18
             s.at(cx + math.cos(t) * 1.06 * hw, base + 0.3, cz + math.sin(t) * 1.06 * hd).color(PEARL).blob(0.026, 0.026, 0.026)
@@ -131,9 +132,10 @@ def details(s, shape, h, a="a", b="b"):
     elif shape == "tiara":
         y, r, dip = top - 0.18, 1.07, 0.22
         for k in range(9):
-            ang = math.radians(198 + 144 * k / 8)
+            ang = math.radians(202 + 136 * k / 8)
             c2 = math.cos(ang) ** 2
-            s.at(cx + math.cos(ang) * (r * hw + 0.03), y - dip * c2 + 0.005, cz + math.sin(ang) * (r * hd + 0.03)).color(PEARL if k % 2 else b).blob(0.022, 0.022, 0.022)
+            rr = r + 0.07 * c2  # (the band's own way out over the hair: cosmetics.hat)
+            s.at(cx + math.cos(ang) * (rr * hw + 0.03), y - dip * c2 + 0.005, cz + math.sin(ang) * (rr * hd + 0.03)).color(PEARL if k % 2 else b).blob(0.022, 0.022, 0.022)
     elif shape == "cone":
         y0 = top - 0.1
         s.at(cx, y0, cz).scale(hw, 1, hw).color(b).lathe([0.88, 0.7], [0.16, 0.38], 32)  # a second reflective band
@@ -207,21 +209,21 @@ def details(s, shape, h, a="a", b="b"):
         s.at(cx, top + 1.26, cz + 0.56).color(b).ellipsoid(0.05, 0.05, 0.05)
     elif shape == "party":
         rnd = random.Random("party")
-        x0, y0, tilt = cx + 0.08, top - 0.08, math.radians(-10)
-        rb = 0.55 * hw
+        x0, y0, rb, ht = party_cone(h)
+        tilt = math.radians(PARTY_TILT)
 
         def on_cone(f, t, out=0.004):  # a point on the cone's side (height share f, angle t), and its outward normal
-            lx, ly, lz = math.cos(t) * (rb * (1 - f) + out), f, math.sin(t) * (rb * (1 - f) + out)
-            nx, ny, nz = math.cos(t), rb, math.sin(t)
+            lx, ly, lz = math.cos(t) * (rb * (1 - f) + out), f * ht, math.sin(t) * (rb * (1 - f) + out)
+            nx, ny, nz = math.cos(t), rb / ht, math.sin(t)
             rot = lambda x, y: (x * math.cos(tilt) - y * math.sin(tilt), x * math.sin(tilt) + y * math.cos(tilt))
             px, py = rot(lx, ly)
             qx, qy = rot(nx, ny)
             return (x0 + px, y0 + py, cz + lz), (qx, qy, nz)
-        for k in range(16):  # polka dots on the cone
-            p, n = on_cone(rnd.uniform(0.12, 0.72), TAU * rnd.random())
-            s.at(*p).align(*n).color(b).lens(0.035, 0.035, 0.008)
-        tip, _ = on_cone(1.02, 0, 0)
-        fluff(s, *tip, 0.11, b, "party", n=16)
+        for k in range(22):  # polka dots on the cone
+            p, n = on_cone(rnd.uniform(0.1, 0.72), TAU * rnd.random())
+            s.at(*p).align(*n).color(b).lens(0.045, 0.045, 0.008)
+        tip, _ = on_cone(1.0 + 0.02 / ht, 0, 0)
+        fluff(s, *tip, 0.13, b, "party", n=16)
     elif shape == "chef":
         for k in range(24):  # pleats round the band
             t = TAU * k / 24
@@ -249,9 +251,9 @@ def details(s, shape, h, a="a", b="b"):
         s.at(cx + 0.36, cy + 1.3 * h.hh + 0.33, cz + 0.25).color(0xFF5A5A, glow=True).blob(0.04, 0.04, 0.04)
     elif shape in ("knight", "fire_helmet", "army", "pith", "robot_helmet"):
         if shape == "knight":
-            rivets(s, [(cx + math.cos(t) * 1.11 * hw, h.eye + 0.17, cz + math.sin(t) * 1.11 * hd) for t in [TAU * k / 18 for k in range(18)]], shade(a, 1.2))
+            rivets(s, [(cx + math.cos(t) * (KNIGHT + 0.01) * hw, h.eye + 0.17, cz + math.sin(t) * (KNIGHT + 0.01) * hd) for t in [TAU * k / 18 for k in range(18)]], shade(a, 1.2))
             for k in range(6):
-                s.at(cx + 0.11 * (k - 2.5) * hw, h.cy - 0.38, cz - hd * 1.1).color(0x111114).ellipsoid(0.025, 0.025, 0.02)
+                s.at(cx + 0.11 * (k - 2.5) * hw, h.cy - 0.38, cz - hd * KNIGHT).color(0x111114).ellipsoid(0.025, 0.025, 0.02)
         elif shape == "fire_helmet":
             rivets(s, [(cx + math.cos(t) * 1.1 * hw, brow + 0.13, cz + math.sin(t) * 1.1 * hd) for t in [TAU * k / 14 for k in range(14)]], shade(a, 1.2))
             s.at(cx, brow + 0.25, cz - hd * 1.13).rotX(90).color(GOLD).lens(0.08, 0.08, 0.015)
