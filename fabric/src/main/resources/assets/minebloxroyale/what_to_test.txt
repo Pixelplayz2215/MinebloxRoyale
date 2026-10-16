@@ -35,4 +35,4 @@ Sounds (new): each gun its own shot, the storm warning, explosions, battle music
 HUD (new look): smooth panels, Blender icons and lettering, Fortnite-style hotbar in a match; check it's all readable
 The parked Battle Bus in the hub is solid (you can't walk through it)
 With a friend: host a game, and your friend joins with Melty's Join or your room code (/rc)
-Hub: the main board shows v2.0.0 - TEST 2 next to MINEBLOX ROYALE
+Hub: the main board shows v2.0.0 - TEST 3 next to MINEBLOX ROYALE

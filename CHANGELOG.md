@@ -70,6 +70,7 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 ### Fixes
 - Opening the creative inventory crashed the game (2.0.0-test1).
 - The log notes for Minecraft's sign-in, Realms and e4mc from Melty's 1.0.0.3, so Melty doesn't mistake them for errors loading the mod.
+- From Melty's 1.0.0.4: old islands are removed from the world folder when it opens (they used to fill the disk, about 100 MB a match), and a minimized window, Windows' performance counters being off and Windows blocking the bundled ffmpeg are each one plain log line instead of a long error.
 
 ## v1.0.1 (in testing: 1.0.1-test6, not released yet)
 
@@ -118,6 +119,7 @@ A graphics update: almost everything you see in a match was remade in Blender.
 - **Knocked down:** a new crawl along the ground: one arm reaches ahead while the other pulls back, the legs push, the head looks up.
 
 ### Gameplay
+- **Your team can still bring you back:** in Duos, Trios and Squads the match no longer ends the moment you (the only real player) are eliminated. While your reboot card is out and a teammate still stands, you watch your team and the match goes on; it ends when your team is out or the card runs out.
 - **Cars:** hitting a parked car with the pickaxe works again (it wouldn't start breaking).
 - **Reboot vans:** always placed out in the open, never inside or under a tree.
 - **Fairer bots at the start:**
