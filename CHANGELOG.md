@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.0.0 (in testing: 2.0.0-test5, not released yet)
+## v2.0.0 (in testing: 2.0.0-test6, not released yet)
 
 A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and a new look and sound.
 
@@ -20,7 +20,8 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 ### Emotes
 - **18 emotes redone after testing:** Wave and Double Wave (the arm up and out, waving from the elbow, no longer stubby), Salute (fingertips to the brow), Clap (the hands meet), Disco Point (from high overhead right down to the other hip), Drum Solo (at a drum kit), Air Guitar (the strumming arm across the body), Karate Chop (a jumping chop that lands in a wide stance), Swim (a real front crawl, no windmill), Flex (just flexing), Raise the Roof (pumping straight up with little jumps), Hula (hands on hips, the hips circling all the way round), Smooth Slide (one foot steps out, the other drags in, and the body moves with them), Wave Ripple (the arm wave), Griddy (slower, hands to the eyes), and Orange Justice, Boneless and Fresh (the Carlton) made like Fortnite's.
 - **Emotes with props, made in Blender:** Drum Solo plays a drum kit with sticks; Rock Out plays a guitar (now a strumming rock emote, with a big overhead strum); Tap Dance has a top hat and a cane; Lasso Twirl has a rope; Boxing has gloves; Cheer has pom-poms; Breakdance Spin has a cardboard mat and a boombox; Hero Fly has a cape; Electro Shuffle has glow sticks. They show in matches, in the hub and in the Locker preview.
-- **Emote music:** every emote has its own music, made from scratch in a style that suits it (disco, rock, electro, hip-hop, chiptune, island, swing, a march and more), in step with the dance. While you dance, your own game music goes quiet and comes back when you stop. Players near you hear your emote music coming from you, and their own music keeps playing. The Locker preview plays it too.
+- **More emote fixes:** Wave and Double Wave swing the forearm side to side from the elbow (between their keyframes they used to swing it front to back). Clap claps smoothly, together and apart at the same pace. Boxing's gloves now cover the whole hand. Breakdance Spin rests the head, and any hat or hair on it, on top of its mat. The Lasso Twirl's loop spins round as it's twirled.
+- **Emote music:** every emote has its own music, made from scratch to suit it: a whistled tune for the Wave, a robot groove for the Robot, a stomp-and-clap for the Clap, surf rock for the Swim, a cowboy banjo for the Lasso Twirl, a goofy kazoo for Boneless and Take the L, and more. It's in step with the dance, and the dance's moves make sounds: a clap on each Clap, the Drum Solo's stick strikes on the kit, Rock Out's strums on the guitar, the Tap Dance's taps, a whoosh with every turn of the lasso. While you dance, your own game music goes quiet and comes back when you stop. Players near you hear your emote music coming from you, and their own music keeps playing. The Locker preview plays it too.
 
 ### Gliders and contrails
 - **Gliders now animate:** they pop open out of your back, sway as they ride the air, bank into turns, and fold away when you land. The animation is keyframed in Blender.
@@ -75,6 +76,8 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 
 - **A new Victory Royale screen.** Solo: a slanted gold #1 VICTORY ROYALE banner over the game, with light rays and confetti while the camera circles you, then a results card: eliminations, total damage, time survived and placement, the gold you earned counting up, and how close you are to the next Shop item. Duos, Trios and Squads: movie bars and your whole team on a stage with name plates, then the results with a row for each teammate (eliminations, damage, revives, reboots) and the team's totals. With a victory fanfare of our own.
 - **Winners stand still:** after a Victory Royale you can't move, shoot, build or use items, but you can emote as much as you like, and bot teammates emote too.
+- **The team's podium:** in Duos, Trios and Squads the winners stand on a stepped podium with gold trim, each on a pad of their own colour, with lights and a backdrop. The screen stays black for a moment while the podium loads, then the camera sweeps across the team. When the results card comes up, it sits on the right with the team still in view.
+- **The results card fits:** it's laid out from what's on it, so the emote row and the buttons never overlap, and it closes by itself when you're back in the hub.
 - **Bots move like players:** they walk and sprint at a player's speeds, sprint-jump across open ground, crouch now and then, turn their aim smoothly, look around, and climb out of water.
 
 ### Look and sound
@@ -89,6 +92,7 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 - **Heal and shield sounds:** a bandage rustling while you heal and a fizzing gulp while you drink a shield (instead of Minecraft's eating and drinking), then a warm chime as your health goes up or a bright shimmer as your shield charges. You hear bots and other players heal too.
 
 - **Chat sits above the health and shield panel** instead of over it.
+- **A cleaner Locker:** it's drawn in the HUD's smooth style. The tabs are a clean list with the open one lit. Items are rounded tiles with their names in full, never cut off. What you have on (or picked for your wheel) gets a gold edge, locked items are dimmed with a lock, and the Shop shows prices with the coin. The match HUD stays out of the way while it's open, and the emote wheel (B) matches.
 - **The Soldier preset redone:** a real woodland camo with big patches in four colours, the same size on the shirt, its sleeves, the pants and the helmet, and a plain webbed army pack.
 
 ### Fixes

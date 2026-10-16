@@ -1,3 +1,11 @@
+Test 6 - Emotes: Wave and Double Wave swing side to side; Clap is smooth; the Lasso's loop spins; Boxing gloves cover the hands
+Test 6 - Breakdance Spin: the head, and any hat or hair on it, rests on the mat (try a tall hat, and no hat)
+Test 6 - Emote music: each one suits its emote, with sounds on the moves (claps, drum hits, strums, taps, whooshes)
+Test 6 - The Locker in the new smooth style: full names, a gold edge on what you have on, locks, prices; no HUD over it
+Test 6 - The emote wheel (B) in the same style
+Test 6 - The results card: nothing overlaps (emote row, buttons); it closes by itself when you're back in the hub
+Test 6 - A team Victory Royale: black while the podium loads, your team on a podium, then the card on the right with them in view
+Test 6 - Dev only: /br win ends the match as a win for your team (to check the Victory screens quickly)
 Test 5 - Victory Royale, Solo: a gold banner over the game, then the results card (total damage, gold counting up, Hub/Spectate)
 Test 5 - Victory Royale, teams: your team on the stage, then results with a row per teammate and the team's totals
 Test 5 - After winning you can't move, shoot or build, but your emote key and wheel work; bot teammates emote; a fanfare plays
@@ -57,4 +65,4 @@ Sounds (new): each gun its own shot, the storm warning, explosions, battle music
 HUD (new look): smooth panels, Blender icons and lettering, Fortnite-style hotbar in a match; check it's all readable
 The parked Battle Bus in the hub is solid (you can't walk through it)
 With a friend: host a game, and your friend joins with Melty's Join or your room code (/rc)
-Hub: the main board shows v2.0.0 - TEST 5 next to MINEBLOX ROYALE
+Hub: the main board shows v2.0.0 - TEST 6 next to MINEBLOX ROYALE
