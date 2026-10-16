@@ -6,6 +6,9 @@ import gg.minebloxroyale.MinebloxRoyale;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.net.DatagramSocket;
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,6 +16,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ConnectScreen;
 import net.minecraft.client.gui.screens.DisconnectedScreen;
@@ -37,7 +41,8 @@ import org.jspecify.annotations.Nullable;
 /**
  * Play opens straight into the Mineblox Royale world (created the first time), or joins a friend when Melty put their
  * address in minebloxroyale/melty.properties (join=...). A host's world opens to friends at once; e4mc gives it a
- * public address, which goes to minebloxroyale/melty.log as "Melty join address: <address>".
+ * public address, which goes to minebloxroyale/melty.log as "Melty join address: <address>". (1.0.1.2) Without one,
+ * this PC's own address and port go there instead, for Melty's relay (shareThroughMelty).
  */
 public final class AutoWorld {
 	public static final String WORLD = "Mineblox Royale";
@@ -92,11 +97,24 @@ public final class AutoWorld {
 		MinebloxRoyale.LOG.info(line);
 	}
 
+	/** melty.log from scratch, with this one line (no join address in it). */
+	private static void freshMeltyLog(String line) {
+		try {
+			Files.createDirectories(dir());
+			Files.writeString(dir().resolve("melty.log"), line + System.lineSeparator(), StandardCharsets.UTF_8);
+		} catch (IOException e) {
+			MinebloxRoyale.LOG.info("BR: couldn't write melty.log ({})", e.getMessage());
+		}
+		MinebloxRoyale.LOG.info(line);
+	}
+
 	/**
 	 * (1.0.1.1) e4mc couldn't open this world to friends (LogWatch: no internet yet, or a network that blocks its relay).
 	 * The game plays on; melty.log says why, and e4mc is asked to try again after 20 s, then 40, 80, 160, and every 5
 	 * minutes after that, while the world is open. Players whose relay failed at start used to stay unreachable all
 	 * session (friends sent by Melty: "Waiting for the host's game to open").
+	 * (1.0.1.2) Meanwhile friends come in through Melty (shareThroughMelty): on a network that blocks e4mc's relay for
+	 * good, retrying alone never got them in.
 	 */
 	static void onE4mcFailed(String why, boolean retry) {
 		Minecraft mc = Minecraft.getInstance();
@@ -108,9 +126,41 @@ public final class AutoWorld {
 			lastDomain = null; // a new address comes with the next session
 			long wait = Math.min(300, 20L << Math.min(relayTries, 4));
 			relayRetryAt = retry ? System.currentTimeMillis() + wait * 1000 : 0;
-			meltyLog("Friends can't join yet: the e4mc relay couldn't be reached (" + why + "). Playing works as normal"
-				+ (retry ? "; trying again in " + wait + " s." : "."));
+			meltyLog("The e4mc relay couldn't be reached (" + why + "). Playing works as normal, and friends join through Melty meanwhile"
+				+ (retry ? "; asking e4mc again in " + wait + " s." : "."));
+			shareThroughMelty(mc, "e4mc's relay couldn't be reached");
 		});
+	}
+
+	/**
+	 * (1.0.1.2) Hosting without an e4mc address (its relay unreachable, or no answer LAN_WAIT_MS after the world opened):
+	 * melty.log gets this PC's own address and the port the world is open on. Melty carries friends to that port over
+	 * its own relay (which also gets through networks that only let TCP out), and friends on the same home network
+	 * connect straight to it. Joiners Melty sent used to wait for an e4mc address that never came ("Waiting for the
+	 * host's game to open", 2026-10-16). Once e4mc gives an address, that line follows and is the one Melty uses.
+	 */
+	private static void shareThroughMelty(Minecraft mc, String why) {
+		MinecraftServer server = mc.getSingleplayerServer();
+		if (server == null || !server.isPublished() || lanPort == 0 || lastDomain != null || lanShared != null) return;
+		lanAt = 0;
+		lanShared = lanAddress(lanPort);
+		MinebloxRoyale.LOG.info("BR: friends join through Melty at this PC's address ({})", why);
+		meltyLog("Melty join address: " + lanShared);
+	}
+
+	/**
+	 * This PC's address on its own network (the one its internet goes out through), with the port; 127.0.0.1 when it
+	 * has none (Melty's relay reaches the world there too). Connecting a UDP socket only picks the route: nothing is sent.
+	 */
+	static String lanAddress(int port) {
+		String ip = "127.0.0.1";
+		try (DatagramSocket s = new DatagramSocket()) {
+			s.connect(InetAddress.getByAddress(new byte[] { (byte) 192, 0, 2, 1 }), 9); // TEST-NET-1: any outside address
+			InetAddress local = s.getLocalAddress();
+			if (local instanceof Inet4Address && !local.isAnyLocalAddress() && !local.isLoopbackAddress()) ip = local.getHostAddress();
+		} catch (IOException | RuntimeException e) { // no network at all
+		}
+		return ip + ":" + port;
 	}
 
 	/** Asks e4mc for a new relay session, as its own "/e4mc restart" does. Server's world open to friends only. */
@@ -150,6 +200,7 @@ public final class AutoWorld {
 			relayRetryAt = 0;
 			retryRelay(mc);
 		}
+		if (lanAt != 0 && System.currentTimeMillis() >= lanAt) shareThroughMelty(mc, "no e4mc address " + LAN_WAIT_MS / 1000 + " s after the world opened");
 		// Back to your own world after leaving (or failing to reach) a friend's room; a "disconnected" message stays a
 		// moment first.
 		if (homeAt != 0) {
@@ -165,13 +216,16 @@ public final class AutoWorld {
 			} else return;
 		}
 		if (mc.gui.screen() instanceof DisconnectedScreen d && mc.level == null && attempted) {
-			// Joining a friend failed: try again a few times, 5 s apart, then stay on the message so it can be read
-			// (a room joined by code goes back to your own world instead).
+			// Joining a friend failed: try again a few times, 5 s apart, then back to your own world once the message has
+			// been up a moment. (1.0.1.2) Melty's join link too, which used to leave the player on the message for good;
+			// the chat says what happened once they're in their own world.
 			if (joining != null && failedJoins >= MAX_JOIN_TRIES) {
-				if (roomTarget != null) {
-					roomTarget = null;
-					homeAt = System.currentTimeMillis() + 4000;
+				if (roomTarget == null) {
+					homeOnly = true;
+					missedFriend = true;
 				}
+				roomTarget = null;
+				homeAt = System.currentTimeMillis() + 6000;
 				return;
 			}
 			if (retryAt == 0) {
@@ -267,8 +321,20 @@ public final class AutoWorld {
 		return true;
 	}
 
-	/** Left a world: leaving a friend's room (or being dropped from it) goes back to your own world. */
+	/**
+	 * Left a world: leaving a friend's room (or being dropped from it) goes back to your own world. (1.0.1.2) Leaving
+	 * your own world (back to the title screen, or into a friend's room by code) closes it to friends, and its e4mc
+	 * address goes with it: melty.log starts again without one, so Melty stops sending friends to it. Opening a world
+	 * again writes its new address.
+	 */
 	public static void onDisconnect() {
+		if (hosting) {
+			hosting = false;
+			lastDomain = lanShared = null;
+			lanPort = 0;
+			lanAt = relayRetryAt = 0;
+			freshMeltyLog("Mineblox Royale: the world closed; friends can join once it's open again");
+		}
 		if (leavingForRoom) {
 			leavingForRoom = false;
 			return;
@@ -294,7 +360,15 @@ public final class AutoWorld {
 			}
 			return;
 		}
-		lastDomain = null; // hosting again: e4mc gives a new address
+		if (missedFriend) {
+			missedFriend = false;
+			mc.execute(() -> {
+				if (mc.player != null) mc.player.sendSystemMessage(Component.literal("Couldn't get into your friend's game, so you're in your own world. "
+					+ "To try again, type /rc and their room code.").withStyle(ChatFormatting.YELLOW));
+			});
+		}
+		hosting = true;
+		lastDomain = lanShared = null; // hosting again: e4mc gives a new address
 		relayTries = 0;
 		relayRetryAt = 0;
 		if (server.isPublished()) return;
@@ -304,7 +378,12 @@ public final class AutoWorld {
 			int port = portEnv != null && !portEnv.isBlank() ? Integer.parseInt(portEnv.trim()) : HttpUtil.getAvailablePort();
 			boolean ok = server.publishServer(MinecraftServer.MultiplayerScope.LAN, false, port);
 			MinebloxRoyale.LOG.info("BR: world open to friends on port {} ({})", port, ok ? "ok" : "failed");
-			if (ok && System.getenv("MINEBLOXROYALE_LAN_OFFLINE") != null) meltyLog("Melty join address: 127.0.0.1:" + port);
+			if (!ok) return;
+			lanPort = port;
+			if (System.getenv("MINEBLOXROYALE_LAN_OFFLINE") != null) {
+				lanShared = "127.0.0.1:" + port;
+				meltyLog("Melty join address: " + lanShared);
+			} else if (lastDomain == null) lanAt = System.currentTimeMillis() + LAN_WAIT_MS;
 		});
 	}
 
@@ -314,6 +393,17 @@ public final class AutoWorld {
 	/** When to ask e4mc's relay again after it failed (0 = not waiting), and how many times it has been asked. */
 	private static long relayRetryAt;
 	private static int relayTries;
+	/**
+	 * (1.0.1.2) Our own world is open (hosting), the port it's open to friends on, when to share this PC's address with
+	 * Melty if e4mc hasn't given one by then (0 = not waiting), and the address shared (shareThroughMelty).
+	 */
+	private static boolean hosting;
+	private static int lanPort;
+	private static long lanAt;
+	private static @Nullable String lanShared;
+	private static final long LAN_WAIT_MS = 20_000;
+	/** (1.0.1.2) Melty's join link didn't get us in, so we went to our own world: say so in the chat there. */
+	private static boolean missedFriend;
 
 	/**
 	 * A system line in the chat box. e4mc announces this world's public address there ("Local game hosted on domain
@@ -343,6 +433,8 @@ public final class AutoWorld {
 	private static void hosted(String domain) {
 		if (domain.equals(lastDomain)) return;
 		lastDomain = domain;
+		lanShared = null; // e4mc's address from here on (if it fails again, this PC's address is written again)
+		lanAt = 0;
 		relayTries = 0;
 		relayRetryAt = 0;
 		meltyLog("Melty join address: " + lastDomain);

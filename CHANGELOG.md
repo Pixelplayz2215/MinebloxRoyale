@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.0.1.2 (2026-10-16)
+
+A fix for friends who pressed Join in Melty and were left on "Waiting for the host's game to open".
+
+- **Friends get in when e4mc can't:** the host's world used to wait for an address from e4mc's relay, and on networks that block it (or when it doesn't answer) that address never came, so friends sent by Melty waited for ever. Now, if e4mc can't be reached, or hasn't given an address 20 seconds after the world opens, the game gives Melty the host PC's own address and port: Melty brings friends in over its own connection, and friends on the same home network connect straight in. e4mc is still asked again in the background, and its address takes over once it comes.
+- **No more dead addresses:** leaving your own world (back to the title screen, or into a friend's room with `/rc`) now takes its address away from Melty, so friends aren't sent to a world that has closed. Opening the world again gives Melty its new address.
+- **A join that doesn't work ends in your own world:** when Melty's Join can't get you into your friend's game after three tries, you go to your own world after a few seconds (it used to stay on the error screen), and the chat says what happened and how to try again with `/rc`.
+
 ## v1.0.1.1 (2026-10-16)
 
 Fixes for the problems players' Melty reported on 1.0.1.
