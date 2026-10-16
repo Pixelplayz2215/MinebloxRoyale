@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.0.0 (in testing: 2.0.0-test6, not released yet)
+## v2.0.0 (in testing: 2.0.0-test6.1, not released yet)
 
 A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and a new look and sound.
 
@@ -92,7 +92,7 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 - **Heal and shield sounds:** a bandage rustling while you heal and a fizzing gulp while you drink a shield (instead of Minecraft's eating and drinking), then a warm chime as your health goes up or a bright shimmer as your shield charges. You hear bots and other players heal too.
 
 - **Chat sits above the health and shield panel** instead of over it.
-- **A cleaner Locker:** it's drawn in the HUD's smooth style. The tabs are a clean list with the open one lit. Items are rounded tiles with their names in full, never cut off. What you have on (or picked for your wheel) gets a gold edge, locked items are dimmed with a lock, and the Shop shows prices with the coin. The match HUD stays out of the way while it's open, and the emote wheel (B) matches.
+- **A cleaner Locker:** it's drawn in the HUD's smooth style. The tabs are a clean list with the open one lit. Items are rounded tiles with their names in full, never cut off. What you have on (or picked for your wheel) gets a gold edge, locked items are dimmed with a lock, and the Shop shows prices with the coin. The match HUD stays out of the way while it's open, and the emote wheel (B) matches. It grows with your window, up to about a third bigger, so the lettering is easy to read on a big screen.
 - **The Soldier preset redone:** a real woodland camo with big patches in four colours, the same size on the shirt, its sleeves, the pants and the helmet, and a plain webbed army pack.
 - **Every hat fits every haircut:** all 1,176 hat and haircut pairs were checked from four sides, and nothing pokes through any more. Hair no longer shows on top of the Fire Helmet's and Explorer Hat's brims or the Top Hat's. The Party Hat is wider, so there's no bald ring round it. With an afro, the Top Hat, Traffic Cone, Fedora and Party Hat sit on top of it. Headphones go over curly hair and pigtails (the pigtails are tied behind the ear cups). The Halo floats higher over spikes and a mohawk. A mohawk's crest stays under hats and crowns, and its middle no longer shows the scalp. The bunny and cat ears' headband follows the head with no loose ends. The Tiara shows along the sides and ends neatly, also on an afro. The Storm Hood's trim lies flush. The Dominus wings fan out from a brooch, with no dent in the hood. And surfaces that flickered where a hat, haircut or face piece overlapped (Beanie, Viking, Pirate Hat, crowns, Knight Helmet with beards, the domino mask) are apart.
 

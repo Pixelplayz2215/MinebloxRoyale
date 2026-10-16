@@ -1,3 +1,4 @@
+Test 6.1 - The Locker grows with your window: bigger tabs, tiles and lettering when there's room (all tabs, the Shop too)
 Test 6 - Emotes: Wave and Double Wave swing side to side; Clap is smooth; the Lasso's loop spins; Boxing gloves cover the hands
 Test 6 - Breakdance Spin: the head, and any hat or hair on it, rests on the mat (try a tall hat, and no hat)
 Test 6 - Emote music: each one suits its emote, with sounds on the moves (claps, drum hits, strums, taps, whooshes)

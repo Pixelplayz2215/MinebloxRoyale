@@ -47,7 +47,14 @@ public class LockerScreen extends Screen {
 	private static final String[][] TABS = { { "shop", "Shop" }, { "preset", "Presets" }, { "hat", "Hats" }, { "hair", "Hair" }, { "face", "Face" },
 		{ "back", "Back" }, { "shirt", "Shirts" }, { "pants", "Pants" }, { "shoes", "Shoes" }, { "particle", "Particles" }, { "pickaxe", "Pickaxes" }, { "contrail", "Contrails" },
 		{ "boosttrail", "Boost Trails" }, { "emote", "Emotes" }, { "glider", "Gliders" } };
-	private static final int PANEL = 350, COLS = 3, W = 80, TOP = 40;
+	private static final int COLS = 3;
+	/**
+	 * The layout's size (2.0.0-test6.1, creator, with a screenshot of the Presets tab: "text is a bit small"): laid out
+	 * for the smallest window at k = 1, the whole Locker (panel, tabs, tiles and their lettering) grows with the window
+	 * when there's room, up to 1.3 times: init() works it out from the screen's size.
+	 */
+	private float k = 1;
+	private int panel = 350, tileW = 80, tileH = 18, rowH = 21, gx = 98, tabW = 82, top = 40;
 	/** Tabs where hovering one of your items shows it on you, like the emotes (2.0.0-test3): in your hand, or skydiving. */
 	private static final List<String> HOVER_TRY = List.of("pickaxe", "contrail", "boosttrail");
 	/** True only while the Locker draws its preview of you (the in-world you is hidden while the Locker is open). */
@@ -242,19 +249,30 @@ public class LockerScreen extends Screen {
 	}
 
 	private int rowsPerPage() {
-		return Math.max(3, (this.height - TOP - 50) / 21);
+		return Math.max(3, (this.height - top - Math.round(50 * k)) / rowH);
 	}
 
 	@Override
 	protected void init() {
-		int y = TOP, pitch = Math.max(12, Math.min(18, (this.height - TOP - 34) / TABS.length));
+		// (k: as big as the window has room for: the panel and a preview beside it across, the tabs and Done down)
+		k = Math.max(1F, Math.min(1.3F, Math.min(this.width / 560F, this.height / 344F)));
+		panel = Math.round(350 * k);
+		tileW = Math.round(80 * k);
+		tileH = Math.round(18 * k);
+		rowH = Math.round(21 * k);
+		gx = Math.round(98 * k);
+		tabW = Math.round(82 * k);
+		top = Math.round(40 * k);
+		// (the tabs packed closer on a small window, down to 10 apart, so the last stays clear of Done)
+		int y = top, pitch = Math.max(10, Math.min(Math.round(18 * k), (this.height - top - 8 - tileH - 4) / TABS.length));
 		for (String[] t : TABS) {
-			SmoothButton b = new SmoothButton(8, y, 82, pitch - 2, t[1], SmoothButton.Look.TAB, btn -> {
+			SmoothButton b = new SmoothButton(8, y, tabW, pitch - 2, t[1], SmoothButton.Look.TAB, btn -> {
 				tab = t[0];
 				page = 0;
 				this.rebuildWidgets();
 			});
 			b.on = tab.equals(t[0]);
+			b.scale = k;
 			this.addRenderableWidget(b);
 			y += pitch;
 		}
@@ -287,7 +305,7 @@ public class LockerScreen extends Screen {
 			int r = cell[i] / COLS;
 			if (r / rows != page) continue;
 			Tile t = all.get(i);
-			int tx = 98 + cell[i] % COLS * (W + 4), ty = TOP + r % rows * 21;
+			int tx = gx + cell[i] % COLS * (tileW + 4), ty = top + r % rows * rowH;
 			if (t.header()) {
 				headers.add(new Object[] { t.label(), tx, ty });
 				continue;
@@ -302,7 +320,8 @@ public class LockerScreen extends Screen {
 				price = label.substring(dash + 3, label.length() - 1);
 				label = label.substring(0, dash);
 			}
-			SmoothButton b = new SmoothButton(tx, ty, W, 18, label, SmoothButton.Look.TILE, btn -> t.click().run());
+			SmoothButton b = new SmoothButton(tx, ty, tileW, tileH, label, SmoothButton.Look.TILE, btn -> t.click().run());
+			b.scale = k;
 			b.on = on;
 			b.owned = owned;
 			b.price = price;
@@ -314,22 +333,25 @@ public class LockerScreen extends Screen {
 			this.addRenderableWidget(b);
 		}
 		if (pages > 1) {
-			int py = TOP + rowsPerPage() * 21 + 2;
-			SmoothButton prev = new SmoothButton(98, py, 30, 14, "<", SmoothButton.Look.ARROW, btn -> {
+			int py = top + rowsPerPage() * rowH + 2, aw = Math.round(30 * k), ah = Math.round(14 * k);
+			SmoothButton prev = new SmoothButton(gx, py, aw, ah, "<", SmoothButton.Look.ARROW, btn -> {
 				page--;
 				this.rebuildWidgets();
 			});
 			prev.active = page > 0;
-			SmoothButton next = new SmoothButton(98 + COLS * (W + 4) - 34, py, 30, 14, ">", SmoothButton.Look.ARROW, btn -> {
+			SmoothButton next = new SmoothButton(gx + COLS * (tileW + 4) - 4 - aw, py, aw, ah, ">", SmoothButton.Look.ARROW, btn -> {
 				page++;
 				this.rebuildWidgets();
 			});
 			next.active = page < pages - 1;
+			prev.scale = next.scale = k;
 			this.addRenderableWidget(prev);
 			this.addRenderableWidget(next);
 			pageLine = "Page " + (page + 1) + " of " + pages;
 		} else pageLine = "";
-		this.addRenderableWidget(new SmoothButton(8, this.height - 26, 82, 18, "Done", SmoothButton.Look.MAIN, btn -> this.onClose()));
+		SmoothButton done = new SmoothButton(8, this.height - 8 - tileH, tabW, tileH, "Done", SmoothButton.Look.MAIN, btn -> this.onClose());
+		done.scale = k;
+		this.addRenderableWidget(done);
 	}
 
 	/** Rebuilds the tab buttons and the grid (after the tab was changed from outside, e.g. LockerAudit). */
@@ -380,22 +402,22 @@ public class LockerScreen extends Screen {
 	@Override
 	public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float a) {
 		// The catalog on a dark rounded panel on the left; your avatar on the right, in a faint frame.
-		Smooth.panel(g, 2, 2, PANEL - 4, this.height - 4, 10, 0xEC161A22);
-		Smooth.panel(g, PANEL + 20, TOP - 8, this.width - PANEL - 40, this.height - TOP - 12, 12, 0x40101420);
+		Smooth.panel(g, 2, 2, panel - 4, this.height - 4, 10, 0xEC161A22);
+		Smooth.panel(g, panel + 20, top - 8, this.width - panel - 40, this.height - top - 12, 12, 0x40101420);
 	}
 
 	@Override
 	public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float a) {
 		super.extractRenderState(g, mouseX, mouseY, a);
 		// The header: LOCKER and the tab, your gold in a chip on the right (or what's picked for the wheel), one hint line.
-		float lw = Smooth.text(g, "LOCKER", 10, 8, 13, GOLD, Smooth.LEFT, true);
-		Smooth.text(g, tabName(tab), 10 + lw + 8, 11, 9, WHITE, Smooth.LEFT, false);
+		float lw = Smooth.text(g, "LOCKER", 10, 8 * k, 13 * k, GOLD, Smooth.LEFT, true);
+		Smooth.text(g, tabName(tab), 10 + lw + 8 * k, 11 * k, 9 * k, WHITE, Smooth.LEFT, false);
 		String chip = tab.equals("emote") ? ClientState.myEmotes().size() + " / 8 on your wheel" : ClientState.all ? "All unlocked" : ClientState.career().gold() + "";
 		boolean coin = !tab.equals("emote") && !ClientState.all;
-		float cw = Smooth.width(chip, 7) + (coin ? 22 : 12);
-		Smooth.panel(g, PANEL - 10 - cw, 7, cw, 15, 7, 0xFF2C3340);
-		if (coin) Smooth.icon(g, "gold", PANEL - 10 - cw + 5, 9.5F, 10, -1);
-		Smooth.text(g, chip, PANEL - 16, 10.5F, 7, GOLD, Smooth.RIGHT, false);
+		float cw = Smooth.width(chip, 7 * k) + (coin ? 22 : 12) * k;
+		Smooth.panel(g, panel - 10 - cw, 7 * k, cw, 15 * k, 7 * k, 0xFF2C3340);
+		if (coin) Smooth.icon(g, "gold", panel - 10 - cw + 5 * k, 9.5F * k, 10 * k, -1);
+		Smooth.text(g, chip, panel - 10 - 6 * k, 10.5F * k, 7 * k, GOLD, Smooth.RIGHT, false);
 		String info = switch (tab) {
 			case "emote" -> "Click to put an emote on your wheel (B), or take it off; hover to see it";
 			case "glider" -> {
@@ -409,17 +431,17 @@ public class LockerScreen extends Screen {
 			case "boosttrail" -> "Streams from the back of any car you drive while it boosts (Space)";
 			default -> "Roblox-style catalog - looks only, no advantage";
 		};
-		float is = 6.5F;
-		while (is > 4.5F && Smooth.width(info, is) > PANEL - 22) is -= 0.25F;
-		Smooth.text(g, info, 10, 26, is, MUTED, Smooth.LEFT, false);
+		float is = 6.5F * k;
+		while (is > 4.5F && Smooth.width(info, is) > panel - 22) is -= 0.25F;
+		Smooth.text(g, info, 10, 26 * k, is, MUTED, Smooth.LEFT, false);
 		// The Shop's category titles, each with a line on to the grid's edge.
 		for (Object[] h : headers) {
 			String title = (String) h[0];
 			int hx = (int) h[1], hy = (int) h[2];
-			float tw = Smooth.text(g, title.toUpperCase(java.util.Locale.ROOT), hx + 2, hy + 6, 7, GOLD, Smooth.LEFT, false);
-			Smooth.panel(g, hx + 8 + tw, hy + 9.5F, 98 + COLS * (W + 4) - 6 - (hx + 8 + tw), 0.8F, 0, 0x60FFC83D);
+			float tw = Smooth.text(g, title.toUpperCase(java.util.Locale.ROOT), hx + 2, hy + 6 * k, 7 * k, GOLD, Smooth.LEFT, false);
+			Smooth.panel(g, hx + 8 + tw, hy + 9.5F * k, gx + COLS * (tileW + 4) - 6 - (hx + 8 + tw), 0.8F, 0, 0x60FFC83D);
 		}
-		if (!pageLine.isEmpty()) Smooth.text(g, pageLine, 98 + COLS * (W + 4) / 2F, TOP + rowsPerPage() * 21 + 5, 6.5F, MUTED, Smooth.CENTER, false);
+		if (!pageLine.isEmpty()) Smooth.text(g, pageLine, gx + COLS * (tileW + 4) / 2F, top + rowsPerPage() * rowH + 2 + 3 * k, 6.5F * k, MUTED, Smooth.CENTER, false);
 		// Under the grid: a message (bought, not enough gold...), else what unlocks the locked item under the mouse.
 		String line = null;
 		int lineColor = GOLD;
@@ -432,9 +454,9 @@ public class LockerScreen extends Screen {
 			if (mouseX >= b.getX() && mouseX < b.getX() + b.getWidth() && mouseY >= b.getY() && mouseY < b.getY() + b.getHeight()) line = e.getValue();
 		}
 		if (line != null) {
-			float ls = 7;
-			while (ls > 4.5F && Smooth.width(line, ls) > PANEL - 110) ls -= 0.25F;
-			Smooth.text(g, line, 98, this.height - 21, ls, lineColor, Smooth.LEFT, false);
+			float ls = 7 * k;
+			while (ls > 4.5F && Smooth.width(line, ls) > panel - gx - 12) ls -= 0.25F;
+			Smooth.text(g, line, gx, this.height - 8 - tileH / 2F - ls / 2, ls, lineColor, Smooth.LEFT, false);
 		}
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.player == null) return;
@@ -443,14 +465,14 @@ public class LockerScreen extends Screen {
 		String tryOn = null;
 		for (Map.Entry<Button, String> e : tryOnButtons)
 			if (e.getKey().isHovered()) tryOn = e.getValue();
-		int x0 = PANEL + 20, y0 = TOP - 4, x1 = this.width - 20, y1 = this.height - 20;
+		int x0 = panel + 20, y0 = top - 4, x1 = this.width - 20, y1 = this.height - 20;
 		// (2.0.0-test3) Boost Trails (or one hovered in the Shop): a car instead of you, its trail streaming
 		if (tryOn != null ? tryOn.startsWith("boosttrail:") : tab.equals("boosttrail")) {
 			CosmeticDef trail = tryOn != null ? Sheets.COSMETICS_BY_ID.get(tryOn.substring("boosttrail:".length())) : Cosmetics.worn(mine(), "boosttrail");
 			carPreview(g, x0, y0, x1, y1, trail);
 			frames++;
-			Smooth.text(g, trail == null ? "No boost trail on" : trail.name() + " - on any car you drive", (x0 + x1) / 2F, y1 - 16, 8, WHITE, Smooth.CENTER, true);
-			if (!LockerAudit.active()) Smooth.text(g, "Hold right mouse and drag to turn", (x0 + x1) / 2F, y0 + 2, 6.5F, 0xB0FFFFFF, Smooth.CENTER, false);
+			Smooth.text(g, trail == null ? "No boost trail on" : trail.name() + " - on any car you drive", (x0 + x1) / 2F, y1 - 16 * k, 8 * k, WHITE, Smooth.CENTER, true);
+			if (!LockerAudit.active()) Smooth.text(g, "Hold right mouse and drag to turn", (x0 + x1) / 2F, y0 + 2, 6.5F * k, 0xB0FFFFFF, Smooth.CENTER, false);
 			return;
 		}
 		boolean glider = tab.equals("glider") || tryOn != null && tryOn.startsWith("glider:");
@@ -464,8 +486,8 @@ public class LockerScreen extends Screen {
 		preview(g, mc, x0, y0, x1, y1, size, glider, contrail, tryOn, glider || contrail ? null : heldPickaxe(tryOn));
 		frames++;
 		particles.draw(g, fx, cx, feet, size, true);
-		Smooth.text(g, mc.player.getName().getString(), (x0 + x1) / 2F, y1 - 16, 8.5F, WHITE, Smooth.CENTER, true);
-		if (!LockerAudit.active()) Smooth.text(g, "Hold right mouse and drag to turn", (x0 + x1) / 2F, y0 + 2, 6.5F, 0xB0FFFFFF, Smooth.CENTER, false);
+		Smooth.text(g, mc.player.getName().getString(), (x0 + x1) / 2F, y1 - 16 * k, 8.5F * k, WHITE, Smooth.CENTER, true);
+		if (!LockerAudit.active()) Smooth.text(g, "Hold right mouse and drag to turn", (x0 + x1) / 2F, y0 + 2, 6.5F * k, 0xB0FFFFFF, Smooth.CENTER, false);
 	}
 
 	/**
@@ -578,7 +600,7 @@ public class LockerScreen extends Screen {
 
 	@Override
 	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-		if (event.button() == InputConstants.MOUSE_BUTTON_RIGHT && event.x() > PANEL) {
+		if (event.button() == InputConstants.MOUSE_BUTTON_RIGHT && event.x() > panel) {
 			turning = true;
 			return true;
 		}
