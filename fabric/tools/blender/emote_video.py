@@ -27,7 +27,7 @@ SAMPLES = 64  # sheet rows per loop
 CHANNELS = {"rax": "rightArmX", "raz": "rightArmZ", "lax": "leftArmX", "laz": "leftArmZ", "rlx": "rightLegX", "llx": "leftLegX", "yaw": "bodyYaw",
             "bob": "bounce", "rlz": "rightLegZ", "llz": "leftLegZ", "hx": "headX", "hy": "headY", "hz": "headZ", "lean": "lean", "tilt": "tilt",
             "twist": "twist", "rel": "rightElbow", "lel": "leftElbow", "rkn": "rightKnee", "lkn": "leftKnee",
-            "ray": "rightArmY", "lay": "leftArmY", "flip": "flip"}
+            "ray": "rightArmY", "lay": "leftArmY", "flip": "flip", "sx": "shift"}
 UNLOCK = {"kills": "Get {n} eliminations", "wins": "Win {n} Victory Royales", "range": "Score {n} in one shooting range round",
           "bullseyes": "Hit {n} shooting range bullseyes", "obby": "Finish the obby in the lobby", "victory": "Win a Victory Royale"}
 FREE = []  # (the limbs the emote being drawn may put into the body: Emote.free)
@@ -138,7 +138,9 @@ def blender_main(args):
         """The animation at evenly spaced moments (t = i / n), each with its feet put right and nothing going into
         anything (rig.py)."""
         cyclic = getattr(e, "cyclic", True)
-        n = max(128, int(round(4 * length)))
+        # (a whole number of moments to each of the sheet's rows, so every row is a baked moment and the game's straight
+        # blends between rows get cleared below: with 168 or 288 moments, Swim's and Karate's blends touched, 2.0.0-test5)
+        n = SAMPLES * max(2, math.ceil(4 * length / SAMPLES))
         poses = [pose_at(fcs, 1 + i / n * length) for i in range(n + 1)]
         plant = getattr(e, "plant", "floor")
         feet = lambda p: rig.touch(p) if plant == "touch" else rig.floor(p) if plant == "floor" else p
@@ -283,6 +285,30 @@ def blender_main(args):
                 found.append(f"{a}/{b}:{len(hits)}")
         return found
 
+    def props_of(name):
+        """The emote's props (emotes sheet, props: "mesh@where, ..."; props.py), loaded once: [(object, where)]."""
+        import brm_import
+        row = rows.get(name) if kind == "emotes" else None
+        out = []
+        for spec in (row.get("props", "") if row else "").split(","):
+            if "@" not in spec:
+                continue
+            mesh, where = (x.strip() for x in spec.split("@", 1))
+            path = os.path.join(ROOT, "fabric", "src", "main", "resources", "assets", "minebloxroyale", "meshes", mesh + ".brm")
+            out.append((brm_import.load(path, 0xFFFFFF, 0xFFFFFF, None, mesh), where))
+        return out
+
+    def place_props(props, p):
+        """Each prop where it goes this frame: the avatar's own space (ground), the upper body's, the head's or a hand's
+        (following the forearm)."""
+        if not props:
+            return
+        js, bd = avatar.joints(p), avatar.bends(p)
+        for obj, where in props:
+            m = avatar.hand(js, bd, where == "right_hand") if where.endswith("_hand") else js["torso"] if where == "body" else js["head"] if where == "head" \
+                else Matrix.Identity(4)
+            obj.matrix_world = avatar.C @ m @ avatar.C.inverted()
+
     def render(name, frames, pose_fn, lying=None, ground_y=-2.0):
         if os.environ.get("BR_MESHCHECK_ONLY"):  # (no pictures: just check every frame on the real body)
             stage()
@@ -299,10 +325,12 @@ def blender_main(args):
         stage()
         avatar.build()
         ground(ground_y)
+        props = props_of(name)
         boxes = []
         for f in range(1, frames + 1, 3):
             p = pose_fn(f)
             avatar.repose(avatar.joints(p, lying=lying), avatar.bends(p))
+            place_props(props, p)
             boxes.append(box_now())
         camera(boxes, yaw=150 if kind == "emotes" else 125)  # (moves a little more from the side: the legs show)
         d = os.path.join(out, name)
@@ -313,6 +341,7 @@ def blender_main(args):
         for f in range(1, frames + 1, int(os.environ.get("BR_STEP", "1"))):
             p = pose_fn(f)
             avatar.repose(avatar.joints(p, lying=lying), avatar.bends(p))
+            place_props(props, p)
             if check:
                 hits = mesh_clips()
                 if hits:
@@ -372,7 +401,7 @@ def blender_main(args):
 ABOUT = ("Angles in degrees: armX/legX swing forward (+) / back (-), armZ/legZ out to the side (+); bodyYaw turns the whole body; above "
          "the hips the body twists (to its right), leans (forward) and tilts (to its right); the head nods (down), turns (to its right) "
          "and tilts (to its right); the elbows bend the forearm forward and the knees the shin back (0 = straight); bounce lifts the "
-         "body (studs).")
+         "body and shift moves it to its right (studs: the Smooth Slide's steps, 2.0.0-test5).")
 
 
 def write_sheets(sheet_rows, emotes):
@@ -447,7 +476,10 @@ def make_videos(frames_dir, out_dir):
                 img.save(os.path.join(tmp, f"{f:04d}.png"))
             name = "".join(c for c in e["name"] if c not in '<>:"/\\|?*')
             target = os.path.join(out_dir, name + ".mp4")
-            subprocess.run([ffmpeg, "-y", "-loglevel", "error", "-framerate", str(FPS), "-i", os.path.join(tmp, "%04d.png"), "-c:v", "libopenh264",
+            # (2.0.0-test5: an emote's own music under it, from the start as in the game: fabric/tools/audio/emote_music.py)
+            music = os.path.join(ROOT, "fabric", "src", "main", "resources", "assets", "minebloxroyale", "sounds", "emote", e.get("id", "") + ".ogg")
+            sound = ["-i", music, "-map", "0:v", "-map", "1:a", "-c:a", "aac", "-b:a", "160k", "-shortest"] if not move and os.path.isfile(music) else []
+            subprocess.run([ffmpeg, "-y", "-loglevel", "error", "-framerate", str(FPS), "-i", os.path.join(tmp, "%04d.png"), *sound, "-c:v", "libopenh264",
                             "-b:v", "4M", "-pix_fmt", "yuv420p", "-movflags", "+faststart", target], check=True)
             if e.get("still"):  # (a titled picture of one moment too: gliders, contrails)
                 shutil.copyfile(os.path.join(tmp, f"{e['still']:04d}.png"), os.path.join(out_dir, name + ".png"))

@@ -20,8 +20,10 @@ assets' sounds.json:
                                    (2.0.0-test4, creator: "shield sounds and healing sounds when using proper items")
   victory/fanfare                  the Victory Royale: a rising brass call and a big held chord over a drum roll
                                    (2.0.0-test5, the new Victory Royale screen)
+  emote/<emote>                    each emote's own music, a seamless loop in a style that suits it, in step with it
+                                   (2.0.0-test5, creator: "Add emote music!": emote_music.py)
 
-python fabric/tools/audio/make_audio.py [cars|use]      (cars, use: just those sounds)
+python fabric/tools/audio/make_audio.py [cars|use|emotes]      (cars, use, emotes: just those sounds)
 """
 import json
 import os
@@ -686,10 +688,10 @@ def seeded(name):
 
 def main():
     snd = os.path.join(ASSETS, "sounds")
-    if len(sys.argv) > 1 and sys.argv[1] in ("cars", "use"):  # (just the cars' sounds, or the heals' and shields')
+    if len(sys.argv) > 1 and sys.argv[1] in ("cars", "use", "emotes"):  # (just the cars' sounds, the heals' and shields', or the emotes' music)
         p = os.path.join(ASSETS, "sounds.json")
         reg = json.load(open(p, encoding="utf-8"))
-        (cars if sys.argv[1] == "cars" else uses)(snd, reg)
+        {"cars": cars, "use": uses, "emotes": emotes}[sys.argv[1]](snd, reg)
         json.dump(reg, open(p, "w", encoding="utf-8", newline="\n"), indent=2)
         return
     for name in GUNS:
@@ -725,8 +727,16 @@ def main():
         reg[f"music.battle_{i}"] = {"sounds": [{"name": f"minebloxroyale:music/battle_{i}", "stream": True}]}
     cars(snd, reg)
     uses(snd, reg)
+    emotes(snd, reg)
     json.dump(reg, open(p, "w", encoding="utf-8", newline="\n"), indent=2)
     print("sounds.json:", len(reg), "events")
+
+
+def emotes(snd, reg):
+    """Each emote's music (emote_music.py), with its sounds-sheet row and the emotes sheet's music column."""
+    sys.path.insert(0, HERE)
+    import emote_music
+    emote_music.write_all(snd, reg)
 
 
 if __name__ == "__main__":

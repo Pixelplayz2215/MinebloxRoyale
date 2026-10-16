@@ -3,6 +3,7 @@ package gg.minebloxroyale.client.avatar;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import gg.minebloxroyale.client.ClientState;
+import gg.minebloxroyale.client.WorldVisuals;
 import gg.minebloxroyale.client.Tracers;
 import gg.minebloxroyale.client.mesh.Mesh;
 import gg.minebloxroyale.sheets.AvatarColorDef;
@@ -12,6 +13,7 @@ import gg.minebloxroyale.sheets.EmoteDef;
 import gg.minebloxroyale.sheets.EmoteKeyDef;
 import gg.minebloxroyale.sheets.GliderDef;
 import gg.minebloxroyale.sheets.Sheets;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -104,23 +106,24 @@ public final class RobloxAvatarRenderer {
 	 * (to its right), leans (forward) and tilts (to its right); the head nods (down), turns (to its right) and tilts (to
 	 * its right); the elbows bend the forearms forward and the knees the shins back (0 = straight); each arm turns about
 	 * its own length (Y: so the elbow can fold any way, e.g. across the face); the whole body, legs too, turns over
-	 * about the hips (flip: forward, 180 = upside down).
+	 * about the hips (flip: forward, 180 = upside down); and steps sideways (shift, studs to its right: 2.0.0-test5, the
+	 * Smooth Slide).
 	 */
 	public record Pose(float rightArmX, float rightArmZ, float leftArmX, float leftArmZ, float rightLegX, float leftLegX, float bodyYaw, float bounce,
 		float rightLegZ, float leftLegZ, float headX, float headY, float headZ, float lean, float tilt, float twist, float rightElbow, float leftElbow,
-		float rightKnee, float leftKnee, float rightArmY, float leftArmY, float flip) {
-		static final Pose ZERO = of(new float[23]);
+		float rightKnee, float leftKnee, float rightArmY, float leftArmY, float flip, float shift) {
+		static final Pose ZERO = of(new float[24]);
 		static final int RAX = 0, RAZ = 1, LAX = 2, LAZ = 3, BOB = 7, HX = 10, HY = 11, HZ = 12, LEAN = 13, TWIST = 15, REL = 16, LEL = 17, RAY = 20, LAY = 21;
 		static final int[] ARMS = { RAX, RAZ, LAX, LAZ, REL, LEL, RAY, LAY }, RIGHT_ARM = { RAX, RAZ, REL, RAY };
 
 		float[] values() {
 			return new float[] { rightArmX, rightArmZ, leftArmX, leftArmZ, rightLegX, leftLegX, bodyYaw, bounce, rightLegZ, leftLegZ, headX, headY, headZ,
-				lean, tilt, twist, rightElbow, leftElbow, rightKnee, leftKnee, rightArmY, leftArmY, flip };
+				lean, tilt, twist, rightElbow, leftElbow, rightKnee, leftKnee, rightArmY, leftArmY, flip, shift };
 		}
 
 		static Pose of(float[] v) {
 			return new Pose(v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8], v[9], v[10], v[11], v[12], v[13], v[14], v[15], v[16], v[17], v[18], v[19],
-				v[20], v[21], v[22]);
+				v[20], v[21], v[22], v[23]);
 		}
 
 		Pose lerp(Pose b, float f) {
@@ -217,6 +220,7 @@ public final class RobloxAvatarRenderer {
 		boolean preview = state.getDataOrDefault(PREVIEW, false);
 		double distSq = preview ? 0 : state.distanceToCameraSq;
 		if (outfit != null && !outfit.isEmpty()) Cosmetics.submit(collector, poseStack, state, outfit, pose, distSq, light, overlay);
+		submitProps(collector, poseStack, state, pose, entityId, distSq, light, overlay);
 		// The glider (gliders sheet) above a gliding player, in root space: popping open, riding the air, put away again
 		// on landing (Gliders).
 		int track = preview ? Gliders.PREVIEW_TRACK : entityId;
@@ -299,7 +303,7 @@ public final class RobloxAvatarRenderer {
 	/** Roblox root space -> a body part's joint (studs): its pivot, turned as the pose says, the head also to the look. */
 	static Matrix4f jointMatrix(AvatarPartDef part, LivingEntityRenderState state, Pose p) {
 		Matrix4f m = new Matrix4f();
-		m.translate(0, p.bounce(), 0).rotateY(rad(p.bodyYaw())).rotateX(rad(-p.flip()));
+		m.translate(p.shift(), p.bounce(), 0).rotateY(rad(p.bodyYaw())).rotateX(rad(-p.flip()));
 		// Everything above the hips (the root) twists, leans and tilts together; the legs stay planted.
 		if (!part.swing().equals("leg")) m.rotateY(rad(-p.twist())).rotateX(rad(-p.lean())).rotateZ(rad(-p.tilt()));
 		m.translate(part.pivotX(), part.pivotY(), part.pivotZ());
@@ -601,6 +605,50 @@ public final class RobloxAvatarRenderer {
 
 	// ---- emotes ----
 
+	/** Each emote's props (emotes sheet: "model@where, ..."), read once: {model, where}. */
+	private static final Map<String, List<String[]>> PROPS = new HashMap<>();
+
+	/**
+	 * What the emote being played brings out (2.0.0-test5, creator: Drum Solo's "Drum and Drumsticks", then the
+	 * accessories for more emotes: a guitar, a top hat and cane, a lasso, boxing gloves, pom-poms, a cardboard mat and a
+	 * boombox, a cape, glow sticks): Blender models (fabric/tools/blender/props.py), each in its own space: @ground the
+	 * avatar's own (staying put while the body bounces), @body the upper body's, @head the head's, @right_hand /
+	 * @left_hand a hand's below the elbow, following the forearm.
+	 */
+	private static void submitProps(SubmitNodeCollector collector, PoseStack poseStack, LivingEntityRenderState state, Pose pose, int entityId, double distSq,
+		int light, int overlay) {
+		Map.Entry<String, Long> playing = ClientState.EMOTES.get(entityId);
+		if (playing == null || state.getDataOrDefault(KNOCKED, false) || state.getDataOrDefault(SITTING, false)) return;
+		EmoteDef def = Sheets.EMOTES_BY_ID.get(playing.getKey());
+		if (def == null || def.props().equals("-")) return;
+		List<String[]> props = PROPS.computeIfAbsent(def.id(), id -> {
+			List<String[]> out = new ArrayList<>();
+			for (String spec : def.props().split(",")) {
+				String[] mw = spec.trim().split("@");
+				if (mw.length == 2) out.add(new String[] { mw[0].trim(), mw[1].trim() });
+			}
+			return out;
+		});
+		List<Matrix4f> frames = new ArrayList<>();
+		for (String[] prop : props) {
+			Matrix4f m = new Matrix4f(ROOT);
+			switch (prop[1]) {
+				case "right_hand", "left_hand" -> {
+					AvatarPartDef arm = Sheets.AVATAR_PARTS_BY_ID.get(prop[1].equals("right_hand") ? "right_arm" : "left_arm");
+					m.mul(jointMatrix(arm, state, pose)).mul(bend(arm, pose).lower());
+				}
+				case "body" -> m.mul(jointMatrix(Sheets.AVATAR_PARTS_BY_ID.get("torso"), state, pose));
+				case "head" -> m.mul(jointMatrix(Sheets.AVATAR_PARTS_BY_ID.get("head"), state, pose));
+				default -> {
+				}
+			}
+			frames.add(m);
+		}
+		collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(WorldVisuals.white()), (ps, vc) -> {
+			for (int i = 0; i < props.size(); i++) Mesh.lod(props.get(i)[0], distSq, Cosmetics.AVATAR_SIZE * 2).draw(ps, frames.get(i), vc, light, overlay, 0xFFFFFF, 0xFFFFFF);
+		});
+	}
+
 	/** Each emote's keyframes in order (emote_keys sheet), sorted once. */
 	private static final Map<String, List<EmoteKeyDef>> KEYS = new HashMap<>();
 
@@ -636,6 +684,6 @@ public final class RobloxAvatarRenderer {
 	private static Pose pose(EmoteKeyDef k) {
 		return new Pose(k.rightArmX(), k.rightArmZ(), k.leftArmX(), k.leftArmZ(), k.rightLegX(), k.leftLegX(), k.bodyYaw(), k.bounce(), k.rightLegZ(),
 			k.leftLegZ(), k.headX(), k.headY(), k.headZ(), k.lean(), k.tilt(), k.twist(), k.rightElbow(), k.leftElbow(), k.rightKnee(), k.leftKnee(),
-			k.rightArmY(), k.leftArmY(), k.flip());
+			k.rightArmY(), k.leftArmY(), k.flip(), k.shift());
 	}
 }

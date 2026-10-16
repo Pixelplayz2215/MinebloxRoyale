@@ -172,9 +172,26 @@ def pose_of(emote):
     return {**best, "bodyYaw": 0}
 
 
+def props(row, js, pose):
+    """The emote's props (emotes sheet: "model@where, ..."; props.py) where it holds them at that moment, as the game
+    and the emote videos put them (2.0.0-test5): @ground the avatar's own space, @body the upper body's, @head the
+    head's, @right_hand / @left_hand a hand's."""
+    bd = avatar.bends(pose)
+    for spec in row.get("props", "").split(","):
+        if "@" not in spec:
+            continue
+        mesh, where = (x.strip() for x in spec.split("@", 1))
+        obj = brm_import.load(os.path.join(MESHES, mesh + ".brm"), 0xFFFFFF, 0xFFFFFF, None, mesh)
+        m = avatar.hand(js, bd, where == "right_hand") if where.endswith("_hand") else js["torso"] if where == "body" else js["head"] if where == "head" \
+            else Matrix.Identity(4)
+        obj.matrix_world = C @ m @ CI
+
+
 def emote(row):
-    return (row["name"], lambda: avatar.build(emote=pose_of(row["id"])) and None,
-            {"export": False, "folder": "New Emotes", "unlock": unlock_text(row), "views": VIEWS})
+    def fn():
+        pose = pose_of(row["id"])
+        props(row, avatar.build(emote=pose), pose)
+    return (row["name"], fn, {"export": False, "folder": "New Emotes", "unlock": unlock_text(row), "views": VIEWS})
 
 
 SLOTS = ("hat", "hair", "face", "back", "shirt", "pants", "shoes")

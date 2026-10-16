@@ -86,12 +86,12 @@ def _robot():
 
 EMOTES = {
     "wave": Emote(1.0, [
-        # the upper arm out to the side, the forearm up, waving from the elbow
-        K(0, rax=90, raz=96, rel=74, laz=6, lel=10, hz=8, hy=-6, tilt=-4, bob=0, rkn=4, lkn=4),
-        K(0.25, raz=102, rel=112, hz=4, bob=0.02),
-        K(0.5, raz=96, rel=74, hz=8, bob=0),
-        K(0.75, raz=102, rel=112, hz=4, bob=0.02),
-    ], note="right arm up, waving from the elbow, head tilted with a smile"),
+        # (2.0.0-test5, redone from the creator's notes on test4: TODO.md, Emotes to redo)
+        K(0, hz=6, hy=-6, tilt=-4, bob=0, rkn=4, lkn=4, rax=172.8, raz=37.0, ray=87.0, rel=53.0, lax=0, laz=4, lay=0, lel=6),
+        K(0.25, hz=2, bob=0.02, rax=172.8, raz=37.0, ray=-37.8, rel=1.4),
+        K(0.5, hz=6, bob=0, rax=172.8, raz=37.0, ray=87.0, rel=53.0),
+        K(0.75, hz=2, bob=0.02, rax=172.8, raz=37.0, ray=-37.8, rel=1.4),
+    ], note="right arm up and out, the forearm upright beside the head, waving from the elbow"),
     "swing": Emote(0.8, [
         K(0, rax=25, raz=70, rel=20, lax=72, laz=-6, lel=48, twist=22, tilt=6, hy=10, bob=0, rkn=6, lkn=18),
         K(0.25, rax=20, raz=10, rel=30, lax=20, laz=10, lel=30, twist=0, tilt=0, hy=0, bob=-0.1),
@@ -144,22 +144,22 @@ EMOTES = {
         K(0.75, rax=0, raz=166, rel=4, lax=0, laz=166, lel=4, bob=0.18, hx=-18, twist=0, rkn=8, lkn=8),
     ], note="arms up in a V, pumping from the elbows, bouncing, looking up"),
     "clap": Emote(0.45, [
-        # elbows in, forearms up and in front: the hands meet at chest height
-        K(0, rax=40, raz=30, rel=62, lax=40, laz=30, lel=62, hx=4, bob=0, rkn=4, lkn=4),
-        K(0.42, rax=44, raz=-12, rel=70, lax=44, laz=-12, lel=70, hx=10, bob=-0.05),
-        K(0.5, rax=44, raz=-14, rel=70, lax=44, laz=-14, lel=70, hx=10, bob=-0.05),
-        K(0.62, rax=42, raz=14, rel=66, lax=42, laz=14, lel=66, hx=6, bob=0),
-    ], note="hands meet in front with a little nod"),
+        # (2.0.0-test5, redone from the creator's notes on test4: TODO.md, Emotes to redo)
+        K(0, hx=4, bob=0, rkn=4, lkn=4, rax=45.0, raz=29.0, ray=50.5, rel=92.1, lax=45.0, laz=29.0, lay=50.5, lel=92.1),
+        K(0.42, hx=10, bob=-0.05, rax=70.4, raz=-32.7, ray=50.1, rel=20.1, lax=70.4, laz=-32.7, lay=50.1, lel=20.1),
+        K(0.5, hx=10, bob=-0.05, rax=70.4, raz=-32.7, ray=50.1, rel=20.1, lax=70.4, laz=-32.7, lay=50.1, lel=20.1),
+        K(0.62, hx=6, bob=0, rax=45.0, raz=29.0, ray=50.5, rel=92.1, lax=45.0, laz=29.0, lay=50.5, lel=92.1),
+    ], note="hands clapping together in front of the chest with a little nod", free=("right_arm", "left_arm")),
     "salute": Emote(1.8, [
-        K(0, rax=0, raz=4, rel=6, laz=4, lel=6, lean=0, hx=0, bob=0),
-        K(0.12, rax=0, raz=4, rel=6, lean=0, hx=0),
-        # the arm snapped up, the hand by the brow (as close as an R6 arm gets: rig.py); standing tall
-        K(0.22, rax=128, raz=-15, rel=6, lel=0, laz=2, lean=-6, hx=-6, bob=0.04),
-        K(0.26, rax=126, raz=-15, rel=4, lean=-5, hx=-5, bob=0.02),
-        K(0.72, rax=127, raz=-15, rel=5, lean=-5, hx=-5),
-        K(0.8, rax=110, raz=10, rel=40, lean=-3, hx=-3),
-        K(0.92, rax=0, raz=4, rel=6, laz=4, lel=6, lean=0, hx=0, bob=0),
-    ], note="snaps the right hand up to the brow, chest out, holds, then away"),
+        # (2.0.0-test5, redone from the creator's notes on test4: TODO.md, Emotes to redo)
+        K(0, lean=0, tilt=0, hx=0, hz=0, bob=0, rax=0, raz=4, ray=0, rel=6, lax=0, laz=4, lay=0, lel=6),
+        K(0.12, lean=0, tilt=0, hx=0, hz=0, rax=0, raz=4, ray=0, rel=6),
+        K(0.22, bob=0.04, lean=-5, tilt=5, hx=-4, hz=4, rax=140.6, raz=-28.7, ray=87.6, rel=14.0),
+        K(0.26, bob=0.02, lean=-5, tilt=5, hx=-4, hz=4, rax=140.6, raz=-28.7, ray=87.6, rel=14.0),
+        K(0.72, bob=0.02, lean=-5, tilt=5, hx=-4, hz=4, rax=140.6, raz=-28.7, ray=87.6, rel=14.0),
+        K(0.8, lean=-3, tilt=2, hx=-2, hz=2, rax=45.0, raz=64.8, ray=-6.6, rel=67.0),
+        K(0.92, lean=0, tilt=0, hx=0, hz=0, bob=0, rax=0, raz=4, ray=0, rel=6, lax=0, laz=4, lay=0, lel=6),
+    ], note="the fingertips snapped up to the right brow, elbow out, chest up, held, then away", free=("right_arm",)),
     "shrug": Emote(1.4, [
         K(0, rax=0, raz=4, rel=6, lax=0, laz=4, lel=6, bob=0, hz=0, lean=0, hy=0),
         # elbows at the sides, forearms out, palms up
@@ -174,41 +174,57 @@ EMOTES = {
         K(0.5, rax=40, raz=90, rel=120, lax=40, laz=90, lel=120, hx=-12, lean=4, rlx=0, llx=0, rkn=4, lkn=4, bob=0),
         K(0.75, rax=40, raz=58, rel=120, lax=40, laz=58, lel=120, hx=22, lean=14, llx=40, lkn=70, bob=0.06),
     ], note="hands tucked up in front of the shoulders, elbows flapping, pecking head, knees up in turns"),
-    "disco": Emote(0.9, [
-        # pointing up and down across with a straight arm; the other hand on the hip
-        K(0, rax=35, raz=140, rel=0, lax=-25, laz=40, lel=100, tilt=-9, yaw=12, hx=-22, hy=12, rlz=8, rkn=4, lkn=18, bob=0),
-        K(0.25, bob=-0.1),
-        K(0.5, rax=45, raz=-28, rel=0, lax=-25, laz=40, lel=100, tilt=9, yaw=-12, hx=22, hy=-12, rlz=0, llz=4, rkn=18, lkn=4, bob=0),
-        K(0.75, bob=-0.1),
-    ], note="point up, point down across, hand on the hip, hips swinging, eyes on the finger"),
+    "disco": Emote(1.0, [
+        # (2.0.0-test5, redone from the creator's notes on test4: TODO.md, Emotes to redo)
+        K(0, tilt=-8, twist=8, yaw=10, hx=-22, hy=12, rlz=8, rkn=4, lkn=16, bob=0, rax=173.1, raz=33.3, ray=0.0, rel=0.0, lax=-13.4, laz=25.3, lay=65.5, lel=70.5),
+        K(0.2, bob=-0.06, rax=173.1, raz=33.3, ray=0.0, rel=0.0, lax=-13.4, laz=25.3, lay=65.5, lel=70.5),
+        K(0.5, tilt=8, twist=-22, yaw=-8, hx=24, hy=-16, rlz=0, llz=6, rkn=16, lkn=4, bob=-0.04, rax=42.1, raz=-33.4, ray=0.0, rel=0.0, lax=-13.4, laz=25.3, lay=65.5, lel=70.5),
+        K(0.7, bob=-0.1, rax=42.1, raz=-33.4, ray=0.0, rel=0.0, lax=-13.4, laz=25.3, lay=65.5, lel=70.5),
+    ], note="point up high, then right down across to the other hip and back up, the other hand on the hip, hips swinging", free=("right_arm", "left_arm")),
     "running_man": Emote(0.7, [
         K(0, rlx=50, rkn=90, llx=-25, lkn=20, rax=-40, rel=85, lax=50, lel=90, raz=8, laz=8, lean=8, bob=0.12, hx=4),
         K(0.25, rlx=0, rkn=10, llx=0, lkn=10, rax=0, rel=80, lax=0, lel=80, bob=-0.05),
         K(0.5, rlx=-25, rkn=20, llx=50, lkn=90, rax=50, rel=90, lax=-40, lel=85, lean=8, bob=0.12),
         K(0.75, rlx=0, rkn=10, llx=0, lkn=10, rax=0, rel=80, lax=0, lel=80, bob=-0.05),
     ], note="running on the spot, knees high, arms pumping with bent elbows"),
-    "karate": Emote(1.2, [
-        # horse stance (knees bent, legs out), guard up, the hand winds up high and chops down
-        K(0, rax=40, raz=-14, rel=70, lax=40, laz=-14, lel=70, rlz=16, llz=16, rkn=30, lkn=30, bob=-0.12, twist=0, hy=0),
-        K(0.18, rax=150, raz=-20, rel=90, twist=-12, hy=-10, lean=-4),
-        K(0.26, rax=72, raz=-12, rel=4, twist=18, hy=8, lean=10, bob=-0.18),
-        K(0.45, rax=40, raz=-14, rel=70, lax=40, laz=-14, lel=70, twist=0, hy=0, lean=0, bob=-0.12),
-        K(0.68, lax=150, laz=-20, lel=90, twist=12, hy=10, lean=-4),
-        K(0.76, lax=72, laz=-12, lel=4, twist=-18, hy=-8, lean=10, bob=-0.18),
-        K(0.95, rax=40, raz=-14, rel=70, lax=40, laz=-14, lel=70, twist=0, hy=0, lean=0, bob=-0.12),
-    ], note="horse stance, wind up high, chop, then the other hand"),
+    "karate": Emote(2.4, [
+        # (2.0.0-test5, redone from the creator's notes on test4: TODO.md, Emotes to redo)
+        K(0, bob=0, rkn=4, lkn=4, rlz=0, llz=0, lean=0, hx=0, rax=0, raz=4, ray=0, rel=6, lax=0, laz=4, lay=0, lel=6),
+        K(0.08, bob=-0.3, rkn=46, lkn=46, rlx=22, llx=22, lean=12, hx=6, rax=-170.4, raz=25.0, ray=23.5, rel=39.0, lax=-94.0, laz=16.7, lay=-2.8, lel=104.1),
+        K(0.16, bob=0.8, rkn=60, lkn=60, rlx=30, llx=30, lean=-4, hx=-10, rax=-170.4, raz=25.0, ray=23.5, rel=39.0, lax=-94.0, laz=16.7, lay=-2.8, lel=104.1),
+        K(0.24, bob=-0.25, rkn=34, lkn=34, rlz=20, llz=20, rlx=0, llx=0, lean=14, hx=10, twist=-10, rax=-78.4, raz=175.4, ray=-0.8, rel=41.7, lax=-94.0, laz=16.7, lay=-2.8, lel=104.1),
+        K(0.4, bob=-0.25, rkn=34, lkn=34, rlz=20, llz=20, lean=14, hx=10, twist=-10, rax=-78.4, raz=175.4, ray=-0.8, rel=41.7, lax=-94.0, laz=16.7, lay=-2.8, lel=104.1),
+        K(0.5, bob=0, rkn=4, lkn=4, rlz=0, llz=0, lean=0, hx=0, twist=0, rax=0, raz=4, ray=0, rel=6, lax=0, laz=4, lay=0, lel=6),
+        K(0.58, bob=-0.3, rkn=46, lkn=46, rlx=22, llx=22, lean=12, hx=6, rax=-94.0, raz=16.7, ray=-2.8, rel=104.1, lax=-170.4, laz=25.0, lay=23.5, lel=39.0),
+        K(0.66, bob=0.8, rkn=60, lkn=60, rlx=30, llx=30, lean=-4, hx=-10, rax=-94.0, raz=16.7, ray=-2.8, rel=104.1, lax=-170.4, laz=25.0, lay=23.5, lel=39.0),
+        K(0.74, bob=-0.25, rkn=34, lkn=34, rlz=20, llz=20, rlx=0, llx=0, lean=14, hx=10, twist=10, rax=-94.0, raz=16.7, ray=-2.8, rel=104.1, lax=-78.4, laz=175.4, lay=-0.8, lel=41.7),
+        K(0.9, bob=-0.25, rkn=34, lkn=34, rlz=20, llz=20, lean=14, hx=10, twist=10, rax=-94.0, raz=16.7, ray=-2.8, rel=104.1, lax=-78.4, laz=175.4, lay=-0.8, lel=41.7),
+    ], note="a crouch, a jumping chop: the hand high, landing in a wide stance with the chop down in front, the other fist at the hip"),
     "air_guitar": Emote(0.5, [
-        # the left hand out along the neck, the right strumming across the hips from the elbow; knees bent, rocking
-        K(0, lax=72, laz=34, lel=10, rax=20, raz=-30, rel=70, hx=28, lean=-6, rlz=10, llz=10, rkn=24, lkn=24, bob=0),
-        K(0.2, rax=34, raz=-26, rel=40, hx=0, bob=-0.06),
-        K(0.5, rax=20, raz=-30, rel=70, hx=28, bob=0),
-        K(0.7, rax=34, raz=-26, rel=40, hx=0, bob=-0.06),
-    ], note="one hand on the neck, strumming, head banging, leaning back on bent knees"),
-    "drum": Emote(0.4, [
-        # elbows bent, the sticks beating down from the elbows in turn
-        K(0, rax=30, raz=12, rel=40, lax=22, laz=12, lel=90, hx=12, bob=-0.04, twist=-5, rkn=12, lkn=12),
-        K(0.5, rax=22, raz=12, rel=90, lax=30, laz=12, lel=40, hx=4, bob=0, twist=5),
-    ], note="drumming fast, sticks in turn from the elbows, head bobbing"),
+        # (2.0.0-test5, redone from the creator's notes on test4: TODO.md, Emotes to redo)
+        K(0, hx=26, lean=-6, rlz=10, llz=10, rkn=24, lkn=24, bob=0, rax=39.9, raz=-46.3, ray=61.5, rel=14.0, lax=-5.4, laz=21.1, lay=-39.4, lel=100.1),
+        K(0.2, hx=2, bob=-0.06, rax=28.9, raz=-33.4, ray=67.8, rel=14.0, lax=-5.4, laz=21.1, lay=-39.4, lel=100.1),
+        K(0.5, hx=26, bob=0, rax=39.9, raz=-46.3, ray=61.5, rel=14.0, lax=-5.4, laz=21.1, lay=-39.4, lel=100.1),
+        K(0.7, hx=2, bob=-0.06, rax=28.9, raz=-33.4, ray=67.8, rel=14.0, lax=-5.4, laz=21.1, lay=-39.4, lel=100.1),
+    ], note="the left hand out on the neck, the right forearm across the body strumming, head banging, rocking on bent knees", free=("right_arm",)),
+    "drum": Emote(1.6, [
+        # (2.0.0-test5, redone from the creator's notes on test4: TODO.md, Emotes to redo)
+        K(0, hx=14, lean=10, bob=-0.06, rkn=14, lkn=14, rax=43.9, raz=-46.9, ray=56.4, rel=14.0, lax=48.6, laz=-1.8, lay=63.5, lel=83.0),
+        K(0.0625, hx=10, rax=71.2, raz=-54.2, ray=44.0, rel=14.5, lax=29.2, laz=-5.5, lay=65.8, lel=64.5),
+        K(0.125, hx=14, rax=43.9, raz=-46.9, ray=56.4, rel=14.0, lax=48.6, laz=-1.8, lay=63.5, lel=83.0),
+        K(0.1875, hx=10, rax=71.2, raz=-54.2, ray=44.0, rel=14.5, lax=29.2, laz=-5.5, lay=65.8, lel=64.5),
+        K(0.25, hx=14, twist=-6, rax=43.9, raz=-46.9, ray=56.4, rel=14.0, lax=47.3, laz=54.9, lay=47.0, lel=130.2),
+        K(0.3125, hx=10, rax=64.9, raz=-53.5, ray=46.3, rel=14.0, lax=16.2, laz=51.5, lay=44.1, lel=129.3),
+        K(0.375, hx=14, rax=43.9, raz=-46.9, ray=56.4, rel=14.0, lax=47.3, laz=54.9, lay=47.0, lel=130.2),
+        K(0.4375, hx=10, twist=-6, rax=64.9, raz=-53.5, ray=46.3, rel=14.0, lax=16.2, laz=51.5, lay=44.1, lel=129.3),
+        K(0.5, twist=14, hy=10, hx=16, rax=17.8, raz=11.4, ray=66.2, rel=57.4, lax=42.5, laz=-1.7, lay=63.9, lel=81.8),
+        K(0.5625, twist=10, rax=16.1, raz=30.4, ray=60.7, rel=96.3, lax=29.2, laz=-5.5, lay=65.8, lel=64.5),
+        K(0.625, twist=14, rax=17.8, raz=11.4, ray=66.2, rel=57.4, lax=42.5, laz=-1.7, lay=63.9, lel=81.8),
+        K(0.6875, twist=18, hy=14, rax=16.1, raz=30.4, ray=60.7, rel=96.3, lax=26.8, laz=-45.4, lay=62.5, lel=14.0),
+        K(0.75, twist=0, hy=0, hx=6, bob=0.02, rax=78.1, raz=-54.4, ray=42.2, rel=15.0, lax=56.1, laz=-1.8, lay=63.4, lel=83.2),
+        K(0.82, twist=12, hy=12, hx=-10, bob=-0.08, rax=108.6, raz=27.0, ray=75.3, rel=68.8, lax=29.2, laz=-5.5, lay=65.8, lel=64.5),
+        K(0.9, twist=8, hx=-6, bob=-0.04, rax=127.8, raz=7.1, ray=82.9, rel=35.7, lax=48.6, laz=-1.8, lay=63.5, lel=83.0),
+    ], note="at a drum kit with sticks: beats on the snare and hi-hat, a roll round the toms, a crash", free=("right_arm", "left_arm")),
     "boxing": Emote(0.7, [
         # guard up (elbows bent, fists in front of the chest), a jab and a cross snapping straight
         K(0, rax=60, raz=-14, rel=100, lax=66, laz=-12, lel=104, lean=8, bob=0, twist=0, rlx=-10, llx=12, rkn=22, lkn=16),
@@ -236,14 +252,17 @@ EMOTES = {
         K(0.5, tilt=11, yaw=-8, rlz=-4, llz=8, hz=-7, rkn=26, lkn=6, bob=0),
         K(0.75, tilt=0, yaw=0, rlz=2, llz=2, hz=0, rkn=20, lkn=20, bob=-0.06),
     ], note="hands on the hips, hips side to side"),
-    "swim": Emote(1.0, [
-        # windmill front crawl: the elbow bends high as each arm comes over
-        K(0, rax=0, lax=180, rel=10, lel=10, lean=22, hy=0, rlx=15, llx=-15, rkn=10, lkn=30, raz=10, laz=10),
-        K(0.25, hy=35, rlx=-15, llx=15, rkn=30, lkn=10, rel=60, lel=20),
-        K(0.5, hy=0, rlx=15, llx=-15, rkn=10, lkn=30, rel=10, lel=10),
-        K(0.75, hy=-35, rlx=-15, llx=15, rkn=30, lkn=10, rel=20, lel=60),
-        K(1, rax=360, lax=540, rel=10, lel=10, hy=0, rlx=15, llx=-15, rkn=10, lkn=30),
-    ], linear=("rax", "lax"), note="front crawl in the air: windmill arms, turning to breathe, legs fluttering"),
+    "swim": Emote(1.4, [
+        # (2.0.0-test5, redone from the creator's notes on test4: TODO.md, Emotes to redo)
+        K(0, lean=22, hy=0, rlx=12, llx=-12, rkn=10, lkn=24, rax=141.3, raz=17.3, ray=163.3, rel=9.4, lax=-33.7, laz=23.9, lay=169.1, lel=23.5),
+        K(0.125, hy=-16, rax=106.4, raz=26.9, ray=178.9, rel=26.3, lax=-60.9, laz=58.8, lay=173.3, lel=17.1),
+        K(0.25, hy=-30, rlx=-12, llx=12, rkn=24, lkn=10, rax=76.0, raz=33.7, ray=181.4, rel=37.8, lax=16.7, laz=121.6, lay=35.7, lel=96.9),
+        K(0.375, hy=-16, rax=-10.3, raz=55.1, ray=158.8, rel=21.8, lax=161.6, laz=37.2, lay=165.0, lel=38.2),
+        K(0.5, hy=0, rlx=12, llx=-12, rkn=10, lkn=24, rax=-33.7, raz=23.9, ray=169.1, rel=23.5, lax=141.3, laz=17.3, lay=163.3, lel=9.4),
+        K(0.625, hy=16, rax=-60.9, raz=58.8, ray=173.3, rel=17.1, lax=106.4, laz=26.9, lay=178.9, lel=26.3),
+        K(0.75, hy=30, rlx=-12, llx=12, rkn=24, lkn=10, rax=16.7, raz=121.6, ray=35.7, rel=96.9, lax=76.0, laz=33.7, lay=181.4, lel=37.8),
+        K(0.875, hy=16, rax=161.6, raz=37.2, ray=165.0, rel=38.2, lax=-10.3, laz=55.1, lay=158.8, lel=21.8),
+    ], note="front crawl in the air: reach, pull, push past the hip, the elbow high coming over, turning to breathe"),
     "zombie": Emote(1.4, [
         # stiff arms out in front, wrists limp (a little elbow), knees bent and dragging
         K(0, rax=92, raz=6, rel=14, lax=86, laz=6, lel=8, hz=22, hx=10, lean=10, yaw=-5, rlx=14, llx=-6, rkn=10, lkn=28, bob=0),
@@ -251,16 +270,17 @@ EMOTES = {
         K(0.5, rax=92, lax=86, rel=14, lel=8, hz=26, yaw=5, rlx=-6, llx=14, rkn=28, lkn=10, bob=0),
         K(0.75, rax=86, lax=92, rel=8, lel=14, hz=18, rkn=20, lkn=20, bob=-0.06),
     ], note="arms out, head lolling, shuffling on dragging knees"),
-    "flex": Emote(1.2, [
-        K(0, raz=4, laz=4, rax=0, lax=0, rel=6, lel=6, lean=0, bob=0, hx=0),
-        # double biceps: upper arms out level, forearms up, fists by the ears
-        K(0.14, rax=90, raz=96, rel=110, lax=90, laz=96, lel=110, lean=-6, bob=0.05, hx=-8),
-        K(0.42, rax=90, raz=100, rel=122, lax=90, laz=100, lel=122, lean=-7, bob=0.05, hx=-8),
-        # the most-muscular crunch: fists together low in front, leaning in on bent knees
-        K(0.55, rax=40, raz=0, rel=60, lax=40, laz=0, lel=60, lean=16, bob=-0.14, hx=10, rkn=10, lkn=10),
-        K(0.82, rax=41, raz=0, rel=64, lax=41, laz=0, lel=64, lean=17, bob=-0.14, hx=10),
-        K(0.94, raz=4, laz=4, rax=0, lax=0, rel=6, lel=6, lean=0, bob=0, hx=0, rkn=0, lkn=0),
-    ], note="double biceps, then the most-muscular crunch"),
+    "flex": Emote(1.6, [
+        # (2.0.0-test5, redone from the creator's notes on test4: TODO.md, Emotes to redo)
+        K(0, lean=0, bob=0, hx=0, twist=0, hy=0, rax=0, raz=4, ray=0, rel=6, lax=0, laz=4, lay=0, lel=6),
+        K(0.12, lean=-6, bob=0.05, hx=-8, rax=116.6, raz=83.6, ray=37.0, rel=77.8, lax=116.6, laz=83.6, lay=37.0, lel=77.8),
+        K(0.24, lean=-7, bob=0.07, hx=-10, rax=135.0, raz=80.4, ray=58.9, rel=84.5, lax=135.0, laz=80.4, lay=58.9, lel=84.5),
+        K(0.36, lean=-6, bob=0.05, hx=-8, rax=116.6, raz=83.6, ray=37.0, rel=77.8, lax=116.6, laz=83.6, lay=37.0, lel=77.8),
+        K(0.52, twist=-28, hy=24, lean=-3, bob=0.03, hx=-4, rkn=14, lkn=4, rax=93.4, raz=30.4, ray=15.3, rel=75.7, lax=44.5, laz=-4.5, lay=70.6, lel=61.0),
+        K(0.64, twist=-30, hy=26, lean=-4, bob=0.05, hx=-6, rkn=14, lkn=4, rax=93.4, raz=30.4, ray=15.3, rel=75.7, lax=44.5, laz=-4.5, lay=70.6, lel=61.0),
+        K(0.78, twist=0, hy=0, lean=-7, bob=0.07, hx=-10, rkn=0, lkn=0, rax=135.0, raz=80.4, ray=58.9, rel=84.5, lax=135.0, laz=80.4, lay=58.9, lel=84.5),
+        K(0.92, lean=0, bob=0, hx=0, twist=0, hy=0, rax=0, raz=4, ray=0, rel=6, lax=0, laz=4, lay=0, lel=6),
+    ], note="double biceps, a pulse, a side flex, double biceps: just flexing", free=("left_arm",)),
     "bow": Emote(2.0, [
         K(0, rax=0, raz=4, rel=6, lax=0, laz=4, lel=6, lean=0, hx=0),
         # the right forearm across the front of the waist, the left arm a little back, then a bow
@@ -276,15 +296,13 @@ EMOTES = {
         K(0.5, lax=10, laz=168, lel=8, rax=30, raz=20, rel=70, bob=0.12, hx=-14, tilt=5, rkn=4, lkn=20),
         K(0.75, bob=0, rel=40, lel=40),
     ], note="fists up in turns, bouncing on bent knees"),
-    "raise_roof": Emote(0.9, [
-        # (creator, test4: "Looks like it's flexing muscles") palms up, pushing the roof: from hands up in front of the
-        # shoulders, elbows out and a little forward (a flex has them level out to the sides), the arms push up into a
-        # V overhead, twice a loop, bouncing on the beat (both ends and the way between clear of the body)
-        K(0, rax=69.5, raz=58.6, ray=-1.7, rel=84.8, lax=69.5, laz=58.6, lay=-1.7, lel=84.8, bob=-0.1, hx=6, lean=4, rkn=14, lkn=14),
-        K(0.25, rax=-6.1, raz=165, ray=-1.6, rel=2.8, lax=-6.1, laz=165, lay=-1.6, lel=2.8, bob=0.03, hx=-14, lean=-4, rkn=2, lkn=2),
-        K(0.5, rax=69.5, raz=58.6, ray=-1.7, rel=84.8, lax=69.5, laz=58.6, lay=-1.7, lel=84.8, bob=-0.1, hx=6, lean=4, rkn=14, lkn=14),
-        K(0.75, rax=-6.1, raz=165, ray=-1.6, rel=2.8, lax=-6.1, laz=165, lay=-1.6, lel=2.8, bob=0.03, hx=-14, lean=-4, rkn=2, lkn=2),
-    ], note="palms up, pushing the roof up overhead, bouncing"),
+    "raise_roof": Emote(0.8, [
+        # (2.0.0-test5, redone from the creator's notes on test4: TODO.md, Emotes to redo)
+        K(0, bob=-0.12, hx=4, rkn=26, lkn=26, rax=90.0, raz=87.1, ray=2.6, rel=85.3, lax=90.0, laz=87.1, lay=2.6, lel=85.3),
+        K(0.25, bob=0.35, hx=-14, rkn=6, lkn=6, rax=177.0, raz=12.8, ray=89.3, rel=2.4, lax=177.0, laz=12.8, lay=89.3, lel=2.4),
+        K(0.5, bob=-0.12, hx=4, rkn=26, lkn=26, rax=90.0, raz=87.1, ray=2.6, rel=85.3, lax=90.0, laz=87.1, lay=2.6, lel=85.3),
+        K(0.75, bob=0.35, hx=-14, rkn=6, lkn=6, rax=177.0, raz=12.8, ray=89.3, rel=2.4, lax=177.0, laz=12.8, lay=89.3, lel=2.4),
+    ], note="palms up overhead, pumping the arms straight up and down, jumping on each push"),
     "penguin": Emote(0.5, [
         # stiff straight arms and legs, little flaps and a waddle
         K(0, raz=30, laz=8, rel=0, lel=0, tilt=-10, yaw=10, rlx=8, llx=-4, hz=8, bob=0.04),
@@ -292,13 +310,17 @@ EMOTES = {
         K(0.5, raz=8, laz=30, tilt=10, yaw=-10, rlx=-4, llx=8, hz=-8, bob=0.04),
         K(0.75, raz=10, laz=10, tilt=0, yaw=0, rlx=0, llx=0, hz=0, bob=0),
     ], note="little flaps and a waddle, stiff as a penguin"),
-    "slide": Emote(0.9, [
-        # one foot slides out as that knee straightens, the other knee bends; arms ease with soft elbows
-        K(0, rlz=26, llz=0, rkn=0, lkn=36, rax=-15, lax=25, raz=20, laz=10, rel=20, lel=40, tilt=-8, yaw=12, hy=-10, bob=-0.08),
-        K(0.25, rlz=4, llz=4, rkn=16, lkn=16, rax=0, lax=0, raz=10, laz=10, rel=24, lel=24, tilt=0, yaw=0, hy=0, bob=0),
-        K(0.5, rlz=0, llz=26, rkn=36, lkn=0, rax=25, lax=-15, raz=10, laz=20, rel=40, lel=20, tilt=8, yaw=-12, hy=10, bob=-0.08),
-        K(0.75, rlz=4, llz=4, rkn=16, lkn=16, rax=0, lax=0, raz=10, laz=10, rel=24, lel=24, tilt=0, yaw=0, hy=0, bob=0),
-    ], note="smooth sliding feet, knees taking turns, arms easing back and forth"),
+    "slide": Emote(3.2, [
+        # (2.0.0-test5, redone from the creator's notes on test4: TODO.md, Emotes to redo)
+        K(0.0, sx=-0.9, rlz=2.9, llz=2.9, rkn=10, lkn=10, tilt=-6, hy=-14, lean=2, bob=0, rax=12.5, raz=20.8, ray=6.4, rel=18.6, lax=12.5, laz=20.8, lay=6.4, lel=18.6),
+        K(0.125, sx=-0.9, rlz=26.6, llz=2.9, rkn=10, lkn=10, tilt=-6, hy=-14, lean=2, bob=0, rax=12.5, raz=20.8, ray=6.4, rel=18.6, lax=12.5, laz=20.8, lay=6.4, lel=18.6),
+        K(0.25, sx=0.0, rlz=2.9, llz=2.9, rkn=10, lkn=10, tilt=-6, hy=-14, lean=2, bob=0, rax=12.5, raz=20.8, ray=6.4, rel=18.6, lax=12.5, laz=20.8, lay=6.4, lel=18.6),
+        K(0.375, sx=0.0, rlz=26.6, llz=2.9, rkn=10, lkn=10, tilt=-6, hy=-14, lean=2, bob=0, rax=12.5, raz=20.8, ray=6.4, rel=18.6, lax=12.5, laz=20.8, lay=6.4, lel=18.6),
+        K(0.5, sx=0.9, rlz=2.9, llz=2.9, rkn=10, lkn=10, tilt=6, hy=14, lean=2, bob=0, rax=12.5, raz=20.8, ray=6.4, rel=18.6, lax=12.5, laz=20.8, lay=6.4, lel=18.6),
+        K(0.625, sx=0.9, rlz=2.9, llz=26.6, rkn=10, lkn=10, tilt=6, hy=14, lean=2, bob=0, rax=12.5, raz=20.8, ray=6.4, rel=18.6, lax=12.5, laz=20.8, lay=6.4, lel=18.6),
+        K(0.75, sx=0.0, rlz=2.9, llz=2.9, rkn=10, lkn=10, tilt=6, hy=14, lean=2, bob=0, rax=12.5, raz=20.8, ray=6.4, rel=18.6, lax=12.5, laz=20.8, lay=6.4, lel=18.6),
+        K(0.875, sx=0.0, rlz=2.9, llz=26.6, rkn=10, lkn=10, tilt=6, hy=14, lean=2, bob=0, rax=12.5, raz=20.8, ray=6.4, rel=18.6, lax=12.5, laz=20.8, lay=6.4, lel=18.6),
+    ], note="a foot steps out to the side, the other drags along the floor to it, twice, then back the other way"),
     "fly_pose": Emote(1.5, [
         # one fist up, the other at the hip, knees bent back, hovering
         K(0, rax=180, raz=-6, rel=0, lax=-18, laz=30, lel=96, rlx=-8, llx=-18, rkn=30, lkn=60, lean=8, hx=-10, bob=0.35),
@@ -312,25 +334,39 @@ EMOTES = {
         K(0.78, raz=40, laz=40, rel=30, lel=30, rlz=4, llz=4, lean=12, bob=-0.2, hx=6),
         K(0.92, raz=6, laz=6, rel=6, lel=6, rlz=0, llz=0, lean=0, bob=0, hx=0),
     ], note="crouch, a big jumping star, land on bent knees"),
-    "hula": Emote(0.8, [
-        K(0, rax=20, raz=95, rel=30, lax=40, laz=-15, lel=60, tilt=-12, rlz=10, llz=-4, hz=8, rkn=4, lkn=24, bob=0),
-        K(0.25, rax=30, raz=60, rel=40, lax=30, laz=60, lel=40, tilt=0, rlz=3, llz=3, hz=0, rkn=16, lkn=16, bob=-0.05),
-        K(0.5, rax=40, raz=-15, rel=60, lax=20, laz=95, lel=30, tilt=12, rlz=-4, llz=10, hz=-8, rkn=24, lkn=4, bob=0),
-        K(0.75, rax=30, raz=60, rel=40, lax=30, laz=60, lel=40, tilt=0, rlz=3, llz=3, hz=0, rkn=16, lkn=16, bob=-0.05),
-    ], note="arms flowing side to side from the elbows, hips swaying on soft knees"),
+    "hula": Emote(1.2, [
+        # (2.0.0-test5, redone from the creator's notes on test4: TODO.md, Emotes to redo)
+        K(0.0, sx=0.0, rlz=-0.0, llz=0.0, rlx=-6.3, llx=-6.3, tilt=-0.0, lean=-5.0, rkn=8, lkn=8, hz=0.0, rax=-13.4, raz=25.3, ray=65.5, rel=70.5, lax=-13.4, laz=25.3, lay=65.5, lel=70.5),
+        K(0.125, sx=0.2, rlz=-5.7, llz=5.7, rlx=-4.4, llx=-4.4, tilt=-4.9, lean=-3.5, rkn=8, lkn=8, hz=2.8, rax=-13.4, raz=25.3, ray=65.5, rel=70.5, lax=-13.4, laz=25.3, lay=65.5, lel=70.5),
+        K(0.25, sx=0.28, rlz=-8.0, llz=8.0, rlx=-0.0, llx=-0.0, tilt=-7.0, lean=-0.0, rkn=8, lkn=8, hz=4.0, rax=-13.4, raz=25.3, ray=65.5, rel=70.5, lax=-13.4, laz=25.3, lay=65.5, lel=70.5),
+        K(0.375, sx=0.2, rlz=-5.7, llz=5.7, rlx=4.4, llx=4.4, tilt=-4.9, lean=3.5, rkn=8, lkn=8, hz=2.8, rax=-13.4, raz=25.3, ray=65.5, rel=70.5, lax=-13.4, laz=25.3, lay=65.5, lel=70.5),
+        K(0.5, sx=0.0, rlz=-0.0, llz=0.0, rlx=6.3, llx=6.3, tilt=-0.0, lean=5.0, rkn=8, lkn=8, hz=0.0, rax=-13.4, raz=25.3, ray=65.5, rel=70.5, lax=-13.4, laz=25.3, lay=65.5, lel=70.5),
+        K(0.625, sx=-0.2, rlz=5.7, llz=-5.7, rlx=4.4, llx=4.4, tilt=4.9, lean=3.5, rkn=8, lkn=8, hz=-2.8, rax=-13.4, raz=25.3, ray=65.5, rel=70.5, lax=-13.4, laz=25.3, lay=65.5, lel=70.5),
+        K(0.75, sx=-0.28, rlz=8.0, llz=-8.0, rlx=0.0, llx=0.0, tilt=7.0, lean=0.0, rkn=8, lkn=8, hz=-4.0, rax=-13.4, raz=25.3, ray=65.5, rel=70.5, lax=-13.4, laz=25.3, lay=65.5, lel=70.5),
+        K(0.875, sx=-0.2, rlz=5.7, llz=-5.7, rlx=-4.4, llx=-4.4, tilt=4.9, lean=-3.5, rkn=8, lkn=8, hz=-2.8, rax=-13.4, raz=25.3, ray=65.5, rel=70.5, lax=-13.4, laz=25.3, lay=65.5, lel=70.5),
+    ], note="hands on the hips, the hips circling round and round, shoulders level", free=("right_arm", "left_arm")),
     "wave_both": Emote(0.8, [
-        # both upper arms out to the sides, both forearms up, waving from the elbows
-        K(0, rax=90, raz=100, rel=60, lax=90, laz=100, lel=110, hz=-8, bob=0, rkn=4, lkn=4),
-        K(0.25, bob=0.06),
-        K(0.5, rel=110, lel=60, hz=8, bob=0),
-        K(0.75, bob=0.06),
-    ], note="waving with both hands from the elbows, swaying"),
-    "rock_out": Emote(0.45, [
-        # the fist pumps from the elbow, head banging, knees bending
-        K(0, rax=150, raz=-10, rel=10, lax=10, laz=25, lel=30, hx=-12, lean=-6, bob=0.04, rkn=8, lkn=8),
-        K(0.45, rax=120, raz=-5, rel=70, hx=30, lean=10, bob=-0.1, rkn=26, lkn=26),
-        K(0.55, rax=120, raz=-5, rel=70, hx=30, lean=10, bob=-0.1),
-    ], note="fist pumping, head banging"),
+        # (2.0.0-test5, redone from the creator's notes on test4: TODO.md, Emotes to redo)
+        K(0, hz=-6, bob=0, rkn=4, lkn=4, rax=172.8, raz=37.0, ray=86.9, rel=51.0, lax=172.8, laz=37.0, lay=86.9, lel=51.0),
+        K(0.25, hz=0, bob=0.06, rax=172.8, raz=37.0, ray=41.4, rel=1.7, lax=172.8, laz=37.0, lay=41.4, lel=1.7),
+        K(0.5, hz=6, bob=0, rax=172.8, raz=37.0, ray=86.9, rel=51.0, lax=172.8, laz=37.0, lay=86.9, lel=51.0),
+        K(0.75, hz=0, bob=0.06, rax=172.8, raz=37.0, ray=41.4, rel=1.7, lax=172.8, laz=37.0, lay=41.4, lel=1.7),
+    ], note="both arms up and out, forearms upright, waving from the elbows, swaying"),
+    "rock_out": Emote(1.8, [
+        # (2.0.0-test5: playing a real guitar (props.py guitar), the creator's go-ahead on accessories)
+        K(0, rlz=10, llz=10, hx=26, lean=8, bob=-0.1, rkn=26, lkn=26, rax=36.2, raz=-12.4, ray=57.2, rel=14.0, lax=26.6, laz=-6.2, lay=37.7, lel=79.5),
+        K(0.07, hx=2, lean=4, bob=0, rkn=12, lkn=12, rax=36.7, raz=14.1, ray=59.5, rel=64.6, lax=26.6, laz=-6.2, lay=37.7, lel=79.5),
+        K(0.14, hx=26, lean=8, bob=-0.1, rkn=26, lkn=26, rax=36.2, raz=-12.4, ray=57.2, rel=14.0, lax=26.6, laz=-6.2, lay=37.7, lel=79.5),
+        K(0.21, hx=2, lean=4, bob=0, rkn=12, lkn=12, rax=36.7, raz=14.1, ray=59.5, rel=64.6, lax=26.6, laz=-6.2, lay=37.7, lel=79.5),
+        K(0.28, hx=26, lean=8, bob=-0.1, rkn=26, lkn=26, rax=36.2, raz=-12.4, ray=57.2, rel=14.0, lax=26.6, laz=-6.2, lay=37.7, lel=79.5),
+        K(0.35, hx=2, lean=4, bob=0, rkn=12, lkn=12, rax=36.7, raz=14.1, ray=59.5, rel=64.6, lax=26.6, laz=-6.2, lay=37.7, lel=79.5),
+        K(0.48, hx=-20, lean=-8, bob=0.04, rkn=6, lkn=6, rax=172.8, raz=17.4, ray=47.9, rel=6.2, lax=21.6, laz=5.8, lay=29.4, lel=95.8),
+        K(0.6, hx=-24, lean=-10, bob=0.06, rkn=4, lkn=4, rax=172.8, raz=17.4, ray=47.9, rel=6.2, lax=21.6, laz=5.8, lay=29.4, lel=95.8),
+        K(0.7, hx=32, lean=14, bob=-0.18, rkn=36, lkn=36, rax=36.2, raz=-12.4, ray=57.2, rel=14.0, lax=26.6, laz=-6.2, lay=37.7, lel=79.5),
+        K(0.79, hx=4, lean=6, bob=-0.04, rkn=16, lkn=16, rax=36.7, raz=14.1, ray=59.5, rel=64.6, lax=26.6, laz=-6.2, lay=37.7, lel=79.5),
+        K(0.88, hx=26, lean=8, bob=-0.1, rkn=26, lkn=26, rax=36.2, raz=-12.4, ray=57.2, rel=14.0, lax=26.6, laz=-6.2, lay=37.7, lel=79.5),
+        K(0.95, hx=2, lean=4, bob=0, rkn=12, lkn=12, rax=36.7, raz=14.1, ray=59.5, rel=64.6, lax=26.6, laz=-6.2, lay=37.7, lel=79.5),
+    ], note="strumming hard on the guitar, the left hand on its neck, head banging; then the arm thrown up high and brought down in a big sweep onto the strings", free=("right_arm", "left_arm")),
     "tap_dance": Emote(0.5, [
         # quick feet: a foot kicks forward and taps, the knee bending as it comes back
         K(0, rlx=28, rkn=6, llx=0, lkn=14, raz=28, laz=22, rel=20, lel=20, twist=6, bob=0.05, hx=-4),
@@ -341,27 +377,27 @@ EMOTES = {
         K(0.75, rlx=0, rkn=14, llx=0, lkn=14, bob=0),
     ], note="quick feet with bending knees, arms out for balance"),
     "lasso": Emote(0.6, [
-        # the rope hand circles overhead from the elbow; the other hand on the hip
-        K(0, rax=25, raz=158, rel=30, lax=-25, laz=38, lel=100, hx=-22, bob=0, hy=0, rkn=10, lkn=10),
-        K(0.25, rax=0, raz=172, rel=50, hy=8, bob=0.03),
-        K(0.5, rax=-25, raz=158, rel=30, hy=0, bob=0),
-        K(0.75, rax=0, raz=144, rel=10, hy=-8, bob=0.03),
+        # the rope hand circles overhead; the other hand on the hip
+        # (2.0.0-test5, with the rope (props.py lasso): the arm higher and straighter, so the loop spins above the head's
+        # right instead of through the head)
+        K(0, rax=22, raz=158, rel=12, lax=-25, laz=38, lel=100, hx=-22, bob=0, hy=0, rkn=10, lkn=10),
+        K(0.25, rax=0, raz=166, rel=18, hy=8, bob=0.03),
+        K(0.5, rax=-22, raz=158, rel=12, hy=0, bob=0),
+        K(0.75, rax=0, raz=150, rel=6, hy=-8, bob=0.03),
     ], note="a rope twirled overhead, the other hand on the hip"),
     # ---- v2.0.0 (creator: "a Griddy emote based on the viral Griddy dance"; "some OG fortnite emotes (boneless,
     # orange justice, defult dance, etc.) ... in the locker shop"): bought with gold (emotes sheet unlock shop) ----
-    "griddy": Emote(1.0, [
-        # heels tapped out in front in turn on a little hop, arms swinging, then both hands round the eyes like goggles
-        # (every arm channel keyed on each arm key: nothing drifts between them)
-        K(0, rlx=34, rkn=0, llx=-6, lkn=24, rax=-34, raz=8, ray=0, rel=35, lax=42, laz=8, lay=0, lel=75, lean=-5, bob=-0.05, hz=4, hx=-4),
-        K(0.125, rlx=4, llx=4, rkn=16, lkn=16, bob=0.04),
-        K(0.25, llx=34, lkn=0, rlx=-6, rkn=24, lax=-34, laz=8, lay=0, lel=35, rax=42, raz=8, ray=0, rel=75, lean=-5, bob=-0.05, hz=-4, hx=-4),
-        K(0.375, rlx=4, llx=4, rkn=16, lkn=16, bob=0.04),
-        K(0.5, rlx=34, rkn=0, llx=-6, lkn=24, rax=-34, raz=8, ray=0, rel=35, lax=42, laz=8, lay=0, lel=75, lean=-5, bob=-0.05, hz=4, hx=-4),
-        K(0.625, rlx=4, llx=4, rkn=16, lkn=16, bob=0.04, rax=55, raz=45, ray=20, rel=55, lax=70, laz=45, lay=20, lel=70),
-        K(0.75, llx=34, lkn=0, rlx=-6, rkn=24, rax=103, raz=54.9, ray=62, rel=93.7, lax=103, laz=54.9, lay=62, lel=93.7, lean=-8, bob=-0.05, hx=-10,
-          hz=0),
-        K(0.875, rlx=4, llx=4, rkn=16, lkn=16, bob=0.04, rax=25, raz=40, ray=10, rel=45, lax=45, laz=40, lay=10, lel=60, hx=-4),
-    ], note="heels tapped out in front in turn, arms swinging, then hands round the eyes like goggles"),
+    "griddy": Emote(1.6, [
+        # (2.0.0-test5, redone from the creator's notes on test4: TODO.md, Emotes to redo)
+        K(0, rlx=34, rkn=0, llx=-6, lkn=24, lean=-5, bob=-0.05, hz=4, hx=-4, rax=-30.5, raz=5.8, ray=-178.5, rel=28.9, lax=53.1, laz=5.7, lay=-3.0, lel=54.1),
+        K(0.125, rlx=4, llx=4, rkn=16, lkn=16, bob=0.04, rax=-30.5, raz=5.8, ray=-178.5, rel=28.9, lax=53.1, laz=5.7, lay=-3.0, lel=54.1),
+        K(0.25, llx=34, lkn=0, rlx=-6, rkn=24, lean=-5, bob=-0.05, hz=-4, hx=-4, rax=53.1, raz=5.7, ray=-3.0, rel=54.1, lax=-30.5, laz=5.8, lay=-178.5, lel=28.9),
+        K(0.375, rlx=4, llx=4, rkn=16, lkn=16, bob=0.04, rax=53.1, raz=5.7, ray=-3.0, rel=54.1, lax=-30.5, laz=5.8, lay=-178.5, lel=28.9),
+        K(0.5, rlx=34, rkn=0, llx=-6, lkn=24, bob=-0.05, hz=0, lean=8, hx=8, rax=154.1, raz=-31.9, ray=83.0, rel=14.0, lax=154.1, laz=-31.9, lay=83.0, lel=14.0),
+        K(0.625, rlx=4, llx=4, rkn=16, lkn=16, bob=0.04, lean=8, hx=8, rax=154.1, raz=-31.9, ray=83.0, rel=14.0, lax=154.1, laz=-31.9, lay=83.0, lel=14.0),
+        K(0.75, llx=34, lkn=0, rlx=-6, rkn=24, bob=-0.05, lean=8, hx=8, rax=154.1, raz=-31.9, ray=83.0, rel=14.0, lax=154.1, laz=-31.9, lay=83.0, lel=14.0),
+        K(0.875, rlx=4, llx=4, rkn=16, lkn=16, bob=0.04, lean=-5, hx=-4, rax=-30.5, raz=5.8, ray=-178.5, rel=28.9, lax=53.1, laz=5.7, lay=-3.0, lel=54.1),
+    ], note="heels tapped out in front in turn, arms swinging, then both hands up round the eyes like goggles", free=("right_arm", "left_arm")),
     "default_dance": Emote(2.0, [
         # arms swung to one side and the other with a bounce, then pumped up and down in front, then a kick back
         K(0, rax=40, raz=-6, rel=60, lax=10, laz=40, lel=40, tilt=-6, twist=-10, rlz=6, llz=-2, rkn=10, lkn=16, bob=-0.06),
@@ -375,21 +411,26 @@ EMOTES = {
         K(0.8, rax=60, raz=10, rel=20, lax=60, laz=10, lel=20, rlx=-40, rkn=70, llx=6, lkn=14, lean=12, bob=-0.04, hx=0),
         K(0.9, rax=20, raz=12, rel=30, lax=20, laz=12, lel=30, rlx=0, rkn=8, llx=0, lkn=8, lean=2, bob=0),
     ], note="arms swung side to side on a bounce, pumped up and down, then a kick back"),
-    "orange_justice": Emote(1.2, [
-        # big swinging arms, one forward and up as the other goes back, the opposite knee lifting, bouncing
-        K(0, rax=125, raz=20, rel=20, lax=-45, laz=12, lel=20, llx=55, lkn=75, rlx=0, rkn=14, lean=4, bob=0.03, hx=-6),
-        K(0.25, rax=20, raz=40, rel=30, lax=20, laz=40, lel=30, llx=6, lkn=30, rkn=30, lean=10, bob=-0.12, hx=6),
-        K(0.5, lax=125, laz=20, lel=20, rax=-45, raz=12, rel=20, rlx=55, rkn=75, llx=0, lkn=14, lean=4, bob=0.03, hx=-6),
-        K(0.75, rax=20, raz=40, rel=30, lax=20, laz=40, lel=30, rlx=6, rkn=30, lkn=30, lean=10, bob=-0.12, hx=6),
-    ], note="big arm swings, one up as the other goes back, the opposite knee lifting"),
-    "boneless": Emote(1.6, [
-        # going limp: the knees buckle and the body flops down, arms dangling and swinging loose, then springs up
-        K(0, rax=6, raz=8, rel=10, lax=6, laz=8, lel=10, lean=0, bob=0, hx=0, rkn=4, lkn=4),
-        K(0.25, rax=28, raz=14, rel=30, lax=20, laz=18, lel=20, lean=26, tilt=8, bob=-0.55, hx=34, hz=12, rkn=80, lkn=70, rlx=36, llx=30),
-        K(0.45, rax=-10, raz=24, rel=12, lax=34, laz=6, lel=40, lean=30, tilt=-10, bob=-0.6, hx=38, hz=-12, rkn=86, lkn=80, rlx=40, llx=36),
-        K(0.62, rax=30, raz=10, rel=40, lax=-8, laz=26, lel=10, lean=24, tilt=8, bob=-0.5, hx=30, hz=10, rkn=74, lkn=80, rlx=34, llx=38),
-        K(0.82, rax=10, raz=30, rel=20, lax=10, laz=30, lel=20, lean=-4, tilt=0, bob=0.05, hx=-8, hz=0, rkn=6, lkn=6, rlx=0, llx=0),
-    ], note="going limp: knees buckling, body flopping, arms dangling loose, then springing up"),
+    "orange_justice": Emote(1.0, [
+        # (2.0.0-test5, redone from the creator's notes on test4: TODO.md, Emotes to redo)
+        K(0, llz=28, lkn=6, rlz=0, rkn=26, tilt=8, twist=10, lean=12, bob=-0.06, hx=6, rax=29.1, raz=58.8, ray=0.0, rel=0.0, lax=36.3, laz=-20.6, lay=74.7, lel=6.4),
+        K(0.25, llz=0, rlz=0, rkn=30, lkn=30, tilt=0, twist=0, lean=16, bob=-0.16, hx=10, rax=30.5, raz=5.8, ray=24.4, rel=7.0, lax=30.5, laz=5.8, lay=24.4, lel=7.0),
+        K(0.5, rlz=28, rkn=6, llz=0, lkn=26, tilt=-8, twist=-10, lean=12, bob=-0.06, hx=6, rax=36.3, raz=-20.6, ray=74.7, rel=6.4, lax=29.1, laz=58.8, lay=0.0, lel=0.0),
+        K(0.75, llz=0, rlz=0, rkn=30, lkn=30, tilt=0, twist=0, lean=16, bob=-0.16, hx=10, rax=30.5, raz=5.8, ray=24.4, rel=7.0, lax=30.5, laz=5.8, lay=24.4, lel=7.0),
+    ], note="knees bent and bouncing, both arms swinging together side to side across the front, a foot kicking out sideways in turn", free=("right_arm", "left_arm")),
+    "boneless": Emote(2.4, [
+        # (2.0.0-test5, redone from the creator's notes on test4: TODO.md, Emotes to redo)
+        K(0, flip=0, lean=0, bob=0, hx=0, rkn=4, lkn=4, rlx=0, llx=0, tilt=0, twist=0, rax=0, raz=4, ray=0, rel=6, lax=0, laz=4, lay=0, lel=6),
+        K(0.1, lean=12, tilt=10, bob=-0.6, hx=30, hz=14, rkn=70, lkn=62, rlx=22, llx=18, rax=6.3, raz=23.8, ray=165.3, rel=18.5, lax=6.3, laz=23.8, lay=165.3, lel=18.5),
+        K(0.2, flip=78, lean=0, tilt=0, bob=-1.4, hx=-20, rkn=10, lkn=30, rlx=-10, llx=10, rax=76.0, raz=65.4, ray=37.8, rel=27.1, lax=-59.0, laz=126.1, lay=51.2, lel=32.4),
+        K(0.3, flip=86, twist=16, tilt=8, hz=10, rkn=40, lkn=6, rlx=10, llx=-14, rax=76.0, raz=65.4, ray=37.8, rel=27.1, lax=-59.0, laz=126.1, lay=51.2, lel=32.4),
+        K(0.4, flip=86, twist=-16, tilt=-8, hz=-10, rkn=6, lkn=40, rlx=-14, llx=10, rax=-59.0, raz=126.1, ray=51.2, rel=32.4, lax=76.0, laz=65.4, lay=37.8, lel=27.1),
+        K(0.5, flip=86, twist=16, tilt=8, hz=10, rkn=40, lkn=6, rlx=10, llx=-14, rax=76.0, raz=65.4, ray=37.8, rel=27.1, lax=-59.0, laz=126.1, lay=51.2, lel=32.4),
+        K(0.6, flip=86, twist=-16, tilt=-8, hz=-10, rkn=6, lkn=40, rlx=-14, llx=10, rax=-59.0, raz=126.1, ray=51.2, rel=32.4, lax=76.0, laz=65.4, lay=37.8, lel=27.1),
+        K(0.7, flip=86, twist=10, tilt=4, hz=6, rkn=30, lkn=20, rlx=4, llx=-4, rax=76.0, raz=65.4, ray=37.8, rel=27.1, lax=-59.0, laz=126.1, lay=51.2, lel=32.4),
+        K(0.82, flip=20, twist=0, tilt=0, hz=0, lean=14, bob=-0.6, hx=24, rkn=76, lkn=76, rlx=30, llx=30, rax=6.3, raz=23.8, ray=165.3, rel=18.5, lax=6.3, laz=23.8, lay=165.3, lel=18.5),
+        K(0.94, flip=0, lean=0, bob=0, hx=0, rkn=4, lkn=4, rlx=0, llx=0, rax=0, raz=4, ray=0, rel=6, lax=0, laz=4, lay=0, lel=6),
+    ], note="going limp, dropping to the floor and flopping about on it like there are no bones, then back up", plant="touch", free=("right_arm", "left_arm")),
     "take_the_l": Emote(1.0, [
         # an L on the forehead, the legs kicked out to the sides in turn on little hops
         K(0, rax=130.8, raz=35.7, ray=82.3, rel=65.6, lax=-20, laz=20, lel=60, rlz=34, rkn=4, llz=-2, lkn=18, yaw=20, bob=0.02, hx=-6, hy=-10),
@@ -405,13 +446,16 @@ EMOTES = {
         K(0.75, rax=21.3, raz=14.5, ray=-3.2, rel=79.3, lax=27.9, laz=14.6, lay=-8.5, lel=109.7, rlz=0, rkn=22, llz=20, lkn=8, tilt=-4, bob=0.0),
     ], note="feet shuffling out to the sides, forearms pumping in front in turn"),
     "fresh": Emote(1.6, [
-        # arms swung beside the hips one way and the other, forearms forward, the hips swaying, then a snap with both
-        K(0, rax=35, raz=-2, rel=80, lax=-25, laz=24, lel=60, tilt=-8, twist=-14, rlz=6, llz=-2, rkn=8, lkn=22, bob=-0.05),
-        K(0.25, lax=35, laz=-2, lel=80, rax=-25, raz=24, rel=60, tilt=8, twist=14, llz=6, rlz=-2, lkn=8, rkn=22, bob=-0.05),
-        K(0.5, rax=35, raz=-2, rel=80, lax=-25, laz=24, lel=60, tilt=-8, twist=-14, rlz=6, llz=-2, rkn=8, lkn=22, bob=-0.05),
-        K(0.75, rax=70, raz=30, rel=90, lax=70, laz=30, lel=90, tilt=0, twist=0, rlz=0, llz=0, rkn=12, lkn=12, bob=0.02, hx=-8),
-        K(0.875, rax=60, raz=34, rel=70, lax=60, laz=34, lel=70, bob=-0.03, hx=4),
-    ], note="arms swung beside the hips one way and the other, hips swaying, then a snap"),
+        # (2.0.0-test5, redone from the creator's notes on test4: TODO.md, Emotes to redo)
+        K(0, sx=0.12, tilt=6, twist=-10, rlz=4, llz=-4, rkn=8, lkn=20, bob=-0.04, hy=-10, rax=36.7, raz=-42.6, ray=59.7, rel=14.0, lax=-16.8, laz=10.8, lay=-20.4, lel=85.6),
+        K(0.15, sx=-0.12, tilt=-6, twist=10, rlz=-4, llz=4, rkn=20, lkn=8, bob=-0.04, hy=10, rax=-16.8, raz=10.8, ray=-20.4, rel=85.6, lax=36.7, laz=-42.6, lay=59.7, lel=14.0),
+        K(0.3, sx=0.12, tilt=6, twist=-10, rlz=4, llz=-4, rkn=8, lkn=20, bob=-0.04, hy=-10, rax=36.7, raz=-42.6, ray=59.7, rel=14.0, lax=-16.8, laz=10.8, lay=-20.4, lel=85.6),
+        K(0.45, sx=-0.12, tilt=-6, twist=10, rlz=-4, llz=4, rkn=20, lkn=8, bob=-0.04, hy=10, rax=-16.8, raz=10.8, ray=-20.4, rel=85.6, lax=36.7, laz=-42.6, lay=59.7, lel=14.0),
+        K(0.62, sx=0.0, tilt=0, twist=-14, rlz=0, llz=0, rlx=18, rkn=30, lkn=6, bob=0.02, hy=-34, hz=6, rax=51.4, raz=40.9, ray=46.6, rel=102.4, lax=33.5, laz=22.0, lay=61.4, lel=74.8),
+        K(0.72, twist=-16, rlx=0, rkn=6, bob=-0.02, hy=-36, rax=51.4, raz=40.9, ray=46.6, rel=102.4, lax=33.5, laz=22.0, lay=61.4, lel=74.8),
+        K(0.84, twist=14, llx=18, lkn=30, rkn=6, bob=0.02, hy=34, hz=-6, rax=51.4, raz=40.9, ray=46.6, rel=102.4, lax=33.5, laz=22.0, lay=61.4, lel=74.8),
+        K(0.94, sx=0.12, tilt=6, twist=-10, rlz=4, llz=-4, llx=0, rkn=8, lkn=20, bob=-0.04, hy=-10, hz=0, rax=36.7, raz=-42.6, ray=59.7, rel=14.0, lax=-16.8, laz=10.8, lay=-20.4, lel=85.6),
+    ], note="the Carlton: arms swinging together side to side at the waist, the hips the other way, then a step and a snap with a head turn", free=("right_arm", "left_arm")),
     "hype": Emote(0.8, [
         # fists thrust up overhead in turn, knees pumping, bouncing
         K(0, rax=172, raz=10, rel=8, lax=20, laz=20, lel=90, rlx=0, rkn=10, llx=40, lkn=60, bob=0.04, hx=-10),
@@ -426,13 +470,19 @@ EMOTES = {
         K(0.5, yaw=360, rlx=-6, llx=6, rlz=34, llz=26),
         K(1, flip=180, yaw=720, rax=0, raz=104, rel=15, lax=0, laz=104, lel=15, rlz=30, llz=30, rlx=6, llx=-6, rkn=15, lkn=15),
     ], linear=("yaw",), note="a headspin: upside down on its head, legs in a V", plant="touch"),
-    "ripple": Emote(0.9, [
-        # a wave rolls from one hand through the elbows and shoulders to the other
-        K(0, laz=115, raz=10, lel=10, rel=60, tilt=-10, hz=10, rax=10, lax=10, bob=0),
-        K(0.25, laz=60, raz=60, lel=60, rel=10, tilt=0, hz=0, bob=0.05),
-        K(0.5, laz=10, raz=115, lel=60, rel=10, tilt=10, hz=-10, bob=0),
-        K(0.75, laz=60, raz=60, lel=10, rel=60, tilt=0, hz=0, bob=0.05),
-    ], note="a wave rolling through both arms and the body"),
+    "ripple": Emote(1.4, [
+        # (2.0.0-test5, redone from the creator's notes on test4: TODO.md, Emotes to redo)
+        K(0, tilt=0, hz=0, bob=0, rkn=8, lkn=8, rax=90.0, raz=87.1, ray=0.0, rel=0.0, lax=25.6, laz=83.4, lay=-63.5, lel=39.9),
+        K(0.1, tilt=0, hz=0, rax=90.0, raz=87.1, ray=0.0, rel=0.0, lax=-7.6, laz=112.2, lay=82.1, lel=34.0),
+        K(0.2, tilt=-8, hz=-10, bob=0.05, rax=90.0, raz=87.1, ray=0.0, rel=0.0, lax=-19.8, laz=98.5, lay=70.3, lel=6.0),
+        K(0.3, tilt=8, hz=10, bob=0.05, rax=-19.8, raz=98.5, ray=70.3, rel=6.0, lax=90.0, laz=87.1, lay=0.0, lel=0.0),
+        K(0.4, tilt=0, hz=0, bob=0, rax=-7.6, raz=112.2, ray=82.1, rel=34.0, lax=90.0, laz=87.1, lay=0.0, lel=0.0),
+        K(0.5, tilt=0, hz=0, rax=25.6, raz=83.4, ray=-63.5, rel=39.9, lax=90.0, laz=87.1, lay=0.0, lel=0.0),
+        K(0.6, tilt=0, hz=0, rax=-7.6, raz=112.2, ray=82.1, rel=34.0, lax=90.0, laz=87.1, lay=0.0, lel=0.0),
+        K(0.7, tilt=8, hz=10, bob=0.05, rax=-19.8, raz=98.5, ray=70.3, rel=6.0, lax=90.0, laz=87.1, lay=0.0, lel=0.0),
+        K(0.8, tilt=-8, hz=-10, bob=0.05, rax=90.0, raz=87.1, ray=0.0, rel=0.0, lax=-19.8, laz=98.5, lay=70.3, lel=6.0),
+        K(0.9, tilt=0, hz=0, bob=0, rax=90.0, raz=87.1, ray=0.0, rel=0.0, lax=-7.6, laz=112.2, lay=82.1, lel=34.0),
+    ], note="the arm wave: a ripple running from one hand up the arm, across the shoulders and out to the other hand, and back"),
     "legendary": Emote(2.0, [
         K(0, yaw=0, raz=6, laz=6, rel=6, lel=6, bob=0, lean=0, hx=0, rlz=0, llz=0, rkn=0, lkn=0),
         K(0.15, rax=-30, lax=-30, raz=12, laz=12, rel=30, lel=30, bob=-0.35, lean=18, hx=10),

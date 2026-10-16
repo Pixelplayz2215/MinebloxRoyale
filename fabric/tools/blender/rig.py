@@ -43,7 +43,8 @@ def joints(e, lying=None):
     g = lambda k: float(e.get(k, 0.0))
     out = {}
     for part, pv in PIVOT.items():
-        m = (lying if lying is not None else np.eye(4)) @ tr(0, g("bounce"), 0) @ rot("Y", g("bodyYaw")) @ rot("X", -g("flip"))
+        # (shift: the whole body sideways, studs to its right: 2.0.0-test5, the Smooth Slide's steps)
+        m = (lying if lying is not None else np.eye(4)) @ tr(g("shift"), g("bounce"), 0) @ rot("Y", g("bodyYaw")) @ rot("X", -g("flip"))
         right = pv[0] > 0
         if not part.endswith("leg"):
             m = m @ rot("Y", -g("twist")) @ rot("X", -g("lean")) @ rot("Z", -g("tilt"))

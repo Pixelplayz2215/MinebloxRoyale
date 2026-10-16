@@ -32,7 +32,7 @@ def joints(emote=None, gliding=False, lying=None):
     g = lambda k: e.get(k, 0.0)
     out = {}
     for part, pv in PIVOT.items():
-        m = (lying or Matrix.Identity(4)) @ Matrix.Translation((0, g("bounce"), 0)) @ _rot("Y", g("bodyYaw")) @ _rot("X", -g("flip"))
+        m = (lying or Matrix.Identity(4)) @ Matrix.Translation((g("shift"), g("bounce"), 0)) @ _rot("Y", g("bodyYaw")) @ _rot("X", -g("flip"))
         right = pv[0] > 0
         if not part.endswith("leg"):  # everything above the hips twists, leans and tilts together
             m = m @ _rot("Y", -g("twist")) @ _rot("X", -g("lean")) @ _rot("Z", -g("tilt"))

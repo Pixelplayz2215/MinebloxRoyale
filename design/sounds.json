@@ -1,42 +1,671 @@
 {
-  "sheet": "sounds",
-  "class": "SoundDef",
-  "about": "Every sound the mashup plays. game=roblox: read from the player's own Roblox install (content/sounds/<file>) at runtime, decoded in memory. game=minecraft: a vanilla sound event. game=mod: the mod's own sound (made from scratch by fabric/tools/audio/make_audio.py; an event in the mod's assets sounds.json; volume over 1 carries it further, it's no louder). Fortnite audio comes only from its unencrypted movies (media sheet).",
-  "columns": { "id": "string", "game": "enum:roblox|minecraft|mod", "file": "string", "volume": "float", "pitch": "float", "use": "string" },
-  "rows": [
-    { "id": "oof", "game": "roblox", "file": "sounds/oof.ogg", "volume": 1.0, "pitch": 1.0, "use": "a player or bot is eliminated" },
-    { "id": "jump", "game": "roblox", "file": "sounds/action_jump.mp3", "volume": 0.6, "pitch": 1.0, "use": "any avatar jumps" },
-    { "id": "land", "game": "roblox", "file": "sounds/action_jump_land.mp3", "volume": 0.5, "pitch": 1.0, "use": "any avatar lands from a jump" },
-    { "id": "step", "game": "roblox", "file": "sounds/action_footsteps_plastic.mp3", "volume": 0.35, "pitch": 1.0, "use": "footsteps in the hub and on the obby" },
-    { "id": "getup", "game": "roblox", "file": "sounds/action_get_up.mp3", "volume": 0.8, "pitch": 1.0, "use": "respawn at an obby checkpoint" },
-    { "id": "falling", "game": "roblox", "file": "sounds/action_falling.ogg", "volume": 0.7, "pitch": 1.0, "use": "falling off the obby or skydiving" },
-    { "id": "ui_click", "game": "roblox", "file": "sounds/volume_slider.ogg", "volume": 0.8, "pitch": 1.0, "use": "emote menu clicks, checkpoint reached" },
-    { "id": "fire_rifle", "game": "mod", "file": "gun.assault_rifle", "volume": 2.0, "pitch": 1.0, "use": "assault rifle shot (its own sound; every rarity sounds the same)" },
-    { "id": "fire_shotgun", "game": "mod", "file": "gun.pump_shotgun", "volume": 2.0, "pitch": 1.0, "use": "pump shotgun shot and the pump racked after it" },
-    { "id": "fire_smg", "game": "mod", "file": "gun.smg", "volume": 1.6, "pitch": 1.0, "use": "SMG shot" },
-    { "id": "fire_pistol", "game": "mod", "file": "gun.pistol", "volume": 1.6, "pitch": 1.0, "use": "pistol shot" },
-    { "id": "fire_rocket", "game": "mod", "file": "gun.rocket_launcher", "volume": 3.0, "pitch": 1.0, "use": "rocket launcher: the thump out of the tube and the motor's whoosh (v2.0.0)" },
-    { "id": "explosion", "game": "mod", "file": "boom.explosion", "volume": 4.0, "pitch": 1.0, "use": "a rocket or grenade exploding (heard far off)" },
-    { "id": "grenade_bounce", "game": "mod", "file": "boom.grenade_bounce", "volume": 1.0, "pitch": 1.0, "use": "a thrown grenade knocking on the ground" },
-    { "id": "fire_sniper", "game": "mod", "file": "gun.sniper", "volume": 3.0, "pitch": 1.0, "use": "sniper shot, its crack echoing away (heard furthest)" },
-    { "id": "dry_fire", "game": "minecraft", "file": "block.dispenser.fail", "volume": 0.7, "pitch": 1.6, "use": "trigger pulled with no ammo" },
-    { "id": "reload", "game": "minecraft", "file": "item.crossbow.loading_middle", "volume": 0.8, "pitch": 1.2, "use": "reloading" },
-    { "id": "use_heal", "game": "mod", "file": "use.heal", "volume": 0.6, "pitch": 1.0, "use": "bandages / med kit while used: a bandage wrapping round, cloth rustling (2.0.0-test4; was Minecraft's eating)" },
-    { "id": "use_shield", "game": "mod", "file": "use.shield", "volume": 0.7, "pitch": 1.0, "use": "shields, Chug Jug and Slurp Juice while drunk: a gulp that fizzes and shimmers (2.0.0-test4; was Minecraft's drinking)" },
-    { "id": "heal_done", "game": "mod", "file": "use.heal_done", "volume": 0.8, "pitch": 1.0, "use": "a heal finished, health going up: two warm notes rising (2.0.0-test4)" },
-    { "id": "victory_fanfare", "game": "mod", "file": "victory.fanfare", "volume": 1.0, "pitch": 1.0, "use": "a Victory Royale: a rising brass call and a held chord over a drum roll, for the winners (2.0.0-test5)" },
-    { "id": "shield_done", "game": "mod", "file": "use.shield_done", "volume": 0.8, "pitch": 1.0, "use": "a shield finished, the shield charging: a rising whoosh and a bright shimmer (2.0.0-test4)" },
-    { "id": "storm_warning", "game": "mod", "file": "storm.warning", "volume": 1.0, "pitch": 1.0, "use": "plays once each time the storm starts shrinking: rising wind, an uneasy tone and falling chimes (no storm music)" },
-    { "id": "hit_marker", "game": "minecraft", "file": "entity.arrow.hit_player", "volume": 0.6, "pitch": 1.3, "use": "your shot hit someone" },
-    { "id": "headshot", "game": "minecraft", "file": "block.note_block.bell", "volume": 0.9, "pitch": 1.75, "use": "your shot hit someone in the head (instead of hit_marker)" },
-    { "id": "glider", "game": "minecraft", "file": "item.elytra.flying", "volume": 0.4, "pitch": 1.2, "use": "glider deploys during the drop" },
-    { "id": "chest_open", "game": "minecraft", "file": "block.chest.open", "volume": 0.8, "pitch": 1.0, "use": "loot chest opened" },
-    { "id": "knocked", "game": "minecraft", "file": "entity.player.hurt_sweet_berry_bush", "volume": 0.9, "pitch": 0.7, "use": "you or a teammate were knocked down" },
-    { "id": "revived", "game": "minecraft", "file": "block.amethyst_block.chime", "volume": 1.0, "pitch": 1.2, "use": "a knocked teammate is back on their feet" },
-    { "id": "card_pickup", "game": "minecraft", "file": "item.book.page_turn", "volume": 1.0, "pitch": 1.0, "use": "you picked up a teammate's reboot card" },
-    { "id": "rebooted", "game": "minecraft", "file": "block.beacon.activate", "volume": 0.9, "pitch": 1.4, "use": "a reboot van brought teammates back" },
-    { "id": "car_door_open", "game": "mod", "file": "car.door_open", "volume": 0.8, "pitch": 1.0, "use": "a car door swinging open as someone gets in or out (2.0.0-test3)" },
-    { "id": "car_door_close", "game": "mod", "file": "car.door_close", "volume": 0.9, "pitch": 1.0, "use": "the car door shutting behind them (2.0.0-test3)" },
-    { "id": "car_boost", "game": "mod", "file": "car.boost", "volume": 1.0, "pitch": 1.0, "use": "a car's boost kicking in (2.0.0-test3; its engine and tyres are CarSounds' loops, car.engine and car.skid)" }
-  ]
+ "sheet": "sounds",
+ "class": "SoundDef",
+ "about": "Every sound the mashup plays. game=roblox: read from the player's own Roblox install (content/sounds/<file>) at runtime, decoded in memory. game=minecraft: a vanilla sound event. game=mod: the mod's own sound (made from scratch by fabric/tools/audio/make_audio.py; an event in the mod's assets sounds.json; volume over 1 carries it further, it's no louder). Fortnite audio comes only from its unencrypted movies (media sheet).",
+ "columns": {
+  "id": "string",
+  "game": "enum:roblox|minecraft|mod",
+  "file": "string",
+  "volume": "float",
+  "pitch": "float",
+  "use": "string"
+ },
+ "rows": [
+  {
+   "id": "oof",
+   "game": "roblox",
+   "file": "sounds/oof.ogg",
+   "volume": 1.0,
+   "pitch": 1.0,
+   "use": "a player or bot is eliminated"
+  },
+  {
+   "id": "jump",
+   "game": "roblox",
+   "file": "sounds/action_jump.mp3",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "any avatar jumps"
+  },
+  {
+   "id": "land",
+   "game": "roblox",
+   "file": "sounds/action_jump_land.mp3",
+   "volume": 0.5,
+   "pitch": 1.0,
+   "use": "any avatar lands from a jump"
+  },
+  {
+   "id": "step",
+   "game": "roblox",
+   "file": "sounds/action_footsteps_plastic.mp3",
+   "volume": 0.35,
+   "pitch": 1.0,
+   "use": "footsteps in the hub and on the obby"
+  },
+  {
+   "id": "getup",
+   "game": "roblox",
+   "file": "sounds/action_get_up.mp3",
+   "volume": 0.8,
+   "pitch": 1.0,
+   "use": "respawn at an obby checkpoint"
+  },
+  {
+   "id": "falling",
+   "game": "roblox",
+   "file": "sounds/action_falling.ogg",
+   "volume": 0.7,
+   "pitch": 1.0,
+   "use": "falling off the obby or skydiving"
+  },
+  {
+   "id": "ui_click",
+   "game": "roblox",
+   "file": "sounds/volume_slider.ogg",
+   "volume": 0.8,
+   "pitch": 1.0,
+   "use": "emote menu clicks, checkpoint reached"
+  },
+  {
+   "id": "fire_rifle",
+   "game": "mod",
+   "file": "gun.assault_rifle",
+   "volume": 2.0,
+   "pitch": 1.0,
+   "use": "assault rifle shot (its own sound; every rarity sounds the same)"
+  },
+  {
+   "id": "fire_shotgun",
+   "game": "mod",
+   "file": "gun.pump_shotgun",
+   "volume": 2.0,
+   "pitch": 1.0,
+   "use": "pump shotgun shot and the pump racked after it"
+  },
+  {
+   "id": "fire_smg",
+   "game": "mod",
+   "file": "gun.smg",
+   "volume": 1.6,
+   "pitch": 1.0,
+   "use": "SMG shot"
+  },
+  {
+   "id": "fire_pistol",
+   "game": "mod",
+   "file": "gun.pistol",
+   "volume": 1.6,
+   "pitch": 1.0,
+   "use": "pistol shot"
+  },
+  {
+   "id": "fire_rocket",
+   "game": "mod",
+   "file": "gun.rocket_launcher",
+   "volume": 3.0,
+   "pitch": 1.0,
+   "use": "rocket launcher: the thump out of the tube and the motor's whoosh (v2.0.0)"
+  },
+  {
+   "id": "explosion",
+   "game": "mod",
+   "file": "boom.explosion",
+   "volume": 4.0,
+   "pitch": 1.0,
+   "use": "a rocket or grenade exploding (heard far off)"
+  },
+  {
+   "id": "grenade_bounce",
+   "game": "mod",
+   "file": "boom.grenade_bounce",
+   "volume": 1.0,
+   "pitch": 1.0,
+   "use": "a thrown grenade knocking on the ground"
+  },
+  {
+   "id": "fire_sniper",
+   "game": "mod",
+   "file": "gun.sniper",
+   "volume": 3.0,
+   "pitch": 1.0,
+   "use": "sniper shot, its crack echoing away (heard furthest)"
+  },
+  {
+   "id": "dry_fire",
+   "game": "minecraft",
+   "file": "block.dispenser.fail",
+   "volume": 0.7,
+   "pitch": 1.6,
+   "use": "trigger pulled with no ammo"
+  },
+  {
+   "id": "reload",
+   "game": "minecraft",
+   "file": "item.crossbow.loading_middle",
+   "volume": 0.8,
+   "pitch": 1.2,
+   "use": "reloading"
+  },
+  {
+   "id": "use_heal",
+   "game": "mod",
+   "file": "use.heal",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "bandages / med kit while used: a bandage wrapping round, cloth rustling (2.0.0-test4; was Minecraft's eating)"
+  },
+  {
+   "id": "use_shield",
+   "game": "mod",
+   "file": "use.shield",
+   "volume": 0.7,
+   "pitch": 1.0,
+   "use": "shields, Chug Jug and Slurp Juice while drunk: a gulp that fizzes and shimmers (2.0.0-test4; was Minecraft's drinking)"
+  },
+  {
+   "id": "heal_done",
+   "game": "mod",
+   "file": "use.heal_done",
+   "volume": 0.8,
+   "pitch": 1.0,
+   "use": "a heal finished, health going up: two warm notes rising (2.0.0-test4)"
+  },
+  {
+   "id": "victory_fanfare",
+   "game": "mod",
+   "file": "victory.fanfare",
+   "volume": 1.0,
+   "pitch": 1.0,
+   "use": "a Victory Royale: a rising brass call and a held chord over a drum roll, for the winners (2.0.0-test5)"
+  },
+  {
+   "id": "shield_done",
+   "game": "mod",
+   "file": "use.shield_done",
+   "volume": 0.8,
+   "pitch": 1.0,
+   "use": "a shield finished, the shield charging: a rising whoosh and a bright shimmer (2.0.0-test4)"
+  },
+  {
+   "id": "storm_warning",
+   "game": "mod",
+   "file": "storm.warning",
+   "volume": 1.0,
+   "pitch": 1.0,
+   "use": "plays once each time the storm starts shrinking: rising wind, an uneasy tone and falling chimes (no storm music)"
+  },
+  {
+   "id": "hit_marker",
+   "game": "minecraft",
+   "file": "entity.arrow.hit_player",
+   "volume": 0.6,
+   "pitch": 1.3,
+   "use": "your shot hit someone"
+  },
+  {
+   "id": "headshot",
+   "game": "minecraft",
+   "file": "block.note_block.bell",
+   "volume": 0.9,
+   "pitch": 1.75,
+   "use": "your shot hit someone in the head (instead of hit_marker)"
+  },
+  {
+   "id": "glider",
+   "game": "minecraft",
+   "file": "item.elytra.flying",
+   "volume": 0.4,
+   "pitch": 1.2,
+   "use": "glider deploys during the drop"
+  },
+  {
+   "id": "chest_open",
+   "game": "minecraft",
+   "file": "block.chest.open",
+   "volume": 0.8,
+   "pitch": 1.0,
+   "use": "loot chest opened"
+  },
+  {
+   "id": "knocked",
+   "game": "minecraft",
+   "file": "entity.player.hurt_sweet_berry_bush",
+   "volume": 0.9,
+   "pitch": 0.7,
+   "use": "you or a teammate were knocked down"
+  },
+  {
+   "id": "revived",
+   "game": "minecraft",
+   "file": "block.amethyst_block.chime",
+   "volume": 1.0,
+   "pitch": 1.2,
+   "use": "a knocked teammate is back on their feet"
+  },
+  {
+   "id": "card_pickup",
+   "game": "minecraft",
+   "file": "item.book.page_turn",
+   "volume": 1.0,
+   "pitch": 1.0,
+   "use": "you picked up a teammate's reboot card"
+  },
+  {
+   "id": "rebooted",
+   "game": "minecraft",
+   "file": "block.beacon.activate",
+   "volume": 0.9,
+   "pitch": 1.4,
+   "use": "a reboot van brought teammates back"
+  },
+  {
+   "id": "car_door_open",
+   "game": "mod",
+   "file": "car.door_open",
+   "volume": 0.8,
+   "pitch": 1.0,
+   "use": "a car door swinging open as someone gets in or out (2.0.0-test3)"
+  },
+  {
+   "id": "car_door_close",
+   "game": "mod",
+   "file": "car.door_close",
+   "volume": 0.9,
+   "pitch": 1.0,
+   "use": "the car door shutting behind them (2.0.0-test3)"
+  },
+  {
+   "id": "car_boost",
+   "game": "mod",
+   "file": "car.boost",
+   "volume": 1.0,
+   "pitch": 1.0,
+   "use": "a car's boost kicking in (2.0.0-test3; its engine and tyres are CarSounds' loops, car.engine and car.skid)"
+  },
+  {
+   "id": "emote_wave",
+   "game": "mod",
+   "file": "emote.wave",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Wave's music while it's danced: island ukulele and steel pans, 120 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_swing",
+   "game": "mod",
+   "file": "emote.swing",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Arm Swing's music while it's danced: a hip-hop beat, 75 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_robot",
+   "game": "mod",
+   "file": "emote.robot",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Robot's music while it's danced: electro dance, 112 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_floss",
+   "game": "mod",
+   "file": "emote.floss",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Floss's music while it's danced: electro dance, 129 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_dab",
+   "game": "mod",
+   "file": "emote.dab",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Dab's music while it's danced: electro dance, 112 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_jumping_jacks",
+   "game": "mod",
+   "file": "emote.jumping_jacks",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Jumping Jacks's music while it's danced: chiptune, 150 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_twist",
+   "game": "mod",
+   "file": "emote.twist",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Twist's music while it's danced: disco funk, 100 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_obby_hop",
+   "game": "mod",
+   "file": "emote.obby_hop",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Obby Hop's music while it's danced: chiptune, 120 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_victory_dance",
+   "game": "mod",
+   "file": "emote.victory_dance",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Victory Dance's music while it's danced: disco funk, 100 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_clap",
+   "game": "mod",
+   "file": "emote.clap",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Clap's music while it's danced: swing jazz, 133 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_salute",
+   "game": "mod",
+   "file": "emote.salute",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Salute's music while it's danced: a brass march, 100 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_shrug",
+   "game": "mod",
+   "file": "emote.shrug",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Shrug's music while it's danced: a hip-hop beat, 86 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_chicken",
+   "game": "mod",
+   "file": "emote.chicken",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Chicken Dance's music while it's danced: an oompah polka, 100 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_disco",
+   "game": "mod",
+   "file": "emote.disco",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Disco Point's music while it's danced: disco funk, 120 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_running_man",
+   "game": "mod",
+   "file": "emote.running_man",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Running Man's music while it's danced: a hip-hop beat, 86 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_karate",
+   "game": "mod",
+   "file": "emote.karate",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Karate Chop's music while it's danced: koto and taiko, 100 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_air_guitar",
+   "game": "mod",
+   "file": "emote.air_guitar",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Air Guitar's music while it's danced: a rock band, 120 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_drum",
+   "game": "mod",
+   "file": "emote.drum",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Drum Solo's music while it's danced: a drum solo, 112 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_boxing",
+   "game": "mod",
+   "file": "emote.boxing",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Boxing's music while it's danced: a training-montage rock anthem, 86 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_spin",
+   "game": "mod",
+   "file": "emote.spin",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Spin's music while it's danced: electro dance, 100 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_helicopter",
+   "game": "mod",
+   "file": "emote.helicopter",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Helicopter's music while it's danced: electro dance, 100 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_hip_shake",
+   "game": "mod",
+   "file": "emote.hip_shake",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Hip Shake's music while it's danced: disco funk, 120 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_swim",
+   "game": "mod",
+   "file": "emote.swim",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Swim's music while it's danced: island ukulele and steel pans, 86 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_zombie",
+   "game": "mod",
+   "file": "emote.zombie",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Zombie Walk's music while it's danced: a spooky organ shuffle, 86 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_flex",
+   "game": "mod",
+   "file": "emote.flex",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Flex's music while it's danced: a slow trap beat, 75 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_bow",
+   "game": "mod",
+   "file": "emote.bow",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Bow's music while it's danced: heroic brass and drums, 90 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_cheer",
+   "game": "mod",
+   "file": "emote.cheer",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Cheer's music while it's danced: a brass march, 120 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_raise_roof",
+   "game": "mod",
+   "file": "emote.raise_roof",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Raise the Roof's music while it's danced: a hip-hop beat, 75 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_penguin",
+   "game": "mod",
+   "file": "emote.penguin",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Penguin Waddle's music while it's danced: chiptune, 120 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_slide",
+   "game": "mod",
+   "file": "emote.slide",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Smooth Slide's music while it's danced: smooth R&B, 75 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_fly_pose",
+   "game": "mod",
+   "file": "emote.fly_pose",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Hero Fly's music while it's danced: heroic brass and drums, 80 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_star_jump",
+   "game": "mod",
+   "file": "emote.star_jump",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Star Jump's music while it's danced: chiptune, 120 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_hula",
+   "game": "mod",
+   "file": "emote.hula",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Hula's music while it's danced: island ukulele and steel pans, 100 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_wave_both",
+   "game": "mod",
+   "file": "emote.wave_both",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Double Wave's music while it's danced: island ukulele and steel pans, 75 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_rock_out",
+   "game": "mod",
+   "file": "emote.rock_out",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Rock Out's music while it's danced: a rock band, 133 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_tap_dance",
+   "game": "mod",
+   "file": "emote.tap_dance",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Tap Dance's music while it's danced: swing jazz, 120 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_lasso",
+   "game": "mod",
+   "file": "emote.lasso",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Lasso Twirl's music while it's danced: a cowboy banjo tune, 100 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_breakdance",
+   "game": "mod",
+   "file": "emote.breakdance",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Breakdance Spin's music while it's danced: a hip-hop beat, 100 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_ripple",
+   "game": "mod",
+   "file": "emote.ripple",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Wave Ripple's music while it's danced: electro dance, 129 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_legendary",
+   "game": "mod",
+   "file": "emote.legendary",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Legendary Royale's music while it's danced: heroic brass and drums, 90 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_griddy",
+   "game": "mod",
+   "file": "emote.griddy",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Griddy's music while it's danced: a slow trap beat, 75 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_default_dance",
+   "game": "mod",
+   "file": "emote.default_dance",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Default Dance's music while it's danced: disco funk, 120 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_orange_justice",
+   "game": "mod",
+   "file": "emote.orange_justice",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Orange Justice's music while it's danced: electro dance, 120 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_boneless",
+   "game": "mod",
+   "file": "emote.boneless",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Boneless's music while it's danced: a hip-hop beat, 100 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_take_the_l",
+   "game": "mod",
+   "file": "emote.take_the_l",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Take the L's music while it's danced: electro dance, 120 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_electro_shuffle",
+   "game": "mod",
+   "file": "emote.electro_shuffle",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Electro Shuffle's music while it's danced: electro dance, 120 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_fresh",
+   "game": "mod",
+   "file": "emote.fresh",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Fresh's music while it's danced: disco funk, 112 bpm (2.0.0-test5)"
+  },
+  {
+   "id": "emote_hype",
+   "game": "mod",
+   "file": "emote.hype",
+   "volume": 0.6,
+   "pitch": 1.0,
+   "use": "Hype's music while it's danced: electro dance, 150 bpm (2.0.0-test5)"
+  }
+ ]
 }

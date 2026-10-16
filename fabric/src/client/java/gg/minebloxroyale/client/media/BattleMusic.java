@@ -13,10 +13,11 @@ import org.jspecify.annotations.Nullable;
  * (fabric/tools/audio/make_audio.py, made from scratch; nothing from Fortnite), looping under a live match: the steadier
  * one (music/battle_1) to begin with, the harder one (music/battle_2) once the storm is down to its last circles or ten
  * are left, the two cross-faded. Kept under the guns and footsteps, on the Music slider; faded out when the match ends.
+ * Quiet while you're dancing an emote with music of its own (2.0.0-test5: EmoteMusic), back when you stop.
  */
 public final class BattleMusic {
-	/** How loud at full (the Music slider scales it), how fast it fades (per tick: about two seconds in or out). */
-	private static final float VOLUME = 0.35F, FADE = VOLUME / 40;
+	/** How loud at full (the Music slider scales it); a loop fades in or out over about two seconds (Loop.tick). */
+	private static final float VOLUME = 0.35F;
 	/** The harder track from this storm circle on (of eight), or with this many left. */
 	private static final int HARD_PHASE = 6, HARD_ALIVE = 10;
 	private static @Nullable Loop calm, hard;
@@ -24,19 +25,29 @@ public final class BattleMusic {
 	private BattleMusic() {
 	}
 
-	/** One looping track that fades towards where it's told, and stops itself once faded out. */
-	private static final class Loop extends AbstractTickableSoundInstance {
-		private float level, target;
-		private final long started = System.currentTimeMillis();
+	/**
+	 * One looping track that fades towards where it's told, and stops itself once faded out; held silent (still going,
+	 * so it carries on where it was) while your emote's music plays (the hub's track is one too: FortniteMedia).
+	 */
+	static final class Loop extends AbstractTickableSoundInstance {
+		private float level;
+		float target;
+		private final float full;
+		final long started = System.currentTimeMillis();
 
 		Loop(String track) {
+			this(track, VOLUME);
+		}
+
+		Loop(String track, float full) {
 			super(SoundEvent.createVariableRangeEvent(MinebloxRoyale.id(track)), SoundSource.MUSIC, SoundInstance.createUnseededRandom());
 			looping = true;
 			delay = 0;
 			attenuation = SoundInstance.Attenuation.NONE;
 			relative = true;
 			volume = 0;
-			target = VOLUME;
+			this.full = full;
+			target = full;
 		}
 
 		@Override
@@ -46,7 +57,9 @@ public final class BattleMusic {
 
 		@Override
 		public void tick() {
-			level += Math.max(-FADE, Math.min(FADE, target - level));
+			boolean quiet = EmoteMusic.quietGameMusic();
+			float fade = full / 40, goal = quiet ? 0 : target;
+			level += Math.max(quiet ? -4 * fade : -fade, Math.min(fade, goal - level)); // (quick to go quiet for a dance)
 			volume = level;
 			if (target == 0 && level <= 0) stop();
 		}

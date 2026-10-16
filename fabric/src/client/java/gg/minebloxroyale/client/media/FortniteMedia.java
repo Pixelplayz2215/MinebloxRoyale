@@ -10,10 +10,7 @@ import java.nio.file.Path;
 import javax.imageio.ImageIO;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.resources.Identifier;
-import net.minecraft.sounds.SoundSource;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -21,7 +18,7 @@ import org.jspecify.annotations.Nullable;
  * sheet), shown on the hub billboard. Nothing is copied.
  */
 public final class FortniteMedia {
-	private static @Nullable SimpleSoundInstance hubLoop;
+	private static BattleMusic.@Nullable Loop hubLoop;
 	private static long hubStartedAt;
 	private static @Nullable Identifier billboard;
 	private static boolean billboardTried;
@@ -38,7 +35,8 @@ public final class FortniteMedia {
 
 	/**
 	 * Every client tick: while the player is in the hub, the mod's own hub track (sounds/music/hub_loop.ogg) loops with
-	 * no gap (a looping sound, no delay; the track itself was made to join up seamlessly).
+	 * no gap (a looping sound, no delay; the track itself was made to join up seamlessly). Quiet while you dance an emote
+	 * with its own music (2.0.0-test5: a BattleMusic loop, which keeps quiet for that).
 	 */
 	public static void tick(boolean inHub) {
 		if (!inHub) {
@@ -47,8 +45,7 @@ public final class FortniteMedia {
 		}
 		var sounds = Minecraft.getInstance().getSoundManager();
 		if (hubLoop != null && (sounds.isActive(hubLoop) || System.currentTimeMillis() - hubStartedAt < 1500)) return;
-		hubLoop = new SimpleSoundInstance(MinebloxRoyale.id("music.hub_loop"), SoundSource.MUSIC, 0.5F, 1.0F, SoundInstance.createUnseededRandom(), true, 0,
-			SoundInstance.Attenuation.NONE, 0, 0, 0, true);
+		hubLoop = new BattleMusic.Loop("music.hub_loop", 0.5F);
 		sounds.play(hubLoop);
 		hubStartedAt = System.currentTimeMillis();
 	}

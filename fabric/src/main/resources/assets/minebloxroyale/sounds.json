@@ -143,5 +143,437 @@
     "sounds": [
       "minebloxroyale:victory/fanfare"
     ]
+  },
+  "emote.wave": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/wave",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.swing": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/swing",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.robot": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/robot",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.floss": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/floss",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.dab": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/dab",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.jumping_jacks": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/jumping_jacks",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.twist": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/twist",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.obby_hop": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/obby_hop",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.victory_dance": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/victory_dance",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.clap": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/clap",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.salute": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/salute",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.shrug": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/shrug",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.chicken": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/chicken",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.disco": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/disco",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.running_man": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/running_man",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.karate": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/karate",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.air_guitar": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/air_guitar",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.drum": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/drum",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.boxing": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/boxing",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.spin": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/spin",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.helicopter": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/helicopter",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.hip_shake": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/hip_shake",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.swim": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/swim",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.zombie": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/zombie",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.flex": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/flex",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.bow": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/bow",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.cheer": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/cheer",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.raise_roof": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/raise_roof",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.penguin": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/penguin",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.slide": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/slide",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.fly_pose": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/fly_pose",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.star_jump": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/star_jump",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.hula": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/hula",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.wave_both": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/wave_both",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.rock_out": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/rock_out",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.tap_dance": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/tap_dance",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.lasso": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/lasso",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.breakdance": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/breakdance",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.ripple": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/ripple",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.legendary": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/legendary",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.griddy": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/griddy",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.default_dance": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/default_dance",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.orange_justice": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/orange_justice",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.boneless": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/boneless",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.take_the_l": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/take_the_l",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.electro_shuffle": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/electro_shuffle",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.fresh": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/fresh",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "emote.hype": {
+    "sounds": [
+      {
+        "name": "minebloxroyale:emote/hype",
+        "stream": true,
+        "attenuation_distance": 24
+      }
+    ]
   }
 }
