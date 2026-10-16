@@ -1,8 +1,9 @@
 """
 The shirt and pants pictures exactly as the game paints them (client/avatar/ClothingTextures.java), for the Locker
 renders: the game's painting code is copied without its Minecraft parts, given a stand-in for the cosmetics sheet's
-rows, compiled and run with the project's JDK. Writes shirt_<id>.png (288 x 96: front | +X side | back | -X side) and
-pants_<id>_px.png / pants_<id>_mx.png (192 x 96, one per leg: the leg whose outer side is +X / -X).
+rows, compiled and run with the project's JDK. Writes shirt_<id>.png (288 x 96: front | +X side | back | -X side),
+pants_<id>_px.png / pants_<id>_mx.png (192 x 96, one per leg: the leg whose outer side is +X / -X) and, for a shirt
+printed down its sleeves (camo), sleeve_<id>_px.png / _mx.png (one per arm).
 
 python paint_clothes.py <out dir>
 """
@@ -27,8 +28,13 @@ MAIN = '''
 		for (String line : java.nio.file.Files.readAllLines(java.nio.file.Path.of(args[1]))) {
 			String[] f = line.split("\\t");
 			CosmeticDef c = new CosmeticDef(f[1], f[2], Integer.parseInt(f[3], 16), Integer.parseInt(f[4], 16));
-			if (f[0].equals("shirt")) javax.imageio.ImageIO.write(paintShirt(c), "png", new java.io.File(out, "shirt_" + c.id() + ".png"));
-			else {
+			if (f[0].equals("shirt")) {
+				javax.imageio.ImageIO.write(paintShirt(c), "png", new java.io.File(out, "shirt_" + c.id() + ".png"));
+				if (c.shape().equals("camo")) { // (printed sleeves, 2.0.0-test5: ClothingTextures.printedSleeves)
+					javax.imageio.ImageIO.write(paintSleeve(c, true), "png", new java.io.File(out, "sleeve_" + c.id() + "_px.png"));
+					javax.imageio.ImageIO.write(paintSleeve(c, false), "png", new java.io.File(out, "sleeve_" + c.id() + "_mx.png"));
+				}
+			} else {
 				javax.imageio.ImageIO.write(paintPants(c, true), "png", new java.io.File(out, "pants_" + c.id() + "_px.png"));
 				javax.imageio.ImageIO.write(paintPants(c, false), "png", new java.io.File(out, "pants_" + c.id() + "_mx.png"));
 			}
@@ -44,7 +50,7 @@ def java_source():
     s = re.sub(r"^import (com\.mojang|gg\.minebloxroyale|net\.minecraft)\..*?;\n", "", s, flags=re.M)
     # Without the game: no texture uploads (shirt(), pants(), upload() and their cache).
     s = re.sub(r"\n\tprivate static final Map<String, Identifier> CACHE.*?\n", "\n", s)
-    for name in ("shirt", "pants", "upload"):
+    for name in ("shirt", "pants", "sleeve", "upload"):
         s = re.sub(r"\n(\t/\*\*[^\n]*\*/\n)?\tstatic Identifier " + name + r"\(.*?\n\t}\n" if name != "upload" else r"\n\tprivate static Identifier upload\(.*?\n\t}\n", "\n", s, flags=re.S)
     s = s.replace("final class ClothingTextures", "public final class ClothingTextures")
     return s.rstrip()[:-1] + MAIN  # (the class's closing brace: main goes in)

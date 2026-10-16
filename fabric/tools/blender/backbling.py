@@ -302,10 +302,17 @@ def backpack(s, t, i, a, b):
         s.at(t.cx, y1 - 0.1, z).color(b)
         box(s, 0.625, 0.06, hz + 0.008, 0.005, 0.005)
     elif army:
-        cols = [shade(a, 0.65), 0x5C4A2E, shade(a, 1.25)]
-        for k in range(9):
-            px, py2 = -0.45 + 0.9 * ((k * 0.618) % 1), y0 + 0.75 + 0.6 * ((k * 0.382 + 0.1) % 1)
-            s.at(t.cx + px, py2, face + 0.008).rotZ(k * 40).rotX(90).color(cols[k % 3]).lens(0.12, 0.07, 0.01)
+        # 2.0.0-test5 (creator, of the Soldier preset: "I'm also not a fan ... the camo print is too smushed together"):
+        # a plain pack like a real one, with rows of webbing across its face (stitched down every so often) where 9
+        # small camo ovals sat (they looked like beans)
+        web = shade(a, 0.72)
+        for row in range(3):
+            wy = y0 + 0.86 + row * 0.15
+            s.at(t.cx, wy, face + 0.012).color(web)
+            box(s, 0.5, 0.032, 0.012, 0.006, 0.006)
+            for col in range(-3, 4):
+                s.at(t.cx + col * 0.14, wy, face + 0.026).color(shade(a, 0.55))
+                box(s, 0.008, 0.034, 0.004, 0.002, 0.002)
         for k in range(3):
             s.at(t.cx, py - 0.14 + k * 0.12, pz).color(shade(a, 0.6))
             box(s, 0.4, 0.018, 0.008, 0.004, 0.004)

@@ -258,21 +258,25 @@ def details(s, shape, h, a="a", b="b"):
         elif shape == "army":
             rnd = random.Random("army")
             spots = []
-            for _ in range(400):  # camo patches painted on, apart from each other (overlapping decals flicker)
-                t0, y0 = TAU * rnd.random(), rnd.uniform(brow + 0.16, top + 0.04)
-                if all(min(abs(t0 - t1), TAU - abs(t0 - t1)) * 0.75 + abs(y0 - y1) * 2.2 > 0.42 for t1, y1 in spots):
+            # 2.0.0-test5 (creator: "the camo print is too smushed together"): the shirt's woodland camo, the same
+            # three clear colours (a lighter green, a brown, a near-black) and bigger patches, apart from each other
+            # (overlapping decals flicker)
+            camo = (shade(a, 1.42), 0x6B4E2E, 0x1E2318)
+            for _ in range(600):
+                t0, y0 = TAU * rnd.random(), rnd.uniform(brow + 0.18, top + 0.02)
+                if all(min(abs(t0 - t1), TAU - abs(t0 - t1)) * 0.75 + abs(y0 - y1) * 2.2 > 0.5 for t1, y1 in spots):
                     spots.append((t0, y0))
-                if len(spots) == 13:
+                if len(spots) == 14:
                     break
             for k, (t0, y0) in enumerate(spots):  # each a blob-shaped decal following the helmet's curve
-                dt, dy = 0.15 / (1.14 * hw), 0.085
+                dt, dy = 0.2 / (1.14 * hw), 0.11
                 wob = [rnd.uniform(0, TAU) for _ in range(2)]
 
                 def patch(u, v, t0=t0, y0=y0, dt=dt, dy=dy, wob=wob, lift=0.006 + 0.0012 * k):
                     ph = TAU * u
                     r = v * (1 + 0.22 * math.sin(3 * ph + wob[0]) + 0.12 * math.sin(5 * ph + wob[1]))
                     return shell_point(h, 1.14, top + 0.16, 0.5, t0 + r * math.cos(ph) * dt, y0 + r * math.sin(ph) * dy, lift)[0]
-                s.at(0, 0, 0).color(shade(a, (0.7, 0.55)[k % 2])).surface(patch, 16, 3)
+                s.at(0, 0, 0).color(camo[(k + rnd.randrange(2)) % 3]).surface(patch, 16, 3)
         elif shape == "pith":
             s.at(cx, top + 0.28, cz).color(shade(a, 0.85)).lathe([0, 0.09, 0.07, 0], [0, 0, 0.05, 0.05], 16)
             s.at(0, 0, 0).color(shade(a, 0.75)).tube(ring_pts(cx, brow - 0.06, cz, 1.55 * hw, 1.55 * hw * oval, 48), [0.018] * 49, caps=False)

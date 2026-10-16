@@ -15,7 +15,9 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import net.minecraft.client.Minecraft;
@@ -40,6 +42,16 @@ final class ClothingTextures {
 
 	static Identifier shirt(CosmeticDef c) {
 		return CACHE.computeIfAbsent("shirt/" + c.id(), k -> upload(k, paintShirt(c)));
+	}
+
+	/** Does this shirt's print carry on down the sleeves (camo, 2.0.0-test5)? Other shirts' sleeves stay plain. */
+	static boolean printedSleeves(CosmeticDef c) {
+		return c.shape().equals("camo");
+	}
+
+	/** A sleeve's picture (an arm's four faces, like a leg's): the shirt's camo, a cuff hem at the wrist. */
+	static Identifier sleeve(CosmeticDef c, boolean outerPlusX) {
+		return CACHE.computeIfAbsent("sleeve/" + c.id() + (outerPlusX ? "_px" : "_mx"), k -> upload(k, paintSleeve(c, outerPlusX)));
 	}
 
 	/** outerPlusX: this leg's outer side is its +X face. */
@@ -127,6 +139,46 @@ final class ClothingTextures {
 		g.fill(new Rectangle2D.Double(x, 0, w * 0.18, h));
 		g.setPaint(new GradientPaint((float) (x + w), 0, new Color(0, 0, 0, 26), (float) (x + w * 0.82), 0, new Color(0, 0, 0, 0)));
 		g.fill(new Rectangle2D.Double(x + w * 0.82, 0, w * 0.18, h));
+	}
+
+	/**
+	 * Woodland camo (2.0.0-test5, creator: "the camo print is too smushed together"; it was 78 small ovals in shades
+	 * close to the green under them, piled on each other): big patches in three clear colours (a lighter green, a
+	 * brown, a near-black) on the item's own colour, each a few joined rounded lobes about a third of a face across,
+	 * spread out so the base shows between them; neighbours differ. The same size on a shirt, its sleeves and pants.
+	 */
+	private static void camo(Graphics2D g, Random r, int w, int h, int base, int dark) {
+		int[] cols = { shade(base, 1.42F), 0x6B4E2E, dark == base ? 0x1E2318 : shade(dark, 0.7F) };
+		List<double[]> spots = new ArrayList<>();
+		for (int tries = 0; tries < 3000 && spots.size() < w * h / 560; tries++) {
+			double x = r.nextDouble() * w, y = r.nextDouble() * h;
+			boolean ok = true;
+			for (double[] p : spots) {
+				double dx = Math.abs(p[0] - x), dy = p[1] - y;
+				dx = Math.min(dx, w - dx); // (round the body: the last face meets the first)
+				if (dx * dx + dy * dy < 27 * 27) {
+					ok = false;
+					break;
+				}
+			}
+			if (ok) spots.add(new double[] { x, y });
+		}
+		for (int i = 0; i < spots.size(); i++) {
+			double[] p = spots.get(i);
+			int col = cols[(i + r.nextInt(2)) % 3];
+			int lobes = 3 + r.nextInt(3);
+			double ang = r.nextDouble() * Math.PI;
+			for (int k = 0; k < lobes; k++) {
+				double along = (k - (lobes - 1) / 2.0) * 4.5, ox = p[0] + Math.cos(ang) * along + r.nextGaussian() * 4, oy = p[1] + Math.sin(ang) * along * 0.6 + r.nextGaussian() * 3.5;
+				double rx = 6 + r.nextDouble() * 4, ry = 4.5 + r.nextDouble() * 3;
+				for (double shift : new double[] { -w, 0, w }) { // (patches over the seam drawn on both ends)
+					Graphics2D gg = (Graphics2D) g.create();
+					gg.rotate(ang + r.nextGaussian() * 0.3, ox + shift, oy);
+					fill(gg, new Ellipse2D.Double(ox + shift - rx, oy - ry, rx * 2, ry * 2), col, 255);
+					gg.dispose();
+				}
+			}
+		}
 	}
 
 	/** Random soft blobs (camo, rips), the same every time for an item. */
@@ -246,11 +298,7 @@ final class ClothingTextures {
 					line(g, p, light, 160, 1F);
 				}
 			}
-			case "camo" -> {
-				blobs(g, rnd, 0, W, H, 34, 22, s, 230);
-				blobs(g, rnd, 0, W, H, 26, 16, dark, 210);
-				blobs(g, rnd, 0, W, H, 18, 12, shade(s, 1.35F), 170);
-			}
+			case "camo" -> camo(g, rnd, W, H, base, s);
 			case "dots" -> {
 				for (int row = 0; row * 14 < H + 14; row++)
 					for (double x = (row % 2) * 8; x < W + 8; x += 16) fill(g, circle(x, row * 14 + 6, 3.8), s, 255);
@@ -295,6 +343,18 @@ final class ClothingTextures {
 	}
 
 	// ---- pants (one leg) ----
+
+	/** A sleeve: the shirt's camo all round, a darker cuff hem at the wrist (each arm its own, like the legs). */
+	private static BufferedImage paintSleeve(CosmeticDef c, boolean outerPlusX) {
+		int W = 192, H = 96;
+		BufferedImage bi = new BufferedImage(W, H, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = canvas(bi);
+		camo(g, new Random(c.id().hashCode() * 31 + (outerPlusX ? 7 : 3)), W, H, c.color(), c.color2());
+		fill(g, new Rectangle2D.Double(0, H - 7, W, 7), shade(c.color(), 0.62F), 200);
+		line(g, new Line2D.Double(0, H - 7.5, W, H - 7.5), shade(c.color(), 0.5F), 160, 1F);
+		g.dispose();
+		return bi;
+	}
 
 	private static BufferedImage paintPants(CosmeticDef c, boolean outerPlusX) {
 		int W = 192, H = 96, F = 0, PX = 48, B = 96, MX = 144;
@@ -357,11 +417,7 @@ final class ClothingTextures {
 					line(g, new Line2D.Double(0, y + 1, W, y + 1), 0xFFFFFF, 50, 1F);
 				}
 			}
-			case "camo" -> {
-				blobs(g, rnd, 0, W, H, 22, 20, s, 230);
-				blobs(g, rnd, 0, W, H, 16, 14, dark, 210);
-				blobs(g, rnd, 0, W, H, 10, 10, shade(s, 1.35F), 170);
-			}
+			case "camo" -> camo(g, rnd, W, H, base, s);
 			default -> {
 			}
 		}

@@ -196,13 +196,15 @@ public final class Cosmetics {
 		if (shirt == null && pants == null) return;
 		for (AvatarPartDef part : Sheets.AVATAR_PARTS) {
 			boolean isLeg = part.swing().equals("leg"), isTorso = part.id().equals("torso");
-			CosmeticDef c = isTorso ? shirt : isLeg ? pants : null;
+			// (a shirt printed all over carries on down the sleeves: camo, 2.0.0-test5)
+			boolean isSleeve = part.swing().equals("arm") && shirt != null && ClothingTextures.printedSleeves(shirt);
+			CosmeticDef c = isTorso || isSleeve ? shirt : isLeg ? pants : null;
 			if (c == null) continue;
 			Matrix4f joint = RobloxAvatarRenderer.jointMatrix(part, state, pose);
 			Bend.Of bend = RobloxAvatarRenderer.bend(part, pose);
 			float[] e = bounds(part);
 			boolean outerPlusX = part.centerX() >= 0;
-			Identifier tex = isTorso ? ClothingTextures.shirt(c) : ClothingTextures.pants(c, outerPlusX);
+			Identifier tex = isTorso ? ClothingTextures.shirt(c) : isSleeve ? ClothingTextures.sleeve(c, outerPlusX) : ClothingTextures.pants(c, outerPlusX);
 			float[] widths = isTorso ? new float[] { 96, 48, 96, 48 } : new float[] { 48, 48, 48, 48 };
 			collector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucent(tex),
 				(ps, vc) -> wrap(vc, ps, joint, bend, e, widths, light, overlay));

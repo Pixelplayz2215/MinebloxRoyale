@@ -26,7 +26,7 @@ OVER_HAIR = ("headphones", "halo", "bunny", "cat", "tiara")
 CUT = {**{s: "b0" for s in ("cap", "backcap", "viking", "beanie", "army", "tricorne")}, **{s: "b2" for s in ("police", "fire_helmet")},
        **{s: "b4" for s in ("chef", "pith", "fedora", "cowboy")}, "witch": "b6"}
 HEAD = (-0.6, 0.0, -0.6, 0.6, 1.2, 0.6)
-TORSO, LEG = (-1, -1, -0.5, 1, 1, 0.5), (-0.5, -2, -0.5, 0.5, 0, 0.5)
+TORSO, LEG, ARM = (-1, -1, -0.5, 1, 1, 0.5), (-0.5, -2, -0.5, 0.5, 0, 0.5), (-0.5, -1.5, -0.5, 0.5, 0.5, 0.5)
 C = avatar.C
 CI = C.inverted()
 
@@ -122,6 +122,10 @@ def dress(worn, emote=None):
         objs.append(brm_import.load(os.path.join(MESHES, mid + ".brm"), hexint(row["color"]), hexint(row["color2"]), js[part], mid))
     if shirt:
         objs.append(clothes(os.path.join(CLOTHES, f"shirt_{shirt['id']}.png"), js["torso"], TORSO, (96, 48, 96, 48), "shirt"))
+        if shirt["shape"] == "camo":  # (printed sleeves, 2.0.0-test5)
+            for arm in ("left_arm", "right_arm"):
+                side = "_px" if arm == "right_arm" else "_mx"
+                objs.append(clothes(os.path.join(CLOTHES, f"sleeve_{shirt['id']}{side}.png"), js[arm], ARM, (48, 48, 48, 48), "sleeve"))
     if pants:
         for leg in ("left_leg", "right_leg"):
             side = "_px" if leg == "right_leg" else "_mx"
