@@ -107,6 +107,16 @@ public class BotEntity extends PathfinderMob {
 	/** Ticks on the ground without a gun (a teammate of a real player who keeps looting first stays unarmed). */
 	private int unarmedTicks;
 	private boolean caring;
+	/**
+	 * On foot like a player (2.0.0-test5, creator: "Bots walk and run and act more like real players"): a player walks
+	 * about 4.3 blocks a second and sprints 5.6; a mob's ground speed goes as the square of (its speed attribute x the
+	 * speed asked of its pathfinding), so these are what that product has to be (pace). Before, every bot went at its own
+	 * one speed everywhere and never said it was sprinting, so it glided along.
+	 */
+	private static final double WALK_PACE = 0.313, SPRINT_PACE = 0.357;
+	/** Whether what it's doing calls for a sprint (set with each move it asks for); when it may crouch; its next look round; a pause. */
+	private boolean sprintWanted;
+	private int crouchUntil, lookAround, pauseUntil;
 	/** Where it's trying to get to this tick (null: standing still on purpose), for BotMovement's progress checks. */
 	private Vec3 heading;
 	/** Chests, loot and harvest spots it couldn't get to, left alone until the tick given. */
@@ -424,7 +434,38 @@ public class BotEntity extends PathfinderMob {
 		heading = null;
 		think(level);
 		movement().swimTick(level);
+		onFootLikeAPlayer(level);
 		if (tickCount % 40 == 0) movement().watch(level, heading);
+	}
+
+	/** The speed asked of its pathfinding for a player's walk or sprint (see WALK_PACE). */
+	private double pace(boolean sprint) {
+		sprintWanted = sprint;
+		return (sprint ? SPRINT_PACE : WALK_PACE) / Math.max(0.05, def.speed());
+	}
+
+	/**
+	 * After its move each tick: says it's sprinting while it sprints on land (so it's drawn running, as a player is), a
+	 * sprint-jump now and then across open ground, crouched while it heals and now and then while it stands and shoots.
+	 */
+	private void onFootLikeAPlayer(ServerLevel level) {
+		boolean moving = !getNavigation().isDone() && getDeltaMovement().horizontalDistanceSqr() > 0.004;
+		if (!isInWater()) {
+			boolean sprint = sprintWanted && moving && !isUsingItem() && onGround();
+			if (isSprinting() != sprint) setSprinting(sprint);
+			if (sprint && getRandom().nextInt(90) == 0 && !horizontalCollision && (target == null || distanceTo(target) > 12)) getJumpControl().jump();
+		}
+		boolean crouch = onGround() && !isInWater() && !Knocked.is(this) && (caring || tickCount < crouchUntil && !moving);
+		if (crouch && getPose() == Pose.STANDING) setPose(Pose.CROUCHING);
+		else if (!crouch && getPose() == Pose.CROUCHING) setPose(Pose.STANDING);
+	}
+
+	/** Sprinting is how it looks; its speed is its pace alone (Minecraft's own sprint boost would put 30% on top). */
+	@Override
+	public void setSprinting(boolean sprinting) {
+		super.setSprinting(sprinting);
+		var speed = getAttribute(Attributes.MOVEMENT_SPEED);
+		if (speed != null) speed.removeModifier(net.minecraft.resources.Identifier.withDefaultNamespace("sprinting"));
 	}
 
 	/** One tick of play, once it's on the ground and standing. */
@@ -498,6 +539,13 @@ public class BotEntity extends PathfinderMob {
 		if (followTick(level)) return;
 		if (lootTick(level)) return;
 		if (harvestTick(level)) return;
+		lookRound();
+		// (at the end of a wander, a short pause, as a player stops to look about)
+		if (wanderTo != null && getNavigation().isDone() && tickCount >= pauseUntil) {
+			pauseUntil = tickCount + 20 + getRandom().nextInt(50);
+			wanderTo = null;
+		}
+		if (tickCount < pauseUntil) return;
 		if (wanderTo == null || getNavigation().isDone()) {
 			// Somewhere 8 to 32 blocks off (Minecraft's pathfinding can't plan much further: far spots left bots standing
 			// still), kept well inside the circle.
@@ -522,7 +570,7 @@ public class BotEntity extends PathfinderMob {
 		if (d < 1 || tickCount % 40 != 0 && !getNavigation().isDone()) return;
 		double hop = Math.min(d, 20);
 		int tx = Mth.floor(getX() + dx / d * hop), tz = Mth.floor(getZ() + dz / d * hop);
-		getNavigation().moveTo(tx + 0.5, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, tx, tz), tz + 0.5, 1.15);
+		getNavigation().moveTo(tx + 0.5, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, tx, tz), tz + 0.5, pace(true)); // (running for the circle)
 	}
 
 	/** The drop from the bus: skydive (fast fall) then glider below gliderHeight, steering to the landing spot. */
@@ -557,7 +605,7 @@ public class BotEntity extends PathfinderMob {
 		if (!building && explosives(level)) return;
 		if (!(held.getItem() instanceof WeaponItem w)) {
 			// No gun yet: swing the pickaxe up close.
-			if (!building) chase(1.1);
+			if (!building) chase(true);
 			if (dist < 2.6 && swingCooldown-- <= 0 && mm.botsMayShoot(level.getGameTime())) {
 				swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT);
 				target.hurtServer(level, level.damageSources().mobAttack(this), MinebloxRoyale.setting("pickaxeDamage"));
@@ -567,9 +615,13 @@ public class BotEntity extends PathfinderMob {
 		}
 		float pref = w.def.botPreferredRange();
 		if (!building) { // (while a ramp push or 90s runs, its legs are the plan's)
-			if (dist > pref * 1.3) chase(1.0);
+			if (dist > pref * 1.3) chase(dist > pref * 2.2); // (sprinting in from far off, walking in with the gun up)
 			else if (dist < pref * 0.6) strafe();
-			else getNavigation().stop();
+			else {
+				getNavigation().stop();
+				// now and then it crouches as it stands and shoots, as players do
+				if (tickCount > crouchUntil + 60 && getRandom().nextInt(160) == 0) crouchUntil = tickCount + 30 + getRandom().nextInt(50);
+			}
 		}
 		if (++seenFor > def.reactionTicks() && mm.botsMayShoot(level.getGameTime())) {
 			boolean steady = getRandom().nextFloat() < def.accuracy();
@@ -609,7 +661,7 @@ public class BotEntity extends PathfinderMob {
 			faceTarget();
 			if (held.getItem() instanceof WeaponItem w) {
 				double dist = distanceTo(target), pref = w.def.botPreferredRange();
-				if (dist > pref * 1.3) chase(1.0);
+				if (dist > pref * 1.3) chase(dist > pref * 2.2);
 				else if (dist < pref * 0.6) strafe();
 				else getNavigation().stop();
 				if (++seenFor > def.reactionTicks() && mm.botsMayShoot(level.getGameTime())) {
@@ -768,9 +820,9 @@ public class BotEntity extends PathfinderMob {
 		equipBest();
 	}
 
-	private void chase(double speed) {
+	private void chase(boolean sprint) {
 		heading = target.position();
-		getNavigation().moveTo(target, speed);
+		getNavigation().moveTo(target, pace(sprint));
 	}
 
 	/**
@@ -951,25 +1003,39 @@ public class BotEntity extends PathfinderMob {
 		return best;
 	}
 
+	/** Somewhere it goes: walking close by (looting, in buildings), sprinting when it's further than a short dash. */
 	private void navigateTo(Vec3 at) {
 		heading = at;
-		if (getNavigation().isDone() || tickCount % 40 == 0) getNavigation().moveTo(at.x, at.y, at.z, 1.0);
+		if (getNavigation().isDone() || tickCount % 40 == 0) getNavigation().moveTo(at.x, at.y, at.z, pace(at.distanceToSqr(position()) > 16 * 16));
 	}
 
 	private void strafe() {
 		if (tickCount % 30 == 0) {
 			Vec3 side = new Vec3(-(target.getZ() - getZ()), 0, target.getX() - getX()).normalize().scale(getRandom().nextBoolean() ? 4 : -4);
-			getNavigation().moveTo(getX() + side.x, getY(), getZ() + side.z, 1.0);
+			getNavigation().moveTo(getX() + side.x, getY(), getZ() + side.z, pace(false)); // (side to side, the gun up)
 		}
 	}
 
+	/**
+	 * Turns to its target, as a player's aim swings round: at most 24 degrees a tick across and 14 up or down (it used to
+	 * snap straight on).
+	 */
 	private void faceTarget() {
 		double dx = target.getX() - getX(), dz = target.getZ() - getZ(), dy = target.getEyeY() - 0.2 - getEyeY();
 		float yaw = (float) (Mth.atan2(dz, dx) * (180F / Math.PI)) - 90F;
 		float pitch = (float) -(Mth.atan2(dy, Math.sqrt(dx * dx + dz * dz)) * (180F / Math.PI));
-		setYRot(yaw);
-		setYHeadRot(yaw);
-		setXRot(pitch);
+		float now = Mth.approachDegrees(getYRot(), yaw, 24F);
+		setYRot(now);
+		setYHeadRot(now);
+		setXRot(Mth.approach(getXRot(), pitch, 14F));
+	}
+
+	/** Walking about: now and then a look round, at something off to one side (a player's camera wanders too). */
+	private void lookRound() {
+		if (--lookAround > 0) return;
+		lookAround = 40 + getRandom().nextInt(60);
+		double a = Math.toRadians(getYRot() + 90 + (getRandom().nextDouble() - 0.5) * 140), d = 6 + getRandom().nextDouble() * 6;
+		getLookControl().setLookAt(getX() + Math.cos(a) * d, getEyeY() + (getRandom().nextDouble() - 0.6) * 1.5, getZ() + Math.sin(a) * d);
 	}
 
 	private void pickTarget(ServerLevel level) {
@@ -1089,7 +1155,7 @@ public class BotEntity extends PathfinderMob {
 		if (tickCount % 40 == 0 || getNavigation().isDone()) {
 			double hop = Math.min(d, 20);
 			int tx = Mth.floor(getX() + dx / d * hop), tz = Mth.floor(getZ() + dz / d * hop);
-			getNavigation().moveTo(tx + 0.5, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, tx, tz), tz + 0.5, 1.15);
+			getNavigation().moveTo(tx + 0.5, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, tx, tz), tz + 0.5, pace(true));
 		}
 		return true;
 	}
@@ -1105,7 +1171,7 @@ public class BotEntity extends PathfinderMob {
 		double range = MinebloxRoyale.setting("botFollowRange");
 		if (distanceToSqr(follow) < range * range) return false;
 		heading = follow.position();
-		if (getNavigation().isDone() || tickCount % 20 == 0) getNavigation().moveTo(follow, distanceToSqr(follow) > 40 * 40 ? 1.2 : 1.05);
+		if (getNavigation().isDone() || tickCount % 20 == 0) getNavigation().moveTo(follow, pace(distanceToSqr(follow) > 12 * 12));
 		return true;
 	}
 

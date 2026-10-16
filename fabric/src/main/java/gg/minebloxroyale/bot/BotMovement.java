@@ -66,6 +66,15 @@ final class BotMovement {
 			bot.setYRot(yaw);
 			bot.setYHeadRot(yaw);
 		}
+		// At the water's edge, a bank one block high with room above it: up and out, as a player jumps out
+		// (2.0.0-test5, creator: "can swim like real players too").
+		if (bot.isInWater() && bot.horizontalCollision && bot.tickCount % 8 == 0) {
+			double yaw = Math.toRadians(bot.getYRot());
+			BlockPos ahead = BlockPos.containing(bot.getX() - Math.sin(yaw) * 0.9, bot.getY() + 0.6, bot.getZ() + Math.cos(yaw) * 0.9);
+			if (!level.getBlockState(ahead).getCollisionShape(level, ahead).isEmpty() && level.getBlockState(ahead.above()).getCollisionShape(level, ahead.above()).isEmpty()
+				&& level.getBlockState(ahead.above(2)).getCollisionShape(level, ahead.above(2)).isEmpty())
+				bot.setDeltaMovement(bot.getDeltaMovement().x, 0.42, bot.getDeltaMovement().z);
+		}
 		if (fast != fastSwimming) {
 			fastSwimming = fast;
 			bot.setSprinting(fast);
