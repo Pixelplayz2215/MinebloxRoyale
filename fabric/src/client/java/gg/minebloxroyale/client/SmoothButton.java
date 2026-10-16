@@ -82,9 +82,13 @@ public class SmoothButton extends Button {
 					Smooth.text(g, "owned", x + w - 4 * s, y + (h - 5.5F * s) / 2 - 0.5F, 5.5F * s, MUTED, Smooth.RIGHT, false);
 					right = w - Smooth.width("owned", 5.5F * s) - 8 * s;
 				}
+				// (centred, 2.0.0-test6.1: in the whole tile, as much room kept on its left as the dot or lock takes on its right;
+				// beside a price or "owned", in the room left of it)
+				boolean tag = price != null || owned;
+				float room = center ? (tag ? right - 5 * s : w - 2 * (w - right)) : right - 4 * s, mid = tag ? x + (5 * s + right) / 2 : x + w / 2;
 				float size = 7.5F * s;
-				while (size > 4.5F && Smooth.width(label, size) > (center ? w - 12 * s : right - 4 * s)) size -= 0.25F;
-				if (center) Smooth.text(g, label, x + w / 2, y + (h - size) / 2 - 0.5F, size, locked ? DIM : on ? GOLD : WHITE, Smooth.CENTER, false);
+				while (size > 4.5F && Smooth.width(label, size) > room) size -= 0.25F;
+				if (center) Smooth.text(g, label, mid, y + (h - size) / 2 - 0.5F, size, locked ? DIM : on ? GOLD : WHITE, Smooth.CENTER, false);
 				else Smooth.text(g, label, x + 5 * s, y + (h - size) / 2 - 0.5F, size, locked ? DIM : on ? GOLD : WHITE, Smooth.LEFT, false);
 			}
 		}

@@ -322,6 +322,7 @@ public class LockerScreen extends Screen {
 			}
 			SmoothButton b = new SmoothButton(tx, ty, tileW, tileH, label, SmoothButton.Look.TILE, btn -> t.click().run());
 			b.scale = k;
+			b.center = true; // (every item's name in the middle of its tile: 2.0.0-test6.1, creator)
 			b.on = on;
 			b.owned = owned;
 			b.price = price;
