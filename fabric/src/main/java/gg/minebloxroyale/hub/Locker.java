@@ -164,7 +164,7 @@ public final class Locker {
 		try {
 			Files.writeString(file(server), b.toString());
 		} catch (IOException e) {
-			MinebloxRoyale.LOG.warn("BR: couldn't save lockers", e);
+			MinebloxRoyale.couldntSave("lockers", file(server), e);
 		}
 	}
 }

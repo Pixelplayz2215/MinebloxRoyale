@@ -40,8 +40,14 @@ import org.apache.logging.log4j.core.filter.AbstractFilter;
  * <li>(1.0.0.4) On a PC whose Windows performance counters are switched off, Minecraft's system report (and oshi, the
  * library it reads them with) logs warnings and errors with stack traces at every start. Only Minecraft's own reports
  * miss those details: one plain line instead.</li>
+ * <li>(1.0.1.1) The minimized window is recognised by the exception's own words wherever Minecraft logs it, not only
+ * after the two messages it used in 26.3's first builds.</li>
+ * <li>(1.0.1.1) When e4mc can't reach its relay (no internet yet, a network that blocks it), it logs an ERROR with a
+ * stack trace, and its start-up thread dies with a second one. Melty counted those as the mod's code failing to load
+ * (2026-10-16, 1.0.1). The game plays on; only friends can't join yet. One plain line instead, and AutoWorld asks
+ * e4mc to try again a little later.</li>
  * </ul>
- * Everything else, e4mc's other problems included, is logged as it is.
+ * Everything else is logged as it is.
  */
 public final class LogWatch extends AbstractFilter implements PreLaunchEntrypoint {
 	private static final Logger LOG = LogManager.getLogger("MinebloxRoyale");
@@ -56,9 +62,12 @@ public final class LogWatch extends AbstractFilter implements PreLaunchEntrypoin
 		{"Couldn't connect to realms", REALMS}};
 	/** Netty's words for an exception nothing on the connection handled (e4mc's Dialtone server, see above). */
 	private static final String UNHANDLED = "An exceptionCaught() event was fired, and it reached at the tail of the pipeline";
-	/** Minecraft's words when it can't draw a frame (Minecraft.renderFrame); its exception's, when the window is minimized. */
-	private static final String[] SURFACE = {"Couldn't acquire next surface texture", "Couldn't configure surface"};
+	/** The words of the exception Minecraft logs when it can't draw a frame because the window is minimized. */
 	private static final String MINIMIZED = "Cannot acquire minimized window";
+	/** e4mc's words when its relay session fails, and the name of the thread that starts it. */
+	private static final String E4MC_ERROR = "error in e4mc", E4MC_THREAD = "e4mc_minecraft-init";
+	/** When e4mc last failed (one failure logs twice: its own error, then its thread dying). */
+	private static volatile long e4mcFailedAt;
 	/** Minecraft's system report on a PC whose Windows performance counters are off (oshi reads them for it). */
 	private static final String SYSTEM_INFO = "Failed to get system info for";
 	private static final String COUNTERS = "BR: Windows didn't give Minecraft some system details (its performance counters are off on this PC). "
@@ -76,6 +85,8 @@ public final class LogWatch extends AbstractFilter implements PreLaunchEntrypoin
 	@Override
 	public void onPreLaunch() {
 		if (FabricLoader.getInstance().getEnvironmentType() != EnvType.CLIENT) return;
+		OldInstall.moveTo(FabricLoader.getInstance().getGameDir());
+		E4mcNatives.use(dir().resolve("e4mc"));
 		try {
 			Files.createDirectories(dir());
 			Files.writeString(dir().resolve("melty.log"), "Mineblox Royale started " + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
@@ -107,9 +118,13 @@ public final class LogWatch extends AbstractFilter implements PreLaunchEntrypoin
 				if (told.add(s[1])) LOG.info(s[1], signIn(event.getThrown(), msg));
 				return Filter.Result.DENY;
 			}
-			for (String s : SURFACE) {
-				if (!msg.startsWith(s) || !everything(event.getThrown(), msg).contains(MINIMIZED)) continue;
+			Throwable thrown = event.getThrown();
+			if ((thrown != null || msg.contains(MINIMIZED)) && everything(thrown, msg).contains(MINIMIZED)) {
 				if (told.add(MINIMIZED)) LOG.info("BR: the game window was minimized, so Minecraft drew nothing until it was back. Nothing is wrong.");
+				return Filter.Result.DENY;
+			}
+			if (msg.equals(E4MC_ERROR) || msg.startsWith("Uncaught exception in thread") && (msg.contains(E4MC_THREAD) || fromE4mc(thrown))) {
+				e4mcFailed(thrown);
 				return Filter.Result.DENY;
 			}
 			String logger = event.getLoggerName();
@@ -126,6 +141,28 @@ public final class LogWatch extends AbstractFilter implements PreLaunchEntrypoin
 		} catch (RuntimeException e) { // never in the way of the log itself
 		}
 		return Filter.Result.NEUTRAL;
+	}
+
+	/**
+	 * e4mc couldn't open the world to friends: why, in a few words (never the exception itself, see above), to AutoWorld,
+	 * which writes it to melty.log and asks e4mc to try again later. Its own library failing to load can't be tried
+	 * again (e4mc keeps that failure until the game restarts).
+	 */
+	private static void e4mcFailed(Throwable t) {
+		long now = System.currentTimeMillis();
+		if (now - e4mcFailedAt < 3000) return; // the same failure's second line
+		e4mcFailedAt = now;
+		String all = everything(t, "");
+		boolean library = all.contains("UnsatisfiedLinkError") || all.contains("native library");
+		String why = library ? "its relay library couldn't load"
+			: all.contains("UnresolvedAddress") || all.contains("UnknownHost") || all.contains("ConnectException") || all.contains("NoRouteToHost")
+				|| all.contains("imed out") || all.contains("Timeout") ? "no internet, or this network blocks the relay"
+			: "the relay didn't answer";
+		try {
+			AutoWorld.onE4mcFailed(why, !library);
+		} catch (RuntimeException | LinkageError e) { // the game isn't up yet
+			LOG.info("BR: friends can't join yet: the e4mc relay couldn't be reached ({}). Playing works as normal.", why);
+		}
 	}
 
 	/** Why the sign-in check came back empty, in a few words (never the exception itself, see above). */

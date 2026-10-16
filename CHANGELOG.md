@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.0.1.1 (2026-10-16)
+
+Fixes for the problems players' Melty reported on 1.0.1.
+
+- **Starting through Melty:** Melty now sets up Minecraft itself (its own Prism Launcher, Java and the player's sign-in), so the Melty download carries only the mods and the `minebloxroyale` folder (94 MB instead of 197 MB). The Prism copy the package used to carry sometimes gave up checking its Java on slow PCs, or stopped at a sign-in window, and the game closed right after starting. The first start moves the world and game settings across from the earlier install (on another drive it copies the world without its old islands).
+- **Playing with friends:** e4mc's two relay libraries come with the game (`minebloxroyale/e4mc`, e4mc's own builds from natives.e4mc.link, checked by their SHA-256), so e4mc never has to download them. Where that download was blocked, the world never got an address and friends sent by Melty waited for ever ("Waiting for the host's game to open").
+- **The relay unreachable:** when e4mc can't reach its relay (no internet yet), the game asks it again after 20 s, then 40, 80, 160 and every 5 minutes, and melty.log says why friends can't join yet.
+- **Low disk space:** a new island is only made with 1 GB free; otherwise the next match is on the same island (the hub and chat say so). An island being made stops under 300 MB free: a next island is dropped for the one just played, and a world's first island waits for room. A full disk crashed the game mid-match.
+- **Demo World:** old islands are removed in Minecraft's demo world too (an account that doesn't own Minecraft plays there), where they used to pile up until the disk was full.
+- **Plain lines instead of errors:** a minimized window (wherever Minecraft logs it), e4mc's relay failing, and a file the game couldn't save (a full disk, another program holding it: the island restore list is now tried three times and swapped in whole) each write one plain line instead of an error with a stack trace.
+- Roblox and Fortnite are found on the PC by the game itself (Melty no longer passes their folders, which stopped Play for players without Fortnite).
+
 ## v1.0.1 (2026-10-15)
 
 A graphics update: almost everything you see in a match was remade in Blender.

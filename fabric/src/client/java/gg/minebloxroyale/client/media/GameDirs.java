@@ -17,9 +17,9 @@ import net.minecraft.client.Minecraft;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Where the player's own games and the bundled ffmpeg are. Melty passes the games' folders as MINEBLOXROYALE_ROBLOX and
- * MINEBLOXROYALE_FORTNITE ({game:roblox}, {game:fortnite}); without them (development) the usual install places are
- * tried. Nothing is copied out of these folders: files are read and decoded in memory while playing.
+ * Where the player's own games and the bundled ffmpeg are. MINEBLOXROYALE_ROBLOX and MINEBLOXROYALE_FORTNITE can give
+ * the games' folders; without them the usual install places are tried. (1.0.1.1: Melty no longer passes them, since
+ * naming {game:fortnite} in the launch made Melty stop Play for players without Fortnite, which is optional.) Nothing is copied out of these folders: files are read and decoded in memory while playing.
  */
 public final class GameDirs {
 	private static Path robloxContent, fortnite, ffmpeg;

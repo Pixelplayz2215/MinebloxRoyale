@@ -18,6 +18,11 @@ import gg.minebloxroyale.match.MatchManager;
 import gg.minebloxroyale.match.OldIslands;
 import gg.minebloxroyale.net.Net;
 import gg.minebloxroyale.sheets.Sheets;
+import java.io.IOException;
+import java.nio.file.AccessDeniedException;
+import java.nio.file.FileSystemException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
@@ -51,6 +56,35 @@ public final class MinebloxRoyale implements ModInitializer {
 	 */
 	public static boolean devAccount(ServerPlayer p) {
 		return FabricLoader.getInstance().isDevelopmentEnvironment() && p.getGameProfile().name().equals("MinebloxDev");
+	}
+
+	/**
+	 * (1.0.1.1) A file the mod couldn't save, as one plain line saying why in a few words (a full disk, another program
+	 * holding the file). Never the exception and its stack trace: Melty reads those as the mod's code failing, and a
+	 * full disk logged dozens of them (2026-10-16).
+	 */
+	public static void couldntSave(String what, Path where, Throwable e) {
+		LOG.info("BR: couldn't save {} ({})", what, why(where, e));
+	}
+
+	/** Why a file couldn't be written, in a few words. */
+	public static String why(Path where, Throwable e) {
+		long free = freeSpace(where);
+		if (free >= 0 && free < (64L << 20)) return "the disk is full";
+		if (e instanceof AccessDeniedException) return "Windows didn't allow it";
+		if (e instanceof FileSystemException) return "another program had the file open";
+		return "the disk didn't take it";
+	}
+
+	/** Bytes free for this program on the drive holding where (or its nearest existing parent); -1 if unknown. */
+	public static long freeSpace(Path where) {
+		try {
+			Path p = where.toAbsolutePath();
+			while (p != null && !Files.exists(p)) p = p.getParent();
+			return p == null ? -1 : Files.getFileStore(p).getUsableSpace();
+		} catch (IOException | RuntimeException e) {
+			return -1;
+		}
 	}
 
 	/** This build's version, as in fabric.mod.json ("0.1.0-test12"). */

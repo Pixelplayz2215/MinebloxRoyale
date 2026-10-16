@@ -263,7 +263,7 @@ public final class Obby {
 		try {
 			Files.writeString(file(server), b.toString());
 		} catch (IOException e) {
-			MinebloxRoyale.LOG.warn("BR: couldn't save unlocks", e);
+			MinebloxRoyale.couldntSave("unlocks", file(server), e);
 		}
 	}
 }

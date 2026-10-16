@@ -129,7 +129,7 @@ public final class IslandMap {
 			img.setRGB(0, 0, RES, RES, rgb, 0, RES);
 			ImageIO.write(img, "png", file.toFile());
 		} catch (IOException e) {
-			MinebloxRoyale.LOG.warn("BR: couldn't save the island map", e);
+			MinebloxRoyale.couldntSave("the island map", file, e);
 		}
 		Net.IslandMapImage map = image();
 		MinebloxRoyale.LOG.info("BR: island map ready");

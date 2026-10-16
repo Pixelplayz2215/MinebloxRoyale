@@ -4,6 +4,8 @@ import gg.minebloxroyale.Legacy;
 import gg.minebloxroyale.MeltyTest;
 import gg.minebloxroyale.MinebloxRoyale;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -85,12 +87,69 @@ public final class AutoWorld {
 			Files.createDirectories(dir());
 			Files.writeString(dir().resolve("melty.log"), line + System.lineSeparator(), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 		} catch (IOException e) {
-			MinebloxRoyale.LOG.warn("BR: couldn't write melty.log", e);
+			MinebloxRoyale.LOG.info("BR: couldn't write melty.log ({})", e.getMessage());
 		}
 		MinebloxRoyale.LOG.info(line);
 	}
 
+	/**
+	 * (1.0.1.1) e4mc couldn't open this world to friends (LogWatch: no internet yet, or a network that blocks its relay).
+	 * The game plays on; melty.log says why, and e4mc is asked to try again after 20 s, then 40, 80, 160, and every 5
+	 * minutes after that, while the world is open. Players whose relay failed at start used to stay unreachable all
+	 * session (friends sent by Melty: "Waiting for the host's game to open").
+	 */
+	static void onE4mcFailed(String why, boolean retry) {
+		Minecraft mc = Minecraft.getInstance();
+		mc.execute(() -> {
+			if (mc.getSingleplayerServer() == null) {
+				MinebloxRoyale.LOG.info("BR: the e4mc relay couldn't be reached ({})", why);
+				return;
+			}
+			lastDomain = null; // a new address comes with the next session
+			long wait = Math.min(300, 20L << Math.min(relayTries, 4));
+			relayRetryAt = retry ? System.currentTimeMillis() + wait * 1000 : 0;
+			meltyLog("Friends can't join yet: the e4mc relay couldn't be reached (" + why + "). Playing works as normal"
+				+ (retry ? "; trying again in " + wait + " s." : "."));
+		});
+	}
+
+	/** Asks e4mc for a new relay session, as its own "/e4mc restart" does. Server's world open to friends only. */
+	private static void retryRelay(Minecraft mc) {
+		MinecraftServer server = mc.getSingleplayerServer();
+		if (server == null || !server.isPublished()) {
+			relayRetryAt = 0;
+			return;
+		}
+		relayTries++;
+		try {
+			ClassLoader loader = AutoWorld.class.getClassLoader();
+			Field current = Class.forName("link.e4mc.E4mcClient", true, loader).getField("session");
+			Object session = current.get(null);
+			if (session == null) return;
+			Class<?> type = session.getClass();
+			String state = String.valueOf(type.getField("state").get(session));
+			if (!state.equals("UNHEALTHY") && !state.equals("STARTING")) return; // working, or stopped on purpose
+			Field handler = type.getDeclaredField("handler"), group = type.getDeclaredField("group");
+			handler.setAccessible(true);
+			group.setAccessible(true);
+			for (Constructor<?> c : type.getConstructors()) {
+				if (c.getParameterCount() != 2) continue;
+				Object fresh = c.newInstance(handler.get(session), group.get(session));
+				current.set(null, fresh);
+				type.getMethod("startAsync").invoke(fresh);
+				MinebloxRoyale.LOG.info("BR: asking the e4mc relay again (try {})", relayTries + 1);
+				return;
+			}
+		} catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+			MinebloxRoyale.LOG.info("BR: couldn't ask e4mc to try again ({}); friends can join after the game is restarted", e.getClass().getSimpleName());
+		}
+	}
+
 	public static void tick(Minecraft mc) {
+		if (relayRetryAt != 0 && System.currentTimeMillis() >= relayRetryAt) {
+			relayRetryAt = 0;
+			retryRelay(mc);
+		}
 		// Back to your own world after leaving (or failing to reach) a friend's room; a "disconnected" message stays a
 		// moment first.
 		if (homeAt != 0) {
@@ -236,6 +295,8 @@ public final class AutoWorld {
 			return;
 		}
 		lastDomain = null; // hosting again: e4mc gives a new address
+		relayTries = 0;
+		relayRetryAt = 0;
 		if (server.isPublished()) return;
 		mc.execute(() -> {
 			if (System.getenv("MINEBLOXROYALE_LAN_OFFLINE") != null) server.setUsesAuthentication(false);
@@ -250,6 +311,9 @@ public final class AutoWorld {
 	private static final Pattern E4MC = Pattern.compile("([a-z0-9-]+\\.(?:[a-z0-9-]+\\.)*e4mc\\.link)");
 	private static final String E4MC_HOSTED = "text.e4mc_minecraft.domainAssigned";
 	private static @Nullable String lastDomain;
+	/** When to ask e4mc's relay again after it failed (0 = not waiting), and how many times it has been asked. */
+	private static long relayRetryAt;
+	private static int relayTries;
 
 	/**
 	 * A system line in the chat box. e4mc announces this world's public address there ("Local game hosted on domain
@@ -279,6 +343,8 @@ public final class AutoWorld {
 	private static void hosted(String domain) {
 		if (domain.equals(lastDomain)) return;
 		lastDomain = domain;
+		relayTries = 0;
+		relayRetryAt = 0;
 		meltyLog("Melty join address: " + lastDomain);
 		MeltyTest.pass("friends-can-join");
 		RoomCodes.hosting(lastDomain);

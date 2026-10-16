@@ -79,7 +79,7 @@ public final class RangeStats {
 		try {
 			Files.writeString(file(server), b.toString());
 		} catch (IOException e) {
-			MinebloxRoyale.LOG.warn("BR: couldn't save the shooting range record", e);
+			MinebloxRoyale.couldntSave("the shooting range record", file(server), e);
 		}
 	}
 }

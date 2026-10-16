@@ -17,8 +17,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.TicketType;
@@ -77,8 +79,35 @@ public final class IslandPregen {
 	 * purpose: guessing too slow a full speed only makes the countdown run a little fast, never jump up.
 	 */
 	private static final double GENTLE_SPEED = 0.5;
+	/**
+	 * (1.0.1.1) Disk space. An island takes about 100-150 MB of the world folder, and a disk that ran full while one was
+	 * made crashed the game (Melty, 2026-10-16). A new island is only started with NEW_ISLAND_MIN free; otherwise the
+	 * next match is played on the island just played (put back as it was, as every island is after its match). While
+	 * one is made, under DISK_FLOOR free it stops: the next island is dropped for the one just played, and a world's
+	 * first island (no other to play on) waits until there's room again, the hub saying so.
+	 */
+	private static final long NEW_ISLAND_MIN = 1L << 30, DISK_FLOOR = 300L << 20;
+	/** Low on disk space: the next match is on the island just played. */
+	private static volatile boolean sameIsland;
+	/** Since when the first island has been waiting for disk space (0 = it isn't). */
+	private static volatile long diskFullSince;
+	/** The island being played while the next one is made, to go back to if the disk runs low. */
+	private static double lastCx, lastCz;
+	private static volatile boolean haveLast;
+	/** The chunk area of a next island dropped for lack of disk space: its half-made chunks are never written. */
+	private static volatile int @Nullable [] lowDiskDrop;
 
 	private IslandPregen() {
+	}
+
+	/** Low on disk space, so the next match is on the island just played (the hub says so). */
+	public static boolean sameIsland() {
+		return sameIsland;
+	}
+
+	private static long freeSpace(MinecraftServer server) {
+		long free = MinebloxRoyale.freeSpace(server.getWorldPath(LevelResource.ROOT));
+		return free < 0 ? Long.MAX_VALUE : free;
 	}
 
 	/** At start-up, while registries are open: the island's chunk ticket. */
@@ -108,7 +137,7 @@ public final class IslandPregen {
 	public static int secondsLeft() {
 		long now = System.currentTimeMillis();
 		int done = doneCount.get(), left = total - done;
-		if (ready() || worker == null || !worker.isAlive() || total <= 1 || waitingForDisk()) {
+		if (ready() || worker == null || !worker.isAlive() || total <= 1 || waitingForDisk() || diskFullSince != 0) {
 			PROGRESS.clear();
 			finishGuess = 0;
 			return ready() ? 0 : -1;
@@ -130,9 +159,10 @@ public final class IslandPregen {
 		return (int) Math.max(1, (finishGuess - now) / 1000);
 	}
 
-	/** The countdown as the hub shows it: "1:20 left", "saving to disk", or "" while it can't tell yet. */
+	/** The countdown as the hub shows it: "1:20 left", "saving to disk", "disk full", or "" while it can't tell yet. */
 	public static String timeLeft() {
 		int s = secondsLeft();
+		if (diskFullSince != 0) return "disk full: free up space";
 		if (waitingForDisk()) return "saving to disk";
 		return s < 0 ? "" : String.format(Locale.ROOT, "%d:%02d left", s / 60, s % 60);
 	}
@@ -145,6 +175,10 @@ public final class IslandPregen {
 		stopping = false;
 		inMatch = false;
 		diskWaitSince = 0;
+		diskFullSince = 0;
+		sameIsland = false;
+		haveLast = false;
+		lowDiskDrop = null;
 		IslandMap.reset();
 		HELD.clear();
 		building = null;
@@ -175,6 +209,13 @@ public final class IslandPregen {
 	public static void matchStarted(MinecraftServer server) {
 		inMatch = true;
 		IslandMap.hold();
+		long free = freeSpace(server);
+		if (free < NEW_ISLAND_MIN) {
+			sameIsland = true;
+			MinebloxRoyale.LOG.info("BR: {} MB free on the disk: the next match is on this same island (a new one needs {} MB free)", free >> 20, NEW_ISLAND_MIN >> 20);
+			return;
+		}
+		sameIsland = false;
 		next(server);
 	}
 
@@ -184,6 +225,9 @@ public final class IslandPregen {
 		PROGRESS.clear(); // a fresh countdown at the new speed
 		finishGuess = 0;
 		IslandMap.release(server);
+		if (sameIsland)
+			server.getPlayerList().broadcastSystemMessage(Component.literal("The disk is nearly full (" + String.format(Locale.ROOT, "%.1f", freeSpace(server) / 1e9)
+				+ " GB free), so the next match is on the same island. Free up some space and every match gets a new island again.").withStyle(ChatFormatting.YELLOW), false);
 	}
 
 	/**
@@ -197,6 +241,9 @@ public final class IslandPregen {
 		Path file = server.getWorldPath(LevelResource.ROOT).resolve("minebloxroyale_island.txt");
 		double a = level.getRandom().nextDouble() * Math.PI * 2, far = 2 * (radius + 64) + 600 + level.getRandom().nextInt(2000);
 		double baseX = cx + Math.cos(a) * far, baseZ = cz + Math.sin(a) * far;
+		lastCx = cx;
+		lastCz = cz;
+		haveLast = true;
 		pick(server, file, radius, () -> Island.findCenter(level, baseX, baseZ, Math.cos(a), Math.sin(a), radius));
 		MinebloxRoyale.LOG.info("BR: picking a new island for the next match");
 	}
@@ -204,6 +251,7 @@ public final class IslandPregen {
 	/** Finds an island centre on a background thread, then generates the island from the server thread. */
 	private static void pick(MinecraftServer server, Path file, float radius, Supplier<double[]> search) {
 		building = null; // (the last island is finished and played on: never dropped)
+		lowDiskDrop = null; // (an island dropped for disk space was let go of long ago)
 		doneCount.set(0);
 		total = 1;
 		finished = false;
@@ -254,8 +302,11 @@ public final class IslandPregen {
 		}
 		running = true;
 		final int startAt = doneCount.get();
+		final boolean canDrop = haveLast; // a next island, with the one being played to go back to
 		worker = new Thread(() -> {
 			AtomicInteger inFlight = new AtomicInteger();
+			long[] nextDiskCheck = { 0 };
+			boolean outOfDisk = false;
 			// A gentle start: one chunk at a time for the first minute, then six (three while a match is played).
 			// Someone who leaves straight away (/rc to a friend, the usual thing right after opening the game) then has
 			// little half-made work for the world to finish and save before it can close (it took 25 s at full speed).
@@ -265,7 +316,7 @@ public final class IslandPregen {
 			// again.
 			Queue<int[]> failed = new ConcurrentLinkedQueue<>();
 			List<int[]> pass = new ArrayList<>(order.subList(startAt, order.size()));
-			for (int attempt = 0; attempt < 6 && !pass.isEmpty() && running; attempt++) {
+			chunks: for (int attempt = 0; attempt < 6 && !pass.isEmpty() && running; attempt++) {
 				if (attempt > 0) MinebloxRoyale.LOG.info("BR: asking again for {} island chunks that didn't load", pass.size());
 				for (int i = 0; i < pass.size() && running; i++) {
 					while (inFlight.get() >= (System.currentTimeMillis() < gentleUntil ? 1 : inMatch ? 3 : 6) && running) sleep(5);
@@ -278,6 +329,10 @@ public final class IslandPregen {
 						sleep(20);
 					}
 					diskWaitSince = 0;
+					if (outOfDisk(server, canDrop, nextDiskCheck)) {
+						outOfDisk = true;
+						break chunks;
+					}
 					int[] c = pass.get(i);
 					inFlight.incrementAndGet();
 					final boolean first = attempt == 0;
@@ -314,6 +369,10 @@ public final class IslandPregen {
 				failed.clear();
 				if (!pass.isEmpty()) sleep(500);
 			}
+			if (outOfDisk) {
+				dropForDisk(server, file);
+				return;
+			}
 			if (!pass.isEmpty()) MinebloxRoyale.LOG.warn("BR: {} island chunks never loaded; the map has gaps there", pass.size());
 			save(file);
 			if (running) MinebloxRoyale.LOG.info("BR: island fully generated ({} chunks)", total);
@@ -327,6 +386,45 @@ public final class IslandPregen {
 		worker.setDaemon(true);
 		worker.start();
 		MinebloxRoyale.LOG.info("BR: generating the island at {} {} in the background ({} of {} chunks done)", (int) cx, (int) cz, doneCount.get(), total);
+	}
+
+	/**
+	 * Under DISK_FLOOR free (checked every 2 s on the island thread): true for a next island, which is then dropped for
+	 * the one being played; a world's first island waits here until there's room again (the hub says "disk full").
+	 */
+	private static boolean outOfDisk(MinecraftServer server, boolean canDrop, long[] nextCheck) {
+		long now = System.currentTimeMillis();
+		if (now < nextCheck[0]) return false;
+		nextCheck[0] = now + 2000;
+		if (freeSpace(server) >= DISK_FLOOR) return false;
+		if (canDrop) return true;
+		MinebloxRoyale.LOG.info("BR: under {} MB free on the disk: the island waits until there's room", DISK_FLOOR >> 20);
+		diskFullSince = now;
+		while (running && freeSpace(server) < DISK_FLOOR + (64L << 20)) sleep(2000);
+		diskFullSince = 0;
+		if (running) MinebloxRoyale.LOG.info("BR: room on the disk again: the island carries on");
+		return false;
+	}
+
+	/**
+	 * The next island is dropped for lack of disk space (server thread): its chunks are let go and never written, and
+	 * the next match is on the island just played.
+	 */
+	private static void dropForDisk(MinecraftServer server, Path file) {
+		server.execute(() -> {
+			if (stopping) return; // the world is closing: stop() forgets the half-made island
+			lowDiskDrop = building;
+			for (ChunkPos pos : List.copyOf(HELD)) release(server.overworld(), pos);
+			building = null;
+			cx = lastCx;
+			cz = lastCz;
+			doneCount.set(total);
+			finished = true;
+			sameIsland = true;
+			running = false;
+			save(file);
+			MinebloxRoyale.LOG.info("BR: {} MB free on the disk: the next island is dropped, and the next match is on this same island", freeSpace(server) >> 20);
+		});
 	}
 
 	/** The generator has been waiting over 3 s for the disk to catch up with the chunks it made (the hub says so). */
@@ -366,7 +464,7 @@ public final class IslandPregen {
 			try {
 				Files.deleteIfExists(file);
 			} catch (IOException e) {
-				MinebloxRoyale.LOG.warn("BR: couldn't forget the unfinished island", e);
+				MinebloxRoyale.couldntSave("that the island wasn't finished", file, e);
 			}
 			MinebloxRoyale.LOG.info("BR: the island {} ({} of {} chunks): not saved, a new one is picked next time", finished ? "was still being saved" : "wasn't finished", doneCount.get(), total);
 		} else if (started) {
@@ -377,11 +475,15 @@ public final class IslandPregen {
 	}
 
 	/**
-	 * While the world closes: is this chunk part of an unfinished island being dropped (not saved)? Never near the hub
+	 * While the world closes, or after a next island was dropped for disk space: is this chunk part of an unfinished
+	 * island being dropped (not saved)? Never near the hub
 	 * (islands are always far from it; this is only a safety net).
 	 */
 	public static boolean abandonsChunk(int x, int z) {
-		int[] a = abandoned;
+		return inArea(abandoned, x, z) || inArea(lowDiskDrop, x, z);
+	}
+
+	private static boolean inArea(int @Nullable [] a, int x, int z) {
 		return a != null && x >= a[0] && z >= a[1] && x <= a[2] && z <= a[3] && Math.max(Math.abs(x), Math.abs(z)) > 64;
 	}
 
@@ -394,7 +496,7 @@ public final class IslandPregen {
 		try {
 			Files.writeString(file, cx + " " + cz + " " + doneCount.get() + " " + terrainHash());
 		} catch (IOException e) {
-			MinebloxRoyale.LOG.warn("BR: couldn't save island progress", e);
+			MinebloxRoyale.couldntSave("island progress", file, e);
 		}
 	}
 

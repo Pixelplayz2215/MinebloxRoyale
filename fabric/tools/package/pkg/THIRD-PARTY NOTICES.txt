@@ -1,5 +1,6 @@
-Mineblox Royale v1.0.0 includes these programs, each under its own licence (not every download has all of them:
-Prism Launcher and the Visual C++ runtime are only in the Prism "ready to play" download):
+Mineblox Royale v1.0.1.1 includes these programs, each under its own licence (not every download has all of them:
+Prism Launcher and the Visual C++ runtime are only in the Prism "ready to play" download, and Melty's download
+has only the mods and the minebloxroyale folder: Melty brings Prism Launcher, Java and Fabric Loader itself):
 
 Prism Launcher 11.1.1 (portable)
   Licence: GPL-3.0. Source code: https://github.com/PrismLauncher/PrismLauncher (tag 11.1.1)
@@ -12,6 +13,12 @@ Fabric API 0.161.0+26.3  (in the mods folder)
 
 e4mc 6.2.2  (in the mods folder)
   Licence: MIT. https://modrinth.com/mod/e4mc  (a free relay so friends can join your world without port forwarding)
+
+e4mc's relay libraries  (minebloxroyale\e4mc: netty_quiche_windows_x86_64_74.dll, iroh_java_windows_x86_64_57caf9a.dll)
+  e4mc's own builds, as it downloads them from https://natives.e4mc.link (byte for byte the same; they ship so the
+  game needn't download them). netty-incubator-codec-quic (Apache-2.0, https://github.com/netty/netty-incubator-codec-quic)
+  with Cloudflare's quiche (BSD-2-Clause) and Google's BoringSSL (OpenSSL/ISC licences); iroh by n0 (MIT or Apache-2.0,
+  https://github.com/n0-computer/iroh) in e4mc's binding (MIT, https://github.com/vgskye/e4mc-minecraft-architectury).
 
 FFmpeg 9.0, LGPL shared build  (minebloxroyale\ffmpeg)
   Licence: LGPL-2.1 or later (see LICENSE.txt in that folder). Source: https://ffmpeg.org

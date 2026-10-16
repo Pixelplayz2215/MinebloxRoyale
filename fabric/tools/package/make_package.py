@@ -9,11 +9,16 @@ different launchers"), each with the file that launcher imports and a HOW TO INS
   ATLauncher, GDLauncher               downloaded from Modrinth on import (Lunar's import waited forever with nothing
                                        to download)
 
+and, beside them, the file for Melty (MinebloxRoyale-<version>.zip): only the mods and the minebloxroyale folder, which
+Melty puts in the Minecraft it sets up itself (it brings Prism Launcher, Java and Fabric Loader; 1.0.1.1).
+
 Every file is complete on its own. No accounts, worlds, settings or anything of the creator's go in."""
 import glob, hashlib, json, os, shutil, sys, zipfile
 
-ROOT = r"D:\ClaudeProjects\Minecraft x Roblox x Fortnite Mashup"
 SP = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.abspath(os.path.join(SP, "..", "..", ".."))  # the project (this script is in fabric/tools/package)
+# The downloaded tools (FFmpeg, the portable Prism and what it bundles): .tools in the project, or MINEBLOXROYALE_TOOLS.
+TOOLS = os.environ.get("MINEBLOXROYALE_TOOLS") or os.path.join(ROOT, ".tools")
 VER = [l.split("=", 1)[1].strip() for l in open(os.path.join(ROOT, "fabric", "gradle.properties")) if l.startswith("version=")][0]
 NAME = f"MinebloxRoyale-{VER}"
 OUT = os.path.join(ROOT, "Test Builds" if "-test" in VER else "Releases", VER)
@@ -21,8 +26,8 @@ HOME = os.environ["USERPROFILE"]
 JAR = os.path.join(ROOT, "fabric", "build", "libs", f"minebloxroyale-{VER}.jar")
 FAPI = glob.glob(os.path.join(HOME, ".gradle", "caches", "modules-2", "files-2.1", "net.fabricmc.fabric-api", "fabric-api", "0.161.0+26.3", "*", "fabric-api-0.161.0+26.3.jar"))[0]
 E4MC = glob.glob(os.path.join(HOME, ".gradle", "caches", "**", "e4mc-AouleFRY.jar"), recursive=True)[0]
-FF = os.path.join(ROOT, ".tools", "ffmpeg", "ffmpeg-n9.0-latest-win64-lgpl-shared-9.0")
-PRISM = os.path.join(ROOT, ".tools", "prism")
+FF = os.path.join(TOOLS, "ffmpeg", "ffmpeg-n9.0-latest-win64-lgpl-shared-9.0")
+PRISM = os.path.join(TOOLS, "prism")
 # Prism's Windows build needs Microsoft's Visual C++ runtime, which not every PC has (Melty's check): its DLLs go
 # beside prismlauncher.exe (Microsoft lets programs carry them).
 VCRT = {n: os.path.join(os.environ["SystemRoot"], "System32", n)
@@ -31,21 +36,31 @@ MODS ={f"minebloxroyale-{VER}.jar": JAR, "fabric-api-0.161.0+26.3.jar": FAPI, "e
 FFMPEG = {"ffmpeg.exe": os.path.join(FF, "bin", "ffmpeg.exe"), "LICENSE.txt": os.path.join(FF, "LICENSE.txt")}
 FFMPEG.update({os.path.basename(p): p for p in glob.glob(os.path.join(FF, "bin", "*.dll"))})
 DOCS = {n: os.path.join(SP, "pkg", n) for n in ("HOW TO PLAY.txt", "THIRD-PARTY NOTICES.txt")}
+# e4mc's two native libraries, which it otherwise downloads from natives.e4mc.link the first time a world opens to
+# friends (blocked or timing out on some players' networks, Melty 2026-10-16): in minebloxroyale/e4mc, where the mod
+# points e4mc at them (E4mcNatives, by these same hashes). Taken from natives.e4mc.link (TOOLS/e4mc-natives).
+NATIVES_DIR = os.environ.get("MINEBLOXROYALE_E4MC_NATIVES") or os.path.join(TOOLS, "e4mc-natives")
+E4MC_NATIVES = {"netty_quiche_windows_x86_64_74.dll": "cca45c8f4c08525a4edf032b1c77dad9fa03ab99276f9df02a7a13126b600804",
+                "iroh_java_windows_x86_64_57caf9a.dll": "534286d02cdc1596ea6064d4193293228baef694d088dc7ddf931a3bdd9106eb"}
+NATIVES = {n: os.path.join(NATIVES_DIR, n) for n in E4MC_NATIVES}
 # What Prism would otherwise download from its own server before the game can start (on some players' PCs it never
 # got through, Melty 2026-10-15: "Closes right after starting", "Could not download metadata for net.minecraft 26.3"):
 # the four components' version files, as the instance's own (Prism loads an instance's patches/ from disk), and, in the
 # ready-to-play Prism, Mojang's Java 25 runtime for Minecraft with the instance pointed at it. Taken once from a Prism
 # that downloaded them (.tools/prism-bundle).
-BUNDLE = os.path.join(ROOT, ".tools", "prism-bundle")
+BUNDLE = os.path.join(TOOLS, "prism-bundle")
 PATCHES = {f"patches/{f}": os.path.join(BUNDLE, "patches", f) for f in ("org.lwjgl3.json", "net.minecraft.json", "net.fabricmc.intermediary.json",
                                                                        "net.fabricmc.fabric-loader.json")}
 JAVA = os.path.join(BUNDLE, "java", "java-runtime-epsilon")
 # The modpack's picture (creator: the high-res Mineblox Royale icon, fabric/tools/branding/make_icon.py), inside every
 # pack for the launchers that pick one up by themselves, and beside it for setting by hand.
 ICON = os.path.join(ROOT, "Branding", "Mineblox Royale icon 1024.png")
-for p in [JAR, FAPI, E4MC, PRISM, ICON, JAVA, *PATCHES.values(), *VCRT.values(), *FFMPEG.values(), *DOCS.values()]:
+for p in [JAR, FAPI, E4MC, PRISM, ICON, JAVA, *PATCHES.values(), *VCRT.values(), *FFMPEG.values(), *DOCS.values(), *NATIVES.values()]:
     if not os.path.exists(p):
         sys.exit("missing: " + p)
+for n, sha in E4MC_NATIVES.items():
+    if hashlib.sha256(open(NATIVES[n], "rb").read()).hexdigest() != sha:
+        sys.exit("not e4mc's own copy: " + NATIVES[n])
 
 INSTANCE_CFG = "[General]\nConfigVersion=1.2\nInstanceType=OneSix\nname=Mineblox Royale\niconKey=minebloxroyale\nOverrideMemory=true\nMinMemAlloc=1024\nMaxMemAlloc=4096\n"
 # (with the Java Prism ships beside it: a path from Prism's own folder, which Prism works from)
@@ -154,6 +169,7 @@ docs = {n: p for n, p in DOCS.items()}
 # Mods + the minebloxroyale folder, for a launcher's Fabric 26.3 profile by hand.
 mo = {f"{NAME}/mods/{n}": p for n, p in MODS.items()}
 mo.update({f"{NAME}/minebloxroyale/ffmpeg/{n}": p for n, p in FFMPEG.items()})
+mo.update({f"{NAME}/minebloxroyale/e4mc/{n}": p for n, p in NATIVES.items()})
 mo.update({f"{NAME}/{n}": p for n, p in docs.items()})
 mo[f"{NAME}/Mineblox Royale icon.png"] = ICON
 write_zip(os.path.join(WORK, "mods"), mo)
@@ -162,6 +178,7 @@ write_zip(os.path.join(WORK, "mods"), mo)
 cf = {"manifest.json": CF_MANIFEST, "icon.png": ICON}
 cf.update({f"overrides/mods/{n}": p for n, p in MODS.items()})
 cf.update({f"overrides/minebloxroyale/ffmpeg/{n}": p for n, p in FFMPEG.items()})
+cf.update({f"overrides/minebloxroyale/e4mc/{n}": p for n, p in NATIVES.items()})
 cf.update({f"overrides/{n}": p for n, p in docs.items()})
 write_zip(os.path.join(WORK, "curseforge"), cf)
 
@@ -170,6 +187,7 @@ write_zip(os.path.join(WORK, "curseforge"), cf)
 inst = {"instance.cfg": INSTANCE_CFG, "mmc-pack.json": MMC_PACK, "minebloxroyale.png": ICON, "icon.png": ICON, **PATCHES}
 inst.update({f"minecraft/mods/{n}": p for n, p in MODS.items()})
 inst.update({f"minecraft/minebloxroyale/ffmpeg/{n}": p for n, p in FFMPEG.items()})
+inst.update({f"minecraft/minebloxroyale/e4mc/{n}": p for n, p in NATIVES.items()})
 inst.update({f"minecraft/{n}": p for n, p in docs.items()})
 write_zip(os.path.join(WORK, "instance"), inst)
 
@@ -192,6 +210,7 @@ for d, _, fs in os.walk(JAVA):
         prism[f"{NAME}/Prism Launcher/java/java-runtime-epsilon/" + os.path.relpath(os.path.join(d, f), JAVA).replace("\\", "/")] = os.path.join(d, f)
 prism.update({f"{pi}/minecraft/mods/{n}": p for n, p in MODS.items()})
 prism.update({f"{pi}/minecraft/minebloxroyale/ffmpeg/{n}": p for n, p in FFMPEG.items()})
+prism.update({f"{pi}/minecraft/minebloxroyale/e4mc/{n}": p for n, p in NATIVES.items()})
 prism.update({f"{NAME}/{n}": p for n, p in docs.items()})
 write_zip(os.path.join(WORK, "prism"), prism)
 
@@ -199,8 +218,17 @@ write_zip(os.path.join(WORK, "prism"), prism)
 mr = {"modrinth.index.json": MRPACK_INDEX, "icon.png": ICON}
 mr.update({f"overrides/mods/{n}": p for n, p in MODS.items() if n not in MODRINTH})
 mr.update({f"overrides/minebloxroyale/ffmpeg/{n}": p for n, p in FFMPEG.items()})
+mr.update({f"overrides/minebloxroyale/e4mc/{n}": p for n, p in NATIVES.items()})
 mr.update({f"overrides/{n}": p for n, p in docs.items()})
 write_zip(os.path.join(WORK, "mrpack"), mr)
+
+# Melty: the mods and the minebloxroyale folder at the top, for the Minecraft instance Melty sets up (melty.json maps
+# mods/ and minebloxroyale/ into it); the docs ride in minebloxroyale.
+me = {f"mods/{n}": p for n, p in MODS.items()}
+me.update({f"minebloxroyale/ffmpeg/{n}": p for n, p in FFMPEG.items()})
+me.update({f"minebloxroyale/e4mc/{n}": p for n, p in NATIVES.items()})
+me.update({f"minebloxroyale/{n}": p for n, p in docs.items()})
+write_zip(os.path.join(OUT, f"{NAME}.zip"), me)
 
 pick = [f"MINEBLOX ROYALE {VER} - pick your launcher", "=" * 60,
         "Open the folder for the launcher you use; it has the file to import and HOW TO INSTALL.txt.", ""]
