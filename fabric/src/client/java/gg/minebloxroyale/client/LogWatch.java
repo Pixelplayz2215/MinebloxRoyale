@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.Filter;
@@ -33,6 +34,12 @@ import org.apache.logging.log4j.core.filter.AbstractFilter;
  * which quoted the exceptions, as the mod's code failing to load ("Errors loading its code").</li>
  * <li>(1.0.0.3) When e4mc turns away a direct connection (Dialtone) that didn't get through its security check, Netty
  * logs it as an unhandled exception with a stack trace. The world stays open to friends, so that's one plain line too.</li>
+ * <li>(1.0.0.4) While the game's window is minimized, Minecraft can't draw, and it logs a warning with the whole
+ * exception ("Cannot acquire minimized window") for it. Players minimize it while their first island is made, and
+ * Melty counted those warnings as the mod's code failing to load: one plain line instead.</li>
+ * <li>(1.0.0.4) On a PC whose Windows performance counters are switched off, Minecraft's system report (and oshi, the
+ * library it reads them with) logs warnings and errors with stack traces at every start. Only Minecraft's own reports
+ * miss those details: one plain line instead.</li>
  * </ul>
  * Everything else, e4mc's other problems included, is logged as it is.
  */
@@ -49,6 +56,13 @@ public final class LogWatch extends AbstractFilter implements PreLaunchEntrypoin
 		{"Couldn't connect to realms", REALMS}};
 	/** Netty's words for an exception nothing on the connection handled (e4mc's Dialtone server, see above). */
 	private static final String UNHANDLED = "An exceptionCaught() event was fired, and it reached at the tail of the pipeline";
+	/** Minecraft's words when it can't draw a frame (Minecraft.renderFrame); its exception's, when the window is minimized. */
+	private static final String[] SURFACE = {"Couldn't acquire next surface texture", "Couldn't configure surface"};
+	private static final String MINIMIZED = "Cannot acquire minimized window";
+	/** Minecraft's system report on a PC whose Windows performance counters are off (oshi reads them for it). */
+	private static final String SYSTEM_INFO = "Failed to get system info for";
+	private static final String COUNTERS = "BR: Windows didn't give Minecraft some system details (its performance counters are off on this PC). "
+		+ "Only Minecraft's own reports miss them; the game is fine.";
 	private static final Set<String> told = ConcurrentHashMap.newKeySet();
 
 	public LogWatch() {
@@ -91,6 +105,17 @@ public final class LogWatch extends AbstractFilter implements PreLaunchEntrypoin
 			for (String[] s : SIGN_IN) {
 				if (!msg.startsWith(s[0])) continue;
 				if (told.add(s[1])) LOG.info(s[1], signIn(event.getThrown(), msg));
+				return Filter.Result.DENY;
+			}
+			for (String s : SURFACE) {
+				if (!msg.startsWith(s) || !everything(event.getThrown(), msg).contains(MINIMIZED)) continue;
+				if (told.add(MINIMIZED)) LOG.info("BR: the game window was minimized, so Minecraft drew nothing until it was back. Nothing is wrong.");
+				return Filter.Result.DENY;
+			}
+			String logger = event.getLoggerName();
+			if (logger != null && logger.startsWith("oshi.") && event.getLevel().isMoreSpecificThan(Level.WARN)
+				|| msg.startsWith(SYSTEM_INFO) && everything(event.getThrown(), msg).contains("oshi.")) {
+				if (told.add(COUNTERS)) LOG.info(COUNTERS);
 				return Filter.Result.DENY;
 			}
 			if (msg.startsWith(UNHANDLED) && fromE4mc(event.getThrown())) {

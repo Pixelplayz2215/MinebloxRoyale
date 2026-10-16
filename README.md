@@ -6,7 +6,8 @@ A battle royale in Minecraft with a Roblox-style hub and Fortnite's rules. Drop 
 
 A Minecraft × Roblox × Fortnite mashup for **Minecraft: Java Edition 26.3** (Fabric).
 
-**Download:** pick your launcher's file from the [latest release](../../releases/latest) (see *Install* below).  
+**Play on Melty:** [Mineblox Royale on Melty](https://melty.gg/m/mineblox-royale) installs and starts it in one click.  
+**Download:** or pick your launcher's file from the [latest release](../../releases/latest) (see *Install* below).  
 **More from me:** [YouTube @Pixelplayz2215](https://www.youtube.com/@Pixelplayz2215)
 
 ![The hub](screenshots/hub.jpg)
@@ -59,22 +60,24 @@ A Minecraft × Roblox × Fortnite mashup for **Minecraft: Java Edition 26.3** (F
 
 ## Install
 
-Every file is on the [latest release](../../releases/latest) page. Pick the one for your launcher:
+The easiest way is [Melty](https://melty.gg/m/mineblox-royale): it installs Mineblox Royale and starts it in one click.
+
+Or get a file from the [latest release](../../releases/latest) page. Pick the one for your launcher:
 
 | Launcher | File | How |
 |---|---|---|
-| **Prism Launcher** (easiest, nothing to install) | [`MinebloxRoyale-1.0.0.Prism.Launcher.ready.to.play.zip`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.0.Prism.Launcher.ready.to.play.zip) | Unzip, run `Prism Launcher\prismlauncher.exe`, add your Microsoft account, double-click *Mineblox Royale*. |
-| Prism Launcher (already installed) | [`MinebloxRoyale-1.0.0.Prism.Launcher.import.zip`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.0.Prism.Launcher.import.zip) | Add Instance > Import > choose the file. |
-| **CurseForge** | [`MinebloxRoyale-1.0.0.CurseForge.zip`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.0.CurseForge.zip) | Minecraft > My Modpacks > Import > *Import Profile .zip*. |
-| **Modrinth App** | [`MinebloxRoyale-1.0.0.Modrinth.App.mrpack`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.0.Modrinth.App.mrpack) | "+" > From file. |
-| **Lunar Client** | [`MinebloxRoyale-1.0.0.Lunar.Client.mrpack`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.0.Lunar.Client.mrpack) | Import it as a modpack profile. |
-| ATLauncher | [`MinebloxRoyale-1.0.0.ATLauncher.mrpack`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.0.ATLauncher.mrpack) | Import > choose the file. |
-| GDLauncher | [`MinebloxRoyale-1.0.0.GDLauncher.mrpack`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.0.GDLauncher.mrpack) | Add instance > Import. |
-| MultiMC | [`MinebloxRoyale-1.0.0.MultiMC.import.zip`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.0.MultiMC.import.zip) | Add Instance > Import from zip. |
-| **Minecraft Launcher** (Mojang's) or any other | [`MinebloxRoyale-1.0.0.Minecraft.Launcher.zip`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.0.Minecraft.Launcher.zip) | Install [Fabric](https://fabricmc.net/use/installer/) for 26.3, give that installation its own game folder, and copy the zip's `mods` and `minebloxroyale` folders into it. |
+| **Prism Launcher** (easiest, nothing to install) | [`MinebloxRoyale-1.0.0.3.Prism.Launcher.ready.to.play.zip`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.0.3.Prism.Launcher.ready.to.play.zip) | Unzip, run `Prism Launcher\prismlauncher.exe`, add your Microsoft account, double-click *Mineblox Royale*. |
+| Prism Launcher (already installed) | [`MinebloxRoyale-1.0.0.3.Prism.Launcher.import.zip`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.0.3.Prism.Launcher.import.zip) | Add Instance > Import > choose the file. |
+| **CurseForge** | [`MinebloxRoyale-1.0.0.3.CurseForge.zip`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.0.3.CurseForge.zip) | Minecraft > My Modpacks > Import > *Import Profile .zip*. |
+| **Modrinth App** | [`MinebloxRoyale-1.0.0.3.Modrinth.App.mrpack`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.0.3.Modrinth.App.mrpack) | "+" > From file. |
+| **Lunar Client** | [`MinebloxRoyale-1.0.0.3.Lunar.Client.mrpack`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.0.3.Lunar.Client.mrpack) | Import it as a modpack profile. |
+| ATLauncher | [`MinebloxRoyale-1.0.0.3.ATLauncher.mrpack`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.0.3.ATLauncher.mrpack) | Import > choose the file. |
+| GDLauncher | [`MinebloxRoyale-1.0.0.3.GDLauncher.mrpack`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.0.3.GDLauncher.mrpack) | Add instance > Import. |
+| MultiMC | [`MinebloxRoyale-1.0.0.3.MultiMC.import.zip`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.0.3.MultiMC.import.zip) | Add Instance > Import from zip. |
+| **Minecraft Launcher** (Mojang's) or any other | [`MinebloxRoyale-1.0.0.3.Minecraft.Launcher.zip`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.0.3.Minecraft.Launcher.zip) | Install [Fabric](https://fabricmc.net/use/installer/) for 26.3, give that installation its own game folder, and copy the zip's `mods` and `minebloxroyale` folders into it. |
 
 - **Downloads:** the `.mrpack` files download Fabric API and e4mc from Modrinth while they import, so be online.
-- **First start:** the game opens straight into your own Mineblox Royale world. Making the first island takes about 2 minutes; try the obby or the shooting range meanwhile.
+- **First start:** the game opens straight into your own Mineblox Royale world. Your first island is made in the background during the first few minutes (the hub shows how far along it is), and the obby, the shooting range and the Locker are open meanwhile.
 - **Updating:** import the new version's file the same way. Your unlocks and outfit come along.
 
 ## Controls
@@ -116,5 +119,5 @@ Scope too fast? Options > Controls > Mouse Settings > **Scoped Sensitivity**.
 ## Credits and licences
 
 - Mineblox Royale is released under the MIT licence (see `LICENSE`).
-- The downloads also include Fabric API (Apache-2.0), e4mc (MIT) and an LGPL build of FFmpeg, which is used only to decode Roblox sounds from your own install. The Prism download also includes Prism Launcher (GPL-3.0) and Microsoft's Visual C++ runtime, which Prism needs. Details are in `THIRD-PARTY NOTICES.txt` inside each download.
+- The downloads also include Fabric API (Apache-2.0), e4mc (MIT) and an LGPL build of FFmpeg, which is used only to decode Roblox sounds from your own install. The Prism download also includes Prism Launcher (GPL-3.0), Microsoft's Visual C++ runtime, which Prism needs, and Java 25 (Mojang's Java runtime for Minecraft, the Microsoft Build of OpenJDK, GPL-2.0 with the Classpath Exception), so the game starts without downloading Java first. Details are in `THIRD-PARTY NOTICES.txt` inside each download.
 - Not affiliated with Mojang, Microsoft, Roblox Corporation or Epic Games. Minecraft, Roblox and Fortnite are trademarks of their owners.

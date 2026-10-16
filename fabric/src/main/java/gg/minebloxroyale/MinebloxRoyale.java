@@ -15,6 +15,7 @@ import gg.minebloxroyale.match.Loadout;
 import gg.minebloxroyale.match.Loot;
 import gg.minebloxroyale.match.LootChests;
 import gg.minebloxroyale.match.MatchManager;
+import gg.minebloxroyale.match.OldIslands;
 import gg.minebloxroyale.net.Net;
 import gg.minebloxroyale.sheets.Sheets;
 import net.fabricmc.api.ModInitializer;
@@ -91,6 +92,13 @@ public final class MinebloxRoyale implements ModInitializer {
 		UseBlockCallback.EVENT.register((player, level, hand, hit) -> Knocked.is(player) ? InteractionResult.FAIL : InteractionResult.PASS);
 		// A world from an older build (Block Royale): its files take the new names before anything reads them.
 		ServerLifecycleEvents.SERVER_STARTING.register(server -> Legacy.migrateWorld(server.getWorldPath(LevelResource.ROOT)));
+		// (1.0.0.4) Old islands off the disk before any chunk is loaded (after the renames: it reads the island files).
+		ServerLifecycleEvents.SERVER_STARTING.register(server -> {
+			OldIslands.Result r = OldIslands.prune(server.getWorldPath(LevelResource.ROOT), setting("startRadius") + 64);
+			if (r.files() > 0 || r.failed() > 0)
+				LOG.info("BR: old islands removed from the world folder: {} files, {} MB freed{}", r.files(), r.bytes() >> 20,
+					r.failed() > 0 ? " (" + r.failed() + " left for next time)" : "");
+		});
 		ServerLifecycleEvents.SERVER_STARTED.register(server -> {
 			HubBuilder.ensureBuilt(server);
 			MatchManager.get().onServerStarted(server);
