@@ -245,6 +245,7 @@ public final class Reboot {
 		if (!Teams.teamMode() || !mm.hasStandingTeammate(victim)) return;
 		long until = victim.level().getGameTime() + Math.round(MinebloxRoyale.setting("rebootCardSeconds") * 20);
 		spawn(victim.level(), victim.getX(), victim.getY() + 0.5, victim.getZ(), List.of(new Owner(key, victim.getName().getString(), Teams.teamOf(victim), until)));
+		LEFT.put(key, (until - victim.level().getGameTime()) / 20F); // (counted at once: the match doesn't end in the meantime)
 	}
 
 	private static void spawn(Level level, double x, double y, double z, List<Owner> owners) {
@@ -354,6 +355,10 @@ public final class Reboot {
 			if (after.size() != b.cards.size()) setCarried(b, after);
 			for (Owner o : after) LEFT.put(o.key(), (o.until() - now) / 20F);
 		}
+		// (1.0.1-test6, from 2.0.0-test3) and cards a bot far from everyone carries (simulated: it brings them when it's
+		// real again)
+		for (Owner o : mm.roster().simCards())
+			if (o.until() > now && mm.canComeBack(o)) LEFT.put(o.key(), (o.until() - now) / 20F);
 	}
 
 	/** Owners whose card still counts: not run out, and (players) still waiting in the match to come back. */

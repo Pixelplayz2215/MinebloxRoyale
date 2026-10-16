@@ -1,3 +1,4 @@
+Team modes (new in test6): get eliminated while a bot teammate is up: the match goes on while your reboot card is out, and they can reboot you
 Shirts and pants (new in test5): no white/grey flickering on the shirt front or the pants, from any side
 Knees and elbows (new in test5): nothing doubles up or flickers behind the knees or inside the elbows (sprint, kneel to revive, Flex)
 Loot chests (new in test5): smooth wooden and blue chests; hold F and watch the lid swing open

@@ -867,12 +867,26 @@ public final class MatchManager {
 	private void checkWinner(MinecraftServer server) {
 		Set<Integer> alive = teamsAlive();
 		// Test mode plays on to the last team even with every player out (a soak test of the bots to the very end).
-		if (alivePlayers.isEmpty() && !(TEST && alive.size() > 1)) {
+		if (!playersStillIn(server) && !(TEST && alive.size() > 1)) {
 			int t = alive.size() == 1 ? alive.iterator().next() : -1;
 			end(server, t);
 		} else if (alive.size() <= 1) {
 			end(server, alive.isEmpty() ? -1 : alive.iterator().next());
 		}
+	}
+
+	/**
+	 * Real players still in the match: one standing, or (a team mode, 1.0.1-test6 from 2.0.0-test3, creator: "It doesn't
+	 * wait until my bot team mates pickup my reboot card and try to revive me. Once i'm eliminated, it's over") one
+	 * eliminated whose reboot card is still out (on the ground or carried, not run out) while a teammate stands to bring
+	 * them back. They watch a teammate meanwhile; the match goes on until their team is out or the card runs out.
+	 */
+	private boolean playersStillIn(MinecraftServer server) {
+		if (!alivePlayers.isEmpty()) return true;
+		if (!Teams.teamMode()) return false;
+		for (UUID id : players)
+			if (server.getPlayerList().getPlayer(id) != null && Reboot.cardLeft(id.toString()) != null && teamAlive(Teams.teamOfPlayer(id))) return true;
+		return false;
 	}
 
 	private void end(MinecraftServer server, int winTeam) {

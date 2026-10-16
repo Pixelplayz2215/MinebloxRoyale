@@ -73,6 +73,14 @@ public final class BotRoster {
 	}
 
 	private final List<Sim> sims = new ArrayList<>();
+
+	/** Reboot cards carried by bots that are simulated right now (far from everyone). */
+	List<Reboot.Owner> simCards() {
+		List<Reboot.Owner> out = new ArrayList<>();
+		for (Sim s : sims)
+			if (s.entity == null) out.addAll(s.cards);
+		return out;
+	}
 	private final Map<BotEntity, Sim> byEntity = new HashMap<>();
 	private final Map<Integer, double[]> teamLanding = new HashMap<>();
 	private double fallbackX, fallbackZ;
