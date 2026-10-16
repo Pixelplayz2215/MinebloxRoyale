@@ -200,7 +200,7 @@
    "need": 40,
    "loopSeconds": 0.7,
    "note": "guard up, jab, cross with the hips behind it, jab, light on bent knees",
-   "props": "prop_glove@right_hand, prop_glove@left_hand",
+   "props": "prop_glove_r@right_hand, prop_glove_l@left_hand",
    "music": "emote_boxing"
   },
   {

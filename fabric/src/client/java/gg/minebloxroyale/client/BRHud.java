@@ -196,7 +196,8 @@ public final class BRHud {
 	/** Fortnite-style crosshair (hud sheet "crosshair"): the gap follows the gun's spread, tighter while aiming. */
 	public static void crosshair(GuiGraphicsExtractor g) {
 		Minecraft mc = Minecraft.getInstance();
-		if (mc.player == null || mc.player.isSpectator() || Aim.scoped() || mc.gui.screen() != null) return;
+		// (none while a winner's banner or stage plays, or the black screen before it: 2.0.0-test6.1)
+		if (mc.player == null || mc.player.isSpectator() || Aim.scoped() || mc.gui.screen() != null || VictoryClient.intro()) return;
 		// Drawn in real screen pixels (not GUI pixels) so it stays small and crisp at any GUI scale, like Fortnite's.
 		float px = 1F / mc.getWindow().getGuiScale();
 		g.pose().pushMatrix();

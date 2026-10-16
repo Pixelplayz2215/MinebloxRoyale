@@ -1078,7 +1078,13 @@ public final class MatchManager {
 		}
 		List<BotRoster.Sim> bots = roster.team(team);
 		int n = ps.size() + bots.size();
-		int top = level.getMinY();
+		// (2.0.0-test6.1, creator: "In Teams, /br win has errors (somehow I'm inside of a block suffocating, screen is
+		// black"): the island's middle loaded before it's measured: a win 20 seconds in, with the bus still flying, read
+		// the ground there before it was loaded as the world's floor and the stage went up at -48, inside the rock. And
+		// never under the sea.)
+		for (int dx = -16; dx <= 16; dx += 16)
+			for (int dz = -16; dz <= 16; dz += 16) level.getChunk(Mth.floor(cx + dx) >> 4, Mth.floor(cz + dz) >> 4);
+		int top = level.getSeaLevel();
 		for (int dx = -16; dx <= 16; dx += 4)
 			for (int dz = -16; dz <= 16; dz += 4) top = Math.max(top, level.getHeight(Heightmap.Types.MOTION_BLOCKING, (int) cx + dx, (int) cz + dz));
 		int y = top + 16, half = n * 2 + 1;

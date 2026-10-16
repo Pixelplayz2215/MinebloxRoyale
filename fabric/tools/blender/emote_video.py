@@ -100,14 +100,16 @@ def blender_main(args):
         length = e.loop * FPS
         rest = REST if kind == "emotes" else {}
         used = sorted({k for _, ch in e.keys for k in ch} | set(rest))
+        wrap = getattr(e, "wrap", {})
         for name in used:
             pts = [(t, ch[name]) for t, ch in e.keys if name in ch]
             if name in rest and not pts:
                 pts = [(0, rest[name])]
+            w = wrap.get(name, 0.0) if cyclic else 0.0  # (a channel going on round: each loop that much further)
             if pts[0][0] > 0:
-                pts.insert(0, (0.0, pts[-1][1] if cyclic else pts[0][1]))
+                pts.insert(0, (0.0, pts[-1][1] - w if cyclic else pts[0][1]))
             if pts[-1][0] < 1:
-                pts.append((1.0, pts[0][1] if cyclic else pts[-1][1]))
+                pts.append((1.0, pts[0][1] + w if cyclic else pts[-1][1]))
             ctl[name] = float(pts[0][1])
             for t, v in pts:
                 ctl[name] = float(v)
@@ -119,7 +121,9 @@ def blender_main(args):
                 kp.interpolation = "LINEAR" if name in e.linear else "BEZIER"
                 kp.handle_left_type = kp.handle_right_type = "AUTO_CLAMPED"
             if cyclic:
-                fc.modifiers.new("CYCLES")
+                cyc = fc.modifiers.new("CYCLES")
+                if name in wrap:  # (each repeat carried on from where the last ended)
+                    cyc.mode_before = cyc.mode_after = "REPEAT_OFFSET"
             fc.update()
             fcs[name] = fc
         return fcs, length
@@ -176,6 +180,8 @@ def blender_main(args):
                     break
         if cyclic:
             poses[-1] = dict(poses[0])
+            for name, w in getattr(e, "wrap", {}).items():  # (a loop further round: the same pose)
+                poses[-1][CHANNELS[name]] = poses[-1].get(CHANNELS[name], 0.0) + w
         return poses
 
     def verify(aid, poses, frames, tf, free=()):

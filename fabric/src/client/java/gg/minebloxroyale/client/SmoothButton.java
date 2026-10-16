@@ -29,6 +29,8 @@ public class SmoothButton extends Button {
 	public boolean owned;
 	/** How big it's drawn: its lettering, insets and marks (the Locker grows with the window: LockerScreen.k). */
 	public float scale = 1;
+	/** Its name in the middle of the tile, not at its left (the emote wheel, 2.0.0-test6.1). */
+	public boolean center;
 
 	public SmoothButton(int x, int y, int w, int h, String label, Look look, OnPress press) {
 		super(x, y, w, h, Component.literal(label), press, DEFAULT_NARRATION);
@@ -81,8 +83,9 @@ public class SmoothButton extends Button {
 					right = w - Smooth.width("owned", 5.5F * s) - 8 * s;
 				}
 				float size = 7.5F * s;
-				while (size > 4.5F && Smooth.width(label, size) > right - 4 * s) size -= 0.25F;
-				Smooth.text(g, label, x + 5 * s, y + (h - size) / 2 - 0.5F, size, locked ? DIM : on ? GOLD : WHITE, Smooth.LEFT, false);
+				while (size > 4.5F && Smooth.width(label, size) > (center ? w - 12 * s : right - 4 * s)) size -= 0.25F;
+				if (center) Smooth.text(g, label, x + w / 2, y + (h - size) / 2 - 0.5F, size, locked ? DIM : on ? GOLD : WHITE, Smooth.CENTER, false);
+				else Smooth.text(g, label, x + 5 * s, y + (h - size) / 2 - 0.5F, size, locked ? DIM : on ? GOLD : WHITE, Smooth.LEFT, false);
 			}
 		}
 	}

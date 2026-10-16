@@ -166,16 +166,19 @@ def rounded_box(cx, cy, cz, a, b, c, side=0.4, ends=0.6):
     return f
 
 
-def glove():
+def glove(side):
     """Boxing (@right_hand / @left_hand): a big red boxing glove holding the whole hand (2.0.0-test6, creator: "Gloves
     should not clip through the hands"): a Roblox hand is the square end of the arm, a stud across with its corners
     0.71 from the middle, which poked out of test5's round glove. Now a rounded boxy mitt wider than the hand on every
     side, corners and all (0.6 out along the diagonal), from the wrist to well past the fingertips, the thumb along the
     front, and a white padded cuff round the forearm outside its corners (checked: no corner of the hand or the forearm
-    under the cuff's top reaches either surface)."""
+    under the cuff's top reaches either surface). 2.0.0-test6.1 (creator: "Boxing Gloves should rotate so the thumb
+    holes are on the inside rather than at the top"): the thumb on the inner side, towards the other hand (side: +1
+    the right hand's glove, -1 the left's; the guard doesn't turn the arms about their length, so the inside is the
+    arm's own side towards the body), not on its front, which the raised forearm turns to the top."""
     s = S()
     s.at(0, 0, 0).color(RED).surface(rounded_box(0, -1.55, -0.03, 0.72, 0.56, 0.73, 0.4, 0.6), 36, 22, one_sided=True)
-    s.at(0, 0, 0).color(RED).surface(rounded_box(0, -1.38, -0.74, 0.24, 0.32, 0.17, 0.7, 0.7), 16, 12, one_sided=True)  # the thumb
+    s.at(0, 0, 0).color(RED).surface(rounded_box(-side * 0.73, -1.38, -0.03, 0.17, 0.32, 0.24, 0.7, 0.7), 16, 12, one_sided=True)  # the thumb
     s.at(0, 0, 0).color(WHITE).surface(rounded_box(0, -1.06, 0, 0.64, 0.17, 0.64, 0.35, 0.3), 36, 10, one_sided=True)  # the cuff
 
 
@@ -256,7 +259,8 @@ ITEMS = {
     "prop_top_hat": ("Top hat", top_hat, NO_RENDER),
     "prop_cane": ("Cane", cane, NO_RENDER),
     "prop_lasso": ("Lasso", lasso, NO_RENDER),
-    "prop_glove": ("Boxing glove", glove, NO_RENDER),
+    "prop_glove_r": ("Boxing glove (right)", lambda: glove(1), NO_RENDER),
+    "prop_glove_l": ("Boxing glove (left)", lambda: glove(-1), NO_RENDER),
     "prop_pompom": ("Pom-pom", pompom, NO_RENDER),
     "prop_cardboard": ("Cardboard mat", cardboard, NO_RENDER),
     "prop_boombox": ("Boombox", boombox, NO_RENDER),

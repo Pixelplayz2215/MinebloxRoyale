@@ -113,7 +113,7 @@ public final class RobloxAvatarRenderer {
 		float rightLegZ, float leftLegZ, float headX, float headY, float headZ, float lean, float tilt, float twist, float rightElbow, float leftElbow,
 		float rightKnee, float leftKnee, float rightArmY, float leftArmY, float flip, float shift) {
 		static final Pose ZERO = of(new float[24]);
-		static final int RAX = 0, RAZ = 1, LAX = 2, LAZ = 3, BOB = 7, HX = 10, HY = 11, HZ = 12, LEAN = 13, TWIST = 15, REL = 16, LEL = 17, RAY = 20, LAY = 21;
+		static final int RAX = 0, RAZ = 1, LAX = 2, LAZ = 3, BOB = 7, HX = 10, HY = 11, HZ = 12, LEAN = 13, TWIST = 15, REL = 16, LEL = 17, RAY = 20, LAY = 21, SHIFT = 23;
 		static final int[] ARMS = { RAX, RAZ, LAX, LAZ, REL, LEL, RAY, LAY }, RIGHT_ARM = { RAX, RAZ, REL, RAY };
 
 		float[] values() {
@@ -130,7 +130,7 @@ public final class RobloxAvatarRenderer {
 			if (f <= 0) return this;
 			if (f >= 1) return b;
 			float[] x = values(), y = b.values();
-			for (int i = 0; i < x.length; i++) x[i] += (y[i] - x[i]) * f;
+			for (int i = 0; i < x.length; i++) x[i] += toward(i, x[i], y[i]) * f;
 			return of(x);
 		}
 
@@ -138,8 +138,17 @@ public final class RobloxAvatarRenderer {
 		Pose mix(Pose b, float f, int... channels) {
 			if (f <= 0) return this;
 			float[] x = values(), y = b.values();
-			for (int i : channels) x[i] += (y[i] - x[i]) * Math.min(1, f);
+			for (int i : channels) x[i] += toward(i, x[i], y[i]) * Math.min(1, f);
 			return of(x);
+		}
+
+		/**
+		 * How far channel i goes from a to b: angles the short way round (2.0.0-test6.1: an arm that turns on round, the
+		 * Swim's a full turn a loop, comes out of the emote the near way, and the loop's end and start are one pose), bounce
+		 * and shift (studs) straight.
+		 */
+		private static float toward(int i, float a, float b) {
+			return i == BOB || i == SHIFT ? b - a : net.minecraft.util.Mth.wrapDegrees(b - a);
 		}
 
 		/** This pose with some of its channels moved by how far `to` is from `from`, times k. */

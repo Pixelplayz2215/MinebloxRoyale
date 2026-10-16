@@ -25,11 +25,14 @@ def K(t, **ch):
 
 
 class Emote:
-    def __init__(self, loop, keys, linear=(), note="", free=(), plant="floor", lift=0.0):
+    def __init__(self, loop, keys, linear=(), note="", free=(), plant="floor", lift=0.0, wrap=None):
         # free: limbs allowed to go into the body (only where the creator chose it: the Floss's arms, "Full reach");
         # plant: "floor" (feet kept out of the floor) or "touch" (the lowest point of the body on it: a headspin);
         # lift: the whole body raised that much more (studs: a headspin's head on top of its cardboard mat, 2.0.0-test6)
+        # wrap: channels that go on round, by that many degrees each loop (an arm turning over and over: 2.0.0-test6.1,
+        # the Swim); the game blends angles the short way, so the loop's end and its start are the same pose
         self.loop, self.keys, self.linear, self.note, self.free, self.plant, self.lift = loop, keys, set(linear), note, tuple(free), plant, lift
+        self.wrap = dict(wrap or {})
 
 
 def mirror(ch):
@@ -252,16 +255,21 @@ EMOTES = {
         K(0.75, tilt=0, yaw=0, rlz=2, llz=2, hz=0, rkn=20, lkn=20, bob=-0.06),
     ], note="hands on the hips, hips side to side"),
     "swim": Emote(1.4, [
-        # (2.0.0-test5, redone from the creator's notes on test4: TODO.md, Emotes to redo)
-        K(0, lean=22, hy=0, rlx=12, llx=-12, rkn=10, lkn=24, rax=141.3, raz=17.3, ray=163.3, rel=9.4, lax=-33.7, laz=23.9, lay=169.1, lel=23.5),
+        # (2.0.0-test5, redone from the creator's notes on test4: TODO.md, Emotes to redo.) 2.0.0-test6.1 (creator: "the
+        # swim emote has some glitches with the arms"): the same poses, but each arm's X carries on round (a full turn
+        # back a loop: wrap) and the arm over the top is written x + 180, 180 - z, y + 180 (the same arm): it was written
+        # over the side, so the blends between keys passed the arm straight out sideways, where its angles swing wildly
+        # for a small move, and the forearm whipped round. The reaching arm turned a little squarer to the body (Y 175,
+        # was 163: its corner by the shoulder brushed the torso between two of the game's rows).
+        K(0, lean=22, hy=0, rlx=12, llx=-12, rkn=10, lkn=24, rax=141.3, raz=17.3, ray=175.0, rel=9.4, lax=-33.7, laz=23.9, lay=169.1, lel=23.5),
         K(0.125, hy=-16, rax=106.4, raz=26.9, ray=178.9, rel=26.3, lax=-60.9, laz=58.8, lay=173.3, lel=17.1),
-        K(0.25, hy=-30, rlx=-12, llx=12, rkn=24, lkn=10, rax=76.0, raz=33.7, ray=181.4, rel=37.8, lax=16.7, laz=121.6, lay=35.7, lel=96.9),
-        K(0.375, hy=-16, rax=-10.3, raz=55.1, ray=158.8, rel=21.8, lax=161.6, laz=37.2, lay=165.0, lel=38.2),
-        K(0.5, hy=0, rlx=12, llx=-12, rkn=10, lkn=24, rax=-33.7, raz=23.9, ray=169.1, rel=23.5, lax=141.3, laz=17.3, lay=163.3, lel=9.4),
-        K(0.625, hy=16, rax=-60.9, raz=58.8, ray=173.3, rel=17.1, lax=106.4, laz=26.9, lay=178.9, lel=26.3),
-        K(0.75, hy=30, rlx=-12, llx=12, rkn=24, lkn=10, rax=16.7, raz=121.6, ray=35.7, rel=96.9, lax=76.0, laz=33.7, lay=181.4, lel=37.8),
-        K(0.875, hy=16, rax=161.6, raz=37.2, ray=165.0, rel=38.2, lax=-10.3, laz=55.1, lay=158.8, lel=21.8),
-    ], note="front crawl in the air: reach, pull, push past the hip, the elbow high coming over, turning to breathe"),
+        K(0.25, hy=-30, rlx=-12, llx=12, rkn=24, lkn=10, rax=76.0, raz=33.7, ray=181.4, rel=37.8, lax=-163.3, laz=58.4, lay=215.7, lel=96.9),
+        K(0.375, hy=-16, rax=-10.3, raz=55.1, ray=158.8, rel=21.8, lax=-198.4, laz=37.2, lay=172.0, lel=38.2),
+        K(0.5, hy=0, rlx=12, llx=-12, rkn=10, lkn=24, rax=-33.7, raz=23.9, ray=169.1, rel=23.5, lax=-218.7, laz=17.3, lay=175.0, lel=9.4),
+        K(0.625, hy=16, rax=-60.9, raz=58.8, ray=173.3, rel=17.1, lax=-253.6, laz=26.9, lay=178.9, lel=26.3),
+        K(0.75, hy=30, rlx=-12, llx=12, rkn=24, lkn=10, rax=-163.3, raz=58.4, ray=215.7, rel=96.9, lax=-284.0, laz=33.7, lay=181.4, lel=37.8),
+        K(0.875, hy=16, rax=-198.4, raz=37.2, ray=172.0, rel=38.2, lax=-370.3, laz=55.1, lay=158.8, lel=21.8),
+    ], note="front crawl in the air: reach, pull, push past the hip, the elbow high coming over, turning to breathe", wrap={"rax": -360, "lax": -360}),
     "zombie": Emote(1.4, [
         # stiff arms out in front, wrists limp (a little elbow), knees bent and dragging
         K(0, rax=92, raz=6, rel=14, lax=86, laz=6, lel=8, hz=22, hx=10, lean=10, yaw=-5, rlx=14, llx=-6, rkn=10, lkn=28, bob=0),
