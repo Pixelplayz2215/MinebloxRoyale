@@ -484,6 +484,12 @@
    "meaning": "no single shot, shotgun blast or rocket from a boss does more than this (2.0.0-test6.2: never from full shield and health in one)"
   },
   {
+   "id": "botMaxHit",
+   "value": 120,
+   "unit": "health",
+   "meaning": "no single shot, shotgun blast or rocket from an ordinary bot does more than this (2.0.0-test6.2, creator: an Epic sniper headshot from a bot one-tapped him and his friend: 302 against 200); players' shots aren't capped"
+  },
+  {
    "id": "bossHeadshotChance",
    "value": 0.17,
    "unit": "share",

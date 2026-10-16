@@ -68,7 +68,7 @@ public class RocketEntity extends Entity {
 		if (shooter instanceof gg.minebloxroyale.bot.BotEntity b && b.isBoss()) { // (2.0.0-test6.2: a boss's rocket, scaled and capped)
 			rk.mult *= MinebloxRoyale.setting("bossDamageMult");
 			rk.cap = MinebloxRoyale.setting("bossMaxHit");
-		}
+		} else if (shooter instanceof gg.minebloxroyale.bot.BotEntity) rk.cap = MinebloxRoyale.setting("botMaxHit"); // (any other bot's)
 		double yaw = Math.toRadians(shooter.getYRot());
 		Vec3 right = new Vec3(-Math.cos(yaw), 0, -Math.sin(yaw));
 		Vec3 start = eye.add(dir.scale(1.0)).add(right.scale(0.3)).add(0, -0.22, 0);

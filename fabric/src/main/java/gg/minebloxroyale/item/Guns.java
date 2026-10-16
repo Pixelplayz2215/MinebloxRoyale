@@ -183,9 +183,11 @@ public final class Guns {
 	static void shoot(ServerLevel level, LivingEntity shooter, WeaponDef w, RarityDef r, float spreadMult, Vec3 aim) {
 		RandomSource rnd = shooter.getRandom();
 		Vec3 eye = shooter.getEyePosition();
-		// (2.0.0-test6.2) a boss's own shots: a share of its gun's damage, and never more than bossMaxHit a shot or blast
-		boolean boss = shooter instanceof gg.minebloxroyale.bot.BotEntity b && b.isBoss();
+		// (2.0.0-test6.2) a boss's own shots: a share of its gun's damage, and never more than bossMaxHit a shot or blast;
+		// any other bot's never more than botMaxHit (a bot can't take a player from full shield and health in one shot)
+		boolean bot = shooter instanceof gg.minebloxroyale.bot.BotEntity, boss = bot && ((gg.minebloxroyale.bot.BotEntity) shooter).isBoss();
 		float bossMult = boss ? MinebloxRoyale.setting("bossDamageMult") : 1F;
+		float maxHit = boss ? MinebloxRoyale.setting("bossMaxHit") : bot ? MinebloxRoyale.setting("botMaxHit") : Float.MAX_VALUE;
 		Map<LivingEntity, Float> damage = new HashMap<>();
 		Set<LivingEntity> headshots = new HashSet<>();
 		float[] ends = new float[3 * w.pellets()];
@@ -243,7 +245,7 @@ public final class Guns {
 		Net.shot(level, new Net.Shot(shooter.getId(), w.id(), (float) eye.x, (float) eye.y, (float) eye.z, ends, hits));
 		playSheetSound(shooter, w.fireSound());
 		for (var e : damage.entrySet()) {
-			float dealt = boss ? Math.min(e.getValue(), MinebloxRoyale.setting("bossMaxHit")) : e.getValue();
+			float dealt = Math.min(e.getValue(), maxHit);
 			Combat.gunDamage(level, shooter, e.getKey(), dealt, headshots.contains(e.getKey()));
 			// The shooter hears the hit; a headshot has its own sound (creator).
 			if (shooter instanceof ServerPlayer sp) Net.sfxTo(sp, headshots.contains(e.getKey()) ? "headshot" : "hit_marker", sp.position());
