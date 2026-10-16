@@ -90,6 +90,10 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 		ClientPlayNetworking.registerGlobalReceiver(Net.Sfx.TYPE, (p, ctx) -> SfxBank.play(p.soundId(), new Vec3(p.x(), p.y(), p.z())));
 		ClientPlayNetworking.registerGlobalReceiver(Net.Shot.TYPE, (p, ctx) -> Tracers.receive(p));
 		ClientPlayNetworking.registerGlobalReceiver(Net.BossMarks.TYPE, (p, ctx) -> ClientState.bosses = p.xz());
+		ClientPlayNetworking.registerGlobalReceiver(Net.Launchers.TYPE, (p, ctx) -> { // (the badges by players' names, 2.0.0-test6.2)
+			LauncherBadge.BY_PLAYER.clear();
+			LauncherBadge.BY_PLAYER.putAll(p.byPlayer());
+		});
 		ClientPlayNetworking.registerGlobalReceiver(Net.Victory.TYPE, (p, ctx) -> VictoryClient.receive(p.json())); // (2.0.0-test5)
 		ClientPlayNetworking.registerGlobalReceiver(Net.Emote.TYPE, (p, ctx) -> {
 			if (p.emoteId().isEmpty()) ClientState.EMOTES.remove(p.entityId());
@@ -234,6 +238,7 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 			ClientState.obby = false;
 			MyUnlocks.onJoin(); // before the outfit: it's checked against unlocks from every world
 			MyLocker.onJoin();
+			ClientPlayNetworking.send(new Net.Action("launcher:" + LauncherBadge.mine())); // (the badge by your name)
 			WhatToTest.onJoin();
 		});
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, mc) -> {

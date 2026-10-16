@@ -81,6 +81,11 @@ public abstract class LivingEntityRendererMixin {
 					int rgb = color & 0xFFFFFF;
 					state.nameTag = Component.literal(state.nameTag.getString()).withStyle(s -> s.withColor(rgb));
 				}
+				// A player's launcher badge in front of their name, for everyone (2.0.0-test6.2)
+				if (entity instanceof Player) {
+					var badge = gg.minebloxroyale.client.LauncherBadge.badge(entity.getUUID().toString());
+					if (!badge.getSiblings().isEmpty()) state.nameTag = badge.append(state.nameTag);
+				}
 			}
 			// Players: their Locker outfit; bots: the random outfit they were given (or none: the default look).
 			String look = "";

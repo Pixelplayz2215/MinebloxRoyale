@@ -178,8 +178,14 @@ public final class MinebloxRoyale implements ModInitializer {
 				server.setDifficultyLocked(true);
 			}
 		});
-		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> MatchManager.get().onJoin(handler.player));
-		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> MatchManager.get().onLeave(handler.player));
+		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+			MatchManager.get().onJoin(handler.player);
+			gg.minebloxroyale.net.Launchers.onJoin(handler.player); // (everyone's launcher badge so far, 2.0.0-test6.2)
+		});
+		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
+			MatchManager.get().onLeave(handler.player);
+			gg.minebloxroyale.net.Launchers.onLeave(handler.player);
+		});
 		// Testing helpers for the development account and the server console (/br start, give, tp, storm, hub, status).
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> DevCommands.register(dispatcher));
 		LOG.info("Mineblox Royale ready: {} weapons, {} consumables, {} storm phases, {} bots",
