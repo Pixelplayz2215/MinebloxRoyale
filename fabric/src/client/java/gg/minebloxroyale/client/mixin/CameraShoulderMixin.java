@@ -1,17 +1,19 @@
 package gg.minebloxroyale.client.mixin;
 
 import gg.minebloxroyale.match.BattleBusEntity;
+import gg.minebloxroyale.match.CarEntity;
 import net.minecraft.client.Camera;
 import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * Fortnite's over-the-shoulder camera: after Minecraft pulls the third-person camera back, shift it right and up a
- * little.
+ * little. Driving, it sits further back, centred behind the car.
  */
 @Mixin(Camera.class)
 public abstract class CameraShoulderMixin {
@@ -24,11 +26,24 @@ public abstract class CameraShoulderMixin {
 	@Shadow
 	public abstract boolean isDetached();
 
+	/** How far back the camera sits while driving (blocks; on foot Minecraft's 4). */
+	private static final float CAR_DISTANCE = 7.0F;
+
+	/**
+	 * Driving (2.0.0-test3, creator, of boost trails: "Can't see in game due to the camera being too close when driving"):
+	 * Minecraft pulls the camera further back, only as far as walls and hills let it, so the car and its trail show.
+	 */
+	@ModifyArg(method = "alignWithEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;getMaxZoom(F)F"))
+	private float minebloxroyale$carDistance(float distance) {
+		return entity != null && entity.getVehicle() instanceof CarEntity ? Math.max(distance, CAR_DISTANCE) : distance;
+	}
+
 	@Inject(method = "alignWithEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;move(FFF)V", ordinal = 0, shift = At.Shift.AFTER))
 	private void minebloxroyale$shoulder(float partialTicks, CallbackInfo ci) {
 		if (!isDetached() || entity == null) return;
 		// In the Battle Bus: look at the bus from behind and above, like Fortnite.
 		if (entity.getVehicle() instanceof BattleBusEntity) move(-9.0F, 4.0F, 0.0F);
+		else if (entity.getVehicle() instanceof CarEntity) move(0.0F, 0.9F, 0.0F); // (driving: centred, a little higher)
 		else move(0.0F, 0.2F, 1.1F);
 	}
 }

@@ -65,14 +65,15 @@ public class BotRenderer extends HumanoidMobRenderer<BotEntity, HumanoidRenderSt
 		ps.pushPose();
 		ps.translate(at.x, at.y + 0.5, at.z); // (where Minecraft puts the name)
 		ps.rotate(camera.orientation);
-		ps.scale(0.025F, -0.025F, 0.025F);
+		ps.scale(0.03F, -0.03F, 0.03F); // (2.0.0-test3, creator: "Maybe slightly bigger": a fifth bigger than at first)
 		out.submitCustomGeometry(ps, RenderTypes.text(WorldVisuals.white()), (pose, vc) -> {
-			// each layer a little nearer you than the one under it, so they never fight over who shows
-			rect(vc, pose, -22, -13.5F, 22, -2, 0, 0xB0000000);
+			// each layer a little nearer you than the one under it, so they never fight over who shows; the shield and
+			// health bars the same size (creator: the shield's was a little bigger)
+			rect(vc, pose, -22, -13.5F, 22, -1, 0, 0xB0000000);
 			rect(vc, pose, -20, -11.5F, 20, -8, 0.5F, 0xFF16202E);
-			rect(vc, pose, -20, -6.5F, 20, -4, 0.5F, 0xFF16202E);
+			rect(vc, pose, -20, -6.5F, 20, -3, 0.5F, 0xFF16202E);
 			if (shield > 0) rect(vc, pose, -20, -11.5F, -20 + 40 * shield, -8, 1, 0xFF2E8CFF);
-			if (health > 0) rect(vc, pose, -20, -6.5F, -20 + 40 * health, -4, 1, 0xFF3DD64C);
+			if (health > 0) rect(vc, pose, -20, -6.5F, -20 + 40 * health, -3, 1, 0xFF3DD64C);
 		});
 		ps.popPose();
 	}

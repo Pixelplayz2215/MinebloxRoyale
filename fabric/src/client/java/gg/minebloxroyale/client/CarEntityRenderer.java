@@ -136,12 +136,14 @@ public class CarEntityRenderer extends EntityRenderer<CarEntity, CarEntityRender
 		Track t = TRACKS.computeIfAbsent(car.getId(), k -> new Track());
 		long now = System.nanoTime();
 		double x = car.getX(), z = car.getZ();
-		if (t.nanos == 0) { // (just come into view: whoever's in it is already in)
+		if (t.nanos == 0) { // (just come into view: whoever's in it is already in, unless they're getting in right now)
 			t.x = x;
 			t.z = z;
 			t.yaw = state.yaw;
 			t.nanos = now;
-			for (Entity p : car.getPassengers()) t.riders.add(p.getId());
+			// (2.0.0-test3, creator: "Door does not swing open": getting into a parked car makes it a driven car with
+			// them already in it, so this car is new to us with its driver in: CarEntering knows they just got in)
+			for (Entity p : car.getPassengers()) t.riders.add(CarEntering.gettingIn(p.getId()) ? -1 : p.getId());
 		}
 		float dt = (now - t.nanos) / 1e9F;
 		if (dt > 1e-3F) {

@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.PoseStack;
 import gg.minebloxroyale.bot.BotEntity;
+import gg.minebloxroyale.client.CarEntering;
 import gg.minebloxroyale.client.ClientState;
 import gg.minebloxroyale.client.Tracers;
 import gg.minebloxroyale.client.DropControl;
@@ -99,26 +100,13 @@ public abstract class LivingEntityRendererMixin {
 		}
 	}
 
-	/** Each avatar's car (entity id, or -1), when it was last drawn, and since when it has been getting in (or -1). */
-	private static final java.util.Map<Integer, long[]> CAR_SEEN = new java.util.HashMap<>();
-	private static final float ENTER_SECONDS = 1.0F;
-
 	/**
 	 * Getting into a car: an avatar drawn on foot a moment ago that's now in a car climbs in over a second, its move played
-	 * and its body carried from standing outside its door (on the ground) to its seat. One already in a car when it comes
-	 * into view is simply sitting.
+	 * and its body carried from standing outside its door (on the ground) to its seat (CarEntering; the car swings that
+	 * door open). One already in a car when it comes into view is simply sitting.
 	 */
 	private static void minebloxroyale$entering(LivingEntity entity, CarEntity car, LivingEntityRenderState state) {
-		long now = System.nanoTime();
-		long[] seen = CAR_SEEN.get(entity.getId());
-		if (seen == null) {
-			CAR_SEEN.put(entity.getId(), new long[] { car.getId(), now, -1 });
-			return;
-		}
-		if (seen[0] != car.getId()) seen[2] = now - seen[1] < 500_000_000L ? now : -1;
-		seen[0] = car.getId();
-		seen[1] = now;
-		float p = seen[2] < 0 ? 1 : (now - seen[2]) / 1e9F / ENTER_SECONDS;
+		float p = CarEntering.inCar(entity.getId(), car.getId());
 		if (p >= 1) return;
 		boolean right = car.getPassengers().indexOf(entity) % 2 == 1;
 		state.setData(RobloxAvatarRenderer.CAR_ENTER, p);
@@ -133,11 +121,7 @@ public abstract class LivingEntityRendererMixin {
 
 	/** Seen out of a car this frame (drawn on foot): a car next time means it just got in. */
 	private static void minebloxroyale$onFoot(LivingEntity entity) {
-		long[] seen = CAR_SEEN.get(entity.getId());
-		if (seen != null) {
-			seen[0] = -1;
-			seen[1] = System.nanoTime();
-		} else CAR_SEEN.put(entity.getId(), new long[] { -1, System.nanoTime(), -1 });
+		CarEntering.onFoot(entity.getId());
 	}
 
 	/** How it is moving and what it is doing, for its move (RobloxAvatarRenderer): heals and shields say heal or drink. */
