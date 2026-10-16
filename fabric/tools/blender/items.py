@@ -8,7 +8,7 @@ drawn in its rarity colour (creator: rarity should stand out more than a stripe)
 """
 import math
 
-from brlib import box, cyl, lathe, mat, prism, sphere, surface, torus, tube
+from brlib import box, cut, cyl, lathe, mat, prism, sphere, surface, torus, tube
 
 # Shared materials.
 PAINT = lambda: mat("paint", "#EDEDED", ch=1, rough=0.45)
@@ -337,6 +337,162 @@ def chug_jug():
     tube([(10.8, 7.4, 8), (13.0, 7.2, 8), (13.4, 5.1, 8), (13.0, 3.0, 8), (10.9, 2.8, 8)], 0.55, CAP_WHITE(), segs=12)
 
 
+# ---------------------------------------------------------------- ammo, materials and the reboot card (2.0.0-test3,
+# creator: "the rockets icon in creative menu looks like a male genital. can we maybe make 3d models for all ammo and
+# material icons? (used in test3, as well as a 3d reboot card)"; before, flat 16 x 16 pictures). Upright, y up, the
+# front (+z) towards the slot's camera like the heals.
+
+BRASS = lambda: mat("brass", "#E3B04B", rough=0.25, metal=0.85)
+
+
+def bullet(x, y0, z, r, case_len, tip_len, case, tip, segs=12):
+    """A cartridge standing up from y0: its case (the rim, a groove, the body) and the bullet's point in its own colour,
+    sunk a little into the case so the two never share a face."""
+    lathe([(0, 0), (r * 1.06, 0), (r * 1.06, 0.2), (r * 0.9, 0.32), (r, 0.45), (r, case_len), (0, case_len)], x, y0, z, case, segs=segs)
+    lathe([(0, 0), (r * 0.96, 0), (r * 0.86, tip_len * 0.45), (r * 0.5, tip_len * 0.82), (0, tip_len)], x, y0 + case_len - 0.05, z, tip, segs=segs)
+
+
+def ammo_box(color, rows, r, case_len, tip_len, case, tip, z0=4.6, z1=11.4):
+    """An open ammo box in its type's colour (the colours the flat pictures had), a label and two latches on the front,
+    its rounds standing in it and sticking out of the top: rows = [(x, z), ...]."""
+    body = mat("ammo_box", color, rough=0.5)
+    shade = mat("ammo_box_dark", "#1E232B", rough=0.8)
+    top = 6.4
+    b = box(3.0, 1.6, z0, 13.0, top, z1, body, bevel=0.35, seg=3)
+    cut(b, box(3.7, top - 1.6, z0 + 0.7, 12.3, top + 1, z1 - 0.7, body))
+    box(3.75, top - 1.65, z0 + 0.75, 12.25, top - 1.5, z1 - 0.75, shade)  # (the inside's floor, dark)
+    box(4.6, 2.5, z1 - 0.05, 11.4, 4.6, z1 + 0.12, mat("ammo_label", "#F2F4F8", rough=0.6), bevel=0.08)
+    for x0, y0, x1 in ((5.3, 3.75, 10.7), (5.3, 3.05, 8.6)):  # (its print, in the box's colour)
+        box(x0, y0, z1 + 0.08, x1, y0 + 0.36, z1 + 0.17, body)
+    for x in (4.0, 11.2):
+        box(x, top - 1.0, z1 - 0.05, x + 0.8, top + 0.15, z1 + 0.2, MID(), bevel=0.08)
+    for x, z in rows:
+        bullet(x, top - 1.55, z, r, case_len, tip_len, case, tip)
+
+
+def ammo_light():
+    rows = [(x, z) for z in (6.6, 9.4) for x in (5.4, 8.0, 10.6)]
+    ammo_box("#8EC9EE", rows, 0.62, 4.2, 1.6, mat("case_light", "#D9DDE3", rough=0.25, metal=0.8), mat("tip_light", "#8FB8D8", rough=0.3, metal=0.7))
+
+
+def ammo_medium():
+    rows = [(x, z) for z in (6.7, 9.3) for x in (6.4, 9.6)]
+    ammo_box("#5E9A4A", rows, 0.82, 4.8, 2.0, BRASS(), mat("tip_medium", "#9CC86A", rough=0.3, metal=0.7))
+
+
+def ammo_heavy():
+    ammo_box("#5A5AA8", [(6.2, 8.0), (9.8, 8.0)], 1.08, 5.4, 2.6, BRASS(), mat("tip_heavy", "#E05A4A", rough=0.3, metal=0.7), z0=5.4, z1=10.6)
+
+
+def ammo_shells():
+    """Three shotgun shells standing together: red hulls with folded tops on brass heads."""
+    hull = mat("shell_hull", "#D63A2E", rough=0.45)
+    crimp = mat("shell_crimp", "#A82A20", rough=0.55)
+    r = 1.3
+    for x, z, y0 in ((6.2, 6.7, 1.6), (9.8, 6.7, 1.6), (8.0, 9.6, 1.6)):
+        lathe([(0, 0), (r * 1.1, 0), (r * 1.1, 0.25), (r * 1.02, 0.4), (r * 1.02, 1.7), (0, 1.7)], x, y0, z, BRASS(), segs=16)
+        lathe([(0, 0), (r, 0), (r, 6.0), (0, 6.0)], x, y0 + 1.6, z, hull, segs=16)
+        lathe([(0, 0), (r * 0.97, 0), (r * 0.7, 0.32), (r * 0.25, 0.38), (0, 0.3)], x, y0 + 7.55, z, crimp, segs=16)
+
+
+def ammo_rockets():
+    """One rocket lying across the slot, nose up and to the right: an olive body with a yellow band, a long pointed red
+    warhead, four swept fins at the tail and a dark nozzle (creator: the old upright one looked rude)."""
+    body = mat("rocket_body", "#7D8A6A", rough=0.45)
+    parts = [cyl(7.6, 8, 8, 1.25, 7.2, "x", body, verts=20),
+             lathe([(0, 0), (1.27, 0), (1.27, 0.5), (1.1, 1.4), (0.72, 2.3), (0.3, 2.95), (0, 3.15)], 11.1, 8, 8,
+                   mat("rocket_nose", "#D84A3A", rough=0.35), segs=20, axis="x"),
+             torus(11.0, 8, 8, 1.27, 0.16, "x", mat("rocket_band", "#F2C230", rough=0.3, metal=0.6), segs=20, rsegs=6),
+             torus(5.4, 8, 8, 1.26, 0.1, "x", mat("rocket_stripe", "#3F4836", rough=0.5), segs=20, rsegs=6),
+             lathe([(0, 0), (0.95, 0), (0.85, 0.6), (1.15, 1.6), (1.15, 1.9), (0, 1.9)], 2.3, 8, 8, DARK(), segs=20, axis="x"),
+             cyl(2.29, 8, 8, 0.78, 0.04, "x", BORE(), verts=20)]
+    for a in (45, 135, 225, 315):
+        parts.append(prism([(3.0, 9.1), (6.2, 9.1), (3.8, 11.6), (2.4, 11.6)], 7.85, 8.15, body, bevel=0.06).rot("x", a, (8, 8, 8)))
+    for p in parts:
+        p.rot("z", 38, (8, 8, 8))
+
+
+def mat_wood():
+    """A crossed stack of planks, four layers, their ends lighter and the top ones grained."""
+    planks = [mat("plank", "#B07A43", rough=0.7), mat("plank_light", "#C08A50", rough=0.7)]
+    end = mat("plank_end", "#D9A86A", rough=0.75)
+    grain = mat("plank_grain", "#7A4D24", rough=0.8)
+    for layer in range(4):
+        y0 = 2.0 + layer * 1.55
+        y1 = y0 + 1.6
+        along_x = layer % 2 == 0
+        for k, (a0, a1) in enumerate(((4.0, 7.0), (9.0, 12.0))):
+            m = planks[(layer + k) % 2]
+            if along_x:
+                box(2.0, y0, a0, 14.0, y1, a1, m, bevel=0.12)
+                for x in (1.94, 13.9):
+                    box(x, y0 + 0.15, a0 + 0.15, x + 0.16, y1 - 0.15, a1 - 0.15, end)
+            else:
+                box(a0, y0, 2.0, a1, y1, 14.0, m, bevel=0.12)
+                for z in (1.94, 13.9):
+                    box(a0 + 0.15, y0 + 0.15, z, a1 - 0.15, y1 - 0.15, z + 0.16, end)
+            if layer == 3:  # (the top layer's grain, along its planks: z)
+                for dx, z0, z1 in ((0.8, 2.8, 10.5), (1.6, 5.0, 13.2), (2.3, 3.4, 8.8)):
+                    box(a0 + dx - 0.05, y1 - 0.05, z0, a0 + dx + 0.05, y1 + 0.03, z1, grain)
+
+
+def mat_brick():
+    """Six bricks piled up: three side by side, two across them, one on top."""
+    reds = [mat("brick", "#C8553A", rough=0.75), mat("brick_dark", "#B4452F", rough=0.8), mat("brick_light", "#D2664A", rough=0.75)]
+    for i, (z0, z1) in enumerate(((3.0, 6.2), (6.4, 9.6), (9.8, 13.0))):
+        box(4.8, 2.0, z0, 11.2, 4.2, z1, reds[i % 3], bevel=0.25, seg=2)
+    for i, (x0, x1) in enumerate(((4.6, 7.8), (8.2, 11.4))):
+        box(x0, 4.15, 4.8, x1, 6.35, 11.2, reds[(i + 1) % 3], bevel=0.25, seg=2)
+    box(4.8, 6.3, 6.4, 11.2, 8.5, 9.6, reds[2], bevel=0.25, seg=2)
+
+
+def mat_metal():
+    """Two riveted steel plates, one turned a little on the other, and a short I-beam across them."""
+    steel = mat("steel_plate", "#A9B3BF", rough=0.3, metal=0.9)
+    steel2 = mat("steel_plate_light", "#C2CAD4", rough=0.28, metal=0.9)
+    beam = mat("steel_beam", "#7E8894", rough=0.35, metal=0.85)
+    rivet = mat("rivet", "#6E7884", rough=0.3, metal=0.9)
+    box(2.5, 2.0, 3.5, 13.5, 2.9, 12.5, steel, bevel=0.2, seg=2)
+    top = [box(3.2, 2.85, 4.2, 12.8, 3.75, 11.8, steel2, bevel=0.2, seg=2)]
+    for x in (4.0, 12.0):
+        for z in (5.0, 11.0):
+            top.append(sphere(x, 3.75, z, 0.32, 0.12, 0.32, rivet, segs=12, rings=6))
+    for p in top:
+        p.rot("y", 9, (8, 3, 8))
+    flange = [box(3.4, 3.7, 6.3, 12.6, 4.3, 9.7, beam, bevel=0.1), box(3.4, 4.25, 7.65, 12.6, 6.75, 8.35, beam, bevel=0.06),
+              box(3.4, 6.7, 6.3, 12.6, 7.3, 9.7, beam, bevel=0.1)]
+    for p in flange:
+        p.rot("y", -24, (8, 5, 8))
+
+
+def rounded(x0, y0, x1, y1, r, n=5):
+    """A rectangle's outline with round corners (counter-clockwise), for prism."""
+    pts = []
+    for cx, cy, a0 in ((x1 - r, y0 + r, -90), (x1 - r, y1 - r, 0), (x0 + r, y1 - r, 90), (x0 + r, y0 + r, 180)):
+        for i in range(n + 1):
+            a = math.radians(a0 + 90 * i / n)
+            pts.append((cx + r * math.cos(a), cy + r * math.sin(a)))
+    return pts
+
+
+def reboot_card():
+    """The reboot card standing up: a light blue card with a darker band across the top, the player's portrait (a
+    head and shoulders in a white window), a gold chip and a line of print; the back plainer."""
+    card = mat("card", "#5CE1FF", rough=0.35)
+    band = mat("card_band", "#2F9FD8", rough=0.4)
+    window = mat("card_window", "#F4F8FF", rough=0.5)
+    ink = mat("card_ink", "#2A3442", rough=0.6)
+    prism(rounded(4.0, 1.5, 12.0, 13.0, 1.0), 7.7, 8.3, card, bevel=0.12)
+    for z0, z1 in ((8.25, 8.4), (7.6, 7.75)):  # front and back: the band
+        box(4.4, 11.0, z0, 11.6, 12.6, z1, band, bevel=0.05)
+    box(5.4, 4.6, 8.25, 10.6, 10.3, 8.42, window, bevel=0.06)
+    sphere(8.0, 8.35, 8.42, 1.05, 1.15, 0.16, ink, segs=16, rings=8)
+    prism([(8.0 + 2.1 * math.cos(math.radians(a)), 4.75 + 2.1 * math.sin(math.radians(a))) for a in range(0, 181, 15)], 8.36, 8.5, ink, bevel=0.03)
+    box(5.2, 2.4, 8.25, 6.9, 3.8, 8.46, mat("card_chip", "#FFD21F", rough=0.3, metal=0.6), bevel=0.08)
+    box(7.6, 2.8, 8.25, 10.8, 3.4, 8.4, band)
+    box(5.0, 3.0, 7.6, 11.0, 9.8, 7.75, window, bevel=0.05)  # (the back: a plain white panel)
+
+
 # ---------------------------------------------------------------- the pickaxe (held like a tool: handle corner to corner)
 
 def pickaxe():
@@ -385,5 +541,14 @@ ITEMS = {
     "slurp_juice": ("Slurp Juice", slurp_juice, HEAL),
     "chug_jug": ("Chug Jug", chug_jug, HEAL),
     "grenade": ("Grenade", grenade, {**HEAL, "folder": "Grenades"}),
+    "ammo_light": ("Light Bullets", ammo_light, {**HEAL, "folder": "Ammo"}),
+    "ammo_medium": ("Medium Bullets", ammo_medium, {**HEAL, "folder": "Ammo"}),
+    "ammo_heavy": ("Heavy Bullets", ammo_heavy, {**HEAL, "folder": "Ammo"}),
+    "ammo_shells": ("Shells", ammo_shells, {**HEAL, "folder": "Ammo"}),
+    "ammo_rockets": ("Rockets", ammo_rockets, {**HEAL, "folder": "Ammo"}),
+    "mat_wood": ("Wood", mat_wood, {**HEAL, "folder": "Materials"}),
+    "mat_brick": ("Brick", mat_brick, {**HEAL, "folder": "Materials"}),
+    "mat_metal": ("Metal", mat_metal, {**HEAL, "folder": "Materials"}),
+    "reboot_card": ("Reboot Card", reboot_card, {**HEAL, "folder": "Reboot Card"}),
     "pickaxe": ("Pickaxe", pickaxe, {"icon": (0, 0), "ao": 1.5, "folder": "Pickaxe", "views": {"Front": 0, "Right": 270, "Back": 180, "Left": 90}}),
 }

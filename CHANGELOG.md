@@ -54,6 +54,7 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 
 ### Matches
 - **Your team can still bring you back:** in Duos, Trios and Squads the match no longer ends the moment you (the only real player) are eliminated. While your reboot card is out and a teammate still stands, you watch your team and the match goes on; it ends when your team is out or the card runs out.
+- **A picked-up reboot card never runs out:** a card only runs out while it lies on the ground (90 seconds, from the start again if whoever carries it is eliminated and drops it). The squad list says CARD PICKED UP while a teammate carries yours.
 - **The Battle Bus drops everyone before the storm:** anyone still aboard jumps just before the bus would fly into the storm's wall, bots included.
 
 ### Look and sound
@@ -63,6 +64,7 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 - **The hub panel is simpler:** no more player counts for each mode's portal.
 - **Less lag:** models far away are drawn from lighter copies (made in Blender), models send half as many points to the graphics card, the HUD is drawn in a few pieces instead of hundreds, and the next island isn't built while the Battle Bus is flying and everyone is dropping in.
 - **3D items in the hotbar and inventory:** every gun, heal, shield, grenade and pickaxe shows as its own 3D model, guns in their rarity colour, instead of a flat pixel picture. The hub's Gun Rarity and Heals & Shields boards show the 3D models too.
+- **3D ammo, materials and reboot card, made in Blender:** open ammo boxes with their rounds standing in them (Light, Medium and Heavy Bullets), three shotgun shells, a rocket lying across its slot with its fins and a pointed red warhead, a crossed stack of planks, a pile of bricks, riveted steel plates with an I-beam, and the reboot card with its portrait and gold chip. The HUD's rocket icon is the new rocket too.
 - **Our own sounds:** a shot sound for each gun type (rarities sound the same), a new storm warning, rocket and grenade blasts, and two battle music tracks in matches. The harder track plays in the last circles.
 
 ### Fixes

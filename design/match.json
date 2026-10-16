@@ -331,7 +331,7 @@
    "id": "rebootCardSeconds",
    "value": 90,
    "unit": "s",
-   "meaning": "an eliminated teammate's reboot card can be picked up (and used) this long"
+   "meaning": "an eliminated teammate's reboot card lies on the ground this long before it runs out (again from the start if its carrier goes down); once picked up it never runs out"
   },
   {
    "id": "rebootSeconds",

@@ -9,7 +9,7 @@ The game's item files for the Blender items (after build.py items): python make_
   assets/minebloxroyale/textures/item/<id>.png  Blender's inventory render at 32 x 32 with a dark outline (the item's
                                                 particle picture)
   assets/minecraft/items/iron_pickaxe.json      the harvesting pickaxe (an iron pickaxe) as the Blender pickaxe
-Also the reboot card's flat picture.
+(2.0.0-test3: the ammo, the materials and the reboot card are Blender items too; before, flat pictures.)
 
 python make_items.py --gui <resources dir>: just the slot poses and the item files, from the meshes already there (their
 bounds), without Blender.
@@ -21,7 +21,7 @@ import os
 import struct
 import sys
 
-from PIL import Image, ImageDraw
+from PIL import Image
 
 GUN_DISPLAY = {
     "thirdperson_righthand": {"rotation": [0, 90, 0], "translation": [0, 1.5, 2], "scale": [0.9, 0.9, 0.9]},
@@ -122,24 +122,6 @@ def small(path, size=32, pad=1):
     return out, box, s
 
 
-def reboot_card(assets):
-    """The reboot card: a light blue card with a portrait and a chip (32 x 32), held flat like a normal item."""
-    img = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
-    d = ImageDraw.Draw(img)
-    d.rounded_rectangle((5, 3, 26, 28), radius=3, fill="#101418")
-    d.rounded_rectangle((6, 4, 25, 27), radius=2, fill="#5CE1FF")
-    d.rectangle((6, 4, 25, 8), fill="#2F9FD8")
-    d.rectangle((9, 11, 22, 22), fill="#F4F8FF")
-    d.ellipse((13, 12, 18, 17), fill="#2A3442")
-    d.rectangle((11, 18, 20, 22), fill="#2A3442")
-    d.rectangle((9, 24, 13, 26), fill="#FFD21F")
-    d.rectangle((15, 24, 22, 25), fill="#2F9FD8")
-    d.line((7, 5, 12, 5), fill="#C8F4FF")
-    img.save(os.path.join(assets, "textures/item/reboot_card.png"))
-    write_json(os.path.join(assets, "models/item/reboot_card.json"), {"parent": "minecraft:item/generated", "textures": {"layer0": "minebloxroyale:item/reboot_card"}})
-    write_json(os.path.join(assets, "items/reboot_card.json"), {"model": {"type": "minecraft:model", "model": "minebloxroyale:item/reboot_card"}})
-
-
 def main():
     manifest = json.load(open(sys.argv[1], encoding="utf-8"))
     res = sys.argv[2]
@@ -149,7 +131,6 @@ def main():
         icon, _, _ = small(e["icon"])
         outline(icon).save(os.path.join(assets, "textures/item", iid + ".png"))
         write_files(res, iid, e["bounds"][0], e["bounds"][1])
-    reboot_card(assets)
     print("wrote", len(manifest), "items")
 
 

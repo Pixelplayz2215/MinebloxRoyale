@@ -9,6 +9,8 @@ Test 3 - Contrails: 10 new (lightning, twisting ribbon, pixels, hearts...); Shop
 Test 3 - Bosses: a shield and health bar over the name, 200 health + 100 shield, a red Boss-rarity gun they drop
 Test 3 - Cars: wheels turn and steer, the body leans; the door opens as you get in; engine, tyre, boost and door sounds
 Test 3 - Boost trails (Locker tab, gold): the car preview shows the hovered one; yours streams from the car when you boost
+Test 3 - 3D ammo, wood/brick/metal and reboot card in the inventory, the creative tab and on the ground; the new rocket (HUD too)
+Test 3 - Reboot cards: a teammate's card never runs out once picked up (CARD PICKED UP in the squad list); dropped again, it runs out
 Test 2 - Shop: items under their category's title; hover one to see it on you (pickaxe in hand, contrail, emote); buying says which tab it's in
 Test 2 - Pickaxes tab: your pickaxe shows in your hand on the preview
 Test 2 - Contrails: smooth curves, and Candy Stripe's stripes slide instead of jumping (Locker preview and skydiving)

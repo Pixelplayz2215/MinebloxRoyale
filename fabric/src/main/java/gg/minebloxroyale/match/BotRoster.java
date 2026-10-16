@@ -596,6 +596,8 @@ public final class BotRoster {
 		s.knocked = false;
 		if (by != null) creditKill(by);
 		lastElim = server.overworld().getGameTime();
+		long now = lastElim;
+		s.cards.replaceAll(o -> o.dropped(now)); // (cards it carried are lost out there: they run out like dropped ones)
 		Component msg = Component.literal(s.name + (by == null ? " was eliminated by the storm" : " was eliminated by " + by)).withStyle(ChatFormatting.GRAY);
 		for (ServerPlayer p : server.getPlayerList().getPlayers()) p.sendSystemMessage(msg);
 		MeltyTest.pass("eliminations");

@@ -63,7 +63,8 @@ public final class SquadHud {
 					bar(g, x, by + 2, w, m.health() / maxHp, 0xFFE03A3A);
 					small(g, mc, "KNOCKED " + clock(m.seconds()), x + 12 + nameW, y + 0.5F, 0xFFFF6060);
 				}
-				case 2 -> small(g, mc, "REBOOT CARD " + clock(m.seconds()), x + 9, by + 0.5F, Waypoint.CARD); // the cards' cyan-blue
+				// the cards' cyan-blue; a carried card doesn't run out (seconds -1, 2.0.0-test3)
+				case 2 -> small(g, mc, m.seconds() < 0 ? "CARD PICKED UP" : "REBOOT CARD " + clock(m.seconds()), x + 9, by + 0.5F, Waypoint.CARD);
 				default -> small(g, mc, "OUT", x + 9, by + 0.5F, 0xFF8A8A8A);
 			}
 			y += 22;

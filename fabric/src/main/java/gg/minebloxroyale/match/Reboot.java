@@ -43,8 +43,26 @@ import net.minecraft.world.level.levelgen.Heightmap;
 public final class Reboot {
 	/**
 	 * One card's owner: a player (their account id) or a bot ("bot:" + name), their team, and when the card runs out.
+	 * Only a card lying on the ground runs out (rebootCardSeconds from when it fell); a carried one never does (2.0.0-test3,
+	 * creator: "Reboot card should not expire once picked up. Only expires if it's a dropped item"): its until is HELD.
 	 */
 	public record Owner(String key, String name, int team, long until) {
+		static final long HELD = Long.MAX_VALUE;
+
+		public boolean held() {
+			return until == HELD;
+		}
+
+		/** In someone's hands: it stops running out. */
+		Owner pickedUp() {
+			return held() ? this : new Owner(key, name, team, HELD);
+		}
+
+		/** Fallen to the ground (or lost with a far-off bot): it runs out rebootCardSeconds from now. */
+		Owner dropped(long now) {
+			return held() ? new Owner(key, name, team, now + groundTicks()) : this;
+		}
+
 		CompoundTag save() {
 			CompoundTag t = new CompoundTag();
 			t.putString("key", key);
@@ -286,11 +304,21 @@ public final class Reboot {
 		return s;
 	}
 
+	/** How long a card on the ground lasts. */
+	static long groundTicks() {
+		return Math.round(MinebloxRoyale.setting("rebootCardSeconds") * 20);
+	}
+
+	/** Seconds left on a card, for the squad list: -1 while someone carries it (it doesn't run out then). */
+	private static float secondsLeft(Owner o, long now) {
+		return o.held() ? -1F : (o.until() - now) / 20F;
+	}
+
 	/** Eliminated in a team match with a teammate still standing: their card falls where they went down. */
 	static void dropCardFor(LivingEntity victim, String key) {
 		MatchManager mm = MatchManager.get();
 		if (!Teams.teamMode() || !mm.hasStandingTeammate(victim)) return;
-		long until = victim.level().getGameTime() + Math.round(MinebloxRoyale.setting("rebootCardSeconds") * 20);
+		long until = victim.level().getGameTime() + groundTicks();
 		spawn(victim.level(), victim.getX(), victim.getY() + 0.5, victim.getZ(), List.of(new Owner(key, victim.getName().getString(), Teams.teamOf(victim), until)));
 		LEFT.put(key, (until - victim.level().getGameTime()) / 20F); // (counted at once: the match doesn't end in the meantime)
 	}
@@ -322,7 +350,7 @@ public final class Reboot {
 	/** A card stack that ended up in the wrong slot (moved in the inventory screen): back into the offhand, merged. */
 	static void toOffhand(ServerPlayer p, ItemStack stack) {
 		List<Owner> have = new ArrayList<>(carried(p));
-		for (Owner o : owners(stack)) if (have.stream().noneMatch(h -> h.key().equals(o.key()))) have.add(o);
+		for (Owner o : owners(stack)) if (have.stream().noneMatch(h -> h.key().equals(o.key()))) have.add(o.pickedUp());
 		ItemStack off = p.getOffhandItem();
 		if (!off.isEmpty() && !isCard(off)) {
 			p.setItemSlot(EquipmentSlot.OFFHAND, ItemStack.EMPTY);
@@ -331,9 +359,10 @@ public final class Reboot {
 		setCarried(p, have);
 	}
 
-	/** The carrier was eliminated: the cards they held fall to the ground, still running. */
+	/** The carrier was eliminated (or left): the cards they held fall to the ground and start running out again. */
 	public static void dropCarried(LivingEntity e) {
-		List<Owner> owners = new ArrayList<>(carried(e));
+		long now = e.level().getGameTime();
+		List<Owner> owners = carried(e).stream().map(o -> o.dropped(now)).toList();
 		if (owners.isEmpty()) return;
 		setCarried(e, List.of());
 		spawn(e.level(), e.getX(), e.getY() + 0.5, e.getZ(), owners);
@@ -349,7 +378,7 @@ public final class Reboot {
 		int team = Teams.teamOf(who);
 		if (!Teams.teamMode() || team < 0 || owners.stream().anyMatch(o -> o.team() != team)) return false;
 		List<Owner> have = new ArrayList<>(carried(who));
-		for (Owner o : owners) if (have.stream().noneMatch(h -> h.key().equals(o.key()))) have.add(o);
+		for (Owner o : owners) if (have.stream().noneMatch(h -> h.key().equals(o.key()))) have.add(o.pickedUp());
 		if (!(who instanceof BotEntity)) {
 			ItemStack off = who.getItemBySlot(EquipmentSlot.OFFHAND);
 			if (!off.isEmpty() && !isCard(off) && who instanceof ServerPlayer sp) {
@@ -369,8 +398,9 @@ public final class Reboot {
 	}
 
 	/**
-	 * Once a second: cards run out (and anyone who went back to the hub or left can't come back), and the map list of
-	 * cards lying on the ground is updated.
+	 * Once a second: cards on the ground run out (and anyone who went back to the hub or left can't come back), and the
+	 * map list of cards lying on the ground is updated. A card on the ground always has its clock running (one thrown out
+	 * of the inventory too) and a carried one never does.
 	 */
 	static void secondTick(MinecraftServer server) {
 		ServerLevel level = server.overworld();
@@ -379,32 +409,33 @@ public final class Reboot {
 		GROUND.clear();
 		LEFT.clear();
 		for (ItemEntity item : level.getEntities(EntityTypes.ITEM, i -> isCard(i.getItem()))) {
-			List<Owner> before = owners(item.getItem()), after = valid(server, before, now);
+			List<Owner> before = owners(item.getItem()), after = valid(server, before, now).stream().map(o -> o.dropped(now)).toList();
 			if (after.isEmpty()) {
 				item.discard();
 				continue;
 			}
-			if (after.size() != before.size()) item.setItem(card(after));
+			if (!after.equals(before)) item.setItem(card(after));
 			for (Owner o : after) {
-				GROUND.computeIfAbsent(o.team(), k -> new ArrayList<>()).add(new float[] { (float) item.getX(), (float) item.getZ(), (o.until() - now) / 20F });
-				LEFT.put(o.key(), (o.until() - now) / 20F);
+				GROUND.computeIfAbsent(o.team(), k -> new ArrayList<>()).add(new float[] { (float) item.getX(), (float) item.getZ(), secondsLeft(o, now) });
+				LEFT.put(o.key(), secondsLeft(o, now));
 			}
 		}
 		for (ServerPlayer p : server.getPlayerList().getPlayers()) {
 			List<Owner> before = owners(p.getOffhandItem());
 			if (before.isEmpty()) continue;
-			List<Owner> after = mm.inMatchAndAlive(p) ? valid(server, before, now) : List.of();
-			if (after.size() != before.size()) setCarried(p, after);
-			for (Owner o : after) LEFT.put(o.key(), (o.until() - now) / 20F);
+			List<Owner> after = mm.inMatchAndAlive(p) ? valid(server, before, now).stream().map(Owner::pickedUp).toList() : List.of();
+			if (!after.equals(before)) setCarried(p, after);
+			for (Owner o : after) LEFT.put(o.key(), secondsLeft(o, now));
 		}
 		for (BotEntity b : level.getEntities(BotEntity.TYPE, b -> !b.cards.isEmpty())) {
-			List<Owner> after = valid(server, b.cards, now);
-			if (after.size() != b.cards.size()) setCarried(b, after);
-			for (Owner o : after) LEFT.put(o.key(), (o.until() - now) / 20F);
+			List<Owner> after = valid(server, b.cards, now).stream().map(Owner::pickedUp).toList();
+			if (!after.equals(b.cards)) setCarried(b, after);
+			for (Owner o : after) LEFT.put(o.key(), secondsLeft(o, now));
 		}
-		// (2.0.0-test3) and cards a bot far from everyone carries (simulated: it brings them when it's real again)
+		// (2.0.0-test3) and cards a bot far from everyone carries (simulated: it brings them when it's real again; one
+		// eliminated out there lost them, so they run out like a dropped card, BotRoster.eliminate)
 		for (Owner o : mm.roster().simCards())
-			if (o.until() > now && mm.canComeBack(o)) LEFT.put(o.key(), (o.until() - now) / 20F);
+			if (o.until() > now && mm.canComeBack(o)) LEFT.put(o.key(), secondsLeft(o, now));
 	}
 
 	/** Owners whose card still counts: not run out, and (players) still waiting in the match to come back. */

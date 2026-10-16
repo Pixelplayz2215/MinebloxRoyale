@@ -162,12 +162,10 @@ def main(scratch):
             cyl(x, -0.62, 0, 0.34, 0.3, "y", mat("hud_shell_base", "#E3B04B", rough=0.25, metal=0.85), verts=28, bevel=0.04)
 
     def ammo_rockets():
-        body = mat("hud_rocket", "#7D8A6A", rough=0.4)
-        cyl(0, -0.1, 0, 0.3, 1.6, "y", body, verts=28, bevel=0.03)
-        cyl(0, 0.95, 0, 0.3, 0.55, "y", mat("hud_rocket_tip", "#D84A3A", rough=0.35), verts=28, r2=0.02)
-        for a in range(4):
-            ang = a * 90 + 45
-            box(-0.04, -1.0, 0, 0.04, -0.45, 0.55, body, bevel=0.02).rot("y", ang, (0, 0, 0))
+        # (2.0.0-test3) the item's rocket (items.py), lying across with its nose up and to the right (creator: the old
+        # upright one looked rude)
+        import items
+        items.ammo_rockets()
 
     def gold():
         g = mat("hud_gold", "#F2C230", rough=0.2, metal=1.0)
