@@ -50,7 +50,7 @@ public final class RoomCode {
 		try {
 			Files.writeString(server.getWorldPath(LevelResource.ROOT).resolve(FILE), c.code() + " " + c.owner() + "\n");
 		} catch (IOException e) {
-			MinebloxRoyale.LOG.warn("BR: couldn't save the room code", e);
+			MinebloxRoyale.couldntSave("the room code", server.getWorldPath(LevelResource.ROOT), e);
 		}
 		server.execute(() -> {
 			for (ServerPlayer p : server.getPlayerList().getPlayers()) sendTo(p, c);

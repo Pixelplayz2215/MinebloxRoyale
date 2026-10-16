@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "mode": "installed",
+  "games": [
+    {
+      "slug": "minecraft-java",
+      "role": "primary",
+      "version": "26.3"
+    },
+    {
+      "slug": "roblox",
+      "role": "secondary"
+    },
+    {
+      "slug": "fortnite",
+      "role": "secondary"
+    }
+  ],
+  "components": [
+    {
+      "id": "main",
+      "fileName": "MinebloxRoyale-*.zip",
+      "label": "Mineblox Royale (the mod, Fabric API, e4mc and FFmpeg)",
+      "kind": "main",
+      "required": true
+    }
+  ],
+  "requirements": [
+    {
+      "kind": "loader",
+      "id": "fabric"
+    }
+  ],
+  "mappings": [
+    {
+      "component": "main",
+      "from": "mods/",
+      "to": "{minecraft-instance}/mods"
+    },
+    {
+      "component": "main",
+      "from": "minebloxroyale/",
+      "to": "{minecraft-instance}/minebloxroyale"
+    }
+  ],
+  "launch": {
+    "kind": "game"
+  },
+  "multiplayer": {
+    "maxPlayers": 16,
+    "connect": {
+      "address": {
+        "log": "{minecraft-instance}/minebloxroyale/melty.log",
+        "after": "Melty join address: "
+      },
+      "joinFile": {
+        "path": "{minecraft-instance}/minebloxroyale/melty.properties",
+        "key": "join"
+      }
+    }
+  },
+  "notes": {
+    "beforeInstall": "Roblox and Fortnite are optional. With Roblox installed, everyone gets the Roblox avatar look, outfits, emotes and sounds; with Fortnite installed, a poster appears in the hub. Both are only read from your own copies.",
+    "firstLaunch": "Opens straight into the Mineblox Royale hub. The first island is made in the background during the first few minutes (the hub shows how far along it is); the obby, the shooting range and the Locker are open meanwhile."
+  },
+  "runtimeData": [
+    "{appdata}/MinebloxRoyale",
+    "{localappdata}/MinebloxRoyale"
+  ],
+  "test": {
+    "checks": [
+      "world-opens",
+      "island-ready",
+      "match-starts",
+      "bus-drop",
+      "storm-moves",
+      "eliminations",
+      "friends-can-join"
+    ],
+    "minutes": 6
+  }
+}

@@ -1,9 +1,11 @@
 package gg.minebloxroyale.match;
 
 import gg.minebloxroyale.MinebloxRoyale;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -68,24 +70,58 @@ public final class IslandRestore {
 		return s.isCollisionShapeFullBlock(EmptyBlockGetter.INSTANCE, BlockPos.ZERO) ? 0 : 2;
 	}
 
-	/** Saves the list when it changed (called from the match tick every few seconds). */
+	/**
+	 * Saves the list when it changed (called from the match tick every few seconds). (1.0.1.1) Another program reading
+	 * the file at that moment (an antivirus scan, a backup or sync tool) made the save fail with an error in the log
+	 * (Melty, 2026-10-16: "used by another process"): it's tried three times, then again at the next save, and only
+	 * the last try that fails says so, in one plain line. The list is written beside the file and swapped in, so a
+	 * crash mid-write never leaves half a list.
+	 */
 	public static void save(MinecraftServer server) {
 		if (!dirty) return;
-		dirty = false;
-		try {
-			Path f = file(server);
-			if (ORIGINAL.isEmpty()) {
-				Files.deleteIfExists(f);
-				return;
-			}
+		Path f = file(server);
+		String text = null;
+		if (!ORIGINAL.isEmpty()) {
 			StringBuilder sb = new StringBuilder();
 			for (var e : ORIGINAL.entrySet()) {
 				BlockPos p = e.getKey();
 				sb.append(p.getX()).append(' ').append(p.getY()).append(' ').append(p.getZ()).append(' ').append(BlockStateParser.serialize(e.getValue())).append('\n');
 			}
-			Files.writeString(f, sb.toString(), StandardCharsets.UTF_8);
-		} catch (Exception e) {
-			MinebloxRoyale.LOG.warn("BR: couldn't save the island restore list: {}", e.toString());
+			text = sb.toString();
+		}
+		for (int attempt = 1;; attempt++) {
+			try {
+				if (text == null) Files.deleteIfExists(f);
+				else write(f, text);
+				dirty = false;
+				return;
+			} catch (IOException | RuntimeException e) {
+				if (attempt < 3) {
+					sleep(attempt * 40L);
+					continue;
+				}
+				MinebloxRoyale.couldntSave("the island restore list", f, e);
+				return; // still dirty: the next save tries again
+			}
+		}
+	}
+
+	private static void write(Path f, String text) throws IOException {
+		Path tmp = f.resolveSibling(f.getFileName() + ".new");
+		Files.writeString(tmp, text, StandardCharsets.UTF_8);
+		try {
+			Files.move(tmp, f, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+		} catch (IOException e) {
+			Files.deleteIfExists(tmp);
+			Files.writeString(f, text, StandardCharsets.UTF_8);
+		}
+	}
+
+	private static void sleep(long ms) {
+		try {
+			Thread.sleep(ms);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
 		}
 	}
 

@@ -1,4 +1,4 @@
-MINEBLOX ROYALE v1.0.0
+MINEBLOX ROYALE v1.0.1.1
 ======================
 
 What you need
@@ -55,7 +55,7 @@ Commands (also on the COMMANDS board in the hub)
   /party leave            leave your party
   /party                  see who's in your party
   Those are the only commands: no cheats or creative, in your own world or a friend's.
-  - Everyone who plays together must be on the same version (this one is v1.0.0).
+  - Everyone who plays together must be on the same version (this one is v1.0.1.1).
 
 Your unlocks and outfit
   - Emotes and gliders unlock with eliminations (150 at most), Victory Royales (10 at most), the obby, and the

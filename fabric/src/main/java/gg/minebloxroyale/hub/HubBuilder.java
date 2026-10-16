@@ -169,7 +169,7 @@ public final class HubBuilder {
 		try {
 			Files.writeString(marker, version);
 		} catch (IOException e) {
-			MinebloxRoyale.LOG.warn("BR: couldn't write hub marker", e);
+			MinebloxRoyale.couldntSave("the hub marker", marker, e);
 		}
 		MinebloxRoyale.LOG.info("BR: hub built in {} ms ({} obby platforms)", System.currentTimeMillis() - t0, platforms().size());
 	}

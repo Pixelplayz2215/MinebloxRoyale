@@ -24,8 +24,13 @@ import java.util.regex.Pattern;
 public final class OldIslands {
 	/** Region files (512 x 512 blocks) kept either way round the hub at 0, 0: far past anything the hub builds. */
 	static final int HUB_REGIONS = 2;
-	/** The mod's own world's folder (AutoWorld.WORLD, Legacy.NEW_WORLD; Legacy.OLD_WORLD from before the rename). */
-	static final List<String> WORLDS = List.of("Mineblox Royale", "Block Royale");
+	/**
+	 * The mod's own world's folder (AutoWorld.WORLD, Legacy.NEW_WORLD; Legacy.OLD_WORLD from before the rename). (1.0.1.1)
+	 * Also Minecraft's demo world: a Minecraft account that doesn't own the game plays in demo mode, whose title screen
+	 * offers only "Play Demo World", and players went on playing Mineblox Royale there. Its islands were never removed,
+	 * until the disk ran full mid-match (Melty, 2026-10-16: "There is not enough space on the disk" in Demo_World).
+	 */
+	static final List<String> WORLDS = List.of("Mineblox Royale", "Block Royale", "Demo_World");
 	private static final Pattern REGION = Pattern.compile("r\\.(-?\\d+)\\.(-?\\d+)\\.mca");
 	/** A chunk too big for its region file is kept beside it (c.x.z.mcc, chunk coordinates). */
 	private static final Pattern OVERSIZED = Pattern.compile("c\\.(-?\\d+)\\.(-?\\d+)\\.mcc");

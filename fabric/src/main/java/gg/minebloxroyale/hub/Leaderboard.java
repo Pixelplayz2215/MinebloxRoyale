@@ -143,7 +143,7 @@ public final class Leaderboard {
 		try {
 			Files.writeString(file(server), sb.toString(), StandardCharsets.UTF_8);
 		} catch (Exception e) {
-			MinebloxRoyale.LOG.warn("BR: couldn't save the leaderboard: {}", e.toString());
+			MinebloxRoyale.couldntSave("the leaderboard", file(server), e);
 		}
 	}
 

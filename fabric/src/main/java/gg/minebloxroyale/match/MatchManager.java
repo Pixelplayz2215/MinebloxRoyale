@@ -1395,7 +1395,7 @@ public final class MatchManager {
 	 * searching.
 	 */
 	private static String islandProgress() {
-		if (IslandPregen.ready()) return "Island ready";
+		if (IslandPregen.ready()) return IslandPregen.sameIsland() ? "Island ready (same island: disk nearly full)" : "Island ready";
 		String left = IslandPregen.timeLeft();
 		if (left.isEmpty() && IslandPregen.percent() == 0) return "Finding the next island...";
 		return "Island " + IslandPregen.percent() + "%" + (left.isEmpty() ? "" : " - " + left);
@@ -1464,7 +1464,7 @@ public final class MatchManager {
 		try {
 			Files.writeString(indexFile(server), Integer.toString(matchIndex));
 		} catch (IOException e) {
-			MinebloxRoyale.LOG.warn("BR: couldn't save match index", e);
+			MinebloxRoyale.couldntSave("the match count", indexFile(server), e);
 		}
 	}
 }
