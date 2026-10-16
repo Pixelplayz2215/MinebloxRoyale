@@ -460,10 +460,8 @@ public final class MatchManager {
 		structureSpots.clear();
 		CustomStructures.clearAll();
 		CustomStructures.plan(rnd);
-		for (int i = 0; i < (int) MinebloxRoyale.setting("structureSpots"); i++) {
-			double a = rnd.nextDouble() * Math.PI * 2, d = Math.sqrt(rnd.nextDouble()) * startR * 0.85;
-			structureSpots.add(BlockPos.containing(cx + Math.cos(a) * d, 0, cz + Math.sin(a) * d));
-		}
+		spotRounds = 0;
+		scatterSpots(rnd, startR);
 		// The bus route: a random line through the island that starts and ends inside it (never in the storm).
 		double a = rnd.nextDouble() * Math.PI * 2;
 		double off = (rnd.nextDouble() - 0.5) * startR * 0.6;
@@ -534,16 +532,47 @@ public final class MatchManager {
 		else MeltyTest.pass("match-starts");
 	}
 
+	/** How many times this island's building spots have been scattered (more when they run out with buildings due). */
+	private int spotRounds;
+
+	/**
+	 * Spots for buildings, spread evenly over the island (2.0.0-test5, creator: "4 structures in one spot"): random, but
+	 * none within SPOT_GAP of another (tried a few times each), so the buildings don't come in clumps.
+	 */
+	private void scatterSpots(RandomSource rnd, float startR) {
+		int want = (int) MinebloxRoyale.setting("structureSpots");
+		double gap = 60;
+		for (int tries = 0; structureSpots.size() < want && tries < want * 30; tries++) {
+			double a = rnd.nextDouble() * Math.PI * 2, d = Math.sqrt(rnd.nextDouble()) * startR * 0.85;
+			BlockPos p = BlockPos.containing(cx + Math.cos(a) * d, 0, cz + Math.sin(a) * d);
+			boolean clear = true;
+			for (BlockPos q : structureSpots)
+				if (q.distSqr(p) < gap * gap) {
+					clear = false;
+					break;
+				}
+			if (clear) structureSpots.add(p);
+		}
+	}
+
 	/** Chests appear as their chunk loads (no forced world generation): checked a few per tick. */
 	private void prepareArena(ServerLevel level) {
 		Reboot.prepare(level); // reboot vans, once their chunks are there
 		// Custom buildings, once the chunks around their spot exist (one per tick at most), until the island has them all.
 		if (!CustomStructures.wantsMore()) structureSpots.clear();
+		else if (structureSpots.isEmpty() && spotRounds < 3) {
+			// out of spots with buildings still due: more spots; the last time round, any ground near enough is levelled
+			spotRounds++;
+			CustomStructures.relaxed = spotRounds >= 2;
+			scatterSpots(level.getRandom(), MinebloxRoyale.setting("startRadius"));
+		}
 		for (int i = 0; i < structureSpots.size(); i++) {
 			BlockPos c = structureSpots.get(i);
-			// (12 blocks round: a big parking lot reaches 11 from its middle.)
-			if (!level.hasChunk((c.getX() - 12) >> 4, (c.getZ() - 12) >> 4) || !level.hasChunk((c.getX() + 12) >> 4, (c.getZ() + 12) >> 4)
-				|| !level.hasChunk((c.getX() - 12) >> 4, (c.getZ() + 12) >> 4) || !level.hasChunk((c.getX() + 12) >> 4, (c.getZ() - 12) >> 4)) continue;
+			// (28 blocks round: a big parking lot reaches 11 from its middle, its open ground 4 more, a tree felled there
+			// up to 12 beyond that.)
+			int m = 28;
+			if (!level.hasChunk((c.getX() - m) >> 4, (c.getZ() - m) >> 4) || !level.hasChunk((c.getX() + m) >> 4, (c.getZ() + m) >> 4)
+				|| !level.hasChunk((c.getX() - m) >> 4, (c.getZ() + m) >> 4) || !level.hasChunk((c.getX() + m) >> 4, (c.getZ() - m) >> 4)) continue;
 			structureSpots.remove(i);
 			placedChests.addAll(CustomStructures.build(level, c.getX(), c.getZ(), level.getRandom()));
 			break;

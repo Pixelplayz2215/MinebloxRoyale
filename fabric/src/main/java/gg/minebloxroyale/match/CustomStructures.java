@@ -2,8 +2,11 @@ package gg.minebloxroyale.match;
 
 import gg.minebloxroyale.MinebloxRoyale;
 import gg.minebloxroyale.ModBlocks;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -38,8 +41,16 @@ public final class CustomStructures {
 	private static final int LOT = 3, WAREHOUSE = 6, HOUSE = 7, FORT = 8;
 	/** The big ones (v2.0.0, creator: "Add more custom structures. Bigger, Better."): they need the big, level ground a lot does. */
 	private static final List<Integer> BIG = List.of(LOT, WAREHOUSE, HOUSE, FORT);
-	/** Buildings' middles are at least this far apart (the spots are random, and two could overlap). */
-	private static final int GAP = 26;
+	/**
+	 * Room round buildings (2.0.0-test5, creator: "structures are also so close together ... 4 structures in one spot";
+	 * they were only kept 26 apart middle to middle whatever their size, so two big ones could stand 6 blocks apart):
+	 * each kind's half size (its cleared footprint), the blocks between two buildings' edges, and the open, level
+	 * ground kept round each one (no hill or cliff in it more than CLIFF above the floor, trees in it felled whole).
+	 */
+	private static final int[] HALF = { 4, 3, 4, 10, 4, 3, 10, 7, 9 };
+	private static final int APART = 16, MARGIN = 4, CLIFF = 2;
+	/** Late in the island's loading, with buildings still due and no open spot left: the ground round one is levelled instead. */
+	static boolean relaxed;
 	/**
 	 * This island's buildings still to come: the guaranteed ones (creator: at least 2 of every kind, 3 parking lots),
 	 * then random ones up to the match sheet's customStructures.
@@ -101,16 +112,28 @@ public final class CustomStructures {
 	 * building goes to a later spot, so the guaranteed ones are always built.
 	 */
 	static List<BlockPos> build(ServerLevel level, int x, int z, RandomSource rnd) {
-		for (Built c : CENTRES)
-			if (Math.abs(c.at().getX() - x) < GAP && Math.abs(c.at().getZ() - z) < GAP) {
-				MinebloxRoyale.LOG.info("BR: building spot {} {} passed over: too close to the {} at {} {}", x, z, KINDS[c.kind()], c.at().getX(), c.at().getZ());
-				return List.of();
+		// how big a building fits here before it comes within APART of another's edge
+		int room = Integer.MAX_VALUE;
+		Built near = null;
+		for (Built c : CENTRES) {
+			int r = Math.max(Math.abs(c.at().getX() - x), Math.abs(c.at().getZ() - z)) - HALF[c.kind()] - APART;
+			if (r < room) {
+				room = r;
+				near = c;
 			}
+		}
+		if (room < 4) {
+			MinebloxRoyale.LOG.info("BR: building spot {} {} passed over: too close to the {} at {} {}", x, z, KINDS[near.kind()], near.at().getX(), near.at().getZ());
+			return List.of();
+		}
 		int center = ground(level, x, z);
-		// A parking lot is always the big one (creator): it levels the ground under it, up to 4 blocks either way.
-		Integer kind = take(flat(level, x, z, 10, 9, center, 4), flat(level, x, z, 4, 4, center, 2), rnd);
+		// A parking lot is always the big one (creator): it levels the ground under it, up to 4 blocks either way. The
+		// open ground round it counts too (no cliffs against a wall), unless the island is out of open spots.
+		boolean big = room >= 10 && flat(level, x, z, 10, 9, center, 4) && (relaxed || open(level, x, z, 10, 9, center));
+		boolean small = flat(level, x, z, 4, 4, center, 2) && (relaxed || open(level, x, z, 4, 4, center));
+		Integer kind = take(big, small, rnd);
 		if (kind == null) {
-			MinebloxRoyale.LOG.info("BR: building spot {} {} passed over: too steep or wet for what's still due", x, z);
+			MinebloxRoyale.LOG.info("BR: building spot {} {} passed over: too steep, wet or hemmed in for what's still due", x, z);
 			return List.of();
 		}
 		// The floor goes level with the ground just outside the way in (creator: a shack's door was left a block above
@@ -137,9 +160,9 @@ public final class CustomStructures {
 		};
 		if (building != null) BUILT.add(building);
 		// Where each one went, for finding them when testing (they're only built once their chunks have loaded), how many
-		// so far, and what's still due.
-		MinebloxRoyale.LOG.info("BR: built {} at {} {} {} ({} of {}; still due: {} guaranteed, {} random)", KINDS[kind], x, y, z, CENTRES.size(), total, tally(GUARANTEED),
-			EXTRA.size());
+		// so far, what's still due, and how far the nearest other building's edge is.
+		MinebloxRoyale.LOG.info("BR: built {} at {} {} {} ({} of {}; still due: {} guaranteed, {} random; nearest other {} blocks edge to edge{})", KINDS[kind], x, y, z,
+			CENTRES.size(), total, tally(GUARANTEED), EXTRA.size(), room == Integer.MAX_VALUE ? "-" : room + APART - HALF[kind], relaxed ? "; ground levelled" : "");
 		List<BlockPos> chests = new ArrayList<>();
 		for (BlockPos c : MORE_CHESTS.isEmpty() ? List.of(loot) : concat(loot, MORE_CHESTS)) {
 			boolean rare = rnd.nextFloat() < MinebloxRoyale.setting("enderChestStructure");
@@ -214,6 +237,20 @@ public final class CustomStructures {
 		return true;
 	}
 
+	/**
+	 * Open ground round a building (2.0.0-test5): nowhere within MARGIN of its footprint (half sizes hx, hz) does the
+	 * ground rise more than CLIFF above the floor at `center` (a hillside or cliff there was cut off in a sheer wall);
+	 * lower ground is fine. Every other block round the edge, then the corners.
+	 */
+	private static boolean open(ServerLevel level, int x, int z, int hx, int hz, int center) {
+		for (int dx = -hx - MARGIN; dx <= hx + MARGIN; dx += 2)
+			for (int dz = -hz - MARGIN; dz <= hz + MARGIN; dz += 2) {
+				if (Math.abs(dx) <= hx && Math.abs(dz) <= hz) continue;
+				if (ground(level, x + dx, z + dz) - center > CLIFF) return false;
+			}
+		return true;
+	}
+
 	/** The space each building on this island takes up, so harvesting treats it like a village house. */
 	private static final List<BoundingBox> BUILT = new ArrayList<>();
 	private static BoundingBox building;
@@ -226,6 +263,7 @@ public final class CustomStructures {
 
 	/** Match over: the island is put back, so its buildings are gone. */
 	static void clearAll() {
+		relaxed = false;
 		BUILT.clear();
 		GUARANTEED.clear();
 		EXTRA.clear();
@@ -262,15 +300,106 @@ public final class CustomStructures {
 	/**
 	 * Air in the building's space (clears grass, flowers and leaves), and over its footprint up to the open sky,
 	 * treetops included (a parking lot built in a dark oak forest was hidden under the canopy, creator: "I can't find
-	 * the parking lot").
+	 * the parking lot"). Then round it (2.0.0-test5): every tree standing in or over the footprint and MARGIN round it
+	 * felled whole, never cut in half, and the ground in the margin sloped down to the floor instead of cut off sheer.
 	 */
 	private static void clear(ServerLevel level, BlockPos o, int hx, int hz, int height) {
+		fell(level, o, hx + MARGIN, hz + MARGIN);
+		slope(level, o, hx, hz);
 		for (int dx = -hx; dx <= hx; dx++)
 			for (int dz = -hz; dz <= hz; dz++) {
 				int sky = level.getHeight(Heightmap.Types.WORLD_SURFACE, o.getX() + dx, o.getZ() + dz) - o.getY();
 				for (int dy = 0; dy < Math.min(40, Math.max(height, sky)); dy++) {
 					BlockPos p = o.offset(dx, dy, dz);
 					if (!level.getBlockState(p).isAir()) put(level, p, Blocks.AIR.defaultBlockState());
+				}
+			}
+	}
+
+	/** A block gone (put back with the island), without counting it as part of the building. */
+	private static void remove(ServerLevel level, BlockPos p) {
+		IslandRestore.remember(level, p);
+		level.setBlock(p, Blocks.AIR.defaultBlockState(), 2 | 16);
+	}
+
+	/**
+	 * Fells every tree with a log in the area (half sizes hx, hz round o, from just under the floor up): its whole trunk
+	 * and branches (logs joined to it, reaching up to 6 blocks further out), then the leaves those logs held up: any leaf
+	 * within 6 of a felled log with no standing log within 5 of it (what Minecraft's leaf decay would take, at once).
+	 * A neighbouring tree outside the area keeps its own trunk and leaves.
+	 */
+	private static void fell(ServerLevel level, BlockPos o, int hx, int hz) {
+		int reach = 6, top = 40;
+		Set<BlockPos> logs = new HashSet<>();
+		ArrayDeque<BlockPos> todo = new ArrayDeque<>();
+		for (int dx = -hx; dx <= hx; dx++)
+			for (int dz = -hz; dz <= hz; dz++)
+				for (int dy = -2; dy < top; dy++) {
+					BlockPos p = o.offset(dx, dy, dz);
+					if (level.getBlockState(p).is(BlockTags.LOGS) && logs.add(p)) todo.add(p);
+				}
+		if (logs.isEmpty()) return;
+		while (!todo.isEmpty() && logs.size() < 4000) {
+			BlockPos p = todo.poll();
+			for (int ax = -1; ax <= 1; ax++)
+				for (int ay = -1; ay <= 1; ay++)
+					for (int az = -1; az <= 1; az++) {
+						BlockPos q = p.offset(ax, ay, az);
+						if (Math.abs(q.getX() - o.getX()) > hx + reach || Math.abs(q.getZ() - o.getZ()) > hz + reach || q.getY() < o.getY() - 2
+							|| q.getY() > o.getY() + top + reach) continue;
+						if (!logs.contains(q) && level.getBlockState(q).is(BlockTags.LOGS)) {
+							logs.add(q);
+							todo.add(q);
+						}
+					}
+		}
+		// the logs left standing near enough to hold up leaves, then every leaf the felled ones held alone
+		int r = hx + reach * 2, rz = hz + reach * 2;
+		List<BlockPos> standing = new ArrayList<>(), leaves = new ArrayList<>();
+		for (int dx = -r; dx <= r; dx++)
+			for (int dz = -rz; dz <= rz; dz++)
+				for (int dy = -2; dy < top + reach; dy++) {
+					BlockPos p = o.offset(dx, dy, dz);
+					BlockState s = level.getBlockState(p);
+					if (s.is(BlockTags.LOGS)) {
+						if (!logs.contains(p)) standing.add(p);
+					} else if (s.is(BlockTags.LEAVES)) leaves.add(p);
+				}
+		for (BlockPos p : logs) remove(level, p);
+		for (BlockPos l : leaves) {
+			boolean held = false, felled = false;
+			for (BlockPos g : standing)
+				if (Math.abs(g.getX() - l.getX()) <= 5 && Math.abs(g.getY() - l.getY()) <= 5 && Math.abs(g.getZ() - l.getZ()) <= 5) {
+					held = true;
+					break;
+				}
+			if (held) continue;
+			for (BlockPos g : logs)
+				if (Math.abs(g.getX() - l.getX()) <= 6 && Math.abs(g.getY() - l.getY()) <= 6 && Math.abs(g.getZ() - l.getZ()) <= 6) {
+					felled = true;
+					break;
+				}
+			if (felled) remove(level, l);
+		}
+	}
+
+	/**
+	 * The ground round the footprint (half sizes hx, hz) no higher than the floor plus how far out it is, so a rise
+	 * beside a wall becomes a short slope instead of a sheer cut; the new top turned to grass where it was soil.
+	 */
+	private static void slope(ServerLevel level, BlockPos o, int hx, int hz) {
+		for (int dx = -hx - MARGIN; dx <= hx + MARGIN; dx++)
+			for (int dz = -hz - MARGIN; dz <= hz + MARGIN; dz++) {
+				int out = Math.max(Math.abs(dx) - hx, Math.abs(dz) - hz);
+				if (out <= 0) continue;
+				int x = o.getX() + dx, z = o.getZ() + dz, allowed = o.getY() + out - 1, g = ground(level, x, z);
+				if (g <= allowed + 1 || !level.getFluidState(new BlockPos(x, g, z)).isEmpty()) continue; // (never water)
+				for (int y = g - 1; y > allowed; y--) remove(level, new BlockPos(x, y, z));
+				BlockPos newTop = new BlockPos(x, allowed, z);
+				BlockState s = level.getBlockState(newTop);
+				if (s.is(BlockTags.DIRT) && !s.is(Blocks.GRASS_BLOCK)) {
+					IslandRestore.remember(level, newTop);
+					level.setBlock(newTop, Blocks.GRASS_BLOCK.defaultBlockState(), 2 | 16);
 				}
 			}
 	}
