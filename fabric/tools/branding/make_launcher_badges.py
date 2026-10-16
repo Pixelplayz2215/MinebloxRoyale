@@ -1,6 +1,8 @@
 """The launcher badges by players' names (2.0.0-test6.2, creator: "Icons next to players names based on the launcher
 they're using ... If launched via Melty's prism then show Melty icon"): one small badge per launcher, drawn here (our own
-designs in each launcher's colours with a simple symbol or its initials, not the launchers' logos), as a bitmap font so
+designs in each launcher's colours, each a symbol for its name, none of them the launchers' logos: 2.0.0-test6.2, creator:
+"create your own icon for each where players can easily notice what launcher it is without being confused OR infringing
+copywrite"), as a bitmap font so
 the name tag can carry one as a character (assets/minebloxroyale/font/launchers.json: U+E000 on, in BADGES' order;
 LauncherBadge.java has the same order).
 
@@ -86,12 +88,23 @@ def badge(bid, top, bottom):
             d.polygon([(150, 128), (226, y0 - 6), (226, y0 + 6)], fill=c + (255,))
         d.polygon([(64, 184), (128, 70), (192, 184)], fill=WHITE)
         d.polygon([(30, 132), (112, 128), (110, 136)], fill=(255, 255, 255, 220))
-    elif bid == "multimc":
+    elif bid == "multimc":  # a stack of game windows: many instances
         im, d = base(top, bottom, round_=False)
-        letters(d, "MMC", 82)
-    elif bid == "modrinth":
+        for k, off in enumerate((-30, 0, 30)):
+            x0, y0 = S / 2 + off, S / 2 + off
+            shade = (150 + 40 * k, 160 + 40 * k, 175 + 35 * k, 255)
+            d.rounded_rectangle((x0 - 46, y0 - 40, x0 + 46, y0 + 40), radius=10, fill=shade, outline=INK, width=6)
+            d.rectangle((x0 - 40, y0 - 34, x0 + 40, y0 - 22), fill=(46, 52, 64, 255))  # (its title bar)
+        d.polygon([(S / 2 + 18, S / 2 + 22), (S / 2 + 18, S / 2 + 58), (S / 2 + 48, S / 2 + 40)], fill=(92, 160, 64, 255))  # (a play mark)
+    elif bid == "modrinth":  # a labyrinth: rings with gaps (mod + labyrinth)
         im, d = base(top, bottom)
-        letters(d, "M", 150, INK, dy=-4)
+        c = S / 2
+        for r, gap in ((92, 300), (64, 120), (36, 210)):
+            box = (c - r, c - r, c + r, c + r)
+            d.arc(box, start=gap + 22, end=gap + 360 - 22, fill=WHITE, width=14)
+        d.line([(c + 36, c), (c + 64, c)], fill=WHITE, width=14)  # (walls joining the rings)
+        d.line([(c, c - 64), (c, c - 92)], fill=WHITE, width=14)
+        d.ellipse((c - 12, c - 12, c + 12, c + 12), fill=INK)  # (the middle, where you're going)
     elif bid == "lunar":  # a crescent moon
         im, d = base(top, bottom)
         moon = Image.new("L", (S, S), 0)
@@ -101,15 +114,40 @@ def badge(bid, top, bottom):
         im.paste(WHITE, (0, 0), moon)
         for x, y, r in ((176, 176, 7), (196, 128, 5)):
             d.ellipse((x - r, y - r, x + r, y + r), fill=WHITE)
-    elif bid == "curseforge":
+    elif bid == "curseforge":  # a forge hammer striking sparks
         im, d = base(top, bottom, round_=False)
-        letters(d, "CF", 118)
-    elif bid == "atlauncher":
+        u = (0.7071, -0.7071)  # (along the handle, up and right)
+        v = (0.7071, 0.7071)  # (across it: the head's length)
+        hx, hy = 134, 120  # (where the handle meets the head)
+        d.line([(56, 206), (hx, hy + 6)], fill=(120, 72, 40, 255), width=26)
+        d.line([(56, 206), (hx, hy + 6)], fill=(160, 100, 56, 255), width=14)
+        cx, cy = hx + u[0] * 14, hy + u[1] * 14
+        L, Wd = 60, 28
+        corners = [(cx + v[0] * a + u[0] * b, cy + v[1] * a + u[1] * b) for a, b in ((-L, -Wd), (L, -Wd), (L, Wd), (-L, Wd))]
+        d.polygon(corners, fill=(232, 236, 242, 255), outline=INK, width=6)
+        tip = (cx + v[0] * (L + 6), cy + v[1] * (L + 6))  # (the striking face, lower right: sparks fly from it)
+        for ang, ln in ((10, 46), (40, 40), (-20, 38), (70, 30)):
+            a_ = math.radians(ang)
+            d.line([(tip[0] + 10 * math.cos(a_), tip[1] + 10 * math.sin(a_)), (tip[0] + ln * math.cos(a_), tip[1] + ln * math.sin(a_))], fill=(255, 226, 120, 255), width=9)
+    elif bid == "atlauncher":  # an "@" swirl: the "at" in its name
         im, d = base(top, bottom)
-        letters(d, "AT", 112)
-    elif bid == "gdlauncher":
+        c = S / 2
+        d.arc((c - 82, c - 82, c + 82, c + 82), start=28, end=350, fill=WHITE, width=20)
+        d.ellipse((c - 36, c - 36, c + 36, c + 36), outline=WHITE, width=20)
+        tail = [(c + 36, c - 36)] + [(c + 36 + 22 * (1 - math.cos(t)), c + 10 + 34 * math.sin(t)) for t in [math.pi / 2 * i / 8 for i in range(9)]]
+        tail[1:1] = [(c + 36, c + 10)]
+        d.line(tail, fill=WHITE, width=20, joint="curve")
+    elif bid == "gdlauncher":  # a rocket taking off
         im, d = base(top, bottom)
-        letters(d, "GD", 112)
+        r = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+        rd = ImageDraw.Draw(r)
+        rd.polygon([(128, 30), (164, 84), (164, 168), (92, 168), (92, 84)], fill=WHITE)  # (the body and nose)
+        rd.polygon([(92, 128), (62, 176), (92, 168)], fill=(255, 210, 90, 255))  # (fins)
+        rd.polygon([(164, 128), (194, 176), (164, 168)], fill=(255, 210, 90, 255))
+        rd.ellipse((110, 82, 146, 118), fill=(82, 44, 160, 255), outline=INK, width=6)  # (a window)
+        rd.polygon([(100, 172), (156, 172), (128, 228)], fill=(255, 140, 50, 255))  # (the flame)
+        rd.polygon([(112, 172), (144, 172), (128, 206)], fill=(255, 230, 120, 255))
+        im.alpha_composite(r.rotate(-18, center=(S / 2, S / 2), resample=Image.BICUBIC))
     elif bid == "minecraft":  # a grass block (as the Mineblox Royale icon draws it)
         im, d = base((60, 66, 80), (36, 40, 52), round_=False)
         c, h = (S / 2, 64), 62
@@ -154,7 +192,7 @@ def preview(pics, out):
     im = Image.new("RGB", (W, 820), (24, 27, 34))
     d = ImageDraw.Draw(im)
     d.text((30, 24), "Launcher badges by players' names", font=F(42), fill=(255, 200, 61))
-    d.text((30, 76), "Our own designs in each launcher's colours (not their logos). Shown in everyone's name tag.", font=F(20), fill=(154, 163, 178))
+    d.text((30, 76), "Our own icons: each launcher's colours and a symbol for its name, none of them its logo. Shown in everyone's name tag.", font=F(20), fill=(154, 163, 178))
     for i, (p, b) in enumerate(zip(pics, BADGES)):
         x, y = 30 + (i % 5) * 292, 124 + (i // 5) * 230
         d.rounded_rectangle((x, y, x + 272, y + 210), radius=14, fill=(44, 49, 61))
