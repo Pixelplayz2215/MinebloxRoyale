@@ -26,6 +26,7 @@ public final class BRHud {
 	public static void draw(GuiGraphicsExtractor g) {
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.player == null) return;
+		if (VictoryClient.hud(g, mc)) return; // (2.0.0-test5: the Victory banner or the team's stage, nothing else)
 		if (Aim.scoped()) scope(g);
 		if (ClientState.inMatch()) {
 			if (ClientState.outsideStorm(mc.player.getX(), mc.player.getZ()) && !mc.player.isSpectator()) stormTint(g);
@@ -83,7 +84,7 @@ public final class BRHud {
 	 * Hidden while looking through a sniper scope (creator), like the gun in your hand.
 	 */
 	public static void hotbar(GuiGraphicsExtractor g, Runnable vanilla) {
-		if (Aim.scoped()) return;
+		if (Aim.scoped() || VictoryClient.intro()) return;
 		// v2.0.0: in a match, Fortnite's hotbar (the pickaxe and five item slots as smooth tiles); in the hub, Minecraft's.
 		if (ClientState.inMatch()) scaled(g, "hotbar", g.guiWidth() / 2F, g.guiHeight(), () -> matchHotbar(g, Minecraft.getInstance()));
 		else scaled(g, "hotbar", g.guiWidth() / 2F, g.guiHeight(), vanilla);

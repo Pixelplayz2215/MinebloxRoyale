@@ -18,6 +18,8 @@ assets' sounds.json:
                                    something that fizzes and shimmers), played over and over while it's used; and
   use/heal_done, use/shield_done   a warm chime as the health goes up, a bright rising shimmer as the shield charges
                                    (2.0.0-test4, creator: "shield sounds and healing sounds when using proper items")
+  victory/fanfare                  the Victory Royale: a rising brass call and a big held chord over a drum roll
+                                   (2.0.0-test5, the new Victory Royale screen)
 
 python fabric/tools/audio/make_audio.py [cars|use]      (cars, use: just those sounds)
 """
@@ -450,6 +452,42 @@ def shield_done():
     return norm(room(out, 0.7, 0.35), 0.8)
 
 
+def brass(freq, sec, attack=0.04):
+    """A bright brass-like note: a few detuned saws, filtered, swelling in and ringing off."""
+    n = int(sec * SR)
+    x = (saw(freq, sec) + saw(freq, sec, 0.004) + 0.5 * saw(freq * 2, sec, -0.003)) / 2.5
+    x = filt(x, hi=2600 + 1400 * min(1.0, freq / 600))
+    return x * env(n, attack, sec * 0.9, curve=2.5)
+
+
+def victory_fanfare():
+    """The fanfare: a quick rising call (G4 C5 E5 G5), then a big C major chord held over a drum roll and a cymbal."""
+    sec = 3.6
+    n = int(sec * SR)
+    out = np.zeros(n)
+    for at, f, d in ((0.0, 392.0, 0.16), (0.14, 523.25, 0.16), (0.28, 659.25, 0.16), (0.42, 783.99, 0.5)):
+        b = brass(f, d + 0.25)
+        i = int(at * SR)
+        out[i:i + len(b)] += b * 0.5
+    chord_at = 0.82
+    for f in (261.63, 329.63, 392.0, 523.25, 659.25):
+        b = brass(f, sec - chord_at, attack=0.06)
+        i = int(chord_at * SR)
+        out[i:i + len(b)] += b * 0.32
+    # a snare roll building into the chord, a timpani hit and a cymbal on it
+    for k in range(18):
+        at = 0.25 + k * 0.032
+        hit = filt(noise(0.05), lo=1800, hi=7000) * env(int(0.05 * SR), 0.001, 0.02) * (0.15 + 0.5 * k / 18)
+        i = int(at * SR)
+        out[i:i + len(hit)] += hit
+    timp = sweep(110, 70, 0.9, shape=3) * env(int(0.9 * SR), 0.003, 0.4)
+    i = int(chord_at * SR)
+    out[i:i + len(timp)] += timp * 0.8
+    cym = filt(noise(2.2), lo=4500, hi=12000) * env(int(2.2 * SR), 0.003, 1.2, curve=3)
+    out[i:i + len(cym)] += cym * 0.22
+    return norm(soft(room(out, 0.9, 0.35), 1.2), 0.9)
+
+
 def uses(snd, reg):
     for kind, make in (("heal", heal_use), ("shield", shield_use)):
         for take in (1, 2, 3):
@@ -460,7 +498,10 @@ def uses(snd, reg):
         seeded(f"use/{name}")
         write_ogg(os.path.join(snd, "use", f"{name}.ogg"), make())
         reg[f"use.{name}"] = {"sounds": [f"minebloxroyale:use/{name}"]}
-    print("heal and shield sounds")
+    seeded("victory/fanfare")
+    write_ogg(os.path.join(snd, "victory", "fanfare.ogg"), victory_fanfare())
+    reg["victory.fanfare"] = {"sounds": ["minebloxroyale:victory/fanfare"]}
+    print("heal and shield sounds, the victory fanfare")
 
 
 # ------------------------------------------------------------------------------------------------- music

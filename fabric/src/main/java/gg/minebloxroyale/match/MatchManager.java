@@ -12,6 +12,13 @@ import gg.minebloxroyale.net.Net;
 import gg.minebloxroyale.net.RoomCode;
 import gg.minebloxroyale.sheets.ModeDef;
 import gg.minebloxroyale.sheets.Sheets;
+import gg.minebloxroyale.sheets.EmoteDef;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.resources.Identifier;
 import gg.minebloxroyale.sheets.StormPhaseDef;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -511,6 +518,9 @@ public final class MatchManager {
 			for (int s = 0; s < size; s++) seats.add(new BotRoster.Seat(team, s, null));
 		roster.start(seats, cx, cz, startR, rnd);
 		Reboot.start(cx, cz, startR, rnd);
+		MatchStats.start(level.getGameTime());
+		for (ServerPlayer p : boarding) MatchStats.player(p.getUUID(), p.getName().getString(), Teams.teamOfPlayer(p.getUUID()), Teams.slotOfPlayer(p.getUUID()));
+		for (int t = 0; t < teams; t++) for (BotRoster.Sim s : roster.team(t)) MatchStats.bot(s.name, t, s.slot);
 		if (Teams.teamMode())
 			for (ServerPlayer p : boarding) {
 				int t = Teams.teamOfPlayer(p.getUUID());
@@ -745,6 +755,7 @@ public final class MatchManager {
 		Interact.set(victim, false);
 		alivePlayers.remove(victim.getUUID());
 		dropping.remove(victim.getUUID());
+		MatchStats.out(victim, server.overworld().getGameTime());
 		if (!(killer != null && Teams.sameTeam(killer, victim))) countKill(killer, byName);
 		Net.sfxAll(server, "oof", victim.position());
 		Reboot.dropCarried(victim); // teammates' cards they carried
@@ -765,11 +776,15 @@ public final class MatchManager {
 				Component.literal("by " + by + " - your team is still in: they can reboot you (H: hub)"), 5, 60, 10);
 		} else {
 			int place = teamsAlive().size() + 1;
+			MatchStats.placed(team, place);
 			// Gold for a good finish (v2.0.0): the team's players still in the match.
 			if (place <= 10)
 				for (UUID m : Teams.teamMode() ? Teams.playersOf(team) : List.of(victim.getUUID())) {
 					ServerPlayer q = server.getPlayerList().getPlayer(m);
-					if (q != null && players.contains(m)) Gold.award(q, place <= 5 ? "goldTop5" : "goldTop10", "top " + (place <= 5 ? 5 : 10));
+					if (q != null && players.contains(m)) {
+						Gold.award(q, place <= 5 ? "goldTop5" : "goldTop10", "top " + (place <= 5 ? 5 : 10));
+						MatchStats.gold(q, place <= 5 ? "Top 5" : "Top 10", Math.round(MinebloxRoyale.setting(place <= 5 ? "goldTop5" : "goldTop10")));
+					}
 				}
 			if (Teams.teamMode()) {
 				for (UUID m : Teams.playersOf(team)) {
@@ -789,6 +804,7 @@ public final class MatchManager {
 		if (state != State.LIVE) return;
 		MinecraftServer server = bot.level().getServer();
 		Knocked.forget(bot.getUUID());
+		MatchStats.out(bot, server.overworld().getGameTime());
 		// Its card, if a teammate still stands (checked before the roster marks it out).
 		Reboot.dropCardFor(bot, "bot:" + bot.getName().getString());
 		roster.onEntityDied(bot);
@@ -917,9 +933,11 @@ public final class MatchManager {
 
 	/** An elimination for the killer: a player, a real bot, or a simulated bot known only by name (byName). */
 	private void countKill(Entity killer, String byName) {
+		MatchStats.kill(killer, byName);
 		if (killer instanceof ServerPlayer sp) {
 			kills.merge(sp.getUUID(), 1, Integer::sum);
 			Gold.award(sp, "goldElimination", "elimination");
+			MatchStats.gold(sp, "Eliminations", Math.round(MinebloxRoyale.setting("goldElimination")));
 		}
 		else if (killer instanceof BotEntity b) roster.creditKill(b.getName().getString());
 		else if (killer == null && byName != null) roster.creditKill(byName);
@@ -974,29 +992,131 @@ public final class MatchManager {
 		}
 		winnerName = names.isEmpty() ? "" : names.size() == 1 ? names.get(0) : String.join(" & ", names);
 		Knocked.clearAll();
+		long now = server.overworld().getGameTime();
 		for (UUID id : players) {
 			ServerPlayer p = server.getPlayerList().getPlayer(id);
-			if (p != null) Leaderboard.record(server, id, p.getName().getString(), winners.contains(id), kills.getOrDefault(id, 0));
-			if (p != null) Gold.award(p, winners.contains(id) ? Math.round(MinebloxRoyale.setting("goldWin") + MinebloxRoyale.setting("goldMatch")) : Math.round(MinebloxRoyale.setting("goldMatch")),
-				winners.contains(id) ? "Victory Royale" : "match played");
+			if (p == null) continue;
+			Leaderboard.record(server, id, p.getName().getString(), winners.contains(id), kills.getOrDefault(id, 0));
+			int win = winners.contains(id) ? Math.round(MinebloxRoyale.setting("goldWin")) : 0, played = Math.round(MinebloxRoyale.setting("goldMatch"));
+			Gold.award(p, win + played, winners.contains(id) ? "Victory Royale" : "match played");
+			MatchStats.gold(p, "Victory Royale", win);
+			MatchStats.gold(p, "Match played", played);
 		}
+		// The winners' moment (2.0.0-test5, creator: "In the victory royale screen Players/Bot Teammates will no longer be
+		// able to move, but you can choose any emote from your emotes list to use. Bot teamates can also use Emotes"):
+		// Solo, the winner stays where they stand; a team goes up on a stage over the island, bots and all.
+		stage = winTeam >= 0 && Teams.teamMode() && !winners.isEmpty() ? victoryStage(server, winTeam, winners) : null;
 		for (ServerPlayer p : server.getPlayerList().getPlayers()) {
-			if (winners.contains(p.getUUID())) {
-				title(p, Component.literal("#1 VICTORY ROYALE").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD),
-					Component.literal(Teams.teamMode() ? "Your team is the last one standing!" : "You are the last one standing!"), 5, 100, 20);
-				if (alivePlayers.contains(p.getUUID())) {
+			boolean won = winners.contains(p.getUUID());
+			if (won) {
+				if (stage != null || alivePlayers.contains(p.getUUID())) {
+					freeze(p);
 					fireworksFor.add(p.getUUID());
 					Net.emoteAll(server, p, "victory_dance");
 				}
-			} else if (players.contains(p.getUUID())) {
-				// A short title and the winner underneath (a whole team's names in the big title ran off the screen).
-				title(p, Component.literal("MATCH OVER").withStyle(ChatFormatting.YELLOW), Component.literal(winnerLine(names)).withStyle(ChatFormatting.YELLOW), 5, 80, 20);
-				p.sendSystemMessage(Component.literal("Back to the hub soon").withStyle(ChatFormatting.GRAY), true);
 			}
+			// Everyone in the match: their results card (Victory: the banner or the team's stage first; anyone else
+			// where they placed).
+			if (players.contains(p.getUUID()))
+				ServerPlayNetworking.send(p, new Net.Victory(MatchStats.results(p, won, Teams.teamMode(), mode.name(), MatchStats.teams(), now, names, Gold.balance(p),
+					Gold.next(p), stage)));
 		}
 		if (!names.isEmpty())
 			broadcast(server, Component.literal((names.size() > 1 ? "Winners: " : "Winner: ") + String.join(", ", names)).withStyle(ChatFormatting.GOLD));
 		MinebloxRoyale.LOG.info("BR: match {} ({}) over, winner: {}", matchIndex, mode.name(), winnerName.isEmpty() ? "none (all players out)" : winnerName);
+	}
+
+	/** The winners' stage, while the match is over (team modes): its middle, standing height; null when there's none. */
+	private double[] stage;
+	/** Bots standing on it (the team's, real or stood up again for it), held still; gone with the match. */
+	private final List<BotEntity> stageBots = new ArrayList<>();
+	/** When each of them does its next emote (game time). */
+	private final Map<BotEntity, Long> nextEmote = new HashMap<>();
+	/** Players who can't move until they leave: the winners, while the match is over. */
+	private final Set<UUID> frozen = new HashSet<>();
+	private static final Identifier FROZEN = MinebloxRoyale.id("victory_frozen");
+
+	/** Held still at the end (no walking or jumping: Minecraft's own speed and jump attributes, so their game agrees). */
+	private void freeze(ServerPlayer p) {
+		p.stopUsingItem();
+		for (var attr : List.of(Attributes.MOVEMENT_SPEED, Attributes.JUMP_STRENGTH)) {
+			AttributeInstance a = p.getAttribute(attr);
+			if (a != null && !a.hasModifier(FROZEN)) a.addTransientModifier(new AttributeModifier(FROZEN, -1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+		}
+		frozen.add(p.getUUID());
+	}
+
+	private void unfreeze(ServerPlayer p) {
+		for (var attr : List.of(Attributes.MOVEMENT_SPEED, Attributes.JUMP_STRENGTH)) {
+			AttributeInstance a = p.getAttribute(attr);
+			if (a != null) a.removeModifier(FROZEN);
+		}
+		frozen.remove(p.getUUID());
+	}
+
+	/** Can't do anything but look round and emote (a winner, while the match is over): no shooting, building or using items. */
+	public boolean frozen(net.minecraft.world.entity.player.Player p) {
+		return state == State.ENDED && frozen.contains(p.getUUID());
+	}
+
+	/**
+	 * The winning team's stage (team modes, 2.0.0-test5): a platform floating over the island's middle, clear of
+	 * everything, with the whole team on it facing south: its players (those eliminated earlier too) in the middle,
+	 * its bots either side (an eliminated or far-off one stood up again for it). Its blocks go with the island.
+	 */
+	private double[] victoryStage(MinecraftServer server, int team, Set<UUID> winners) {
+		ServerLevel level = server.overworld();
+		List<ServerPlayer> ps = new ArrayList<>();
+		for (UUID id : winners) {
+			ServerPlayer p = server.getPlayerList().getPlayer(id);
+			if (p != null) ps.add(p);
+		}
+		List<BotRoster.Sim> bots = roster.team(team);
+		int n = ps.size() + bots.size();
+		int top = level.getMinY();
+		for (int dx = -16; dx <= 16; dx += 4)
+			for (int dz = -16; dz <= 16; dz += 4) top = Math.max(top, level.getHeight(Heightmap.Types.MOTION_BLOCKING, (int) cx + dx, (int) cz + dz));
+		int y = top + 16, half = n * 2 + 1;
+		BlockPos c = BlockPos.containing(cx, y, cz);
+		BlockState floor = Blocks.POLISHED_DEEPSLATE.defaultBlockState(), trim = Blocks.GOLD_BLOCK.defaultBlockState();
+		for (int dx = -half; dx <= half; dx++)
+			for (int dz = -3; dz <= 3; dz++) {
+				BlockPos b = c.offset(dx, -1, dz);
+				IslandRestore.remember(level, b);
+				level.setBlock(b, dz == 3 || Math.abs(dx) == half ? trim : floor, 2 | 16);
+			}
+		// places 3 apart, the players in the middle, then bots left and right in turn
+		List<Object> line = new ArrayList<>(ps);
+		for (BotRoster.Sim s : bots) {
+			if (line.size() % 2 == 0) line.add(s);
+			else line.add(0, s);
+		}
+		for (int i = 0; i < line.size(); i++) {
+			double x = c.getX() + 0.5 + (i - (line.size() - 1) / 2.0) * 3, z = c.getZ() + 0.5;
+			if (line.get(i) instanceof ServerPlayer p) {
+				p.stopRiding();
+				p.setCamera(p);
+				watching.remove(p.getUUID());
+				if (p.isSpectator()) p.setGameMode(GameType.ADVENTURE);
+				p.teleportTo(level, x, y, z, Set.of(), 0F, 0F, true);
+			} else if (line.get(i) instanceof BotRoster.Sim s) {
+				BotEntity e = s.entity != null && s.entity.isAlive() && !s.entity.isRemoved() ? s.entity : BotEntity.spawn(level, s.def, s.name, new Vec3(x, y, z), s.bag, null);
+				if (e == null) continue;
+				if (e != s.entity) {
+					e.setOutfit(s.outfit);
+					e.setTeam(s.team, s.slot, s.leader);
+				}
+				e.stopRiding();
+				e.snapTo(x, y, z, 0F, 0F);
+				e.setYHeadRot(0F);
+				e.setYBodyRot(0F);
+				e.setNoAi(true);
+				stageBots.add(e);
+				nextEmote.put(e, level.getGameTime() + 10 + i * 7L);
+			}
+		}
+		MinebloxRoyale.LOG.info("BR: the winners' stage at {} {} {}: {} players, {} bots", c.getX(), y, c.getZ(), ps.size(), stageBots.size());
+		return new double[] { c.getX() + 0.5, y, c.getZ() + 0.5 };
 	}
 
 	/**
@@ -1019,6 +1139,15 @@ public final class MatchManager {
 		bus = null;
 		busLaunched = -1;
 		fireworksFor.clear();
+		for (BotEntity b : stageBots) b.discard();
+		stageBots.clear();
+		nextEmote.clear();
+		stage = null;
+		for (UUID id : new ArrayList<>(frozen)) {
+			ServerPlayer p = server.getPlayerList().getPlayer(id);
+			if (p != null) unfreeze(p);
+		}
+		frozen.clear();
 		roster.clear();
 		ServerLevel level = server.overworld();
 		for (BlockPos c : placedChests) Loot.clearChest(level, c);
@@ -1063,7 +1192,11 @@ public final class MatchManager {
 	}
 
 	public void leaveToHub(ServerPlayer p) {
-		if (state != State.HUB && !alivePlayers.contains(p.getUUID())) {
+		// (2.0.0-test5: a winner too, once the match is over: Back to hub on the results card, or H)
+		if (state != State.HUB && (!alivePlayers.contains(p.getUUID()) || state == State.ENDED)) {
+			unfreeze(p);
+			alivePlayers.remove(p.getUUID());
+			fireworksFor.remove(p.getUUID());
 			players.remove(p.getUUID());
 			waypoints.remove(p.getUUID());
 			Reboot.forfeit(p.level().getServer(), p.getUUID().toString()); // gone to the hub: their card no longer counts
@@ -1137,6 +1270,18 @@ public final class MatchManager {
 						RandomSource r = level.getRandom();
 						level.sendParticles(ParticleTypes.FIREWORK, w.getX() + r.nextGaussian() * 3, w.getY() + 4 + r.nextDouble() * 4, w.getZ() + r.nextGaussian() * 3, 40, 0.1, 0.1, 0.1, 0.25);
 					}
+				// The bots on the stage emote, each a different one, a new one every few seconds.
+				long now = level.getGameTime();
+				Set<String> doing = new HashSet<>();
+				for (BotEntity b : stageBots) {
+					Long at = nextEmote.get(b);
+					if (at == null || now < at || !b.isAlive()) continue;
+					List<EmoteDef> all = Sheets.EMOTES.stream().filter(e -> !doing.contains(e.id())).toList();
+					EmoteDef pick = all.get(level.getRandom().nextInt(all.size()));
+					doing.add(pick.id());
+					Net.emoteAll(server, b, pick.id());
+					nextEmote.put(b, now + 100 + level.getRandom().nextInt(60));
+				}
 				if (--timer <= 0) backToHub(server);
 			}
 		}

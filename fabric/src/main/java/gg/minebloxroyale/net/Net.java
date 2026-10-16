@@ -217,6 +217,20 @@ public final class Net {
 	 * Both ways. Client -> server: "I want to do this emote" (entityId ignored). Server -> clients: entity emotes (""
 	 * stops).
 	 */
+	/**
+	 * The match is over (2.0.0-test5): this player's results card, as JSON (MatchStats.results): won, the mode, their
+	 * placing and stats, their gold line by line, their team's rows, the winners, the stage the winning team stands on.
+	 */
+	public record Victory(String json) implements CustomPacketPayload {
+		public static final Type<Victory> TYPE = new Type<>(MinebloxRoyale.id("victory"));
+		public static final StreamCodec<RegistryFriendlyByteBuf, Victory> CODEC = StreamCodec.of((buf, p) -> buf.writeUtf(p.json, 65535), buf -> new Victory(buf.readUtf(65535)));
+
+		@Override
+		public Type<? extends CustomPacketPayload> type() {
+			return TYPE;
+		}
+	}
+
 	public record Emote(int entityId, String emoteId) implements CustomPacketPayload {
 		public static final Type<Emote> TYPE = new Type<>(MinebloxRoyale.id("emote"));
 		public static final StreamCodec<RegistryFriendlyByteBuf, Emote> CODEC = StreamCodec.of((buf, p) -> {
@@ -324,6 +338,7 @@ public final class Net {
 		PayloadTypeRegistry.clientboundPlay().register(Shot.TYPE, Shot.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(BossMarks.TYPE, BossMarks.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(Emote.TYPE, Emote.CODEC);
+		PayloadTypeRegistry.clientboundPlay().register(Victory.TYPE, Victory.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(Unlocks.TYPE, Unlocks.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(Room.TYPE, Room.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(IslandMapImage.TYPE, IslandMapImage.CODEC);
@@ -341,6 +356,7 @@ public final class Net {
 			String arg = act.substring(head.length() + (act.contains(":") ? 1 : 0));
 			switch (head) {
 				case "reload" -> {
+					if (MatchManager.get().frozen(player)) return; // (a winner, the match over: 2.0.0-test5)
 					ItemStack stack = player.getMainHandItem();
 					if (stack.getItem() instanceof WeaponItem w && !Knocked.is(player)) Guns.startReload(player, stack, w.def);
 				}
@@ -367,6 +383,7 @@ public final class Net {
 					if (!MatchManager.get().isAlive(player)) Locker.restore(player, arg);
 				}
 				case "build" -> {
+					if (MatchManager.get().frozen(player)) return; // (a winner, the match over: 2.0.0-test5)
 					// build:<piece>:<material>:<tx>:<ty>:<tz>:<dir> (a malformed one is ignored, never an error)
 					String[] a = arg.split(":");
 					Direction dir = a.length == 6 ? Direction.byName(a[5]) : null;
@@ -377,6 +394,7 @@ public final class Net {
 					}
 				}
 				case "throw" -> {
+					if (MatchManager.get().frozen(player)) return; // (a winner, the match over: 2.0.0-test5)
 					// throw:x:y:z = a grenade, towards where the crosshair points (v2.0.0)
 					String[] xyz = arg.split(":");
 					Vec3 aim = null;
@@ -389,6 +407,7 @@ public final class Net {
 					GrenadeEntity.tryThrow(player, aim);
 				}
 				case "fire" -> {
+					if (MatchManager.get().frozen(player)) return; // (a winner, the match over: 2.0.0-test5)
 					ItemStack stack = player.getMainHandItem();
 					if (stack.getItem() instanceof WeaponItem w && !player.isSpectator() && !Knocked.is(player)) {
 						// fire:x:y:z = where the player's crosshair points (used if it's believable: in front, in

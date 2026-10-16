@@ -84,6 +84,35 @@ public final class Gold {
 		return null;
 	}
 
+	/** A player's gold to spend now. */
+	public static int balance(ServerPlayer p) {
+		return Obby.career(p).gold();
+	}
+
+	/**
+	 * What the player's gold goes towards next (the Victory results card, 2.0.0-test5): {name, price} of the cheapest
+	 * shop item they don't have and can't afford yet, else the cheapest they don't have (they can buy it now); null when
+	 * they have everything.
+	 */
+	public static String[] next(ServerPlayer p) {
+		UnlockRule.Stats st = Obby.career(p);
+		Item goal = null, now = null;
+		java.util.List<String> ids = new java.util.ArrayList<>();
+		for (EmoteDef e : Sheets.EMOTES) ids.add(e.id());
+		for (CosmeticDef c : Sheets.COSMETICS) ids.add(c.id());
+		for (GliderDef g : Sheets.GLIDERS) ids.add(g.id());
+		for (PresetDef pr : Sheets.PRESETS) ids.add(pr.id());
+		for (String id : ids) {
+			Item it = item(id);
+			if (it == null || st.owned().contains(id)) continue;
+			if (it.price() > st.gold()) {
+				if (goal == null || it.price() < goal.price()) goal = it;
+			} else if (now == null || it.price() < now.price()) now = it;
+		}
+		Item pick = goal != null ? goal : now;
+		return pick == null ? null : new String[] { pick.name(), String.valueOf(pick.price()) };
+	}
+
 	/**
 	 * The Locker's shop: buys item id, if the player has the gold and doesn't have it yet. A preset makes every piece of
 	 * it the player's too (creator: "When a preset is purchased, the individual item gets added to it's respective

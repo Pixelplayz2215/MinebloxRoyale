@@ -473,6 +473,7 @@ public final class Reboot {
 		for (Owner o : owners) if (MatchManager.get().rebootOwner(server, o, van)) back.add(o.name());
 		if (back.isEmpty()) return false;
 		van.readyAt = now + Math.round(MinebloxRoyale.setting("rebootVanCooldownSeconds") * 20);
+		MatchStats.reboot(carrier, back.size());
 		MatchManager.broadcast(server, Component.empty().append(MatchManager.who(carrier)).append(" rebooted " + String.join(", ", back)).withStyle(ChatFormatting.AQUA));
 		for (ServerPlayer p : server.getPlayerList().getPlayers())
 			if (Teams.teamOf(p) == Teams.teamOf(carrier)) Net.sfxTo(p, "rebooted", p.position()); // the carrier and their team

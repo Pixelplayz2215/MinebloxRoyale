@@ -24,6 +24,7 @@
     { "id": "use_heal", "game": "mod", "file": "use.heal", "volume": 0.6, "pitch": 1.0, "use": "bandages / med kit while used: a bandage wrapping round, cloth rustling (2.0.0-test4; was Minecraft's eating)" },
     { "id": "use_shield", "game": "mod", "file": "use.shield", "volume": 0.7, "pitch": 1.0, "use": "shields, Chug Jug and Slurp Juice while drunk: a gulp that fizzes and shimmers (2.0.0-test4; was Minecraft's drinking)" },
     { "id": "heal_done", "game": "mod", "file": "use.heal_done", "volume": 0.8, "pitch": 1.0, "use": "a heal finished, health going up: two warm notes rising (2.0.0-test4)" },
+    { "id": "victory_fanfare", "game": "mod", "file": "victory.fanfare", "volume": 1.0, "pitch": 1.0, "use": "a Victory Royale: a rising brass call and a held chord over a drum roll, for the winners (2.0.0-test5)" },
     { "id": "shield_done", "game": "mod", "file": "use.shield_done", "volume": 0.8, "pitch": 1.0, "use": "a shield finished, the shield charging: a rising whoosh and a bright shimmer (2.0.0-test4)" },
     { "id": "storm_warning", "game": "mod", "file": "storm.warning", "volume": 1.0, "pitch": 1.0, "use": "plays once each time the storm starts shrinking: rising wind, an uneasy tone and falling chimes (no storm music)" },
     { "id": "hit_marker", "game": "minecraft", "file": "entity.arrow.hit_player", "volume": 0.6, "pitch": 1.3, "use": "your shot hit someone" },

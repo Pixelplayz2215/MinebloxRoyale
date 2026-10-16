@@ -26,6 +26,12 @@ public abstract class CameraShoulderMixin {
 	@Shadow
 	public abstract boolean isDetached();
 
+	@Shadow
+	protected abstract void setPosition(double x, double y, double z);
+
+	@Shadow
+	protected abstract void setRotation(float yRot, float xRot);
+
 	/** How far back the camera sits while driving (blocks; on foot Minecraft's 4). */
 	private static final float CAR_DISTANCE = 7.0F;
 
@@ -36,6 +42,18 @@ public abstract class CameraShoulderMixin {
 	@ModifyArg(method = "alignWithEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;getMaxZoom(F)F"))
 	private float minebloxroyale$carDistance(float distance) {
 		return entity != null && entity.getVehicle() instanceof CarEntity ? Math.max(distance, CAR_DISTANCE) : distance;
+	}
+
+	/**
+	 * A winner's moment (2.0.0-test5): while the Victory banner, the team's stage or the results card is up, the camera
+	 * circles them (Solo) or sweeps across the stage (teams) instead (VictoryClient.camera).
+	 */
+	@Inject(method = "alignWithEntity", at = @At("TAIL"))
+	private void minebloxroyale$victory(float partialTicks, CallbackInfo ci) {
+		double[] c = gg.minebloxroyale.client.VictoryClient.camera(partialTicks);
+		if (c == null) return;
+		setPosition(c[0], c[1], c[2]);
+		setRotation((float) c[3], (float) c[4]);
 	}
 
 	@Inject(method = "alignWithEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;move(FFF)V", ordinal = 0, shift = At.Shift.AFTER))

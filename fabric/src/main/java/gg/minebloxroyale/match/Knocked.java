@@ -205,6 +205,7 @@ public final class Knocked {
 
 	static void revive(LivingEntity target, LivingEntity by) {
 		up(target);
+		MatchStats.revive(by);
 		target.setHealth(MinebloxRoyale.setting("reviveHealth"));
 		MinecraftServer server = target.level().getServer();
 		MatchManager.broadcast(server, Component.empty().append(MatchManager.who(by)).append(" revived ").append(MatchManager.who(target)).withStyle(ChatFormatting.GREEN));

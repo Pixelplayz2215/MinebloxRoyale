@@ -156,7 +156,10 @@ public final class Bosses {
 			.append(Component.literal(def.name() + " was eliminated by " + by).withStyle(ChatFormatting.YELLOW));
 		for (ServerPlayer p : server.getPlayerList().getPlayers()) p.sendSystemMessage(msg);
 		Net.sfxAll(server, "oof", bot.position());
-		if (killer instanceof ServerPlayer p) Gold.award(p, "goldBoss", "boss eliminated");
+		if (killer instanceof ServerPlayer p) {
+			Gold.award(p, "goldBoss", "boss eliminated");
+			MatchStats.gold(p, "Boss eliminated", Math.round(MinebloxRoyale.setting("goldBoss")));
+		}
 		MinebloxRoyale.LOG.info("BR: boss {} eliminated by {}", def.name(), by);
 	}
 

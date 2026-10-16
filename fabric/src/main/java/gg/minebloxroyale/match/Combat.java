@@ -40,6 +40,15 @@ public final class Combat {
 	}
 
 	public static void init() {
+		// A winner held still at the end can't use, hit or break anything (2.0.0-test5): only look round and emote.
+		net.fabricmc.fabric.api.event.player.UseItemCallback.EVENT.register((player, level, hand) -> MatchManager.get().frozen(player)
+			? net.minecraft.world.InteractionResult.FAIL : net.minecraft.world.InteractionResult.PASS);
+		net.fabricmc.fabric.api.event.player.UseBlockCallback.EVENT.register((player, level, hand, hit) -> MatchManager.get().frozen(player)
+			? net.minecraft.world.InteractionResult.FAIL : net.minecraft.world.InteractionResult.PASS);
+		net.fabricmc.fabric.api.event.player.AttackBlockCallback.EVENT.register((player, level, hand, pos, dir) -> MatchManager.get().frozen(player)
+			? net.minecraft.world.InteractionResult.FAIL : net.minecraft.world.InteractionResult.PASS);
+		net.fabricmc.fabric.api.event.player.AttackEntityCallback.EVENT.register((player, level, hand, entity, hit) -> MatchManager.get().frozen(player)
+			? net.minecraft.world.InteractionResult.FAIL : net.minecraft.world.InteractionResult.PASS);
 		ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) -> {
 			if (source.getEntity() instanceof LivingEntity attacker && attacker != entity) {
 				// Team modes: no friendly fire; a knocked fighter can't hurt anyone.
@@ -53,6 +62,10 @@ public final class Combat {
 			if (entity instanceof ServerPlayer victim && source.getEntity() instanceof Player && !MatchManager.get().isAlive(victim)) return false;
 			// No fall damage in the hub (the Sky Tower, the obby).
 			if (entity instanceof ServerPlayer victim && !MatchManager.get().isAlive(victim) && source.is(DamageTypeTags.IS_FALL)) return false;
+			// Damage dealt to an opponent, for the results card (2.0.0-test5): shield and health points, counted once
+			// per hit (not again as the part past the shield goes on to the health).
+			if (!BYPASS.get() && isFighter(entity) && source.getEntity() instanceof LivingEntity by && by != entity && isFighter(by))
+				MatchStats.damage(by, Math.min(amount, shield(entity) + entity.getHealth()));
 			// Pickaxe (melee) hits: the hitter alone sees the damage number.
 			if (!BYPASS.get() && !GUN_HIT.get() && isFighter(entity) && source.getEntity() instanceof ServerPlayer hitter && source.getDirectEntity() == hitter && hitter != entity)
 				Net.damageNumberTo(hitter, entity, amount, shield(entity) > 0 ? 1 : 0);

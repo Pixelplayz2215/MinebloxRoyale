@@ -371,9 +371,9 @@
   },
   {
    "id": "endScreenSeconds",
-   "value": 14,
+   "value": 35,
    "unit": "s",
-   "meaning": "after the winner is decided, before everyone returns to the hub"
+   "meaning": "after the winner is decided, before everyone returns to the hub (2.0.0-test5: 35, was 14: the Victory banner or the team's stage, then the results card with time to emote; Back to hub or H leaves sooner)"
   },
   {
    "id": "hubY",

@@ -138,5 +138,10 @@
     "sounds": [
       "minebloxroyale:use/shield_done"
     ]
+  },
+  "victory.fanfare": {
+    "sounds": [
+      "minebloxroyale:victory/fanfare"
+    ]
   }
 }
