@@ -1,5 +1,6 @@
 package gg.minebloxroyale.item;
 
+import gg.minebloxroyale.MinebloxRoyale;
 import gg.minebloxroyale.ModItems;
 import gg.minebloxroyale.hub.HubFun;
 import gg.minebloxroyale.match.Builds;
@@ -182,6 +183,9 @@ public final class Guns {
 	static void shoot(ServerLevel level, LivingEntity shooter, WeaponDef w, RarityDef r, float spreadMult, Vec3 aim) {
 		RandomSource rnd = shooter.getRandom();
 		Vec3 eye = shooter.getEyePosition();
+		// (2.0.0-test6.2) a boss's own shots: a share of its gun's damage, and never more than bossMaxHit a shot or blast
+		boolean boss = shooter instanceof gg.minebloxroyale.bot.BotEntity b && b.isBoss();
+		float bossMult = boss ? MinebloxRoyale.setting("bossDamageMult") : 1F;
 		Map<LivingEntity, Float> damage = new HashMap<>();
 		Set<LivingEntity> headshots = new HashSet<>();
 		float[] ends = new float[3 * w.pellets()];
@@ -221,7 +225,7 @@ public final class Guns {
 				if (p < 32) hits |= 1 << p;
 				boolean head = impact.y > target.getEyeY() - 0.3;
 				if (head) headshots.add(target);
-				damage.merge(target, w.damage() * r.damageMult() * (head ? w.headshotMult() : 1F), Float::sum);
+				damage.merge(target, w.damage() * r.damageMult() * bossMult * (head ? w.headshotMult() : 1F), Float::sum);
 			} else if (block.getType() == HitResult.Type.BLOCK && shooter instanceof ServerPlayer sp && level.getBlockState(block.getBlockPos()).is(Blocks.TARGET)) {
 				HubFun.onBulletHit(level, sp, block.getBlockPos(), block.getLocation()); // the hub's shooting range
 			} else if (block.getType() == HitResult.Type.BLOCK && level.getBlockState(block.getBlockPos()).getBlock() instanceof CarBlock) {
@@ -239,7 +243,8 @@ public final class Guns {
 		Net.shot(level, new Net.Shot(shooter.getId(), w.id(), (float) eye.x, (float) eye.y, (float) eye.z, ends, hits));
 		playSheetSound(shooter, w.fireSound());
 		for (var e : damage.entrySet()) {
-			Combat.gunDamage(level, shooter, e.getKey(), e.getValue(), headshots.contains(e.getKey()));
+			float dealt = boss ? Math.min(e.getValue(), MinebloxRoyale.setting("bossMaxHit")) : e.getValue();
+			Combat.gunDamage(level, shooter, e.getKey(), dealt, headshots.contains(e.getKey()));
 			// The shooter hears the hit; a headshot has its own sound (creator).
 			if (shooter instanceof ServerPlayer sp) Net.sfxTo(sp, headshots.contains(e.getKey()) ? "headshot" : "hit_marker", sp.position());
 		}

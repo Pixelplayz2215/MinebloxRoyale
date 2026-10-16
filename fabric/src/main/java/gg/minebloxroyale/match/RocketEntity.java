@@ -38,6 +38,8 @@ public class RocketEntity extends Entity {
 	public static EntityType<RocketEntity> TYPE;
 	private static final int LIFE = 100;
 	private UUID owner;
+	/** The most its blast does (a boss's rocket: bossMaxHit). */
+	private float cap = Float.MAX_VALUE;
 	private float mult = 1F;
 	private int age;
 
@@ -63,6 +65,10 @@ public class RocketEntity extends Entity {
 		RocketEntity rk = new RocketEntity(TYPE, level);
 		rk.owner = shooter.getUUID();
 		rk.mult = r.damageMult();
+		if (shooter instanceof gg.minebloxroyale.bot.BotEntity b && b.isBoss()) { // (2.0.0-test6.2: a boss's rocket, scaled and capped)
+			rk.mult *= MinebloxRoyale.setting("bossDamageMult");
+			rk.cap = MinebloxRoyale.setting("bossMaxHit");
+		}
 		double yaw = Math.toRadians(shooter.getYRot());
 		Vec3 right = new Vec3(-Math.cos(yaw), 0, -Math.sin(yaw));
 		Vec3 start = eye.add(dir.scale(1.0)).add(right.scale(0.3)).add(0, -0.22, 0);
@@ -90,7 +96,7 @@ public class RocketEntity extends Entity {
 				e -> e instanceof LivingEntity le && le.isAlive() && !e.isSpectator() && (e != shooter || age > 6) && !Teams.sameTeam(shooter, e), from.distanceToSqr(end));
 			if (hit != null || block.getType() != HitResult.Type.MISS || ++age > LIFE) {
 				Vec3 at = hit != null ? hit.getLocation() : block.getType() != HitResult.Type.MISS ? block.getLocation().subtract(v.normalize().scale(0.3)) : position();
-				Explosions.blast(level, at, shooter, MinebloxRoyale.setting("rocketRadius"), MinebloxRoyale.setting("rocketDamage") * mult,
+				Explosions.blast(level, at, shooter, MinebloxRoyale.setting("rocketRadius"), Math.min(cap, MinebloxRoyale.setting("rocketDamage") * mult),
 					MinebloxRoyale.setting("rocketBuildDamage"), MinebloxRoyale.setting("rocketCarDamage"));
 				discard();
 				return;

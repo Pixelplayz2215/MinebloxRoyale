@@ -1,3 +1,5 @@
+Test 6.2 - Bosses: no more one-shots from full shield and health; they aim at your chest (the odd headshot), no hit over 90
+Test 6.2 - Ordinary bots aim at your chest too, with the odd headshot (a boss's gun you pick up still does full Boss damage)
 Test 6.1 - The Locker grows with your window: bigger tabs, tiles and lettering when there's room (all tabs, the Shop too)
 Test 6.1 - Emote wheel (B): names centred in their buttons, and bigger
 Test 6.1 - Boxing: the gloves' thumbs on the inside, facing each other

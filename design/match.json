@@ -472,6 +472,30 @@
    "meaning": "a boss appears at its lair when someone comes this close (and keeps what health it had)"
   },
   {
+   "id": "bossDamageMult",
+   "value": 0.6,
+   "unit": "x",
+   "meaning": "a boss's own shots do this much of its gun's damage (2.0.0-test6.2, creator: bosses one-shot you from full); the gun a player picks up from a boss keeps the full Boss rarity"
+  },
+  {
+   "id": "bossMaxHit",
+   "value": 90,
+   "unit": "health",
+   "meaning": "no single shot, shotgun blast or rocket from a boss does more than this (2.0.0-test6.2: never from full shield and health in one)"
+  },
+  {
+   "id": "bossHeadshotChance",
+   "value": 0.17,
+   "unit": "share",
+   "meaning": "how often a boss aims a shot at the head rather than the chest (2.0.0-test6.2: they aimed at the eyes, every steady shot a headshot)"
+  },
+  {
+   "id": "botHeadshotChance",
+   "value": 0.25,
+   "unit": "share",
+   "meaning": "how often an ordinary bot aims a shot at the head rather than the chest (2.0.0-test6.2: they aimed at the eyes, every steady shot a headshot)"
+  },
+  {
    "id": "rocketSpeed",
    "value": 1.6,
    "unit": "blocks/tick",

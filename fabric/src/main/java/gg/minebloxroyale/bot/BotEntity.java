@@ -625,7 +625,7 @@ public class BotEntity extends PathfinderMob {
 		}
 		if (++seenFor > def.reactionTicks() && mm.botsMayShoot(level.getGameTime())) {
 			boolean steady = getRandom().nextFloat() < def.accuracy();
-			Guns.tryFire(this, held, w.def, steady ? 1F : 4F);
+			if (Guns.tryFire(this, held, w.def, steady ? 1F : 4F)) nextAim();
 		}
 	}
 
@@ -671,7 +671,7 @@ public class BotEntity extends PathfinderMob {
 					Vec3 aim = !w.def.projectile().equals("rocket") ? null
 						: target.position().add(onTarget ? 0 : (getRandom().nextFloat() - 0.5F) * 7, onTarget ? 0.2 : getRandom().nextFloat() * 2.5,
 							onTarget ? 0 : (getRandom().nextFloat() - 0.5F) * 7);
-					Guns.tryFire(this, held, w.def, onTarget ? 1F : 3F, aim);
+					if (Guns.tryFire(this, held, w.def, onTarget ? 1F : 3F, aim)) nextAim();
 				}
 			}
 			return;
@@ -1020,8 +1020,20 @@ public class BotEntity extends PathfinderMob {
 	 * Turns to its target, as a player's aim swings round: at most 24 degrees a tick across and 14 up or down (it used to
 	 * snap straight on).
 	 */
+	/**
+	 * Whether its next shot goes at the head rather than the chest (2.0.0-test6.2, creator: "These bosses One Tap me
+	 * with full shield and health": every bot aimed at the eyes, so every steady shot was a headshot). Picked again
+	 * after each shot: bossHeadshotChance / botHeadshotChance of them.
+	 */
+	private boolean aimHigh;
+
+	private void nextAim() {
+		aimHigh = getRandom().nextFloat() < MinebloxRoyale.setting(isBoss() ? "bossHeadshotChance" : "botHeadshotChance");
+	}
+
 	private void faceTarget() {
-		double dx = target.getX() - getX(), dz = target.getZ() - getZ(), dy = target.getEyeY() - 0.2 - getEyeY();
+		double aimY = aimHigh ? target.getEyeY() - 0.2 : target.getY() + target.getBbHeight() * 0.55; // (the head, or the middle of the chest)
+		double dx = target.getX() - getX(), dz = target.getZ() - getZ(), dy = aimY - getEyeY();
 		float yaw = (float) (Mth.atan2(dz, dx) * (180F / Math.PI)) - 90F;
 		float pitch = (float) -(Mth.atan2(dy, Math.sqrt(dx * dx + dz * dz)) * (180F / Math.PI));
 		float now = Mth.approachDegrees(getYRot(), yaw, 24F);

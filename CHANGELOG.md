@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.0.0 (in testing: 2.0.0-test6.1, not released yet)
+## v2.0.0 (in testing: 2.0.0-test6.2, not released yet)
 
 A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and a new look and sound.
 
@@ -61,6 +61,7 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 ### Bosses
 - **Four bosses per match, out of six:** The Blockbuster (pump shotgun), Captain Bloxbeard (sniper), Agent Noob (assault rifle), Sergeant Bacon (SMG), Doctor Kaboom (rocket launcher) and Sheriff Noobly (pistol). They guard lairs you can see from a distance, and their icons show on the minimap and the map.
 - **Boss health:** 200 health and 100 shield, shown on a bar over the boss's name (shield over health, both bars the same size).
+- **Fair boss fights:** a boss can't take you out in one shot. Bosses aim at your chest with the odd headshot, their own shots do a little over half of what their gun does in your hands, and no single shot, blast or rocket from a boss does more than 90.
 - **Boss rarity:** a new red rarity above Mythic. Each boss holds and drops its own gun at Boss rarity, plus its loot and 50 gold for whoever eliminates it. Boss guns never come from chests. The hub's Gun Rarity board has the new row.
 
 ### The island
