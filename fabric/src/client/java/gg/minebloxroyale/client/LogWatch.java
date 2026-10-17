@@ -1,11 +1,15 @@
 package gg.minebloxroyale.client;
 
 import java.io.IOException;
+import java.net.DatagramSocket;
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
@@ -46,6 +50,8 @@ import org.apache.logging.log4j.core.filter.AbstractFilter;
  * stack trace, and its start-up thread dies with a second one. Melty counted those as the mod's code failing to load
  * (2026-10-16, 1.0.1). The game plays on; only friends can't join yet. One plain line instead, and AutoWorld asks
  * e4mc to try again a little later.</li>
+ * <li>(1.0.1.3) A game Melty started to host (it gives every Play a free port, MINEBLOXROYALE_LAN_PORT) puts its address
+ * in melty.log from the first second, not once its world is open: see shareEarly.</li>
  * </ul>
  * Everything else is logged as it is.
  */
@@ -91,6 +97,7 @@ public final class LogWatch extends AbstractFilter implements PreLaunchEntrypoin
 			Files.createDirectories(dir());
 			Files.writeString(dir().resolve("melty.log"), "Mineblox Royale started " + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
 				+ "; friends can join once the world is open" + System.lineSeparator(), StandardCharsets.UTF_8);
+			shareEarly();
 		} catch (IOException e) {
 			LOG.warn("BR: couldn't start melty.log", e);
 		}
@@ -101,6 +108,67 @@ public final class LogWatch extends AbstractFilter implements PreLaunchEntrypoin
 		} catch (RuntimeException | LinkageError e) { // another logging setup: everything still works, just noisier
 			LOG.info("BR: log watch not available ({})", e.toString());
 		}
+	}
+
+	/** (1.0.1.3) The address shareEarly put in melty.log, until the world first opens on it (AutoWorld.takeEarly). */
+	private static volatile String early;
+
+	/**
+	 * (1.0.1.3) Melty only starts a friend's game once the host's melty.log has an address. Friends who pressed Join
+	 * while the host's game was still loading got Melty's "Waiting for the host's game to open" and no game at all
+	 * (players' Melty, 1.0.0 to 1.0.1.1; creator: "add a fallback so where if it's waiting on host then it auto joins own
+	 * private world"). With Melty's port, a game that isn't joining anyone knows where its world will open before it
+	 * loads, so this PC's address and that port go in at once: the friend's game starts, tries the host a few times, and
+	 * if the world isn't open yet puts them in their own world with a button to try again (AutoWorld). e4mc's address
+	 * follows once the world is open, and Melty uses the newest.
+	 */
+	private static void shareEarly() {
+		String port = System.getenv("MINEBLOXROYALE_LAN_PORT");
+		if (port == null || !port.trim().matches("[0-9]{1,5}") || joining()) return;
+		String address = lanAddress(Integer.parseInt(port.trim()));
+		try {
+			Files.writeString(dir().resolve("melty.log"), "Melty join address: " + address + System.lineSeparator(), StandardCharsets.UTF_8,
+				java.nio.file.StandardOpenOption.APPEND);
+			early = address;
+			LOG.info("BR: friends can press Join from now on ({}); until the world is open they wait in their own", address);
+		} catch (IOException e) {
+			LOG.info("BR: couldn't write melty.log ({})", e.getMessage());
+		}
+	}
+
+	/** The address shareEarly wrote, once: the world opening on it (later openings write their own). */
+	static String takeEarly() {
+		String a = early;
+		early = null;
+		return a;
+	}
+
+	/** Melty put a friend's address in melty.properties (join=...): this game joins them rather than hosting. */
+	private static boolean joining() {
+		Path file = dir().resolve("melty.properties");
+		if (!Files.exists(file)) return false;
+		Properties p = new Properties();
+		try (var in = Files.newBufferedReader(file)) {
+			p.load(in);
+		} catch (IOException | RuntimeException e) {
+			return false;
+		}
+		return !p.getProperty("join", "").isBlank();
+	}
+
+	/**
+	 * This PC's address on its own network (the one its internet goes out through), with the port; 127.0.0.1 when it
+	 * has none (Melty's relay reaches the world there too). Connecting a UDP socket only picks the route: nothing is sent.
+	 */
+	static String lanAddress(int port) {
+		String ip = "127.0.0.1";
+		try (DatagramSocket s = new DatagramSocket()) {
+			s.connect(InetAddress.getByAddress(new byte[] { (byte) 192, 0, 2, 1 }), 9); // TEST-NET-1: any outside address
+			InetAddress local = s.getLocalAddress();
+			if (local instanceof Inet4Address && !local.isAnyLocalAddress() && !local.isLoopbackAddress()) ip = local.getHostAddress();
+		} catch (IOException | RuntimeException e) { // no network at all
+		}
+		return ip + ":" + port;
 	}
 
 	@Override

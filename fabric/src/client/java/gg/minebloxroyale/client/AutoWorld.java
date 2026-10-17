@@ -6,9 +6,6 @@ import gg.minebloxroyale.MinebloxRoyale;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.net.DatagramSocket;
-import java.net.Inet4Address;
-import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,6 +24,7 @@ import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.HttpUtil;
@@ -42,7 +40,8 @@ import org.jspecify.annotations.Nullable;
  * Play opens straight into the Mineblox Royale world (created the first time), or joins a friend when Melty put their
  * address in minebloxroyale/melty.properties (join=...). A host's world opens to friends at once; e4mc gives it a
  * public address, which goes to minebloxroyale/melty.log as "Melty join address: <address>". (1.0.1.2) Without one,
- * this PC's own address and port go there instead, for Melty's relay (shareThroughMelty).
+ * this PC's own address and port go there instead, for Melty's relay (shareThroughMelty). (1.0.1.3) With Melty's port,
+ * from the game's first second (LogWatch.shareEarly), and a friend who can't get in yet waits in their own world.
  */
 public final class AutoWorld {
 	public static final String WORLD = "Mineblox Royale";
@@ -148,19 +147,8 @@ public final class AutoWorld {
 		meltyLog("Melty join address: " + lanShared);
 	}
 
-	/**
-	 * This PC's address on its own network (the one its internet goes out through), with the port; 127.0.0.1 when it
-	 * has none (Melty's relay reaches the world there too). Connecting a UDP socket only picks the route: nothing is sent.
-	 */
 	static String lanAddress(int port) {
-		String ip = "127.0.0.1";
-		try (DatagramSocket s = new DatagramSocket()) {
-			s.connect(InetAddress.getByAddress(new byte[] { (byte) 192, 0, 2, 1 }), 9); // TEST-NET-1: any outside address
-			InetAddress local = s.getLocalAddress();
-			if (local instanceof Inet4Address && !local.isAnyLocalAddress() && !local.isLoopbackAddress()) ip = local.getHostAddress();
-		} catch (IOException | RuntimeException e) { // no network at all
-		}
-		return ip + ":" + port;
+		return LogWatch.lanAddress(port);
 	}
 
 	/** Asks e4mc for a new relay session, as its own "/e4mc restart" does. Server's world open to friends only. */
@@ -220,9 +208,10 @@ public final class AutoWorld {
 			// been up a moment. (1.0.1.2) Melty's join link too, which used to leave the player on the message for good;
 			// the chat says what happened once they're in their own world.
 			if (joining != null && failedJoins >= MAX_JOIN_TRIES) {
-				if (roomTarget == null) {
+				if (roomTarget == null || roomTarget.equals(missedFriend)) {
 					homeOnly = true;
-					missedFriend = true;
+					missedFriend = joining;
+					tellMissed = true;
 				}
 				roomTarget = null;
 				homeAt = System.currentTimeMillis() + 6000;
@@ -301,8 +290,21 @@ public final class AutoWorld {
 		homeAt = 0;
 		if (mc.level != null) {
 			leavingForRoom = true;
-			mc.disconnectFromWorld(Component.literal("Joining room " + code));
+			mc.disconnectFromWorld(Component.literal("Joining " + (code.matches("[0-9]+") ? "room " + code : code)));
 		}
+	}
+
+	/**
+	 * (1.0.1.3) /rejoin, or [Join them] in the chat: try the friend Melty sent us to again (their world may not have been
+	 * open yet). Your own world is saved and closes; if theirs still can't be reached, you're back in yours. False when
+	 * there's no such friend.
+	 */
+	public static boolean rejoinFriend() {
+		String friend = missedFriend;
+		if (friend == null) return false;
+		MinebloxRoyale.LOG.info("BR: trying the friend Melty sent us to again ({})", friend);
+		joinRoom(friend, "your friend's game");
+		return true;
 	}
 
 	/**
@@ -353,6 +355,10 @@ public final class AutoWorld {
 		inRoom = server == null;
 		leavingForRoom = false;
 		if (server == null) {
+			if (joining != null && joining.equals(missedFriend)) {
+				missedFriend = null; // in at last (/rejoin)
+				meltyLog("Melty joined: " + joining);
+			}
 			if (roomTarget != null) MinebloxRoyale.LOG.info("BR: in a friend's room at {}", roomTarget);
 			else if (joining != null && !announcedJoin) {
 				announcedJoin = true;
@@ -360,11 +366,15 @@ public final class AutoWorld {
 			}
 			return;
 		}
-		if (missedFriend) {
-			missedFriend = false;
+		if (tellMissed) {
+			tellMissed = false;
+			// (1.0.1.3) Most often the friend's world isn't open yet (Melty now starts us while their game still loads)
+			Component again = Component.literal("[Join them]").withStyle(s -> s.withColor(ChatFormatting.GREEN).withBold(true)
+				.withClickEvent(new ClickEvent.RunCommand("/rejoin")).withHoverEvent(new HoverEvent.ShowText(Component.literal("Try your friend's game again"))));
 			mc.execute(() -> {
-				if (mc.player != null) mc.player.sendSystemMessage(Component.literal("Couldn't get into your friend's game, so you're in your own world. "
-					+ "To try again, type /rc and their room code.").withStyle(ChatFormatting.YELLOW));
+				if (mc.player != null) mc.player.sendSystemMessage(Component.literal("Your friend's game isn't open yet (or couldn't be reached), so you're in your own world. ")
+					.withStyle(ChatFormatting.YELLOW).append(again)
+					.append(Component.literal(" once they're in, or type /rejoin.").withStyle(ChatFormatting.YELLOW)));
 			});
 		}
 		hosting = true;
@@ -383,7 +393,12 @@ public final class AutoWorld {
 			if (System.getenv("MINEBLOXROYALE_LAN_OFFLINE") != null) {
 				lanShared = "127.0.0.1:" + port;
 				meltyLog("Melty join address: " + lanShared);
-			} else if (lastDomain == null) lanAt = System.currentTimeMillis() + LAN_WAIT_MS;
+			} else if (lastDomain == null) {
+				String early = LogWatch.takeEarly();
+				if (early != null && early.equals(lanAddress(port))) lanShared = early; // in melty.log since the game started
+				else if (portEnv != null && !portEnv.isBlank()) shareThroughMelty(mc, "Melty's port: friends can come in now");
+				else lanAt = System.currentTimeMillis() + LAN_WAIT_MS;
+			}
 		});
 	}
 
@@ -402,8 +417,12 @@ public final class AutoWorld {
 	private static long lanAt;
 	private static @Nullable String lanShared;
 	private static final long LAN_WAIT_MS = 20_000;
-	/** (1.0.1.2) Melty's join link didn't get us in, so we went to our own world: say so in the chat there. */
-	private static boolean missedFriend;
+	/**
+	 * (1.0.1.2) Melty's join link didn't get us in, so we went to our own world: say so in the chat there (tellMissed).
+	 * (1.0.1.3) The friend's address, kept for /rejoin until we get in.
+	 */
+	private static @Nullable String missedFriend;
+	private static boolean tellMissed;
 
 	/**
 	 * A system line in the chat box. e4mc announces this world's public address there ("Local game hosted on domain

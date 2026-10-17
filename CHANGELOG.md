@@ -103,6 +103,15 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 - The log notes for Minecraft's sign-in, Realms and e4mc from Melty's 1.0.0.3, so Melty doesn't mistake them for errors loading the mod.
 - From Melty's 1.0.0.4: old islands are removed from the world folder when it opens (they used to fill the disk, about 100 MB a match), and a minimized window, Windows' performance counters being off and Windows blocking the bundled ffmpeg are each one plain log line instead of a long error.
 - From 1.0.1.1 and 1.0.1.2 (the fixes for what players' Melty reported on 1.0.1): e4mc's relay libraries come with the game; when e4mc's relay can't be reached, friends still get in through Melty with the host PC's own address; a closed world's address is taken back; a Melty join that fails three times goes back to your own world; new islands wait for disk space; old islands are cleared in the demo world too; the Melty download carries only the mods and the minebloxroyale folder (Melty sets up Minecraft itself).
+- From 1.0.1.3: friends can press Join in Melty while the host's game is still loading (Melty gives every game a port, so the host shares its address from the start); a friend who can't get in yet waits in their own world, with a [Join them] button (`/rejoin`) to try again.
+
+## v1.0.1.3 (2026-10-17)
+
+Friends who press Join in Melty before the host's world is open no longer get stuck on "Waiting for the host's game to open".
+
+- **The host can be joined from the start:** Melty gives every game a port to open its world on, so the host's game shares its address the moment it starts, not once its world has loaded. Melty only starts a friend's game once the host has an address; friends who pressed Join while the host was still loading used to get "Waiting for the host's game to open" and no game at all. e4mc's address still takes over once the world is open.
+- **Waiting in your own world:** a friend whose game can't get into the host's yet (still loading, or unreachable) goes to their own world after three tries, and the chat says so with a **[Join them]** button. Clicking it, or typing `/rejoin`, tries the host again; if their world still isn't open, you're back in your own.
+- A world opened again later (after `/rc` or the title screen) shares its address straight away too.
 
 ## v1.0.1.2 (2026-10-16)
 

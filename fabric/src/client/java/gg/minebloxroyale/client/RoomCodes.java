@@ -77,6 +77,7 @@ public final class RoomCodes {
 				dispatcher.register(ClientCommands.literal(name).executes(c -> show(c.getSource()))
 					.then(ClientCommands.argument("code", StringArgumentType.greedyString()).executes(c -> join(c.getSource(), StringArgumentType.getString(c, "code")))));
 			dispatcher.register(ClientCommands.literal("leave").executes(c -> leave(c.getSource())));
+			dispatcher.register(ClientCommands.literal("rejoin").executes(c -> rejoin(c.getSource())));
 		});
 		ClientPlayNetworking.registerGlobalReceiver(Net.Room.TYPE, (p, ctx) -> current = p.code());
 		ClientLifecycleEvents.CLIENT_STOPPING.register(mc -> closeNow());
@@ -144,6 +145,20 @@ public final class RoomCodes {
 		}
 		src.sendFeedback(Component.literal("Going back to your own world...").withStyle(ChatFormatting.GRAY));
 		mc.execute(AutoWorld::leaveRoom); // after the command has finished
+		return 1;
+	}
+
+	/** (1.0.1.3) /rejoin: try the friend Melty sent us to again, when their world wasn't open yet. */
+	private static int rejoin(FabricClientCommandSource src) {
+		if (src.getClient().getSingleplayerServer() == null) {
+			src.sendFeedback(Component.literal("You're in a friend's world already. /leave goes back to your own."));
+			return 1;
+		}
+		Minecraft mc = src.getClient();
+		src.sendFeedback(Component.literal("Trying your friend's game again...").withStyle(ChatFormatting.GRAY));
+		mc.execute(() -> { // after the command has finished
+			if (!AutoWorld.rejoinFriend()) say(mc, "There's no friend's game to rejoin. Press Join in Melty, or type /rc and their room code.", ChatFormatting.RED);
+		});
 		return 1;
 	}
 

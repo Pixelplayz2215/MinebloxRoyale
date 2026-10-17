@@ -56,6 +56,9 @@
       "joinFile": {
         "path": "{minecraft-instance}/minebloxroyale/melty.properties",
         "key": "join"
+      },
+      "hostEnv": {
+        "MINEBLOXROYALE_LAN_PORT": "{port}"
       }
     }
   },
