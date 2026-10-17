@@ -23,7 +23,7 @@ WHITE, INK = (255, 255, 255, 255), (24, 20, 32, 255)
 
 # id, name shown in the preview, the badge's colours
 BADGES = [
-    ("melty", "Melty", (255, 122, 69), (232, 61, 132)),
+    ("melty", "Melty", (40, 156, 255), (1, 120, 232)),  # (Melty's own blue, 2.0.0-test6.2)
     ("prism", "Prism Launcher", (38, 44, 72), (24, 28, 48)),
     ("multimc", "MultiMC", (66, 74, 88), (44, 50, 60)),
     ("modrinth", "Modrinth App", (27, 217, 106), (14, 160, 76)),
@@ -66,20 +66,17 @@ def letters(d, text, size, color=WHITE, dy=0):
 
 
 def badge(bid, top, bottom):
-    if bid == "melty":  # a warm drop, melting
-        im, d = base(top, bottom)
-        pts = []
-        for i in range(64):
-            a = math.pi * 2 * i / 64
-            r = 62
-            x, y = math.cos(a) * r, math.sin(a) * r
-            if y < 0:  # (the top drawn up into a point)
-                k = -y / r
-                x *= 1 - k * k * 0.95
-                y *= 1 + k * 0.9
-            pts.append((S / 2 + x, S / 2 + 18 + y))
-        d.polygon(pts, fill=WHITE)
-        d.ellipse((S / 2 - 30, S / 2 + 6, S / 2 - 6, S / 2 + 30), fill=(255, 205, 180, 255))
+    if bid == "melty":  # Melty's style (creator: "make it similar to melty icon"): its blue, a rounded square, a chunky soft M
+        im, d = base(top, bottom, round_=False)
+        from PIL import ImageFilter
+        m = Image.new("L", (S, S), 0)
+        md = ImageDraw.Draw(m)
+        x0, x1, y0, y1 = 64, 192, 66, 190  # (the M's box)
+        md.polygon([(x0, y1), (x0, y0), (x0 + 34, y0), (128, y0 + 62), (x1 - 34, y0), (x1, y0), (x1, y1), (x1 - 36, y1), (x1 - 36, y0 + 64),
+                    (128, y0 + 112), (x0 + 36, y0 + 64), (x0 + 36, y1)], fill=255)
+        # (rounded off like Melty's letters: blurred and cut again, so its corners go soft)
+        m = m.filter(ImageFilter.GaussianBlur(9)).point(lambda v: 255 if v > 118 else 0).filter(ImageFilter.GaussianBlur(1.2))
+        im.paste(WHITE, (0, 0), m)
     elif bid == "prism":  # a triangle with a fan of colours out of it
         im, d = base(top, bottom, round_=False)
         cols = [(255, 72, 72), (255, 160, 40), (255, 230, 60), (80, 210, 90), (60, 150, 255), (150, 90, 240)]
