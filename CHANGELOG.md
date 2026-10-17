@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.0.1.3 (2026-10-17)
+
+Friends who press Join in Melty before the host's world is open no longer get stuck on "Waiting for the host's game to open".
+
+- **The host can be joined from the start:** Melty gives every game a port to open its world on, so the host's game shares its address the moment it starts, not once its world has loaded. Melty only starts a friend's game once the host has an address; friends who pressed Join while the host was still loading used to get "Waiting for the host's game to open" and no game at all. e4mc's address still takes over once the world is open.
+- **Waiting in your own world:** a friend whose game can't get into the host's yet (still loading, or unreachable) goes to their own world after three tries, and the chat says so with a **[Join them]** button. Clicking it, or typing `/rejoin`, tries the host again; if their world still isn't open, you're back in your own.
+- A world opened again later (after `/rc` or the title screen) shares its address straight away too.
+
 ## v1.0.1.2 (2026-10-16)
 
 A fix for friends who pressed Join in Melty and were left on "Waiting for the host's game to open".

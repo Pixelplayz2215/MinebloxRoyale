@@ -55,6 +55,12 @@ JAVA = os.path.join(BUNDLE, "java", "java-runtime-epsilon")
 # The modpack's picture (creator: the high-res Mineblox Royale icon, fabric/tools/branding/make_icon.py), inside every
 # pack for the launchers that pick one up by themselves, and beside it for setting by hand.
 ICON = os.path.join(ROOT, "Branding", "Mineblox Royale icon 1024.png")
+# (2.0.0-test6.1 on, creator: "each test build and official release number should show on the modpack icon": "2-6.1" for
+# 2.0.0-test6.1, "2.0.0" for a release; version_icon.py, made fresh for each build)
+sys.path.insert(0, SP)
+import version_icon  # noqa: E402
+os.makedirs(os.path.join(ROOT, "fabric", "build", "package"), exist_ok=True)
+ICON = version_icon.make(VER, os.path.join(ROOT, "fabric", "build", "package", f"icon {VER}.png"), ICON)
 for p in [JAR, FAPI, E4MC, PRISM, ICON, JAVA, *PATCHES.values(), *VCRT.values(), *FFMPEG.values(), *DOCS.values(), *NATIVES.values()]:
     if not os.path.exists(p):
         sys.exit("missing: " + p)
