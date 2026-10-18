@@ -2,7 +2,9 @@
 
 <p align="center"><img src="Branding/Mineblox Royale icon 256.png" width="160" alt="Mineblox Royale icon"></p>
 
-A battle royale in Minecraft with a Roblox-style hub and Fortnite's rules. Drop from the Battle Bus with up to 100 fighters, loot gold and rare blue chests, build walls and ramps, and outlast the storm. Bots fill every empty place, and they loot, farm, build and fight like players. If Roblox is installed on your PC, everyone gets the Roblox avatar look, outfits, emotes and sounds.
+A battle royale in Minecraft with a Roblox-style hub and Fortnite's rules. Drop from the Battle Bus with up to 100 fighters, loot gold and rare blue chests, build walls and ramps (or play No Build), drive cars, take on bosses, and outlast the storm. Bots fill every empty place, and they loot, farm, build and fight like players. If Roblox is installed on your PC, everyone gets the Roblox avatar look, outfits, emotes and sounds.
+
+**New in v2.0.0:** No Build modes, gold and a Locker Shop, drivable cars, rockets and grenades, bosses, animated gliders and contrails, music for every emote, a new HUD, a roomier hub and more. Everything is in the [v2.0.0 release notes](../../releases/tag/v2.0.0).
 
 A Minecraft × Roblox × Fortnite mashup for **Minecraft: Java Edition 26.3** (Fabric).
 
@@ -20,14 +22,14 @@ A Minecraft × Roblox × Fortnite mashup for **Minecraft: Java Edition 26.3** (F
 
 ## Features
 
-- **Matches of up to 100:** real players plus bots in every empty place, in Solo, Duos, Trios or Squads.
+- **Matches of up to 100:** real players plus bots in every empty place, in Solo, Duos, Trios or Squads, with building or No Build.
 - **Fortnite's flow:**
   - ride the Battle Bus, skydive and open your glider;
   - an 8-phase storm that hits your shield first;
   - the last player or team standing wins a Victory Royale.
 - **Loot:**
   - gold chests, and rare blue ones with the best guns: hold **F** to search, and the loot pops out;
-  - five guns (Assault Rifle, Pump Shotgun, SMG, Pistol, Bolt-Action Sniper), each from Common to Mythic;
+  - six guns (Assault Rifle, Pump Shotgun, SMG, Pistol, Bolt-Action Sniper, Rocket Launcher), each from Common to Mythic, and grenades;
   - Bandages, Med Kits, Mini Shields, Shield Potions, Chug Jugs and Slurp Juice.
 - **Sniper scope:**
   - the zoom eases in;
@@ -35,6 +37,8 @@ A Minecraft × Roblox × Fortnite mashup for **Minecraft: Java Edition 26.3** (F
   - hit markers, with a gold one and a bell for headshots;
   - its own sensitivity setting.
 - **Building:** walls, floors and ramps in wood, brick or metal.
+- **Cars (v2.0.0):** take one from a parking lot and drive it (**F** gets in, **Space** boosts, **Shift** gets out), up to 4 in a car. Each has its own fuel and boosts.
+- **Bosses (v2.0.0):** four a match, each with a health and shield bar, holding and dropping a Boss-rarity gun.
 - **Harvesting:** with the pickaxe, from trees, stone, houses and parked cars. Cars show their damage as you hit them.
 - **A new island every match:**
   - about 20 buildings each: shacks, watchtowers, supply depots, ruins, container yards and parking lots full of cars;
@@ -45,19 +49,20 @@ A Minecraft × Roblox × Fortnite mashup for **Minecraft: Java Edition 26.3** (F
   - reboot cards and reboot vans;
   - teammate colours, waypoints and a team panel.
 - **The hub:**
-  - mode portals, an obby and the Sky Tower;
+  - mode portals for building and No Build, an obby and the Sky Tower;
   - a shooting range with timed rounds;
-  - boards for guns, heals and the rules, and a leaderboard.
+  - boards for guns, heals, the rules and what's new, and a leaderboard;
+  - the Battle Bus floating overhead.
 - **Locker (K):**
-  - Roblox-style outfits, hats, faces, back bling, emotes, gliders and particles;
-  - unlocked by eliminations, wins, the obby and the shooting range;
+  - Roblox-style outfits, hats, faces, back bling, emotes, gliders, contrails, pickaxes and particles;
+  - unlocked by eliminations, wins, the obby and the shooting range, or bought with gold in the Shop (gold comes from matches);
   - your unlocks go with you into every world.
 - **Bots that play:**
   - they search chests, heal, farm materials and swim;
   - they build cover when shot, ramp up or do 90s to reach you, and box up to heal;
   - they revive teammates and take reboot cards to vans.
 - **Play with friends:** room codes (`/rc`) through a free relay, so there's no port forwarding. Rooms hold up to 16 players.
-- **Remade in Blender (v1.0.1):** every gun, heal, car, the Battle Bus, gliders, the pickaxe, chests and every cosmetic, and every animation and emote with bending knees and elbows.
+- **Made in Blender:** every gun, heal, car, the Battle Bus, gliders, pickaxes, chests and every cosmetic, and every animation and emote with bending knees and elbows. Every emote has its own music.
 
 ## Install
 
@@ -67,15 +72,15 @@ Or get a file from the [latest release](../../releases/latest) page. Pick the on
 
 | Launcher | File | How |
 |---|---|---|
-| **Prism Launcher** (easiest, nothing to install) | [`MinebloxRoyale-1.0.1.3.Prism.Launcher.ready.to.play.zip`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.1.3.Prism.Launcher.ready.to.play.zip) | Unzip, run `Prism Launcher\prismlauncher.exe`, add your Microsoft account, double-click *Mineblox Royale*. |
-| Prism Launcher (already installed) | [`MinebloxRoyale-1.0.1.3.Prism.Launcher.import.zip`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.1.3.Prism.Launcher.import.zip) | Add Instance > Import > choose the file. |
-| **CurseForge** | [`MinebloxRoyale-1.0.1.3.CurseForge.zip`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.1.3.CurseForge.zip) | Minecraft > My Modpacks > Import > *Import Profile .zip*. |
-| **Modrinth App** | [`MinebloxRoyale-1.0.1.3.Modrinth.App.mrpack`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.1.3.Modrinth.App.mrpack) | "+" > From file. |
-| **Lunar Client** | [`MinebloxRoyale-1.0.1.3.Lunar.Client.mrpack`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.1.3.Lunar.Client.mrpack) | Import it as a modpack profile. |
-| ATLauncher | [`MinebloxRoyale-1.0.1.3.ATLauncher.mrpack`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.1.3.ATLauncher.mrpack) | Import > choose the file. |
-| GDLauncher | [`MinebloxRoyale-1.0.1.3.GDLauncher.mrpack`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.1.3.GDLauncher.mrpack) | Add instance > Import. |
-| MultiMC | [`MinebloxRoyale-1.0.1.3.MultiMC.import.zip`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.1.3.MultiMC.import.zip) | Add Instance > Import from zip. |
-| **Minecraft Launcher** (Mojang's) or any other | [`MinebloxRoyale-1.0.1.3.Minecraft.Launcher.zip`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-1.0.1.3.Minecraft.Launcher.zip) | Install [Fabric](https://fabricmc.net/use/installer/) for 26.3, give that installation its own game folder, and copy the zip's `mods` and `minebloxroyale` folders into it. |
+| **Prism Launcher** (easiest, nothing to install) | [`MinebloxRoyale-2.0.0.Prism.Launcher.ready.to.play.zip`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-2.0.0.Prism.Launcher.ready.to.play.zip) | Unzip, run `Prism Launcher\prismlauncher.exe`, add your Microsoft account, double-click *Mineblox Royale*. |
+| Prism Launcher (already installed) | [`MinebloxRoyale-2.0.0.Prism.Launcher.import.zip`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-2.0.0.Prism.Launcher.import.zip) | Add Instance > Import > choose the file. |
+| **CurseForge** | [`MinebloxRoyale-2.0.0.CurseForge.zip`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-2.0.0.CurseForge.zip) | Minecraft > My Modpacks > Import > *Import Profile .zip*. |
+| **Modrinth App** | [`MinebloxRoyale-2.0.0.Modrinth.App.mrpack`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-2.0.0.Modrinth.App.mrpack) | "+" > From file. |
+| **Lunar Client** | [`MinebloxRoyale-2.0.0.Lunar.Client.mrpack`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-2.0.0.Lunar.Client.mrpack) | Import it as a modpack profile. |
+| ATLauncher | [`MinebloxRoyale-2.0.0.ATLauncher.mrpack`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-2.0.0.ATLauncher.mrpack) | Import > choose the file. |
+| GDLauncher | [`MinebloxRoyale-2.0.0.GDLauncher.mrpack`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-2.0.0.GDLauncher.mrpack) | Add instance > Import. |
+| MultiMC | [`MinebloxRoyale-2.0.0.MultiMC.import.zip`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-2.0.0.MultiMC.import.zip) | Add Instance > Import from zip. |
+| **Minecraft Launcher** (Mojang's) or any other | [`MinebloxRoyale-2.0.0.Minecraft.Launcher.zip`](https://github.com/Pixelplayz2215/MinebloxRoyale/releases/latest/download/MinebloxRoyale-2.0.0.Minecraft.Launcher.zip) | Install [Fabric](https://fabricmc.net/use/installer/) for 26.3, give that installation its own game folder, and copy the zip's `mods` and `minebloxroyale` folders into it. |
 
 - **Downloads:** the `.mrpack` files download Fabric API and e4mc from Modrinth while they import, so be online.
 - **First start:** your launcher first downloads Minecraft 26.3 itself from Mojang (about 500 MB, once); leave its progress window open until the game appears. The game then opens straight into your own Mineblox Royale world. Your first island is made in the background during the first few minutes (the hub shows how far along it is), and the obby, the shooting range and the Locker are open meanwhile.
@@ -91,6 +96,8 @@ Or get a file from the [latest release](../../releases/latest) page. Pick the on
 | R | Reload |
 | G | Build mode (walls, floors, ramps) |
 | F (hold) | Search a chest / revive a teammate / reboot at a van |
+| F | Get in a car (in a car: W A S D drive, Space boosts, Shift gets out) |
+| Right mouse, then left (grenade) | Aim the throw along the blue arc, then throw |
 | Tab | Map |
 | B | Emotes |
 | K | Locker (in the hub) |
@@ -104,6 +111,7 @@ Scope too fast? Options > Controls > Mouse Settings > **Scoped Sensitivity**.
 - Everyone starts in their own world, their own room.
 - The host types `/rc` to see the 8-digit room code, which is also on the hub banner. Friends type `/rc 12345678` to join, and `/leave` takes you back to your own world.
 - Party up with `/party invite <name>` and `/party accept`. Everyone in the hub stands on the same mode portal to start the match.
+- On Melty, pressing Join while your friend's game is still loading puts you in your own world for a moment; type `/rejoin` (or click **[Join them]** in the chat) once they're in.
 - Everyone who plays together must be on the same version.
 
 ## Requirements

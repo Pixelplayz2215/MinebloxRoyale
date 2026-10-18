@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.0.0 (in testing: 2.0.0-test6.3, not released yet)
+## v2.0.0 (2026-11-11)
 
 A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and a new look and sound.
 
