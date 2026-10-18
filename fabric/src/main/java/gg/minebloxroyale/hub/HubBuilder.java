@@ -53,7 +53,7 @@ public final class HubBuilder {
 	}
 
 	/** Every hub text carries the build's version tag; text from an older build is deleted when its chunk loads. */
-	static final String VERSION = "v8-" + Integer.toHexString((Sheets.HUB.toString() + Sheets.OBBY.toString() + MinebloxRoyale.version()).hashCode());
+	static final String VERSION = "v9-" + Integer.toHexString((Sheets.HUB.toString() + Sheets.OBBY.toString() + MinebloxRoyale.version()).hashCode());
 	public static final String VERSION_TAG = "br_hub_" + VERSION;
 
 	/**
@@ -158,7 +158,10 @@ public final class HubBuilder {
 		// before the old-hub check was fixed are cleared once (old obby platforms were left floating). "v3": the floor
 		// is 4 blocks thick. "v4": rebuilt once to bring back text that failed to appear (see label). "v5": the Sky
 		// Tower has one more step, so its last jump is one block. "v6": the shooting range's rounds line. "v7": that
-		// line bigger. "v8": the main board shows the build's version, so every new build's hub is rebuilt once.
+		// line bigger. "v8": the main board shows the build's version, so every new build's hub is rebuilt once. "v9"
+		// (2.0.0): an old hub is also found by this marker file, and every world's hub is cleared and rebuilt once (2.0.0's
+		// layout put the walkway and a zone border on the two blocks checked below, so a test build's hub went unseen and
+		// the new one was built over it, leaving the old boards, bus and portals standing).
 		String version = VERSION;
 		Path marker = server.getWorldPath(LevelResource.ROOT).resolve("minebloxroyale_hub.txt");
 		String built = "";
@@ -167,7 +170,7 @@ public final class HubBuilder {
 		} catch (IOException ignored) {
 		}
 		// Checked off the grid lines (x/z multiples of 8 are grey), so an old hub is really found and cleared.
-		boolean hasHub = level.getBlockState(new BlockPos(4, y, 4)).is(block(piece("baseplate").block()))
+		boolean hasHub = Files.exists(marker) || level.getBlockState(new BlockPos(4, y, 4)).is(block(piece("baseplate").block()))
 			|| level.getBlockState(new BlockPos(0, y, 0)).is(block("minecraft:gray_concrete")) || level.getBlockState(new BlockPos(0, y, 0)).is(block("minecraft:white_concrete"));
 		if (hasHub && built.equals(version)) return;
 		long t0 = System.currentTimeMillis();
