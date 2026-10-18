@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.0.1.4 (2026-10-18)
+
+Help for crashes, from what players' Melty reported on 1.0.1.3 (a crash inside NVIDIA's graphics driver, and one that left no log).
+
+- **What crashed, and how to fix it:** if your last game closed by itself, the next start finds out why: from Java's own crash file, or from Windows' crash report when Java couldn't write one, like a crash inside a graphics driver. If it was your graphics driver (NVIDIA, AMD or Intel), the chat says so once you're in your world, and where to update it, which usually fixes it.
+- **Better reports:** the cause also goes into the game's log and melty.log, so the reports players' Melty sends say what crashed, not just that it did. Java's crash files are moved into `minebloxroyale/crashes` once read.
+
 ## v1.0.1.3 (2026-10-17)
 
 Friends who press Join in Melty before the host's world is open no longer get stuck on "Waiting for the host's game to open".

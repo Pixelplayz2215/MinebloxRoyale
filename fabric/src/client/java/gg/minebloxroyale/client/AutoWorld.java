@@ -351,6 +351,11 @@ public final class AutoWorld {
 
 	/** In a world: host -> open to friends; guest -> report that we got in. */
 	public static void onJoinWorld(Minecraft mc) {
+		// (1.0.1.4) The last game crashed inside a graphics driver: say how to fix it, once
+		String crashed = LastRun.takeChat();
+		if (crashed != null) mc.execute(() -> {
+			if (mc.player != null) mc.player.sendSystemMessage(Component.literal(crashed).withStyle(ChatFormatting.YELLOW));
+		});
 		MinecraftServer server = mc.getSingleplayerServer();
 		inRoom = server == null;
 		leavingForRoom = false;
