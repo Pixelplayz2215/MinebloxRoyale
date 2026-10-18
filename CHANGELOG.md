@@ -74,6 +74,7 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 - **Buildings spread out:** at least about 16 blocks between buildings, on open, level ground with room round them. Trees in the way are felled whole and the ground round a building is sloped, so there are no half trees or sheer cuts.
 
 ### Matches
+- **A smooth Battle Bus ride:** the bus no longer jumps back and forth while it flies. Your game used to snap it to every position the world sent while also moving it itself; now it glides at its own speed and only eases into step with the world.
 - **Your team can still bring you back:** in Duos, Trios and Squads the match no longer ends the moment you (the only real player) are eliminated. While your reboot card is out and a teammate still stands, you watch your team and the match goes on; it ends when your team is out or the card runs out.
 - **A picked-up reboot card never runs out:** a card only runs out while it lies on the ground (90 seconds, from the start again if whoever carries it is eliminated and drops it). The squad list says CARD PICKED UP while a teammate carries yours.
 - **The Battle Bus drops everyone before the storm:** anyone still aboard jumps just before the bus would fly into the storm's wall, bots included.

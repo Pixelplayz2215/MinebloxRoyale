@@ -1,6 +1,7 @@
 package gg.minebloxroyale.match;
 
 import gg.minebloxroyale.MinebloxRoyale;
+import net.minecraft.core.PositionAndRotation;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -9,15 +10,19 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.PositionPath;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 /**
  * The Battle Bus: flies a straight route across the island at the world's height limit with every player inside.
@@ -28,6 +33,14 @@ public class BattleBusEntity extends Entity {
 	private static final EntityDataAccessor<Float> DIR_X = SynchedEntityData.defineId(BattleBusEntity.class, EntityDataSerializers.FLOAT);
 	private static final EntityDataAccessor<Float> DIR_Z = SynchedEntityData.defineId(BattleBusEntity.class, EntityDataSerializers.FLOAT);
 	private double dirX = 1, dirZ = 0, travelled, routeLength;
+	/**
+	 * (2.0.0, creator: "make the battle bus smoother while flying in the air? It still stutters jumping back and forth")
+	 * In a player's game: the newest position the world sent (a tick or so old by the time it arrives). Minecraft used to
+	 * put the bus straight there with every update, while this game also moved it itself every tick, so it jumped ahead
+	 * and was pulled back many times a second (worst while the world is busy making the island, when its bus moves
+	 * unevenly). Now the bus glides on at its own speed and these only nudge it: see tick.
+	 */
+	private @Nullable Vec3 sent;
 
 	public BattleBusEntity(EntityType<? extends BattleBusEntity> type, Level level) {
 		super(type, level);
@@ -77,16 +90,77 @@ public class BattleBusEntity extends Entity {
 		}
 		super.tick();
 		// Both sides move the bus the same way every tick, so riding it is smooth (no waiting for position packets).
+		float speed = MinebloxRoyale.setting("busSpeed");
+		double step = speed, side = 0;
 		if (level().isClientSide()) {
 			dirX = entityData.get(DIR_X);
 			dirZ = entityData.get(DIR_Z);
+			// (2.0.0) Keep in step with the world gently: a little faster when behind where it says, a little slower
+			// when ahead, never backwards; across the route, eased back onto the line. Far off (a new ride, a catch-up):
+			// straight there.
+			Vec3 at = sent;
+			if (at != null) {
+				double ex = at.x - getX(), ez = at.z - getZ();
+				double along = ex * dirX + ez * dirZ, across = -ex * dirZ + ez * dirX;
+				if (Math.abs(along) > 40 || Math.abs(across) > 4 || Math.abs(at.y - getY()) > 4) {
+					setPos(at);
+					xo = xOld = at.x;
+					yo = yOld = at.y;
+					zo = zOld = at.z;
+					sent = null;
+					return;
+				}
+				step = speed + Mth.clamp(along * 0.05, -speed, speed);
+				side = across * 0.2;
+			}
 		}
-		float speed = MinebloxRoyale.setting("busSpeed");
 		xo = getX();
 		zo = getZ();
-		setPos(getX() + dirX * speed, getY(), getZ() + dirZ * speed);
+		setPos(getX() + dirX * step - dirZ * side, getY(), getZ() + dirZ * step + dirX * side);
 		setYRot((float) Math.toDegrees(Math.atan2(-dirX, dirZ)));
 		travelled += speed;
+	}
+
+	/**
+	 * (2.0.0) The world's position updates are noted, not jumped to (tick follows them gently). The first, and any far
+	 * from where the bus is, still move it at once.
+	 */
+	@Override
+	protected InterpolationHandler createInterpolationHandler() {
+		return new InterpolationHandler() {
+			@Override
+			public PositionAndRotation target() {
+				Vec3 at = sent;
+				return PositionAndRotation.of(at != null ? at : position(), getYRot(), getXRot());
+			}
+
+			@Override
+			public boolean interpolateTo(PositionPath path, float yRot, float xRot, boolean rotate) {
+				if (path == null) return false;
+				Vec3 to = path.endPosition();
+				if (to.distanceToSqr(position()) > 48 * 48) return false; // (far: Minecraft puts it there at once)
+				sent = to;
+				return true;
+			}
+
+			@Override
+			public void interpolate() {
+			}
+
+			@Override
+			public void applyPredictedMovement(Vec3 movement) {
+			}
+
+			@Override
+			public boolean hasActiveInterpolation() {
+				return false;
+			}
+
+			@Override
+			public void cancel() {
+				sent = null;
+			}
+		};
 	}
 
 	@Override
