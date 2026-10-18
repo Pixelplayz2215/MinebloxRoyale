@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,13 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class Obby {
 	private static final Map<UUID, Integer> CHECKPOINT = new HashMap<>();
+	/**
+	 * Checkpoint 0 (2.0.0-test6.3, creator: "When stepped on the blue and Obby is attempted that's checkpoint 0, if player
+	 * falls off Obby before checkpoint one, TP back to the blue platform rather than the HUB spawn. If player steps back on
+	 * the gray floor, checkpoint 0 is erased for that player"): who has stood on the blue obby start since they last
+	 * stood on the hub's floor.
+	 */
+	private static final Set<UUID> AT_START = new HashSet<>();
 	private static final Map<UUID, Set<String>> UNLOCKS = new HashMap<>();
 	/**
 	 * Each player's stats from their other Mineblox Royale worlds, as their own game reports them on joining
@@ -58,6 +66,11 @@ public final class Obby {
 				continue;
 			}
 			if (!p.onGround()) continue;
+			// The blue start: checkpoint 0 (said once a run). Anywhere else on the hub's floor clears it.
+			if (HubBuilder.onObbyStart(p.getX(), p.getY(), p.getZ())) {
+				if (AT_START.add(p.getUUID()) && CHECKPOINT.getOrDefault(p.getUUID(), 0) == 0)
+					p.sendSystemMessage(Component.literal("Obby start: fall before checkpoint 1 and you're back here").withStyle(ChatFormatting.AQUA), true);
+			} else if (HubBuilder.onHubFloor(p.getX(), p.getY(), p.getZ())) AT_START.remove(p.getUUID());
 			for (HubBuilder.Platform pl : HubBuilder.platforms()) {
 				if (!pl.contains(p.getX(), p.getY(), p.getZ())) continue;
 				int idx = pl.stage().index();
@@ -97,6 +110,7 @@ public final class Obby {
 			p.connection.send(new ClientboundSetTitleTextPacket(Component.literal("OBBY COMPLETE!").withStyle(ChatFormatting.GOLD)));
 		}
 		CHECKPOINT.remove(p.getUUID());
+		AT_START.remove(p.getUUID());
 		Vec3 at = HubBuilder.spawnPos();
 		p.fallDistance = 0;
 		p.setDeltaMovement(Vec3.ZERO);
@@ -104,17 +118,24 @@ public final class Obby {
 		Net.sfxTo(p, "ui_click", at);
 	}
 
+	/**
+	 * Fell off: back to your last checkpoint; before checkpoint 1, to the blue obby start if you came from it
+	 * (checkpoint 0, facing the course), else to the hub spawn.
+	 */
 	public static void respawnAtCheckpoint(ServerPlayer p) {
 		int cp = CHECKPOINT.getOrDefault(p.getUUID(), 0);
-		Vec3 at = cp == 0 ? HubBuilder.spawnPos() : HubBuilder.platforms().stream().filter(pl -> pl.stage().index() == cp).findFirst().map(HubBuilder.Platform::top).orElse(HubBuilder.spawnPos());
+		boolean start = cp == 0 && AT_START.contains(p.getUUID());
+		Vec3 at = start ? HubBuilder.obbyStartPos() : cp == 0 ? HubBuilder.spawnPos()
+			: HubBuilder.platforms().stream().filter(pl -> pl.stage().index() == cp).findFirst().map(HubBuilder.Platform::top).orElse(HubBuilder.spawnPos());
 		p.fallDistance = 0;
 		p.setDeltaMovement(Vec3.ZERO);
-		p.teleportTo(p.level().getServer().overworld(), at.x, at.y, at.z, Set.of(), p.getYRot(), 0F, true);
+		p.teleportTo(p.level().getServer().overworld(), at.x, at.y, at.z, Set.of(), start ? 90F : p.getYRot(), 0F, true); // (90: facing west, along the course)
 		Net.sfxAll(p.level().getServer(), "getup", at);
 	}
 
 	public static void resetProgress(ServerPlayer p) {
 		CHECKPOINT.remove(p.getUUID());
+		AT_START.remove(p.getUUID());
 	}
 
 	/**

@@ -1,7 +1,7 @@
 {
  "sheet": "hub",
  "class": "HubPieceDef",
- "about": "The Roblox-style lobby floating at match.hubY over spawn (creator: things to do while the next island is made, kept clean and tidy: plain grey floor, each activity in its own purple-and-blue bordered zone with one small sign: a shooting range and the Sky Tower). shooting_range: facing = the way you shoot; a light-blue firing line on the near side (stand there for a practice rifle with endless ammo), a black back wall on the far side where targets pop up (width = across, along the back wall; height = from the firing line to the back wall). Where it reaches past the hub's floor it lays its own (creator: on a deck off the hub's west edge, by the obby). tower_obby: a quartz pillar with purple and blue platforms spiralling up to a gold top, height = top in blocks. Coordinates relative to (0, hubY, 0). facing: the direction the piece's front looks. No cinematics in the hub (creator request); music is the mod's own looping hub track (sounds/music/hub_loop.ogg). text_board: a black board with big readable text in front (label; ' | ' starts a new line). The leaderboard board shows its label as the title and header; the game writes the top 10 under it: this room (world) only, everyone who has played a match in it, never a worldwide board (creator). rarity_board / heals_board: boards filled from the rarities and consumables sheets, one row per entry with the item's picture beside it (label: title | line above the rows | notes under them). v2.0.0 (creator: \"Extended Hub and add 4 new portals\", \"a cleaner layout and different colours: not too colourful, but with some variety\"): the floor reaches further east, north and south; the build and No Build portals each stand in a zone (kind zone: the grid lines round it in its block, its label floating over its north edge); a walkway (kind path: a strip of the floor in its block, width across x, height along z) leads from spawn to the portals.",
+ "about": "The Roblox-style lobby floating at match.hubY over spawn (creator: things to do while the next island is made, kept clean and tidy: plain grey floor, each activity in its own purple-and-blue bordered zone with one small sign: a shooting range and the Sky Tower). shooting_range: facing = the way you shoot; a light-blue firing line on the near side (stand there for a practice rifle with endless ammo), a black back wall on the far side where targets pop up (width = across, along the back wall; height = from the firing line to the back wall). Where it reaches past the hub's floor it lays its own (creator: on a deck off the hub's west edge, by the obby). tower_obby: a quartz pillar with purple and blue platforms spiralling up to a gold top, height = top in blocks. Coordinates relative to (0, hubY, 0). facing: the direction the piece's front looks. No cinematics in the hub (creator request); music is the mod's own looping hub track (sounds/music/hub_loop.ogg). text_board: a black board with big readable text in front (label; ' | ' starts a new line). The leaderboard board shows its label as the title and header; the game writes the top 10 under it: this room (world) only, everyone who has played a match in it, never a worldwide board (creator). rarity_board / heals_board: boards filled from the rarities and consumables sheets, one row per entry with the item's picture beside it (label: title | line above the rows | notes under them). v2.0.0 (creator: \"Extended Hub and add 4 new portals\", \"a cleaner layout and different colours: not too colourful, but with some variety\"): the floor reaches further east, north and south; the build and No Build portals each stand in a zone (kind zone: the grid lines round it in its block, its label floating over its north edge); a walkway (kind path: a strip of the floor in its block, width across x, height along z) leads from spawn to the portals. v2.0.0-test6.3 (creator's pick of four layouts, option D: a bigger floor, the Battle Bus floating over the middle, everything on the hub's centre line): the baseplate can be any width, centred on x (111 wide at x 8.5, so its middle runs down the middle of grid column 8 and the blue obby start sits flush on its west edge); a bus_display with y over 2 floats (no pad, no walls).",
  "columns": {
   "id": "string",
   "kind": "enum:baseplate|spawn|bus_display|billboard|text_board|rarity_board|heals_board|portal|obby_start|shooting_range|tower_obby|zone|path",
@@ -18,11 +18,11 @@
   {
    "id": "baseplate",
    "kind": "baseplate",
-   "x": 8,
+   "x": 8.5,
    "y": 0,
    "z": 0,
-   "width": 88,
-   "height": 88,
+   "width": 111,
+   "height": 104,
    "facing": "up",
    "block": "minecraft:light_gray_concrete",
    "label": "-"
@@ -30,7 +30,7 @@
   {
    "id": "spawn",
    "kind": "spawn",
-   "x": 4,
+   "x": 8,
    "y": 1,
    "z": 22,
    "width": 6,
@@ -42,9 +42,9 @@
   {
    "id": "parked_bus",
    "kind": "bus_display",
-   "x": 34,
-   "y": 1,
-   "z": 30,
+   "x": 8.44,
+   "y": 24,
+   "z": 0,
    "width": 10,
    "height": 4,
    "facing": "east",
@@ -54,9 +54,9 @@
   {
    "id": "rules_board",
    "kind": "text_board",
-   "x": 4,
+   "x": 8,
    "y": 11,
-   "z": -42,
+   "z": -50,
    "width": 30,
    "height": 14,
    "facing": "south",
@@ -68,7 +68,7 @@
    "kind": "rarity_board",
    "x": -24,
    "y": 10,
-   "z": -42,
+   "z": -50,
    "width": 14,
    "height": 14,
    "facing": "south",
@@ -78,9 +78,9 @@
   {
    "id": "heals_board",
    "kind": "heals_board",
-   "x": 32,
+   "x": 40,
    "y": 10,
-   "z": -42,
+   "z": -50,
    "width": 14,
    "height": 14,
    "facing": "south",
@@ -90,9 +90,9 @@
   {
    "id": "controls_board",
    "kind": "text_board",
-   "x": 50,
+   "x": 62,
    "y": 9,
-   "z": 0,
+   "z": 11,
    "width": 14,
    "height": 12,
    "facing": "west",
@@ -102,9 +102,9 @@
   {
    "id": "commands_board",
    "kind": "text_board",
-   "x": 50,
+   "x": 62,
    "y": 9,
-   "z": 20,
+   "z": 33,
    "width": 14,
    "height": 12,
    "facing": "west",
@@ -114,9 +114,9 @@
   {
    "id": "leaderboard",
    "kind": "text_board",
-   "x": 50,
+   "x": 62,
    "y": 9,
-   "z": -20,
+   "z": -11,
    "width": 14,
    "height": 12,
    "facing": "west",
@@ -124,9 +124,21 @@
    "label": "THIS ROOM'S TOP 10 | Name - W:L - Avg kills - Best"
   },
   {
+   "id": "whats_new_board",
+   "kind": "text_board",
+   "x": 62,
+   "y": 9,
+   "z": -33,
+   "width": 14,
+   "height": 12,
+   "facing": "west",
+   "block": "minecraft:black_concrete",
+   "label": "WHAT'S NEW IN V2 | NO BUILD: 4 new portals, just fight | Earn gold, spend it in the Locker Shop | Cars: F get in, SPACE boost, SHIFT out | Rockets and grenades blow up builds | 4 bosses a match drop Boss guns | Gliders, contrails and emote music | New HUD, sounds and Victory screen"
+  },
+  {
    "id": "portal_solo",
    "kind": "portal",
-   "x": -12,
+   "x": -8,
    "y": 0,
    "z": -12,
    "width": 7,
@@ -138,7 +150,7 @@
   {
    "id": "portal_duos",
    "kind": "portal",
-   "x": -4,
+   "x": 0,
    "y": 0,
    "z": -12,
    "width": 7,
@@ -150,7 +162,7 @@
   {
    "id": "portal_trios",
    "kind": "portal",
-   "x": -12,
+   "x": -8,
    "y": 0,
    "z": -4,
    "width": 7,
@@ -162,7 +174,7 @@
   {
    "id": "portal_squads",
    "kind": "portal",
-   "x": -4,
+   "x": 0,
    "y": 0,
    "z": -4,
    "width": 7,
@@ -186,9 +198,9 @@
   {
    "id": "sky_tower",
    "kind": "tower_obby",
-   "x": -20,
+   "x": -26,
    "y": 1,
-   "z": 26,
+   "z": 36,
    "width": 9,
    "height": 30,
    "facing": "north",
@@ -198,7 +210,7 @@
   {
    "id": "obby_entry",
    "kind": "obby_start",
-   "x": -28,
+   "x": -44,
    "y": 1,
    "z": 12,
    "width": 5,
@@ -210,7 +222,7 @@
   {
    "id": "portal_solo_nb",
    "kind": "portal",
-   "x": 12,
+   "x": 16,
    "y": 0,
    "z": -12,
    "width": 7,
@@ -222,7 +234,7 @@
   {
    "id": "portal_duos_nb",
    "kind": "portal",
-   "x": 20,
+   "x": 24,
    "y": 0,
    "z": -12,
    "width": 7,
@@ -234,7 +246,7 @@
   {
    "id": "portal_trios_nb",
    "kind": "portal",
-   "x": 12,
+   "x": 16,
    "y": 0,
    "z": -4,
    "width": 7,
@@ -246,7 +258,7 @@
   {
    "id": "portal_squads_nb",
    "kind": "portal",
-   "x": 20,
+   "x": 24,
    "y": 0,
    "z": -4,
    "width": 7,
@@ -258,7 +270,7 @@
   {
    "id": "zone_build",
    "kind": "zone",
-   "x": -8,
+   "x": -4,
    "y": 7,
    "z": -8,
    "width": 16,
@@ -270,7 +282,7 @@
   {
    "id": "zone_nobuild",
    "kind": "zone",
-   "x": 16,
+   "x": 20,
    "y": 7,
    "z": -8,
    "width": 16,
@@ -282,7 +294,7 @@
   {
    "id": "walkway",
    "kind": "path",
-   "x": 4,
+   "x": 8,
    "y": 0,
    "z": 7,
    "width": 5,

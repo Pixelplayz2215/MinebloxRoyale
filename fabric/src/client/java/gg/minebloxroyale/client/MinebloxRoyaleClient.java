@@ -196,6 +196,7 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 			CarSounds.tick(mc);
 			LockerAudit.tick(mc);
 			WhatToTest.tick(mc);
+			FirstTips.tick(mc);
 			if (maximizeIn > 0 && --maximizeIn == 0) SDLVideo.SDL_MaximizeWindow(mc.getWindow().handle()); // once it's left fullscreen
 			if (mc.player == null) return;
 			// Fortnite camera: always third person from behind; F5 can't change it.

@@ -72,6 +72,31 @@ public final class HubBuilder {
 		return new Vec3(s.x() + 0.5, hubY() + s.y(), s.z() + 0.5);
 	}
 
+	/** The middle of the blue obby start, on top (2.0.0-test6.3: checkpoint 0, Obby). */
+	public static Vec3 obbyStartPos() {
+		HubPieceDef s = piece("obby_entry");
+		return new Vec3(Math.round(s.x()) + 0.5, hubY() + s.y(), Math.round(s.z()) + 0.5);
+	}
+
+	/** Standing on the blue obby start (its blocks as built: build's "obby_start"). */
+	public static boolean onObbyStart(double x, double y, double z) {
+		HubPieceDef s = piece("obby_entry");
+		int cx = Math.round(s.x()), cz = Math.round(s.z()), hw = Math.round(s.width() / 2F), hh = Math.round(s.height() / 2F);
+		return Math.abs(y - (hubY() + 1)) < 0.6 && x >= cx - hw && x < cx + hw + 1 && z >= cz - hh && z < cz + hh + 1;
+	}
+
+	/**
+	 * Standing on the hub's floor at its height (anywhere: the grey floor, portals, walkway, the range), not on the
+	 * blue obby start or an obby platform at the same height. Only round the hub, never out on an island.
+	 */
+	public static boolean onHubFloor(double x, double y, double z) {
+		HubPieceDef plate = piece("baseplate");
+		if (Math.abs(y - (hubY() + 1)) >= 0.6 || Math.abs(x - plate.x()) > plate.width() / 2 + 24 || Math.abs(z - plate.z()) > plate.height() / 2 + 24) return false;
+		if (onObbyStart(x, y, z)) return false;
+		for (Platform pl : platforms()) if (pl.contains(x, y, z)) return false;
+		return true;
+	}
+
 	public static List<Platform> platforms() {
 		if (PLATFORMS.isEmpty()) {
 			HubPieceDef entry = piece("obby_entry");
@@ -149,8 +174,11 @@ public final class HubBuilder {
 		if (hasHub) {
 			MinebloxRoyale.LOG.info("BR: hub sheets changed ({} -> {}), clearing the old hub", built, version);
 			BlockState air = Blocks.AIR.defaultBlockState();
-			for (int x = -160; x <= 60; x++)
-				for (int z = -80; z <= 80; z++)
+			// (2.0.0-test6.3) Wide enough for the bigger floor and the obby off its west edge (the old hub fits inside too).
+			int fx0 = Math.round(plate.x() - plate.width() / 2F), fx1 = fx0 + Math.round(plate.width());
+			int fz0 = Math.round(plate.z() - plate.height() / 2F), fz1 = fz0 + Math.round(plate.height());
+			for (int x = Math.min(-160, fx0 - 120); x <= Math.max(60, fx1 + 8); x++)
+				for (int z = Math.min(-80, fz0 - 8); z <= Math.max(80, fz1 + 8); z++)
 					for (int yy = y - 8; yy <= y + 64; yy++)
 						if (!level.getBlockState(new BlockPos(x, yy, z)).isAir()) set(level, x, yy, z, air);
 		}
@@ -181,9 +209,12 @@ public final class HubBuilder {
 		switch (p.kind()) {
 			case "baseplate" -> {
 				BlockState line = block("minecraft:gray_concrete").defaultBlockState();
-				// 4 blocks thick (creator): nobody joining can end up inside or under the floor.
-				for (int x = cx - halfW; x < cx + halfW; x++)
-					for (int z = cz - halfH; z < cz + halfH; z++) {
+				// 4 blocks thick (creator): nobody joining can end up inside or under the floor. (2.0.0-test6.3) Any width,
+				// centred on x / z: an odd width has its middle on a block (111 at x 8.5, so the hub's centre line runs down
+				// the middle of grid column 8).
+				int x0 = Math.round(p.x() - p.width() / 2F), z0 = Math.round(p.z() - p.height() / 2F);
+				for (int x = x0; x < x0 + Math.round(p.width()); x++)
+					for (int z = z0; z < z0 + Math.round(p.height()); z++) {
 						for (int d = 1; d <= 3; d++) set(level, x, y - d, z, block);
 						set(level, x, y, z, (Math.floorMod(x, 8) == 0 || Math.floorMod(z, 8) == 0) ? line : block);
 					}
@@ -211,13 +242,16 @@ public final class HubBuilder {
 				if (lines.length > 1) label(level.getServer(), cx + 0.5, hubY + 2.9, cz + 0.5, lines[1], "white", 0.9F, "center", "south", true);
 			}
 			case "bus_display" -> {
-				// A stone pad the parked Battle Bus (drawn by the client) stands on.
-				int hw = Math.round(p.height() / 2F) + 1, hl = Math.round(p.width() / 2F) + 1;
-				boolean alongX = p.facing().equals("east") || p.facing().equals("west");
-				for (int a = -hl; a <= hl; a++)
-					for (int b = -hw; b <= hw; b++)
-						set(level, cx + (alongX ? a : b), hubY, cz + (alongX ? b : a), block);
-				busBody(level, p, hubY);
+				// A stone pad the parked Battle Bus (drawn by the client) stands on. (2.0.0-test6.3, creator: "add the battle
+				// bus in the sky above the HUB") Up in the air (y over 2) it floats: no pad, and no walls nobody can reach.
+				if (p.y() <= 2) {
+					int hw = Math.round(p.height() / 2F) + 1, hl = Math.round(p.width() / 2F) + 1;
+					boolean alongX = p.facing().equals("east") || p.facing().equals("west");
+					for (int a = -hl; a <= hl; a++)
+						for (int b = -hw; b <= hw; b++)
+							set(level, cx + (alongX ? a : b), hubY, cz + (alongX ? b : a), block);
+					busBody(level, p, hubY);
+				}
 			}
 			case "text_board" -> {
 				// A black board on two legs, with the label as big text on its front (' | ' = new line, first line =
