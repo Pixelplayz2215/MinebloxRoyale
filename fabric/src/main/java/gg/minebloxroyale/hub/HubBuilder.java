@@ -78,11 +78,16 @@ public final class HubBuilder {
 		return new Vec3(Math.round(s.x()) + 0.5, hubY() + s.y(), Math.round(s.z()) + 0.5);
 	}
 
-	/** Standing on the blue obby start (its blocks as built: build's "obby_start"). */
+	/**
+	 * Standing on the blue obby start (its blocks as built: build's "obby_start"). (2.0.0, creator: "CP0 on the Obby works
+	 * for 2-3 times, then it clears itself") A player can stand on its very edge with their middle up to their half-width
+	 * (0.3) out over the void, which is where everyone stands to make the first jump: that counts as on it.
+	 */
 	public static boolean onObbyStart(double x, double y, double z) {
 		HubPieceDef s = piece("obby_entry");
 		int cx = Math.round(s.x()), cz = Math.round(s.z()), hw = Math.round(s.width() / 2F), hh = Math.round(s.height() / 2F);
-		return Math.abs(y - (hubY() + 1)) < 0.6 && x >= cx - hw && x < cx + hw + 1 && z >= cz - hh && z < cz + hh + 1;
+		double m = 0.31;
+		return Math.abs(y - (hubY() + 1)) < 0.6 && x >= cx - hw - m && x < cx + hw + 1 + m && z >= cz - hh - m && z < cz + hh + 1 + m;
 	}
 
 	/**

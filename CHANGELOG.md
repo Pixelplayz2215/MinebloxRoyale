@@ -9,7 +9,7 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 - **A roomier hub:** the floor is bigger (111 x 104), with every board, the Sky Tower and the obby start out at its edges. The rules board, the portals, the spawn and the walkway sit on the hub's centre line, and the Battle Bus floats high over the middle of the hub instead of parking on the floor.
 - **What's New board:** a new board on the east wall lists v2's big changes, for players coming from 1.0.
 - **First-time control tips:** the first time you're by a car, drive or ride in one, or hold a grenade or a rocket launcher, a short tip over the hotbar says what to press. Each shows once, then never again for that Minecraft account.
-- **Obby checkpoint 0:** the blue obby start sits right on the floor's edge, and standing on it starts your run. Fall before the first checkpoint and you're put back on the blue start, not at the spawn. Step back onto the grey floor and it's cleared.
+- **Obby checkpoint 0:** the blue obby start sits right on the floor's edge, and standing on it starts your run. Fall before the first checkpoint and you're put back on the blue start, not at the spawn. Step back onto the grey floor and it's cleared. The course starts a block closer, so the first jump is 3 blocks, not 4.
 
 ### Gold and the Locker shop
 - **Gold:** earned in matches for eliminations, a top 10 or top 5 finish, playing a match, a Victory Royale and eliminating a boss. Gold follows you into every world.

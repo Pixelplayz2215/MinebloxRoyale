@@ -43,6 +43,12 @@ public final class Obby {
 	 * stood on the hub's floor.
 	 */
 	private static final Set<UUID> AT_START = new HashSet<>();
+	/**
+	 * (2.0.0) How long each player has stood on the hub's floor since checkpoint 0 (ticks): it's only cleared after
+	 * FLOOR_TICKS there, so a moment's touch of the floor beside the blue start doesn't clear it.
+	 */
+	private static final Map<UUID, Integer> ON_FLOOR = new HashMap<>();
+	private static final int FLOOR_TICKS = 10;
 	private static final Map<UUID, Set<String>> UNLOCKS = new HashMap<>();
 	/**
 	 * Each player's stats from their other Mineblox Royale worlds, as their own game reports them on joining
@@ -68,9 +74,14 @@ public final class Obby {
 			if (!p.onGround()) continue;
 			// The blue start: checkpoint 0 (said once a run). Anywhere else on the hub's floor clears it.
 			if (HubBuilder.onObbyStart(p.getX(), p.getY(), p.getZ())) {
+				ON_FLOOR.remove(p.getUUID());
 				if (AT_START.add(p.getUUID()) && CHECKPOINT.getOrDefault(p.getUUID(), 0) == 0)
 					p.sendSystemMessage(Component.literal("Obby start: fall before checkpoint 1 and you're back here").withStyle(ChatFormatting.AQUA), true);
-			} else if (HubBuilder.onHubFloor(p.getX(), p.getY(), p.getZ())) AT_START.remove(p.getUUID());
+			} else if (AT_START.contains(p.getUUID()) && HubBuilder.onHubFloor(p.getX(), p.getY(), p.getZ())
+				&& ON_FLOOR.merge(p.getUUID(), 1, Integer::sum) >= FLOOR_TICKS) {
+				AT_START.remove(p.getUUID());
+				ON_FLOOR.remove(p.getUUID());
+			}
 			for (HubBuilder.Platform pl : HubBuilder.platforms()) {
 				if (!pl.contains(p.getX(), p.getY(), p.getZ())) continue;
 				int idx = pl.stage().index();
@@ -111,6 +122,7 @@ public final class Obby {
 		}
 		CHECKPOINT.remove(p.getUUID());
 		AT_START.remove(p.getUUID());
+		ON_FLOOR.remove(p.getUUID());
 		Vec3 at = HubBuilder.spawnPos();
 		p.fallDistance = 0;
 		p.setDeltaMovement(Vec3.ZERO);
@@ -136,6 +148,7 @@ public final class Obby {
 	public static void resetProgress(ServerPlayer p) {
 		CHECKPOINT.remove(p.getUUID());
 		AT_START.remove(p.getUUID());
+		ON_FLOOR.remove(p.getUUID());
 	}
 
 	/**
