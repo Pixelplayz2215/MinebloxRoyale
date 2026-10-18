@@ -168,9 +168,12 @@ public final class LastRun {
 	/** Whose graphics driver a module is (null: not a graphics driver). */
 	static String driver(String module) {
 		String m = module.toLowerCase(Locale.ROOT);
-		if (m.startsWith("nvoglv") || m.startsWith("nvwgf2") || m.startsWith("nvd3dum") || m.startsWith("nvlddmkm")) return "NVIDIA";
-		if (m.startsWith("atio6axx") || m.startsWith("atioglxx") || m.startsWith("atig6pxx") || m.startsWith("amdxx") || m.startsWith("atiumd")) return "AMD";
-		if (m.matches("ig[0-9a-z]*icd(32|64)\\.dll") || m.startsWith("igxelp") || m.startsWith("igd10") || m.startsWith("igd12")) return "Intel";
+		// (1.0.1.5) and their shader compilers: NVIDIA's nvgpucomp64.dll (players' Melty, 1.0.1.4), AMD's amdxc64, Intel's igc64
+		if (m.startsWith("nvoglv") || m.startsWith("nvwgf2") || m.startsWith("nvd3dum") || m.startsWith("nvlddmkm") || m.startsWith("nvgpucomp")) return "NVIDIA";
+		if (m.startsWith("atio6axx") || m.startsWith("atioglxx") || m.startsWith("atig6pxx") || m.startsWith("amdxx") || m.startsWith("atiumd")
+			|| m.startsWith("amdxc") || m.startsWith("atidxx")) return "AMD";
+		if (m.matches("ig[0-9a-z]*icd(32|64)\\.dll") || m.startsWith("igxelp") || m.startsWith("igd10") || m.startsWith("igd12") || m.startsWith("igc64")
+			|| m.startsWith("igc32")) return "Intel";
 		return null;
 	}
 }
