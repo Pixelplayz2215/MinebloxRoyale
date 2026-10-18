@@ -242,6 +242,10 @@ public class LockerScreen extends Screen {
 		int x0 = PANEL + 20, y0 = 30, x1 = this.width - 20, y1 = this.height - 20;
 		boolean glider = tab.equals("glider");
 		int size = (int) Math.min((y1 - y0) * (glider ? 0.22F : 0.36F), (x1 - x0) * 0.5F);
+		// (1.0.1.5) A window with no room for the preview (narrower than the list beside it, as Minecraft's own 854 x 480
+		// is at our GUI scale, or minimized): none, rather than asking the graphics card for a picture of no size, which
+		// crashed the game (players' Melty, 1.0.1.4: OpenGL error 1281 in createTexture).
+		if (x1 - x0 < 24 || y1 - y0 < 24 || size < 4) return;
 		// The particle effect around the preview: feet at the box's middle plus half the body (and the gliders tab
 		// offset).
 		CosmeticDef fx = Cosmetics.worn(mine(), "particle");

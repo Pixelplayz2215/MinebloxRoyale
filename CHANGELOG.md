@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.0.1.5 (2026-10-19)
+
+Fixes from what players' Melty reported on 1.0.1.4.
+
+- **No crash opening the Locker in a small window:** in a window narrower than the Locker's list (Minecraft's own 854 x 480 window, or a minimized one), the preview of you had no room, and the game asked the graphics card for a picture of no size and crashed (OpenGL error 1281). The preview now just waits until the window is big enough.
+- **More graphics driver crashes recognised:** a crash in a graphics driver's shader compiler (NVIDIA's `nvgpucomp64.dll`, AMD's `amdxc64.dll`, Intel's `igc64.dll`) now also gets the chat line on the next start saying to update the driver.
+
 ## v1.0.1.4 (2026-10-18)
 
 Help for crashes, from what players' Melty reported on 1.0.1.3 (a crash inside NVIDIA's graphics driver, and one that left no log).
