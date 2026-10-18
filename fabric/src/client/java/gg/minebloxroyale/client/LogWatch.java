@@ -52,6 +52,7 @@ import org.apache.logging.log4j.core.filter.AbstractFilter;
  * e4mc to try again a little later.</li>
  * <li>(1.0.1.3) A game Melty started to host (it gives every Play a free port, MINEBLOXROYALE_LAN_PORT) puts its address
  * in melty.log from the first second, not once its world is open: see shareEarly.</li>
+ * <li>(1.0.1.4) How the last game ended (LastRun): if it closed by itself, what crashed goes in this log and melty.log.</li>
  * </ul>
  * Everything else is logged as it is.
  */
@@ -93,10 +94,12 @@ public final class LogWatch extends AbstractFilter implements PreLaunchEntrypoin
 		if (FabricLoader.getInstance().getEnvironmentType() != EnvType.CLIENT) return;
 		OldInstall.moveTo(FabricLoader.getInstance().getGameDir());
 		E4mcNatives.use(dir().resolve("e4mc"));
+		LastRun.check(FabricLoader.getInstance().getGameDir(), dir()); // (1.0.1.4: how the last game ended)
 		try {
 			Files.createDirectories(dir());
+			String last = LastRun.cause();
 			Files.writeString(dir().resolve("melty.log"), "Mineblox Royale started " + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-				+ "; friends can join once the world is open" + System.lineSeparator(), StandardCharsets.UTF_8);
+				+ "; friends can join once the world is open" + System.lineSeparator() + (last == null ? "" : "Mineblox Royale: " + last + System.lineSeparator()), StandardCharsets.UTF_8);
 			shareEarly();
 		} catch (IOException e) {
 			LOG.warn("BR: couldn't start melty.log", e);

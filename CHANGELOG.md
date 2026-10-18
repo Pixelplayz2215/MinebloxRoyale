@@ -107,6 +107,14 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 - From Melty's 1.0.0.4: old islands are removed from the world folder when it opens (they used to fill the disk, about 100 MB a match), and a minimized window, Windows' performance counters being off and Windows blocking the bundled ffmpeg are each one plain log line instead of a long error.
 - From 1.0.1.1 and 1.0.1.2 (the fixes for what players' Melty reported on 1.0.1): e4mc's relay libraries come with the game; when e4mc's relay can't be reached, friends still get in through Melty with the host PC's own address; a closed world's address is taken back; a Melty join that fails three times goes back to your own world; new islands wait for disk space; old islands are cleared in the demo world too; the Melty download carries only the mods and the minebloxroyale folder (Melty sets up Minecraft itself).
 - From 1.0.1.3: friends can press Join in Melty while the host's game is still loading (Melty gives every game a port, so the host shares its address from the start); a friend who can't get in yet waits in their own world, with a [Join them] button (`/rejoin`) to try again.
+- From 1.0.1.4: after a crash, the next start says what crashed, in the log and (for a graphics driver crash) in the chat with where to update the driver.
+
+## v1.0.1.4 (2026-10-18)
+
+Help for crashes, from what players' Melty reported on 1.0.1.3 (a crash inside NVIDIA's graphics driver, and one that left no log).
+
+- **What crashed, and how to fix it:** if your last game closed by itself, the next start finds out why: from Java's own crash file, or from Windows' crash report when Java couldn't write one, like a crash inside a graphics driver. If it was your graphics driver (NVIDIA, AMD or Intel), the chat says so once you're in your world, and where to update it, which usually fixes it.
+- **Better reports:** the cause also goes into the game's log and melty.log, so the reports players' Melty sends say what crashed, not just that it did. Java's crash files are moved into `minebloxroyale/crashes` once read.
 
 ## v1.0.1.3 (2026-10-17)
 
