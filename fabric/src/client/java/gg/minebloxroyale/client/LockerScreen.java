@@ -82,6 +82,8 @@ public class LockerScreen extends Screen {
 	 * Shop's, the presets, pickaxes and contrails.
 	 */
 	private final List<Map.Entry<Button, String>> tryOnButtons = new ArrayList<>();
+	/** (2.0.0) Tiles on this page that are new (button, item): hovering one clears it (NewUnlocks). */
+	private final List<Map.Entry<SmoothButton, String>> newButtons = new ArrayList<>();
 	/** The Shop's category titles on this page: {title, x, y}. */
 	private final List<Object[]> headers = new ArrayList<>();
 	/** "Page 2 of 3" under the grid, when there's more than one. */
@@ -101,13 +103,22 @@ public class LockerScreen extends Screen {
 	 * One tile in the grid (locked: what unlocks it, shown while hovered; tryOn: "slot:id" shown on your preview while
 	 * hovered, the Shop; header: a category's title on a row of its own, the Shop).
 	 */
-	private record Tile(String label, boolean active, Runnable click, String emote, String locked, String tryOn, boolean header) {
+	private record Tile(String label, boolean active, Runnable click, String emote, String locked, String tryOn, boolean header, String item) {
 		Tile(String label, boolean active, Runnable click) {
-			this(label, active, click, null, null, null, false);
+			this(label, active, click, null, null, null, false, null);
 		}
 
 		Tile(String label, boolean active, Runnable click, String emote, String locked) {
-			this(label, active, click, emote, locked, null, false);
+			this(label, active, click, emote, locked, null, false, null);
+		}
+
+		Tile(String label, boolean active, Runnable click, String emote, String locked, String tryOn, boolean header) {
+			this(label, active, click, emote, locked, tryOn, header, null);
+		}
+
+		/** An unlocked item that can be new (2.0.0, NewUnlocks: "emote:id", "glider:id", "cos:id", "preset:id"; never gold). */
+		Tile item(String key) {
+			return new Tile(label, active, click, emote, locked, tryOn, header, key);
 		}
 
 		static Tile header(String title) {
@@ -158,7 +169,8 @@ public class LockerScreen extends Screen {
 						CosmeticDef c = Sheets.COSMETICS_BY_ID.get(piece[1]);
 						if (lock == null && c != null && !ClientState.unlocked(c)) lock = c;
 					}
-					if (lock == null) out.add(new Tile(p.name(), true, () -> send("locker:preset:" + p.id()), null, null, "preset:" + p.id(), false));
+					if (lock == null) out.add(new Tile(p.name(), true, () -> send("locker:preset:" + p.id()), null, null, "preset:" + p.id(), false)
+						.item(p.unlock().equals("shop") ? null : "preset:" + p.id()));
 					else out.add(new Tile(UnlockRule.needs(lock.unlock(), lock.need()), false, () -> {
 					}, null, UnlockRule.hint(lock.unlock(), lock.need(), st)));
 				}
@@ -182,7 +194,7 @@ public class LockerScreen extends Screen {
 							return;
 						}
 						send("locker:emotes:" + (next.isEmpty() ? "none" : String.join("+", next)));
-					}, has ? e.id() : null, has ? null : UnlockRule.hint(e.unlock(), e.need(), st))); // hovering an unlocked one shows it on the preview
+					}, has ? e.id() : null, has ? null : UnlockRule.hint(e.unlock(), e.need(), st)).item(has ? "emote:" + e.id() : null)); // hovering an unlocked one shows it on the preview
 				}
 			}
 			case "glider" -> {
@@ -194,7 +206,8 @@ public class LockerScreen extends Screen {
 					}
 					boolean has = ClientState.unlocked(g), on = g.id().equals(worn) || worn == null && g == Sheets.GLIDERS.get(0);
 					String label = !has ? UnlockRule.needs(g.unlock(), g.need()) : on ? "> " + g.name() + " <" : g.name();
-					out.add(new Tile(label, has, () -> send("locker:glider:" + g.id()), null, has ? null : UnlockRule.hint(g.unlock(), g.need(), st)));
+					out.add(new Tile(label, has, () -> send("locker:glider:" + g.id()), null, has ? null : UnlockRule.hint(g.unlock(), g.need(), st))
+						.item(has && !g.unlock().equals("shop") ? "glider:" + g.id() : null));
 				}
 			}
 			default -> {
@@ -207,7 +220,7 @@ public class LockerScreen extends Screen {
 					else if (!has) out.add(new Tile(UnlockRule.needs(c.unlock(), c.need()), false, () -> {
 					}, null, UnlockRule.hint(c.unlock(), c.need(), st)));
 					else out.add(new Tile(on ? "> " + c.name() + " <" : c.name(), true, () -> send("locker:" + tab + ":" + (on ? "none" : c.id())), null, null,
-						HOVER_TRY.contains(tab) ? tab + ":" + c.id() : null, false));
+						HOVER_TRY.contains(tab) ? tab + ":" + c.id() : null, false).item(c.unlock().equals("shop") ? null : "cos:" + c.id()));
 				}
 			}
 		}
@@ -273,12 +286,14 @@ public class LockerScreen extends Screen {
 			});
 			b.on = tab.equals(t[0]);
 			b.scale = k;
+			b.fresh = NewUnlocks.anyIn(t[0]); // (2.0.0: a red dot on a tab with something new in it)
 			this.addRenderableWidget(b);
 			y += pitch;
 		}
 		emoteButtons.clear();
 		lockedButtons.clear();
 		tryOnButtons.clear();
+		newButtons.clear();
 		headers.clear();
 		List<Tile> all = tiles();
 		// Each tile's cell (row * COLS + column): a header (the Shop's categories) takes a row of its own, never a page's
@@ -331,6 +346,10 @@ public class LockerScreen extends Screen {
 			if (t.emote() != null) emoteButtons.add(Map.entry(b, t.emote()));
 			if (t.locked() != null) lockedButtons.add(Map.entry(b, t.locked()));
 			if (t.tryOn() != null) tryOnButtons.add(Map.entry(b, t.tryOn()));
+			if (t.item() != null && t.active() && NewUnlocks.isNew(t.item())) {
+				b.fresh = true;
+				newButtons.add(Map.entry(b, t.item()));
+			}
 			this.addRenderableWidget(b);
 		}
 		if (pages > 1) {
@@ -459,6 +478,14 @@ public class LockerScreen extends Screen {
 			while (ls > 4.5F && Smooth.width(line, ls) > panel - gx - 12) ls -= 0.25F;
 			Smooth.text(g, line, gx, this.height - 8 - tileH / 2F - ls / 2, ls, lineColor, Smooth.LEFT, false);
 		}
+		// (2.0.0) A new item hovered: seen now, its NEW badge goes (and its tab's dot, once nothing else there is new).
+		for (Map.Entry<SmoothButton, String> e : newButtons)
+			if (e.getKey().fresh && e.getKey().isHovered()) {
+				e.getKey().fresh = false;
+				NewUnlocks.markSeen(e.getValue());
+				for (var w : this.children())
+					if (w instanceof SmoothButton tb && tb.getMessage().getString().equals(tabName(tab))) tb.fresh = NewUnlocks.anyIn(tab);
+			}
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.player == null) return;
 		hoverPreview(mc);

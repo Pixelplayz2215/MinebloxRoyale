@@ -17,7 +17,7 @@ public class SmoothButton extends Button {
 	}
 
 	private static final int GOLD = 0xFFFFC83D, TILE = 0xFF2C3340, TILE_OVER = 0xFF3A4354, EDGE = 0xFF4A5366, WHITE = 0xFFF4F6FA, MUTED = 0xFF9AA3B2,
-		DIM = 0xFF6B7385, INK = 0xFF3B2400;
+		DIM = 0xFF6B7385, INK = 0xFF3B2400, RED = 0xFFE5484D;
 	private final Look look;
 	/** What you have on, picked, or the open tab. */
 	public boolean on;
@@ -31,6 +31,8 @@ public class SmoothButton extends Button {
 	public float scale = 1;
 	/** Its name in the middle of the tile, not at its left (the emote wheel, 2.0.0-test6.1). */
 	public boolean center;
+	/** (2.0.0) Just unlocked and not hovered yet: a red NEW badge on a tile, a red dot on a tab (NewUnlocks). */
+	public boolean fresh;
 
 	public SmoothButton(int x, int y, int w, int h, String label, Look look, OnPress press) {
 		super(x, y, w, h, Component.literal(label), press, DEFAULT_NARRATION);
@@ -60,6 +62,10 @@ public class SmoothButton extends Button {
 				float size = Math.min(7.5F * s, h - 1.5F); // (no taller than the tab: they pack closer on a small window)
 				while (size > 5 && Smooth.width(label, size) > w - 14 * s) size -= 0.25F;
 				Smooth.text(g, label, x + 9 * s, y + (h - size) / 2 - 0.5F, size, on ? GOLD : over ? WHITE : 0xFFC3CAD6, Smooth.LEFT, false);
+				if (fresh) { // (2.0.0: something new in this tab)
+					float d = Math.min(5 * s, h - 3);
+					Smooth.panel(g, x + w - d - 4 * s, y + (h - d) / 2, d, d, d / 2, RED);
+				}
 			}
 			case TILE -> {
 				if (on) Smooth.panel(g, x - 1, y - 1, w + 2, h + 2, 6, GOLD);
@@ -81,6 +87,12 @@ public class SmoothButton extends Button {
 				} else if (owned) {
 					Smooth.text(g, "owned", x + w - 4 * s, y + (h - 5.5F * s) / 2 - 0.5F, 5.5F * s, MUTED, Smooth.RIGHT, false);
 					right = w - Smooth.width("owned", 5.5F * s) - 8 * s;
+				}
+				if (fresh) { // (2.0.0: just unlocked, a red NEW badge on the left; as much room kept on the right, so the name stays centred)
+					float bs = 5 * s, bw = Smooth.width("NEW", bs) + 5 * s, bh = 7.5F * s;
+					Smooth.panel(g, x + 3 * s, y + (h - bh) / 2, bw, bh, bh / 2, RED);
+					Smooth.text(g, "NEW", x + 3 * s + bw / 2, y + (h - bs) / 2 - 0.4F, bs, WHITE, Smooth.CENTER, false);
+					right = Math.min(right, w - bw - 6 * s);
 				}
 				// (centred, 2.0.0-test6.1: in the whole tile, as much room kept on its left as the dot or lock takes on its right;
 				// beside a price or "owned", in the room left of it)

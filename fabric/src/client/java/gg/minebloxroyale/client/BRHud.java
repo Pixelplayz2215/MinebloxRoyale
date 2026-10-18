@@ -460,7 +460,8 @@ public final class BRHud {
 		// how many stand on the same portal.)
 		// The island countdown (creator: in place of "Blue pad: Obby"), while players wait in the hub.
 		boolean island = hud.label().startsWith("Island") || hud.label().startsWith("Finding");
-		String line2 = island ? hud.label() + "  |  B: Emotes  |  K: Locker" : "B: Emotes  |  K: Locker";
+		String locker = NewUnlocks.any() ? "K: Locker (NEW)" : "K: Locker"; // (2.0.0: something just unlocked)
+		String line2 = island ? hud.label() + "  |  B: Emotes  |  " + locker : "B: Emotes  |  " + locker;
 		// The room's code, always on in the hub (creator): "Room Code:" in grey, the code in orange.
 		String code = RoomCodes.current(), label = "Room Code: ";
 		float size = 9;

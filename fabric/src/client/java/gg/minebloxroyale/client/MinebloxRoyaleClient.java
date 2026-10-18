@@ -140,6 +140,7 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 				ClientState.goldSpent = st.length > 9 ? Integer.parseInt(st[8]) : 0;
 				ClientState.owned = st.length > 9 && !st[9].equals("-") ? java.util.Set.of(st[9].split("[+]")) : java.util.Set.of();
 				if (st.length > 4) MyUnlocks.onWorldStats(st[4], ClientState.here());
+				NewUnlocks.onStats(); // (2.0.0: the first time, all you have counts as seen)
 			} catch (RuntimeException ignored) {
 			}
 		});
