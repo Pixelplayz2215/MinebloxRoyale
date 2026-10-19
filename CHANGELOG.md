@@ -10,6 +10,7 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 - **What's New board:** a new board on the east wall lists v2's big changes, for players coming from 1.0.
 - **First-time control tips:** the first time you're by a car, drive or ride in one, or hold a grenade or a rocket launcher, a short tip over the hotbar says what to press. Each shows once, then never again for that Minecraft account.
 - **Obby checkpoint 0:** the blue obby start sits right on the floor's edge, and standing on it starts your run. Fall before the first checkpoint and you're put back on the blue start, not at the spawn. Step back onto the grey floor and it's cleared. The course starts a block closer, so the first jump is 3 blocks, not 4.
+- **One-click party invites:** clicking **[Accept]** on a party invite joins the party straight away. It used to put the command in the chat box and wait for Enter.
 
 ### Gold and the Locker shop
 - **Gold:** earned in matches for eliminations, a top 10 or top 5 finish, playing a match, a Victory Royale and eliminating a boss. Gold follows you into every world.

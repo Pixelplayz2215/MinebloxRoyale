@@ -96,8 +96,10 @@ public final class Parties {
 		list.removeIf(i -> i.from().equals(from.getUUID()));
 		list.add(new Invite(from.getUUID(), from.getName().getString(), party, until));
 		MutableComponent accept = Component.literal("[Accept]").withStyle(s -> s.withColor(ChatFormatting.GREEN).withBold(true)
-			.withClickEvent(new ClickEvent.SuggestCommand("/party accept " + from.getName().getString()))
-			.withHoverEvent(new HoverEvent.ShowText(Component.literal("Click, then press Enter"))));
+			// (2.0.0, creator: "just a one click party accept": the click runs it, no Enter; /party is a command in the
+			// player's own game, which Fabric runs from a click too)
+			.withClickEvent(new ClickEvent.RunCommand("/party accept " + from.getName().getString()))
+			.withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to join their party"))));
 		to.sendSystemMessage(Component.empty().append(MatchManager.who(from)).append(Component.literal(" invited you to their party. ").withStyle(ChatFormatting.WHITE))
 			.append(accept).append(Component.literal(" (or type /party accept)").withStyle(ChatFormatting.GRAY)));
 		say(from, "Party invite sent to " + to.getName().getString() + ".", ChatFormatting.GRAY);
