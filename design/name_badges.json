@@ -1,0 +1,15 @@
+{
+  "sheet": "name_badges",
+  "class": "NameBadgeDef",
+  "about": "Players with a badge on its own line over their name tag, for everyone to see (2.0.0, creator: 'Give creaper89O1 a Beta Tester badge in the nametag / Give Pixel2215YT a Owner Badge in the nametag'; option C: 'Badge on it's own line over the name tag. The nametag doesnt change'). Matched by Minecraft account id only, so nobody gets one by taking the name. badge: owner or beta_tester (the font minebloxroyale:name_badges, fabric/tools/branding/make_name_badges.py).",
+  "columns": {
+    "id": "string",
+    "name": "string",
+    "uuid": "string",
+    "badge": "string"
+  },
+  "rows": [
+    { "id": "owner_pixel2215yt", "name": "Pixel2215YT", "uuid": "88b71548-93e1-47c7-9805-971881a9ed9a", "badge": "owner" },
+    { "id": "beta_tester_creaper89o1", "name": "creaper89O1", "uuid": "a2c12583-c477-4cad-8225-7d564f57f5b6", "badge": "beta_tester" }
+  ]
+}

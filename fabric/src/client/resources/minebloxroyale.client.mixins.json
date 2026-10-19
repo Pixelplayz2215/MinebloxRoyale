@@ -22,7 +22,8 @@
     "MouseSettingsScreenMixin",
     "OnboardingSkipMixin",
     "SpecialModelRenderersAccessor",
-    "GuiGraphicsAccessor"
+    "GuiGraphicsAccessor",
+    "EntityRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

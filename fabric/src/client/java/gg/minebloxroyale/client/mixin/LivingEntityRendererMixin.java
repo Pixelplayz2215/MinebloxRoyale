@@ -87,6 +87,8 @@ public abstract class LivingEntityRendererMixin {
 					if (!badge.getSiblings().isEmpty()) state.nameTag = badge.append(state.nameTag);
 				}
 			}
+			// (2.0.0) An Owner or Beta Tester badge over the name tag (NameBadge, drawn by EntityRendererMixin)
+			state.setData(gg.minebloxroyale.client.NameBadge.KEY, entity instanceof Player p ? gg.minebloxroyale.client.NameBadge.of(p) : "");
 			// Players: their Locker outfit; bots: the random outfit they were given (or none: the default look).
 			String look = "";
 			if (entity instanceof Player) look = entity.getUUID().toString();
