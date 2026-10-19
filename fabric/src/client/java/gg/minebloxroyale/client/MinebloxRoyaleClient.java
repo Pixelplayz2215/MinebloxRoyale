@@ -93,6 +93,8 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 		ClientPlayNetworking.registerGlobalReceiver(Net.Launchers.TYPE, (p, ctx) -> { // (the badges by players' names, 2.0.0-test6.2)
 			LauncherBadge.BY_PLAYER.clear();
 			LauncherBadge.BY_PLAYER.putAll(p.byPlayer());
+			CountryFlag.BY_PLAYER.clear(); // (and the flags after their names, 2.0.0)
+			CountryFlag.BY_PLAYER.putAll(p.flags());
 		});
 		ClientPlayNetworking.registerGlobalReceiver(Net.Victory.TYPE, (p, ctx) -> VictoryClient.receive(p.json())); // (2.0.0-test5)
 		ClientPlayNetworking.registerGlobalReceiver(Net.Emote.TYPE, (p, ctx) -> {
@@ -123,6 +125,7 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 		});
 		RoomCodes.init(); // /rc and /roomcode
 		PartyCommands.init(); // /party
+		CountryFlag.init(); // finds this PC's country (the flag after your name); /flag on|off
 		ClientPlayNetworking.registerGlobalReceiver(Net.IslandMapImage.TYPE, (p, ctx) -> MapScreen.receive(p));
 		ClientPlayNetworking.registerGlobalReceiver(Net.Unlocks.TYPE, (p, ctx) -> {
 			// "kills;wins;obby;all;worldId;rangeBest;bullseyes": my stats in this world (unlocks add my other worlds,
@@ -241,6 +244,7 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 			MyUnlocks.onJoin(); // before the outfit: it's checked against unlocks from every world
 			MyLocker.onJoin();
 			ClientPlayNetworking.send(new Net.Action("launcher:" + LauncherBadge.mine())); // (the badge by your name)
+			CountryFlag.onJoin(); // (and your country's flag after it, unless you've hidden it: 2.0.0)
 			WhatToTest.onJoin();
 		});
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, mc) -> {

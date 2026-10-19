@@ -137,16 +137,22 @@ public final class Net {
 		}
 	}
 
-	/** Server -> client: everyone's launcher in this world, by account id (the badges by their names; Launchers, 2.0.0-test6.2). */
-	public record Launchers(java.util.Map<String, String> byPlayer) implements CustomPacketPayload {
+	/**
+	 * Server -> client: everyone's launcher in this world, by account id (the badges by their names; Launchers,
+	 * 2.0.0-test6.2), and everyone's country (the flags after their names, 2.0.0).
+	 */
+	public record Launchers(java.util.Map<String, String> byPlayer, java.util.Map<String, String> flags) implements CustomPacketPayload {
 		public static final Type<Launchers> TYPE = new Type<>(MinebloxRoyale.id("launchers"));
 		public static final StreamCodec<RegistryFriendlyByteBuf, Launchers> CODEC = StreamCodec.of((buf, p) -> {
-			buf.writeVarInt(p.byPlayer.size());
-			for (var e : p.byPlayer.entrySet()) { buf.writeUtf(e.getKey()); buf.writeUtf(e.getValue()); }
+			for (var map : java.util.List.of(p.byPlayer, p.flags)) {
+				buf.writeVarInt(map.size());
+				for (var e : map.entrySet()) { buf.writeUtf(e.getKey()); buf.writeUtf(e.getValue()); }
+			}
 		}, buf -> {
-			java.util.Map<String, String> m = new java.util.HashMap<>();
+			java.util.Map<String, String> m = new java.util.HashMap<>(), f = new java.util.HashMap<>();
 			for (int i = buf.readVarInt(); i > 0; i--) m.put(buf.readUtf(), buf.readUtf());
-			return new Launchers(m);
+			for (int i = buf.readVarInt(); i > 0; i--) f.put(buf.readUtf(), buf.readUtf());
+			return new Launchers(m, f);
 		});
 
 		@Override
@@ -384,6 +390,8 @@ public final class Net {
 				case "party" -> Parties.handle(player, arg);
 				// launcher:<id> - which launcher this player's game was started from (the badge by their name, 2.0.0-test6.2)
 				case "launcher" -> gg.minebloxroyale.net.Launchers.set(player, arg);
+				// flag:<CC> - this player's country, the flag after their name ("flag:" while they hide it; 2.0.0)
+				case "flag" -> gg.minebloxroyale.net.Launchers.setFlag(player, arg);
 				// interact:1 / interact:0 - F held down or let go (revive, reboot)
 				case "interact" -> Interact.set(player, arg.equals("1"));
 				// waypoint:<x>:<z> or waypoint:clear - shared with teammates in team modes (Solo: nobody else sees it)

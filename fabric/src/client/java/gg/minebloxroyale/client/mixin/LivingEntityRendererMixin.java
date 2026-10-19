@@ -85,6 +85,9 @@ public abstract class LivingEntityRendererMixin {
 				if (entity instanceof Player) {
 					var badge = gg.minebloxroyale.client.LauncherBadge.badge(entity.getUUID().toString());
 					if (!badge.getSiblings().isEmpty()) state.nameTag = badge.append(state.nameTag);
+					// and their country's flag after it (2.0.0; none while they hide it: /flag off)
+					String cc = gg.minebloxroyale.client.CountryFlag.BY_PLAYER.get(entity.getUUID().toString());
+					if (cc != null) state.nameTag = Component.empty().append(state.nameTag).append(" ").append(gg.minebloxroyale.client.CountryFlag.glyph(cc));
 				}
 			}
 			// (2.0.0) An Owner or Beta Tester badge over the name tag (NameBadge, drawn by EntityRendererMixin)

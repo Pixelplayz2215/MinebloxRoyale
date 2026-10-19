@@ -112,6 +112,7 @@ Scope too fast? Options > Controls > Mouse Settings > **Scoped Sensitivity**.
 - The host types `/rc` to see the 8-digit room code, which is also on the hub banner. Friends type `/rc 12345678` to join, and `/leave` takes you back to your own world.
 - Party up with `/party invite <name>` and `/party accept`. Everyone in the hub stands on the same mode portal to start the match.
 - On Melty, pressing Join while your friend's game is still loading puts you in your own world for a moment; type `/rejoin` (or click **[Join them]** in the chat) once they're in.
+- A small flag after each name shows the country that player is in. Only the country is shared (the game asks Cloudflare once at start), never your address. Type `/flag off` to hide yours and `/flag on` to show it again.
 - Everyone who plays together must be on the same version.
 
 ## Requirements

@@ -109,7 +109,7 @@
    "height": 12,
    "facing": "west",
    "block": "minecraft:black_concrete",
-   "label": "COMMANDS | /rc or /roomcode: this room's code | /rc <code>: join a friend's room | /leave: back to your own world | /party invite <name>: ask to team up | /party accept: join after an invite | /party leave: leave your party | /party: who's in your party | Parties: up to 4, same room only | Your party = your team in team modes | Party not full? Bots fill the empty spots"
+   "label": "COMMANDS | /rc or /roomcode: this room's code | /rc <code>: join a friend's room | /leave: back to your own world | /party invite <name>: ask to team up | /party accept: join after an invite | /party leave: leave your party | /party: who's in your party | Parties: up to 4, same room only | Your party = your team in team modes | Party not full? Bots fill the empty spots | /flag off: hide your flag (/flag on)"
   },
   {
    "id": "leaderboard",
@@ -133,7 +133,7 @@
    "height": 12,
    "facing": "west",
    "block": "minecraft:black_concrete",
-   "label": "WHAT'S NEW IN V2 | NO BUILD: 4 new portals, just fight | Earn gold, spend it in the Locker Shop | Cars: F get in, SPACE boost, SHIFT out | Rockets and grenades blow up builds | 4 bosses a match drop Boss guns | Gliders, contrails and emote music | New HUD, sounds and Victory screen"
+   "label": "WHAT'S NEW IN V2 | NO BUILD: 4 new portals, just fight | Earn gold, spend it in the Locker Shop | Cars: F get in, SPACE boost, SHIFT out | Rockets and grenades blow up builds | 4 bosses a match drop Boss guns | Gliders, contrails and emote music | New HUD, sounds and Victory screen | Flags show what country players are in | Hide yours: /flag off (show: /flag on)"
   },
   {
    "id": "portal_solo",
