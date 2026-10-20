@@ -56,7 +56,9 @@ public final class Combat {
 			// Pickaxe (melee) hits: the hitter alone sees the damage number.
 			if (!BYPASS.get() && !GUN_HIT.get() && isFighter(entity) && source.getEntity() instanceof ServerPlayer hitter && source.getDirectEntity() == hitter && hitter != entity)
 				Net.damageNumberTo(hitter, entity, amount, shield(entity) > 0 ? 1 : 0);
-			if (BYPASS.get() || !isFighter(entity)) return true;
+			// Fall damage comes off health, never the shield, as in Fortnite (1.2.0, creator: "fall damage should take away
+			// from health not shield").
+			if (BYPASS.get() || !isFighter(entity) || source.is(DamageTypeTags.IS_FALL)) return true;
 			float shield = shield(entity);
 			if (shield <= 0) return true;
 			float absorbed = Math.min(shield, amount);

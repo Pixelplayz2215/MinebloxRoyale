@@ -1,3 +1,4 @@
+Fall damage (new in test2): with a shield up, jump off something high in a match: your health goes down, your shield stays
 Ramp rush (new in 1.2.0): hold the ramp key and run up: from anywhere on a ramp, even jumping, the next ramp carries straight on up
 Walls (new): build a wall, then build the same wall from the other side: it's the same wall (no second wall, no materials spent)
 Floors and walls (new): a floor, a wall on its edge and a floor above it: every piece whole, no missing rows
@@ -6,4 +7,4 @@ Box (new): four walls round you close up at the corners; break one and the other
 Breaking (new): shoot or pickaxe a ramp that touches a wall: the wall stays whole
 Bots building: they ramp, do 90s and box up on the same grid
 With a friend: host a game; your friend joins with Melty's Join or your room code (/rc); /rejoin still works
-Hub: the main board shows v1.2.0 - TEST 1 next to MINEBLOX ROYALE
+Hub: the main board shows v1.2.0 - TEST 2 next to MINEBLOX ROYALE
