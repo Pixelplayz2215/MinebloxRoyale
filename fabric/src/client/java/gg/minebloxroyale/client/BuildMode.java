@@ -89,6 +89,12 @@ public final class BuildMode {
 		boolean use = mc.options.keyUse.isDown();
 		if (use && !useWasDown) material = (material + 1) % Sheets.MATERIALS.size();
 		useWasDown = use;
+		// Out of this material: on to the next one you have, no right-click needed (2.0.0, creator: "when you build and
+		// run out of mats it should automatically switch to whatever mats you have available").
+		if (Builds.materialCount(mc.player, material().id()) < piece().cost()) {
+			String next = Builds.nextMaterial(mc.player, material().id(), piece().cost());
+			for (int i = 0; next != null && i < Sheets.MATERIALS.size(); i++) if (Sheets.MATERIALS.get(i).id().equals(next)) material = i;
+		}
 		while (mc.options.keyAttack.consumeClick()) {
 			placeCooldown = 0; // a fresh click places straight away
 		}

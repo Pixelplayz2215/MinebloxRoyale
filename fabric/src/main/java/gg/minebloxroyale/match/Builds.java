@@ -218,13 +218,35 @@ public final class Builds {
 		}
 	}
 
+	/**
+	 * Out of a material: the next one in the build bar's order (wood, brick, metal, then round again) you have enough of
+	 * for a piece costing 'cost', or null if there's none (2.0.0, creator: "when you build and run out of mats it should
+	 * automatically switch to whatever mats you have available so you dont have to do it manually").
+	 */
+	public static @Nullable String nextMaterial(Player p, String from, int cost) {
+		List<MaterialDef> all = Sheets.MATERIALS;
+		int at = 0;
+		for (int i = 0; i < all.size(); i++) if (all.get(i).id().equals(from)) at = i;
+		for (int k = 1; k <= all.size(); k++) {
+			MaterialDef m = all.get((at + k) % all.size());
+			if (materialCount(p, m.id()) >= cost) return m.id();
+		}
+		return null;
+	}
+
 	/** Server: a builder asks for a piece. Checks reach and cost, fills only air / replaceable blocks. */
 	public static void place(ServerLevel level, Player builder, String pieceId, String materialId, Placement p) {
 		if (MatchManager.noBuild()) return; // (a No Build match)
 		BuildPieceDef piece = Sheets.BUILDS_BY_ID.get(pieceId);
 		MaterialDef mat = Sheets.MATERIALS_BY_ID.get(materialId);
 		if (piece == null || mat == null || builder.isSpectator()) return;
-		if (!builder.isCreative() && materialCount(builder, materialId) < piece.cost()) return;
+		if (!builder.isCreative() && materialCount(builder, materialId) < piece.cost()) {
+			// Out of it: built from the next material you have, so holding the button keeps building (the client's
+			// build bar switches too, a moment later).
+			materialId = nextMaterial(builder, materialId, piece.cost());
+			if (materialId == null) return;
+			mat = Sheets.MATERIALS_BY_ID.get(materialId);
+		}
 		if (!build(level, builder.position(), piece, mat, p)) return;
 		if (!builder.isCreative()) spend(builder, materialId, piece.cost());
 	}
