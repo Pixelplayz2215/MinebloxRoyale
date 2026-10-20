@@ -87,7 +87,7 @@ final class BoardRows {
 			String what = switch (c.kind()) {
 				case "heal" -> "+" + amount + " health (max " + cap + ")";
 				case "shield" -> "+" + amount + " shield (max " + cap + ")";
-				default -> c.overTimeTicks() > 0 ? "+" + amount + " health & shield, slowly" : "fills health, then shield";
+				default -> c.overTimeTicks() > 0 ? "+" + amount + " health, then shield, slowly" : "fills health, then shield";
 			};
 			out.add(new Row("minebloxroyale:" + c.id(), -1, c.color(), c.name(), what + ", " + seconds(c.useTicks()) + " s"));
 		}

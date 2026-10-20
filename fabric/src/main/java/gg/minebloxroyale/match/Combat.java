@@ -253,7 +253,10 @@ public final class Combat {
 		return 0;
 	}
 
-	/** Every server tick: Slurp Juice gives +1 health and +1 shield per interval, each from its own 75-point pool. */
+	/**
+	 * Every server tick: Slurp Juice gives +1 per interval, health first (from its own 75-point pool) and only once health
+	 * is full, shield (from another 75).
+	 */
 	public static void tick(MinecraftServer server) {
 		if (REGEN.isEmpty()) return;
 		long now = server.overworld().getGameTime();
@@ -262,7 +265,8 @@ public final class Combat {
 			if (now % r.every() != 0) continue;
 			LivingEntity e = server.overworld().getEntity(entry.getKey()) instanceof LivingEntity le ? le : null; // players and bots
 			boolean wantHealth = r.healthLeft() > 0 && e != null && e.getHealth() < e.getMaxHealth();
-			boolean wantShield = r.shieldLeft() > 0 && e != null && shield(e) < Math.min(r.cap(), MinebloxRoyale.setting("maxShield"));
+			// (not both at once: 2.0.0, creator: "Health first, then shield. not same time. if health is full, do shield")
+			boolean wantShield = !wantHealth && r.shieldLeft() > 0 && e != null && shield(e) < Math.min(r.cap(), MinebloxRoyale.setting("maxShield"));
 			if (e == null || !e.isAlive() || !wantHealth && !wantShield) {
 				REGEN.remove(entry.getKey());
 				continue;
