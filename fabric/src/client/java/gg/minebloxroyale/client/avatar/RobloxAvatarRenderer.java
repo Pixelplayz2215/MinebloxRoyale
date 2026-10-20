@@ -3,6 +3,7 @@ package gg.minebloxroyale.client.avatar;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import gg.minebloxroyale.client.ClientState;
+import gg.minebloxroyale.client.mesh.Mesh;
 import gg.minebloxroyale.sheets.AvatarColorDef;
 import gg.minebloxroyale.sheets.AvatarPartDef;
 import gg.minebloxroyale.sheets.CosmeticDef;
@@ -20,6 +21,7 @@ import net.minecraft.client.renderer.entity.state.ArmedEntityRenderState;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
+import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -164,11 +166,12 @@ public final class RobloxAvatarRenderer {
 				drawMesh(vc, ps, jointMatrix(part, state, pose), part, bend(part, pose), mesh, color, light, overlay);
 			}
 		});
-		// Hats, hair, face accessories, back bling and shoes (Blender models; the lighter copies far away, so lots of
-		// bots at once stay smooth).
-		if (outfit != null && !outfit.isEmpty()) Cosmetics.submit(collector, poseStack, state, outfit, pose, state.distanceToCameraSq > 24 * 24, light, overlay);
+		// Hats, hair, face accessories, back bling and shoes (Blender models; the lighter copies further away, so lots of
+		// bots at once stay smooth: Mesh.lod, 1.2.0 from 2.0.0-test3).
+		double distSq = state.distanceToCameraSq;
+		if (outfit != null && !outfit.isEmpty()) Cosmetics.submit(collector, poseStack, state, outfit, pose, distSq, light, overlay);
 		// The glider (gliders sheet) above a gliding player, in root space.
-		if (state.getDataOrDefault(GLIDING, false)) Gliders.submit(collector, poseStack, Gliders.of(outfit, entityId), state.distanceToCameraSq > 32 * 32, light, overlay);
+		if (state.getDataOrDefault(GLIDING, false)) Gliders.submit(collector, poseStack, Gliders.of(outfit, entityId), distSq, light, overlay);
 		// Shirt and pants designs: painted pictures wrapped round the torso and legs (their own texture).
 		if (outfit != null && !outfit.isEmpty()) Cosmetics.submitClothes(collector, poseStack, state, outfit, pose, light, overlay);
 		return true;
@@ -230,42 +233,34 @@ public final class RobloxAvatarRenderer {
 		int overlay) {
 		float ox = part.centerX() - part.pivotX(), oy = part.centerY() - part.pivotY(), oz = part.centerZ() - part.pivotZ();
 		boolean face = part.faceDecal();
+		// Each corner bent, through its joint, from studs (y up, root at hips) to model space (y down, origin 1.501 above
+		// the feet, turned 180 about Z: ROOT) and through the pose: one matrix for it (and one for its normal), worked out
+		// once (2.0.0-test3, lag); the triangles in pairs, as quads (RobloxMesh.quads).
+		Matrix4f m = new Matrix4f(pose.pose()).mul(ROOT).mul(joint);
+		Matrix3f nm = new Matrix3f(pose.normal()).mul(new Matrix3f(ROOT).invert().transpose()).mul(new Matrix3f(joint).invert().transpose());
+		Mesh.Deform deform = bend.deform();
 		Vector3f p = new Vector3f(), n = new Vector3f();
-		int[] t = mesh.tris;
-		float[] u = new float[3], v = new float[3];
-		Vector3f[] ps = { new Vector3f(), new Vector3f(), new Vector3f() };
-		Vector3f[] ns = { new Vector3f(), new Vector3f(), new Vector3f() };
-		for (int i = 0; i < t.length; i += 3) {
-			// Face decal per whole triangle: only when all three corners face forward. (Deciding per corner blended the
+		int[] q = mesh.quads;
+		for (int i = 0; i < q.length; i++) {
+			int idx = q[i];
+			// Face decal per whole triangle: only where all three corners face forward. (Deciding per corner blended the
 			// face texture across triangles round the side of the head, leaving thin black streaks there.)
-			boolean front = face;
-			for (int k = 0; k < 3 && front; k++) front = mesh.nrm[t[i + k] * 3 + 2] < -0.3F;
-			for (int k = 0; k < 3; k++) {
-				int idx = t[i + k];
-				float vx = mesh.pos[idx * 3], vy = mesh.pos[idx * 3 + 1], vz = mesh.pos[idx * 3 + 2];
-				p.set(vx + ox, vy + oy, vz + oz);
-				n.set(mesh.nrm[idx * 3], mesh.nrm[idx * 3 + 1], mesh.nrm[idx * 3 + 2]);
-				bend.apply(p, n);
-				joint.transformPosition(p);
-				joint.transformDirection(n);
-				// studs (y up, root at hips) -> model space (y down, origin 1.501 above the feet), turned 180 about Z.
-				ps[k].set(-p.x * S, 1.501F - (p.y + HIP) * S, p.z * S);
-				ns[k].set(-n.x, -n.y, n.z).normalize();
-				// Face decal: front-facing head triangles get a planar projection of the face; everything else samples
-				// white.
-				if (front) {
-					u[k] = 0.5F + vx / 1.2F * -1F * 0.92F;
-					v[k] = 0.5F - vy / 1.2F * 0.92F;
-				} else {
-					u[k] = 0.01F;
-					v[k] = 0.01F;
-				}
+			boolean front = face && mesh.forward[i / 4];
+			float vx = mesh.pos[idx * 3], vy = mesh.pos[idx * 3 + 1], vz = mesh.pos[idx * 3 + 2];
+			p.set(vx + ox, vy + oy, vz + oz);
+			n.set(mesh.nrm[idx * 3], mesh.nrm[idx * 3 + 1], mesh.nrm[idx * 3 + 2]);
+			if (deform != null) deform.apply(p, n);
+			float nx = nm.m00 * n.x + nm.m10 * n.y + nm.m20 * n.z, ny = nm.m01 * n.x + nm.m11 * n.y + nm.m21 * n.z, nz = nm.m02 * n.x + nm.m12 * n.y + nm.m22 * n.z;
+			float l = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
+			if (l > 1e-6F) {
+				nx /= l;
+				ny /= l;
+				nz /= l;
 			}
-			// The entity render type draws quads: send each triangle as a quad with its last corner repeated.
-			for (int k = 0; k < 4; k++) {
-				int c = Math.min(k, 2);
-				vc.addVertex(pose, ps[c].x, ps[c].y, ps[c].z).setColor(color).setUv(u[c], v[c]).setOverlay(overlay).setLight(light).setNormal(pose, ns[c].x, ns[c].y, ns[c].z);
-			}
+			// Face decal: front-facing head triangles get a planar projection of the face; everything else samples white.
+			vc.addVertex(m.m00() * p.x + m.m10() * p.y + m.m20() * p.z + m.m30(), m.m01() * p.x + m.m11() * p.y + m.m21() * p.z + m.m31(),
+				m.m02() * p.x + m.m12() * p.y + m.m22() * p.z + m.m32()).setColor(color)
+				.setUv(front ? 0.5F + vx / 1.2F * -1F * 0.92F : 0.01F, front ? 0.5F - vy / 1.2F * 0.92F : 0.01F).setOverlay(overlay).setLight(light).setNormal(nx, ny, nz);
 		}
 	}
 

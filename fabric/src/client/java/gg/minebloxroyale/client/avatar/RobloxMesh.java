@@ -14,12 +14,38 @@ public final class RobloxMesh {
 	public final float[] nrm;   // xyz per vertex
 	public final float[] uv;    // uv per vertex
 	public final int[] tris;    // 3 indices per triangle
+	/**
+	 * The triangles paired into quads (Mesh.pairQuads; 2.0.0-test3, lag): vertex indices, four a quad; and per quad
+	 * whether it faces forward (all its corners' normals towards -Z: where a face decal goes).
+	 */
+	final int[] quads;
+	final boolean[] forward;
 
 	private RobloxMesh(float[] pos, float[] nrm, float[] uv, int[] tris) {
 		this.pos = pos;
 		this.nrm = nrm;
 		this.uv = uv;
 		this.tris = tris;
+		int n = tris.length / 3;
+		int[] ids = new int[tris.length], group = new int[n];
+		java.util.Map<java.util.List<Integer>, Integer> seen = new java.util.HashMap<>();
+		for (int i = 0; i < tris.length; i++) {
+			int v = tris[i];
+			java.util.List<Integer> key = java.util.List.of(Float.floatToIntBits(pos[v * 3]), Float.floatToIntBits(pos[v * 3 + 1]), Float.floatToIntBits(pos[v * 3 + 2]),
+				Float.floatToIntBits(nrm[v * 3]), Float.floatToIntBits(nrm[v * 3 + 1]), Float.floatToIntBits(nrm[v * 3 + 2]), Float.floatToIntBits(uv[v * 2]),
+				Float.floatToIntBits(uv[v * 2 + 1]));
+			ids[i] = seen.computeIfAbsent(key, k -> seen.size());
+		}
+		for (int t = 0; t < n; t++) {
+			boolean front = true;
+			for (int k = 0; k < 3 && front; k++) front = nrm[tris[t * 3 + k] * 3 + 2] < -0.3F;
+			group[t] = front ? 1 : 0;
+		}
+		int[] slots = gg.minebloxroyale.client.mesh.Mesh.pairQuads(ids, group);
+		quads = new int[slots.length];
+		forward = new boolean[slots.length / 4];
+		for (int i = 0; i < slots.length; i++) quads[i] = tris[slots[i]];
+		for (int q = 0; q < forward.length; q++) forward[q] = group[slots[q * 4] / 3] == 1;
 	}
 
 	/** The same mesh cut across planes y = planes[i] (Bend: an arm or leg, so it bends smoothly). */

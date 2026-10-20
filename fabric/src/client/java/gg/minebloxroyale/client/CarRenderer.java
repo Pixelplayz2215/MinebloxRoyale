@@ -17,10 +17,9 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Draws a parked car on its core block, nose the way the car faces: the Blender model of its kind and damage stage
- * (fabric/tools/blender/cars.py), in its paint and trim colours; the lighter copy past FAR blocks.
+ * (fabric/tools/blender/cars.py), in its paint and trim colours; the lighter copies further away (Mesh.lod).
  */
 public class CarRenderer implements BlockEntityRenderer<CarBlockEntity, CarRenderer.State> {
-	private static final double FAR = 40;
 
 	public static class State extends BlockEntityRenderState {
 		CarBlockEntity.Kind kind = CarBlockEntity.Kind.SEDAN;
@@ -44,10 +43,13 @@ public class CarRenderer implements BlockEntityRenderer<CarBlockEntity, CarRende
 		state.stage = car.stage(); // (how damaged it looks)
 	}
 
+	/** About how big a car is (blocks), for picking its lighter copies far away (Mesh.lod; 1.2.0, from 2.0.0-test3, lag). */
+	static final float SIZE = 5F;
+
 	@Override
 	public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
-		boolean far = camera.pos.distanceToSqr(Vec3.atCenterOf(state.blockPos)) > FAR * FAR;
-		Mesh mesh = Mesh.get("car_" + state.kind.name().toLowerCase(Locale.ROOT) + "_" + state.stage + (far ? "_far" : ""));
+		Mesh mesh = Mesh.lod("car_" + state.kind.name().toLowerCase(Locale.ROOT) + "_" + state.stage, camera.pos.distanceToSqr(Vec3.atCenterOf(state.blockPos)),
+			SIZE);
 		poseStack.pushPose();
 		poseStack.translate(0.5F, 0F, 0.5F);
 		poseStack.rotate(Axis.YP.rotationDegrees(-state.yaw));

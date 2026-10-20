@@ -24,6 +24,8 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class WorldVisuals {
 	private static final int FULL_BRIGHT = 0xF000F0, READY = 0x4CD964, RECHARGING = 0xE03A3A;
+	/** About how big the Battle Bus and a reboot van are (blocks), for picking their lighter copies far away (Mesh.lod). */
+	public static final float BUS_SIZE = 12F, VAN_SIZE = 5F;
 	private static Identifier white;
 
 	private WorldVisuals() {
@@ -42,7 +44,8 @@ public final class WorldVisuals {
 				ps.pushPose();
 				ps.translate(bx - cam.x, by - cam.y + 0.1, bz - cam.z);
 				ps.rotate(Axis.YP.rotationDegrees(switch (bus.facing()) { case "east" -> 90; case "west" -> -90; case "north" -> 180; default -> 0; }));
-				out.submitCustomGeometry(ps, RenderTypes.entityCutout(white()), (pose, vc) -> Mesh.get("battle_bus").draw(pose, null, vc, FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0xFFFFFF, 0xFFFFFF));
+				Mesh mesh = Mesh.lod("battle_bus", cam.distanceToSqr(bx, by, bz), BUS_SIZE);
+				out.submitCustomGeometry(ps, RenderTypes.entityCutout(white()), (pose, vc) -> mesh.draw(pose, null, vc, FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0xFFFFFF, 0xFFFFFF));
 				ps.popPose();
 			}
 			Identifier splash = FortniteMedia.billboard();
@@ -64,7 +67,8 @@ public final class WorldVisuals {
 			ps.pushPose();
 			ps.translate(v.x() - cam.x, v.y() - cam.y, v.z() - cam.z);
 			ps.rotate(Axis.YP.rotationDegrees(v.yaw()));
-			out.submitCustomGeometry(ps, RenderTypes.entityCutout(white()), (pose, vc) -> Mesh.get("reboot_van").draw(pose, null, vc, FULL_BRIGHT, OverlayTexture.NO_OVERLAY, ready ? READY : RECHARGING, 0xFFFFFF));
+			Mesh mesh = Mesh.lod("reboot_van", cam.distanceToSqr(v.x(), v.y(), v.z()), VAN_SIZE);
+			out.submitCustomGeometry(ps, RenderTypes.entityCutout(white()), (pose, vc) -> mesh.draw(pose, null, vc, FULL_BRIGHT, OverlayTexture.NO_OVERLAY, ready ? READY : RECHARGING, 0xFFFFFF));
 			ps.popPose();
 		}
 	}

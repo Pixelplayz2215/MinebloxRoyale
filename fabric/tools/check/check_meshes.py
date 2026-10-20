@@ -1,10 +1,10 @@
 """
 Checks the Blender models (assets/minebloxroyale/meshes/*.brm) without the game, as ModelAudit did for the code-drawn
-ones: every file reads and has sane numbers; every model the game asks for is there with its far copy (cosmetics in each
-form the avatar picks: hats over an afro, every haircut under every kind of hat edge; gliders; cars at every damage
-stage); and no two surfaces of different colours lie on the same plane over each other where they'd flicker, both in
-each model and between the head pieces worn together (every hat + hair, hat + face and hair + face pair, as
-Cosmetics.submit picks them).
+ones: every file reads and has sane numbers (the -low copies for far away too, lod.py); every model the game asks for is
+there with its far copy (cosmetics in each form the avatar picks: hats over an afro, every haircut under every kind of
+hat edge; gliders; cars at every damage stage); and no two surfaces of different colours lie on the same plane over each
+other where they'd flicker, both in each model and between the head pieces worn together (every hat + hair, hat + face
+and hair + face pair, as Cosmetics.submit picks them).
 
 python tools/check/check_meshes.py [meshes dir] [design dir]      (from fabric/; numpy)
 """
@@ -142,7 +142,7 @@ def main():
         problems.append(f"{m}: missing")
     # Every model by itself (items are in blocks, the rest in studs or blocks of their own size: scale by its size).
     for mid in files:
-        if mid in missing or mid.endswith("_far"):
+        if mid in missing or mid.endswith(("_far", "-low")):
             continue
         a, cols = load(mid)
         scale = float(np.ptp(a.reshape(-1, 3), axis=0).max()) or 1.0

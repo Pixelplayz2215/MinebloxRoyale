@@ -37,7 +37,8 @@ public class BattleBusRenderer extends EntityRenderer<BattleBusEntity, BattleBus
 	public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
 		poseStack.pushPose();
 		poseStack.rotate(Axis.YP.rotationDegrees(-state.yaw));
-		collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(WorldVisuals.white()), (pose, vc) -> Mesh.get("battle_bus").draw(pose, null, vc, Mesh.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0xFFFFFF, 0xFFFFFF));
+		Mesh bus = Mesh.lod("battle_bus", state.distanceToCameraSq, WorldVisuals.BUS_SIZE);
+		collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(WorldVisuals.white()), (pose, vc) -> bus.draw(pose, null, vc, Mesh.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0xFFFFFF, 0xFFFFFF));
 		poseStack.popPose();
 		super.submit(state, poseStack, collector, camera);
 	}

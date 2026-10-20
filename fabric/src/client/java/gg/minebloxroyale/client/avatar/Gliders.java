@@ -16,6 +16,9 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
  * (RobloxAvatarRenderer), in the glider's two colours; the lighter copy far away.
  */
 final class Gliders {
+	/** About how big a glider is (blocks), for picking its lighter copies far away (Mesh.lod). */
+	private static final float SIZE = 3.5F;
+
 	private Gliders() {
 	}
 
@@ -29,8 +32,8 @@ final class Gliders {
 		return !free.isEmpty() ? free.get(Math.floorMod(entityId, free.size())) : Sheets.GLIDERS.get(0);
 	}
 
-	static void submit(SubmitNodeCollector collector, PoseStack poseStack, GliderDef g, boolean far, int light, int overlay) {
-		Mesh mesh = Mesh.get(g.id() + (far ? "_far" : ""));
+	static void submit(SubmitNodeCollector collector, PoseStack poseStack, GliderDef g, double distSq, int light, int overlay) {
+		Mesh mesh = Mesh.lod(g.id(), distSq, SIZE); // (its lighter copies by how far it is: 1.2.0, from 2.0.0-test3, lag)
 		collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(WorldVisuals.white()),
 			(pose, vc) -> mesh.draw(pose, RobloxAvatarRenderer.ROOT, vc, light, overlay, g.color() & 0xFFFFFF, g.color2() & 0xFFFFFF));
 	}

@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.2.0-test2 (test build, 2026-10-20, not released)
+## v1.2.0-test3 (test build, 2026-10-20, not released)
 
 1.0.1.5 (every connection fix from 1.0.1.1 to 1.0.1.5) with Fortnite-style building, from a tester on 1.0.1 ("In Fortnite the building is grid snapped so no matter where you try to place builds the builds will never be uneven or go into each other").
 
@@ -8,6 +8,10 @@
 - **Ramp rush from anywhere on a ramp:** building a ramp while you're on a ramp facing up it carries on up from its top, wherever you are on it and even mid-jump; a floor ahead does too, and a wall goes in front of the next piece instead of across your way up. Before, the next ramp started at the bottom of the one you were on until you'd reached its very top edge.
 - Bots build on the same grid; one opening its box breaks the right wall (the corners are shared now).
 - **Fall damage comes off your health, not your shield**, as in Fortnite (test2; creator: "fall damage should take away from health not shield"). Shots, blasts and the rest still hit the shield first.
+- **Less lag** (test3; creator: "lag is bad in game for v1.2.0"), the speed-ups 2.0.0 already has:
+  - **The next island waits until 2 minutes into a match.** It used to be made from the moment the bus took off, right through the bus ride, the drop and the first fights, when every game is busiest (in an earlier profile it took 43% of the processor).
+  - **The storm on the minimap and the map is drawn in one piece.** Its edge and the next circle were drawn a pixel at a time, thousands of separate pieces every frame, and Minecraft checks each new piece against the ones before it, so it got slower as the circles came into view. The sniper scope's dark surround the same.
+  - **Lighter models far away:** every model over 1,500 triangles has a copy a tenth the size or less, drawn once it's far enough that you can't tell (hats, hair, back bling, shoes, gliders, cars, chests, the bus, vans, items on the ground). Every model also sends about half as many corners as before (the same shapes).
 
 ## v1.0.1.5 (2026-10-19)
 

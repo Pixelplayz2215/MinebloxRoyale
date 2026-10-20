@@ -89,6 +89,8 @@ public final class Cosmetics {
 	/** The head, leg and torso the Blender models were made on (fabric/tools/blender: cosmetics.py, backbling.py), in joint space. */
 	private static final float[] HEAD = { -0.5989F, -0.0012F, -0.5989F, 0.5989F, 1.2012F, 0.5989F }, LEG = { -0.5F, -2, -0.5F, 0.5F, 0, 0.5F },
 		TORSO = { -1, -1, -0.5F, 1, 1, 0.5F }, ARM = { -0.5F, -1.5F, -0.5F, 0.5F, 0.5F, 0.5F };
+	/** About how big a worn model is (blocks, corner to corner), for picking its lighter copies far away (Mesh.lod). */
+	public static final float AVATAR_SIZE = 1F;
 	/** Hats worn over the hair rather than on the head: the haircut stays whole (over an afro they have their own, bigger model). */
 	private static final List<String> OVER_HAIR = List.of("headphones", "halo", "bunny", "cat", "tiara");
 
@@ -103,7 +105,7 @@ public final class Cosmetics {
 	 * colours; the lighter copies far away.
 	 */
 	static void submit(SubmitNodeCollector collector, PoseStack poseStack, LivingEntityRenderState state, Map<String, String> outfit,
-		RobloxAvatarRenderer.Pose pose, boolean far, int light, int overlay) {
+		RobloxAvatarRenderer.Pose pose, double distSq, int light, int overlay) {
 		CosmeticDef hat = worn(outfit, "hat"), hair = worn(outfit, "hair"), face = worn(outfit, "face"), back = worn(outfit, "back"),
 			shoes = worn(outfit, "shoes"), shirt = worn(outfit, "shirt"), pants = worn(outfit, "pants");
 		// Full masks and helmets hide the haircut.
@@ -132,19 +134,20 @@ public final class Cosmetics {
 			} else if (isArm && shirt != null) pieces.add(new Piece("shirt_" + shirt.shape() + "_" + side + "arm", fit(part, ARM), joint, bend, part.id(), shirt));
 		}
 		if (pieces.isEmpty()) return;
-		String lod = far ? "_far" : "";
 		collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(WorldVisuals.white()), (ps, vc) -> {
 			for (Piece p : pieces) {
-				Mesh mesh = Mesh.get(p.mesh() + lod);
+				// (the lighter copies by how far the avatar is: Mesh.lod; 2.0.0-test3, lag)
+				Mesh mesh = Mesh.lod(p.mesh(), distSq, AVATAR_SIZE);
 				int a = p.c().color() & 0xFFFFFF, b = p.c().color2() & 0xFFFFFF;
-				if (p.bend().none()) {
+				Mesh.Deform bend = p.bend().deform();
+				if (bend == null) {
 					mesh.draw(ps, new Matrix4f(p.joint()).mul(p.fit()), vc, light, overlay, a, b);
 					continue;
 				}
-				// On a bending arm or leg: cut across the bend (in the model's own space) and bent in the limb's joint space.
+				// On a bending arm or leg: fitted to the limb and cut across the bend (once), bent in the limb's joint space.
 				float[] planes = Bend.cuts(p.bend().arm());
 				for (int i = 0; i < planes.length; i++) planes[i] = meshY(p.fit(), planes[i]);
-				mesh.cut(p.mesh() + lod + "@" + p.part(), planes).drawBent(ps, p.fit(), p.bend()::apply, p.joint(), vc, light, overlay, a, b);
+				mesh.fitted(mesh.id + "@" + p.part(), p.fit(), planes).drawBent(ps, bend, p.joint(), vc, light, overlay, a, b);
 			}
 		});
 	}
