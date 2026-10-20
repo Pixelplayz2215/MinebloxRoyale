@@ -18,6 +18,7 @@
     { "id": "botSimFightChance", "value": 0.06, "unit": "per second", "meaning": "chance per second that a close simulated pair fights to an elimination" },
     { "id": "botMaxReal", "value": 24, "unit": "bots", "meaning": "most real bot entities at once (performance)" },
     { "id": "countdownSeconds", "value": 5, "unit": "s", "meaning": "once EVERY player in the hub stands on the same mode portal; anyone stepping off (or onto another portal) cancels it" },
+    { "id": "pregenQuiet", "value": 120, "unit": "seconds", "meaning": "the next island isn't made for this long after a match starts (1.2.0, from 2.0.0-test3, less lag: the bus ride and everyone dropping in are when games are busiest); then three chunks at a time, about 3 minutes" },
     { "id": "busBelowTop", "value": 6, "unit": "blocks", "meaning": "the Battle Bus flies this far below the world's height limit (it IS the height limit of the match)" },
     { "id": "busSpeed", "value": 0.8, "unit": "blocks/tick", "meaning": "Battle Bus speed along its straight route over the island (about 70 s across)" },
     { "id": "busInset", "value": 25, "unit": "blocks", "meaning": "the route starts and ends this far INSIDE the first circle, so the bus is never in the storm" },

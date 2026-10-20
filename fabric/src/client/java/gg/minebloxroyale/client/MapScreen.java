@@ -8,6 +8,8 @@ import gg.minebloxroyale.net.Net;
 import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -115,6 +117,8 @@ public class MapScreen extends Screen {
 		int S = size * gs;
 		double k = S / visible(); // screen pixels per block
 		double vx0 = viewX - visible() / 2, vz0 = viewZ - visible() / 2; // world point at the square's top-left
+		// the map square on screen (GUI coordinates, as enableScissor makes them), for what's drawn in one piece
+		ScreenRectangle box = new ScreenRectangle(x0, y0, size, size).transformMaxBounds(g.pose());
 		g.enableScissor(x0, y0, x0 + size, y0 + size);
 		g.pose().pushMatrix();
 		g.pose().translate(x0, y0);
@@ -134,10 +138,11 @@ public class MapScreen extends Screen {
 		if (hud.phase().equals("LIVE") || hud.phase().equals("ENDED")) {
 			double[] storm = ClientState.storm();
 			double sx = (storm[0] - vx0) * k, sz = (storm[1] - vz0) * k;
-			// (Fast versions: the big map would otherwise draw tens of thousands of single pixels a frame.)
-			Minimap.stormFillFast(g, S, sx, sz, storm[2] * k, Math.max(2, gs));
-			Minimap.ringFast(g, S, sx, sz, storm[2] * k, 0x000000, 1.6 * gs / 3.0 * 2);
-			Minimap.ringFast(g, S, (hud.nextX() - vx0) * k, (hud.nextZ() - vz0) * k, hud.nextR() * k, 0x000000, 1.2 * gs / 3.0 * 2);
+			// (One piece, as on the minimap: 2.0.0. Kept inside the map square itself, since it's drawn past the scissor.)
+			Smooth.Batch b = new Smooth.Batch(RenderPipelines.GUI, TextureSetup.noTexture()).clip(box);
+			Minimap.stormInto(b, S, sx, sz, storm[2] * k, 1.6 * gs / 3.0 * 2, (hud.nextX() - vx0) * k, (hud.nextZ() - vz0) * k, hud.nextR() * k,
+				1.2 * gs / 3.0 * 2);
+			b.submit(g);
 		}
 		if (Waypoint.isSet()) {
 			double wx = (Waypoint.x() - vx0) * k, wz = (Waypoint.z() - vz0) * k;
@@ -146,7 +151,8 @@ public class MapScreen extends Screen {
 		}
 		Minimap.teamMarks(g, S, k, vx0, vz0, gs); // team modes: vans, cards, teammates and their waypoints
 		double yaw = Math.toRadians(mc.player.getYRot());
-		Minimap.arrow(g, (mc.player.getX() - vx0) * k, (mc.player.getZ() - vz0) * k, -Math.sin(yaw), Math.cos(yaw), gs, ClientState.myColor());
+		Minimap.arrow(g, (mc.player.getX() - vx0) * k, (mc.player.getZ() - vz0) * k, -Math.sin(yaw), Math.cos(yaw), gs, ClientState.myColor(),
+			box);
 		g.pose().popMatrix();
 		// Grid letters and numbers along the edges, for the columns and rows in view.
 		for (int i = 0; i < 10; i++) {

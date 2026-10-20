@@ -46,6 +46,12 @@ public final class IslandPregen {
 	private static volatile boolean running, finished;
 	/** A match is being played: the island being made is the next one, generated more slowly. */
 	private static volatile boolean inMatch;
+	/**
+	 * Until when the next island waits (2.0.0-test3, creator: "we need to reduce the lag"; in 1.2.0 too: "lag is bad in game for v1.2.0"): the match's first minutes,
+	 * the Battle Bus and everyone dropping in, are when every game is busiest (all the land below loading, bots landing
+	 * round you), and making the next island used the processor right then (match pregenQuiet).
+	 */
+	private static volatile long quietUntil;
 	/** Since when the generator has been waiting for the disk to catch up (0 = it isn't). */
 	private static volatile long diskWaitSince;
 	private static volatile Thread worker;
@@ -203,11 +209,12 @@ public final class IslandPregen {
 	}
 
 	/**
-	 * A match has taken the island: the next one is started now and made while the match is played, more slowly so
-	 * the match doesn't lag. Its map stays hidden until the match is over.
+	 * A match has taken the island: the next one is started now (found at once, made from pregenQuiet seconds in) and
+	 * made while the match is played, more slowly so the match doesn't lag. Its map stays hidden until the match is over.
 	 */
 	public static void matchStarted(MinecraftServer server) {
 		inMatch = true;
+		quietUntil = System.currentTimeMillis() + (long) (MinebloxRoyale.setting("pregenQuiet") * 1000);
 		IslandMap.hold();
 		long free = freeSpace(server);
 		if (free < NEW_ISLAND_MIN) {
@@ -319,6 +326,7 @@ public final class IslandPregen {
 			chunks: for (int attempt = 0; attempt < 6 && !pass.isEmpty() && running; attempt++) {
 				if (attempt > 0) MinebloxRoyale.LOG.info("BR: asking again for {} island chunks that didn't load", pass.size());
 				for (int i = 0; i < pass.size() && running; i++) {
+					while (inMatch && System.currentTimeMillis() < quietUntil && running) sleep(100);
 					while (inFlight.get() >= (System.currentTimeMillis() < gentleUntil ? 1 : inMatch ? 3 : 6) && running) sleep(5);
 					// Never get far ahead of the disk: chunks can be made faster than Minecraft writes them, and
 					// closing the world waits for every write still queued (measured: 23-86 s when closing mid-island).

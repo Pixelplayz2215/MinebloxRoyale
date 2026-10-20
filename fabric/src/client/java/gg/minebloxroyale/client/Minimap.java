@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.core.BlockPos;
@@ -18,6 +20,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.MapColor;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Fortnite-style minimap (hud sheet "minimap"): framed live terrain (north up) sampled from loaded chunks, the storm
@@ -117,6 +120,8 @@ public final class Minimap {
 		// The view is centred on exactly where you are (not where the last sample was taken), so it scrolls smoothly.
 		double px = mc.player.getX(), pz = mc.player.getZ();
 		float u = (float) ((px - originX) / BLOCKS_PER_PIXEL - VIEW / 2.0), v = (float) ((pz - originZ) / BLOCKS_PER_PIXEL - VIEW / 2.0);
+		// the map square on screen (GUI coordinates, as enableScissor makes them), for what's drawn in one piece
+		ScreenRectangle box = new ScreenRectangle(x0, y0, size, size).transformMaxBounds(g.pose());
 		g.enableScissor(x0, y0, x0 + size, y0 + size);
 		g.blit(RenderPipelines.GUI_TEXTURED, TEX_ID, x0, y0, u, v, size, size, VIEW, VIEW, RES, RES);
 		g.disableScissor();
@@ -134,11 +139,10 @@ public final class Minimap {
 		g.pose().scale(1F / gs, 1F / gs);
 		if (storm) {
 			double[] st = ClientState.storm();
-			double sx = (st[0] - px) * k + half, sz = (st[1] - pz) * k + half, sr = st[2] * k;
-			stormFillFast(g, S, sx, sz, sr, Math.max(1, gs / 2));
-			// Black storm edge and next circle (creator request), smooth.
-			ring(g, S, sx, sz, sr, 0x000000, 1.6 * gs / 3.0 * 2);
-			ring(g, S, (hud.nextX() - px) * k + half, (hud.nextZ() - pz) * k + half, hud.nextR() * k, 0x000000, 1.2 * gs / 3.0 * 2);
+			// The storm's purple, its black edge and the next circle (creator request), smooth, as one piece (2.0.0).
+			Smooth.Batch b = new Smooth.Batch(RenderPipelines.GUI, TextureSetup.noTexture()).clip(box);
+			stormInto(b, S, (st[0] - px) * k + half, (st[1] - pz) * k + half, st[2] * k, 1.6 * gs / 3.0 * 2,
+				(hud.nextX() - px) * k + half, (hud.nextZ() - pz) * k + half, hud.nextR() * k, 1.2 * gs / 3.0 * 2);
 			// Dashed black path to the safe zone while you're outside the next circle.
 			double pdx = px - hud.nextX(), pdz = pz - hud.nextZ();
 			double pd = Math.sqrt(pdx * pdx + pdz * pdz);
@@ -150,10 +154,11 @@ public final class Minimap {
 					double t1 = Math.min(len, t + dash);
 					for (double q = t; q < t1; q += 1.5) {
 						int qx = (int) Math.round(half + (bx - half) * q / len), qy = (int) Math.round(half + (bz - half) * q / len);
-						if (qx >= 1 && qy >= 1 && qx < S - 1 && qy < S - 1) g.fill(qx - 1, qy - 1, qx + 1, qy + 1, 0xFF000000);
+						if (qx >= 1 && qy >= 1 && qx < S - 1 && qy < S - 1) b.quad(qx - 1, qy - 1, qx + 1, qy + 1, 0xFF000000, 0xFF000000);
 					}
 				}
 			}
+			b.submit(g);
 		}
 		// Team modes: reboot vans, your team's cards, teammates' waypoints and teammates.
 		teamMarks(g, S, k, px - half / k, pz - half / k, gs);
@@ -221,65 +226,62 @@ public final class Minimap {
 		}
 	}
 
+	private static final int STORM_PURPLE = 0x9A6A1FB8;
+
 	/**
-	 * Fast storm area for the big map: purple outside the circle in bands a few pixels tall (the ring drawn on top
-	 * hides the steps), and whole rectangles above and below the circle, so a few hundred pieces instead of thousands.
+	 * The storm on a map (the minimap and the big map, 2.0.0; creator: "as the storm gets closer in, my frames drop, so
+	 * do my friends"): the purple outside the circle, its black edge and the next circle, each a ring of thin pieces
+	 * round the circle with soft edges, all into one batch. Before, the rings were drawn a pixel at a time: once the
+	 * circles fit on the map, as the storm closes in, that was thousands of separate pieces every frame. In screen
+	 * pixels: S the map's size, (sx, sz, sr) the storm, (nx, nz, nr) the next circle, edge and nextEdge their rings'
+	 * widths.
 	 */
-	static void stormFillFast(GuiGraphicsExtractor g, int S, double sx, double sz, double sr, int band) {
-		int top = (int) Math.max(0, Math.min(S, Math.floor(sz - sr))), bottom = (int) Math.max(0, Math.min(S, Math.ceil(sz + sr)));
-		if (top > 0) g.fill(0, 0, S, top, 0x9A6A1FB8);
-		if (bottom < S) g.fill(0, bottom, S, S, 0x9A6A1FB8);
-		for (int y = top; y < bottom; y += band) {
-			int y2 = Math.min(bottom, y + band);
-			double dy = (y + y2) / 2.0 - sz;
-			double hw = Math.abs(dy) >= sr ? 0 : Math.sqrt(sr * sr - dy * dy);
-			int a = (int) Math.max(0, Math.min(S, Math.round(sx - hw))), b = (int) Math.max(0, Math.min(S, Math.round(sx + hw)));
-			if (a > 0) g.fill(0, y, a, y2, 0x9A6A1FB8);
-			if (b < S) g.fill(b, y, S, y2, 0x9A6A1FB8);
-		}
+	static void stormInto(Smooth.Batch b, int S, double sx, double sz, double sr, double edge, double nx, double nz, double nr, double nextEdge) {
+		// the purple, from the storm's edge out past the map's farthest corner
+		double far = Math.hypot(Math.max(Math.abs(sx), Math.abs(sx - S)), Math.max(Math.abs(sz), Math.abs(sz - S))) + 4;
+		if (far > sr) band(b, S, sx, sz, Math.max(0, sr), far, STORM_PURPLE, STORM_PURPLE);
+		ringBand(b, S, sx, sz, sr, 0x000000, edge);
+		ringBand(b, S, nx, nz, nr, 0x000000, nextEdge);
 	}
 
-	/** Fast ring for the big map: short rotated bars round the circle (a few hundred pieces, whatever the size). */
-	static void ringFast(GuiGraphicsExtractor g, int S, double cx, double cy, double r, int rgb, double width) {
+	/** A ring of width w: solid in the middle, fading out over its last pixel each side (as the old pixel rings). */
+	private static void ringBand(Smooth.Batch b, int S, double cx, double cy, double r, int rgb, double w) {
 		if (r <= 1) return;
-		int n = (int) Math.max(24, Math.min(720, 2 * Math.PI * r / 5));
-		double step = 2 * Math.PI / n, len = 2 * Math.PI * r / n + 1.5;
-		float w = (float) (width / 2);
+		double hw = w / 2, core = Math.max(0, hw - 0.5);
+		int solid = 0xFF000000 | rgb, clear = rgb & 0xFFFFFF;
+		band(b, S, cx, cy, Math.max(0, r - hw - 0.5), r - core, clear, solid);
+		if (core > 0) band(b, S, cx, cy, r - core, r + core, solid, solid);
+		band(b, S, cx, cy, r + core, r + hw + 0.5, solid, clear);
+	}
+
+	/**
+	 * The band between radii r0 and r1 round (cx, cy), shading from c0 to c1: enough pieces that the inner edge looks
+	 * round (under a tenth of a pixel off), only those over the map square (S, a little margin).
+	 */
+	private static void band(Smooth.Batch b, int S, double cx, double cy, double r0, double r1, int c0, int c1) {
+		int n = (int) Math.max(48, Math.min(1024, Math.ceil(2 * Math.PI * Math.max(r0, r1 * 0.25) / 3)));
+		double step = 2 * Math.PI / n, c = 1, s = 0;
 		for (int i = 0; i < n; i++) {
-			double a = (i + 0.5) * step, x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r;
-			if (x < -len || y < -len || x > S + len || y > S + len) continue; // off the map square
-			g.pose().pushMatrix();
-			g.pose().translate((float) x, (float) y);
-			g.pose().rotate((float) (a + Math.PI / 2));
-			int hl = (int) Math.round(len / 2), hw2 = Math.max(1, Math.round(w));
-			g.fill(-hl, -hw2, hl, hw2, 0xFF000000 | rgb);
-			g.pose().popMatrix();
+			double cn = Math.cos((i + 1) * step), sn = Math.sin((i + 1) * step);
+			float ax = (float) (cx + c * r0), ay = (float) (cy + s * r0), bx = (float) (cx + c * r1), by = (float) (cy + s * r1);
+			float dx = (float) (cx + cn * r1), dy = (float) (cy + sn * r1), ex = (float) (cx + cn * r0), ey = (float) (cy + sn * r0);
+			c = cn;
+			s = sn;
+			if (Math.max(Math.max(ax, bx), Math.max(dx, ex)) < -2 || Math.min(Math.min(ax, bx), Math.min(dx, ex)) > S + 2
+				|| Math.max(Math.max(ay, by), Math.max(dy, ey)) < -2 || Math.min(Math.min(ay, by), Math.min(dy, ey)) > S + 2) continue;
+			b.quad(ax, ay, c0, bx, by, c1, dx, dy, c1, ex, ey, c0);
 		}
 	}
 
 	/**
-	 * Anti-aliased ring in screen pixels: every pixel's coverage of the band |distance - r| < width/2. Only the pixels
-	 * near the circle are visited (two short spans per row), so even a big ring on the full map is cheap.
+	 * A ring in screen pixels (waypoints): soft-edged, kept inside the map square (S), as one piece (2.0.0; it used to be
+	 * drawn a pixel at a time, each pixel a separate piece for Minecraft to place among all the others).
 	 */
 	static void ring(GuiGraphicsExtractor g, int S, double cx, double cy, double r, int rgb, double width) {
 		if (r <= 1) return;
-		double hw = width / 2, ro = r + hw + 1, ri = Math.max(0, r - hw - 1);
-		int y0 = (int) Math.max(0, Math.floor(cy - ro)), y1 = (int) Math.min(S, Math.ceil(cy + ro));
-		for (int y = y0; y < y1; y++) {
-			double dy = y + 0.5 - cy;
-			if (Math.abs(dy) > ro) continue;
-			double xo = Math.sqrt(ro * ro - dy * dy), xi = Math.abs(dy) < ri ? Math.sqrt(ri * ri - dy * dy) : 0;
-			span(g, S, (int) Math.floor(cx - xo), (int) Math.ceil(cx - xi), y, cx, cy, r, hw, rgb);
-			span(g, S, (int) Math.floor(cx + xi), (int) Math.ceil(cx + xo), y, cx, cy, r, hw, rgb);
-		}
-	}
-
-	private static void span(GuiGraphicsExtractor g, int S, int xa, int xb, int y, double cx, double cy, double r, double hw, int rgb) {
-		for (int x = Math.max(0, xa); x < Math.min(S, xb + 1); x++) {
-			double d = Math.abs(Math.hypot(x + 0.5 - cx, y + 0.5 - cy) - r);
-			double cover = Math.max(0, Math.min(1, hw + 0.5 - d));
-			if (cover > 0.02) g.fill(x, y, x + 1, y + 1, ((int) (cover * 255) << 24) | rgb);
-		}
+		Smooth.Batch b = new Smooth.Batch(RenderPipelines.GUI, TextureSetup.noTexture()).clip(new ScreenRectangle(0, 0, S, S).transformMaxBounds(g.pose()));
+		ringBand(b, S, cx, cy, r, rgb, width);
+		b.submit(g);
 	}
 
 	/** Arrow pixels (dx, dy, alpha, outline) for each of 128 headings and each GUI scale, worked out once. */
@@ -291,10 +293,20 @@ public final class Minimap {
 	}
 
 	static void arrow(GuiGraphicsExtractor g, double cx, double cy, double fx, double fz, int gs, int color) {
+		arrow(g, cx, cy, fx, fz, gs, color, null);
+	}
+
+	/** (clip: kept inside that box, GUI coordinates; its pixels go as one piece, 2.0.0) */
+	static void arrow(GuiGraphicsExtractor g, double cx, double cy, double fx, double fz, int gs, int color, @Nullable ScreenRectangle clip) {
 		int bucket = Math.floorMod((int) Math.round(Math.atan2(fz, fx) / (2 * Math.PI) * 128), 128);
 		int[] px = ARROWS.computeIfAbsent(gs * 1000 + bucket, key -> arrowPixels(bucket, gs));
 		int x0 = (int) Math.floor(cx), y0 = (int) Math.floor(cy), rgb = color & 0xFFFFFF;
-		for (int i = 0; i < px.length; i += 4) g.fill(x0 + px[i], y0 + px[i + 1], x0 + px[i] + 1, y0 + px[i + 1] + 1, (px[i + 2] << 24) | (px[i + 3] == 1 ? 0x101010 : rgb));
+		Smooth.Batch b = new Smooth.Batch(RenderPipelines.GUI, TextureSetup.noTexture()).clip(clip);
+		for (int i = 0; i < px.length; i += 4) {
+			int c = (px[i + 2] << 24) | (px[i + 3] == 1 ? 0x101010 : rgb);
+			b.quad(x0 + px[i], y0 + px[i + 1], x0 + px[i] + 1, y0 + px[i + 1] + 1, c, c);
+		}
+		b.submit(g);
 	}
 
 	private static int[] arrowPixels(int bucket, int gs) {

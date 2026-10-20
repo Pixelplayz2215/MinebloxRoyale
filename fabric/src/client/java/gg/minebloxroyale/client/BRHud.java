@@ -11,6 +11,8 @@ import gg.minebloxroyale.sheets.Sheets;
 import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.render.TextureSetup;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.world.item.ItemStack;
 
 /** The Fortnite-style HUD from the hud sheet. */
@@ -86,35 +88,38 @@ public final class BRHud {
 		int dim = faded(0x9E000000, fade), rimColor = faded(0xFF141A22, fade), black = faded(0xFF000000, fade);
 		g.pose().pushMatrix();
 		g.pose().scale(1F / gs, 1F / gs);
+		// (as one piece, 2.0.0: it was some 2,900 separate ones a frame on a 1440-pixel screen)
+		Smooth.Batch b = new Smooth.Batch(RenderPipelines.GUI, TextureSetup.noTexture());
 		for (int y = 0; y < h; y += step) {
 			double dy = y + step / 2.0 - cy;
 			if (Math.abs(dy) >= r) {
-				g.fill(0, y, w, y + step, dim);
+				b.quad(0, y, w, y + step, dim, dim);
 				continue;
 			}
 			int dx = (int) Math.round(Math.sqrt((double) r * r - dy * dy));
 			int in = Math.abs(dy) < r - rim ? (int) Math.round(Math.sqrt((double) (r - rim) * (r - rim) - dy * dy)) : 0;
-			g.fill(0, y, cx - dx, y + step, dim);
-			g.fill(cx + dx, y, w, y + step, dim);
-			g.fill(cx - dx, y, cx - in, y + step, rimColor);
-			g.fill(cx + in, y, cx + dx, y + step, rimColor);
+			b.quad(0, y, cx - dx, y + step, dim, dim);
+			b.quad(cx + dx, y, w, y + step, dim, dim);
+			b.quad(cx - dx, y, cx - in, y + step, rimColor, rimColor);
+			b.quad(cx + in, y, cx + dx, y + step, rimColor, rimColor);
 		}
 		int half = line / 2;
-		g.fill(cx - r + rim, cy - half, cx - gap, cy - half + line, black);
-		g.fill(cx + gap, cy - half, cx + r - rim, cy - half + line, black);
-		g.fill(cx - half, cy - r + rim, cx - half + line, cy - gap, black);
-		g.fill(cx - half, cy + gap, cx - half + line, cy + r - rim, black);
+		b.quad(cx - r + rim, cy - half, cx - gap, cy - half + line, black, black);
+		b.quad(cx + gap, cy - half, cx + r - rim, cy - half + line, black, black);
+		b.quad(cx - half, cy - r + rim, cx - half + line, cy - gap, black, black);
+		b.quad(cx - half, cy + gap, cx - half + line, cy + r - rim, black, black);
 		int tick = Math.round(14 * k);
 		for (int i = 1; i <= 4; i++) {
 			int y = cy + gap + Math.round(i * 46 * k);
-			g.fill(cx - tick, y - half, cx + tick, y - half + line, black);
+			b.quad(cx - tick, y - half, cx + tick, y - half + line, black, black);
 		}
 		int dot = Math.max(2, Math.round(6 * k));
 		for (int y = -dot; y <= dot; y++) {
 			int dx = (int) Math.round(Math.sqrt((double) dot * dot - y * y));
-			g.fill(cx - dx, cy + y, cx + dx + 1, cy + y + 1, faded(0xFFFF2828, fade));
+			b.quad(cx - dx, cy + y, cx + dx + 1, cy + y + 1, faded(0xFFFF2828, fade), faded(0xFFFF2828, fade));
 		}
-		hitMarker(g, cx, cy, k);
+		hitMarker(b, cx, cy, k);
+		b.submit(g);
 		g.pose().popMatrix();
 	}
 
@@ -122,7 +127,7 @@ public final class BRHud {
 	 * A hit marker in the scope when a shot of yours lands (creator): four short white strokes on the diagonals round the
 	 * centre, fading out; a headshot's are gold, longer and thicker.
 	 */
-	private static void hitMarker(GuiGraphicsExtractor g, int cx, int cy, float k) {
+	private static void hitMarker(Smooth.Batch b, int cx, int cy, float k) {
 		float m = Aim.hitMarker();
 		if (m == 0) return;
 		boolean head = m < 0;
@@ -131,7 +136,7 @@ public final class BRHud {
 		for (int i = inner; i <= outer; i++)
 			for (int[] d : new int[][] { { -1, -1 }, { 1, -1 }, { -1, 1 }, { 1, 1 } }) {
 				int x = cx + d[0] * i, y = cy + d[1] * i;
-				g.fill(x - thick / 2, y - thick / 2, x - thick / 2 + thick, y - thick / 2 + thick, color);
+				b.quad(x - thick / 2, y - thick / 2, x - thick / 2 + thick, y - thick / 2 + thick, color, color);
 			}
 	}
 
