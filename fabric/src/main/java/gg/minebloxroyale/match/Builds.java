@@ -20,11 +20,14 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Fortnite building (builds sheet): walls, floors and ramps that snap to a world grid. The shapes are shared by the
@@ -55,11 +58,26 @@ public final class Builds {
 		return Math.round(MinebloxRoyale.setting("buildHeight"));
 	}
 
-	/** Where a builder standing at (x, y, z) facing yaw / pitch would put this piece. */
+	/** Where a builder standing at (x, y, z) facing yaw / pitch would put this piece (no ramp under them). */
 	public static Placement target(BuildPieceDef piece, double x, double y, double z, float yaw, float pitch) {
+		return target(null, piece, x, y, z, yaw, pitch);
+	}
+
+	/**
+	 * Where a builder standing at (x, y, z) facing yaw / pitch would put this piece. On a ramp rising the way they face
+	 * (any stairs: built, or a building's), they count as being at its top, as in Fortnite's ramp rush (2.0.0, a
+	 * tester on 1.0.1: "sometimes you need to be close to the edge of a build to build the ramp straight": the next ramp
+	 * used to start at the bottom of the one you were on until you'd reached its very top). So the next ramp, or a floor
+	 * ahead, carries on up from it, from anywhere on the ramp (or jumping on it), and a wall goes in front of that next
+	 * piece instead of across your way up.
+	 */
+	public static Placement target(@Nullable BlockGetter level, BuildPieceDef piece, double x, double y, double z, float yaw, float pitch) {
 		int t = tile(), h = storey();
 		Direction dir = Direction.fromYRot(yaw);
 		int tx = Math.floorDiv((int) Math.floor(x), t), tz = Math.floorDiv((int) Math.floor(z), t), ty = Math.floorDiv((int) Math.floor(y + 0.01), h);
+		int ramp = level == null ? Integer.MIN_VALUE : rampStorey(level, x, y, z, dir);
+		if (ramp != Integer.MIN_VALUE && (piece.kind().equals("ramp") || piece.kind().equals("wall") || pitch < 55))
+			return new Placement(tx + dir.getStepX(), ramp + 1, tz + dir.getStepZ(), dir);
 		boolean ahead = switch (piece.kind()) {
 			case "wall" -> false;
 			case "floor" -> pitch < 55;
@@ -70,6 +88,21 @@ public final class Builds {
 			tz += dir.getStepZ();
 		}
 		return new Placement(tx, ty, tz, dir);
+	}
+
+	/**
+	 * The storey of the ramp under the builder's feet if it rises the way they face (stairs facing that way, the right
+	 * way up), looking a little lower too in case they're jumping; Integer.MIN_VALUE if there's none.
+	 */
+	private static int rampStorey(BlockGetter level, double x, double y, double z, Direction dir) {
+		for (double below : new double[] { 0.01, 0.7, 1.3 }) {
+			BlockPos pos = BlockPos.containing(x, y - below, z);
+			BlockState s = level.getBlockState(pos);
+			if (s.getBlock() instanceof StairBlock && s.getValue(StairBlock.FACING) == dir && s.getValue(StairBlock.HALF) == Half.BOTTOM)
+				return Math.floorDiv(pos.getY(), storey());
+			if (!s.isAir()) return Integer.MIN_VALUE; // (standing on something else)
+		}
+		return Integer.MIN_VALUE;
 	}
 
 	/** The blocks of a piece and what each one is (made of the material's block / stairs). */
