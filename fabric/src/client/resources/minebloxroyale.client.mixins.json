@@ -23,7 +23,8 @@
     "OnboardingSkipMixin",
     "SpecialModelRenderersAccessor",
     "GuiGraphicsAccessor",
-    "EntityRendererMixin"
+    "EntityRendererMixin",
+    "ItemCountMixin"
   ],
   "injectors": {
     "defaultRequire": 1

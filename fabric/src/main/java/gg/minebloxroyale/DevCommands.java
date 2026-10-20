@@ -126,7 +126,7 @@ public final class DevCommands {
 		} else if (name.startsWith("ammo_") && ModItems.AMMO.containsKey(name.substring(5))) {
 			stacks.add(ModItems.ammo(name.substring(5), count > 0 ? count : 60));
 		} else if (ModItems.MATERIALS.containsKey(name)) {
-			stacks.add(new ItemStack(ModItems.MATERIALS.get(name), count > 0 ? count : 99));
+			stacks.add(gg.minebloxroyale.item.MaterialStacks.of(ModItems.MATERIALS.get(name), count > 0 ? count : 500));
 		} else if (name.equals("reboot_card")) {
 			stacks.add(new ItemStack(ModItems.REBOOT_CARD));
 		} else {

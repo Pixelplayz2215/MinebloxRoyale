@@ -1,5 +1,6 @@
 package gg.minebloxroyale.mixin;
 
+import gg.minebloxroyale.item.MaterialStacks;
 import gg.minebloxroyale.match.Knocked;
 import gg.minebloxroyale.match.Loadout;
 import gg.minebloxroyale.match.Reboot;
@@ -13,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * Fortnite pickups: rarity upgrades swap guns; with all five item slots full, other guns and heals stay on the ground.
- * Reboot cards go to the offhand (teammates only); knocked fighters pick nothing up.
+ * Reboot cards go to the offhand (teammates only); knocked fighters pick nothing up; materials fill their slot to 500.
  */
 @Mixin(ItemEntity.class)
 public abstract class ItemEntityMixin {
@@ -28,6 +29,12 @@ public abstract class ItemEntityMixin {
 			return;
 		}
 		if (Knocked.is(sp)) {
+			ci.cancel();
+			return;
+		}
+		// Materials: into their slot up to 500, the rest left on the ground (2.0.0, MaterialStacks).
+		if (MaterialStacks.is(self.getItem())) {
+			Loadout.pickUpMaterial(sp, self);
 			ci.cancel();
 			return;
 		}

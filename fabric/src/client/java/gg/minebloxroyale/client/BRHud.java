@@ -3,6 +3,7 @@ package gg.minebloxroyale.client;
 import gg.minebloxroyale.MinebloxRoyale;
 import gg.minebloxroyale.ModItems;
 import gg.minebloxroyale.item.Guns;
+import gg.minebloxroyale.item.MaterialStacks;
 import gg.minebloxroyale.item.WeaponItem;
 import gg.minebloxroyale.match.CarEntity;
 import gg.minebloxroyale.sheets.HudElementDef;
@@ -120,7 +121,7 @@ public final class BRHud {
 			if (!st.isEmpty()) {
 				g.item(st, Math.round(x + 2), Math.round(y + 2));
 				if (st.getItem() instanceof WeaponItem) Smooth.text(g, Guns.ammo(st) + "", x + tile - 1.4F, y + tile - 7.6F, 6.5F, 0xFFFFFFFF, Smooth.RIGHT, true);
-				else if (st.getCount() > 1) Smooth.text(g, st.getCount() + "", x + tile - 1.4F, y + tile - 7.6F, 6.5F, 0xFFFFFFFF, Smooth.RIGHT, true);
+				else if (MaterialStacks.amount(st) > 1) Smooth.text(g, MaterialStacks.amount(st) + "", x + tile - 1.4F, y + tile - 7.6F, 6.5F, 0xFFFFFFFF, Smooth.RIGHT, true);
 			}
 			Smooth.text(g, (i + 1) + "", x + 1.6F, y + 0.8F, 5F, on ? 0xFFFFFFFF : 0xA0FFFFFF, Smooth.LEFT, false);
 		}
@@ -430,7 +431,7 @@ public final class BRHud {
 		for (var m : Sheets.MATERIALS) {
 			var item = ModItems.MATERIALS.get(m.id());
 			int n = 0;
-			for (int s = 0; s < mc.player.getInventory().getContainerSize(); s++) if (mc.player.getInventory().getItem(s).is(item)) n += mc.player.getInventory().getItem(s).getCount();
+			for (int s = 0; s < mc.player.getInventory().getContainerSize(); s++) if (mc.player.getInventory().getItem(s).is(item)) n += MaterialStacks.amount(mc.player.getInventory().getItem(s));
 			float cx = x + i * cell;
 			Smooth.icon(g, m.id(), cx - 1, y - 2.5F, 12, -1); // (wood, brick, metal: the Blender icons)
 			Smooth.text(g, "" + n, cx + 12, y - 0.6F, 8.5F, n == 0 ? 0xFF9AA2AD : 0xFFFFFFFF, Smooth.LEFT, true);

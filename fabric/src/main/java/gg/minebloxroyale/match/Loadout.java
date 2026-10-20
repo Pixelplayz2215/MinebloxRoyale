@@ -3,6 +3,7 @@ package gg.minebloxroyale.match;
 import gg.minebloxroyale.MinebloxRoyale;
 import gg.minebloxroyale.ModItems;
 import gg.minebloxroyale.item.Guns;
+import gg.minebloxroyale.item.MaterialStacks;
 import gg.minebloxroyale.item.WeaponItem;
 import gg.minebloxroyale.sheets.LoadoutDef;
 import gg.minebloxroyale.sheets.Sheets;
@@ -32,10 +33,11 @@ import net.minecraft.world.item.component.Tool;
 /**
  * Fortnite's inventory (loadout sheet): slot 1 = unbreakable pickaxe, slots 2-6 = five item slots, 7-9 locked. The
  * rest of the inventory (creator): one fixed slot per ammo type, then one per material (Wood, Brick, Metal), each
- * holding at most 99, never a second stack; every other slot is locked. Enforced every tick during a match.
+ * holding at most 99 (materials 500, MaterialStacks), never a second stack; every other slot is locked. Enforced every
+ * tick during a match.
  */
 public final class Loadout {
-	/** Most of one ammo type or material a slot holds. */
+	/** Most of one ammo type a slot holds (materials: their maxCarry, MaterialStacks). */
 	private static final int CAP = 99;
 
 	private Loadout() {
@@ -136,7 +138,10 @@ public final class Loadout {
 				case "pickaxe" -> pick;
 				case "item" -> !ammo && !pick;
 				case "locked" -> false;
-				default -> s.is(slotItem(i)) && s.getCount() <= CAP; // its own fixed slot, 99 at most
+				// its own fixed slot, 99 at most (materials 500, as MaterialStacks makes them)
+				default -> s.is(slotItem(i)) && (MaterialStacks.is(s)
+					? MaterialStacks.tidy(s) && MaterialStacks.amount(s) <= MaterialStacks.max(s.getItem())
+					: s.getCount() <= CAP);
 			};
 			if (ok) continue;
 			inv.setItem(i, ItemStack.EMPTY);
@@ -189,12 +194,13 @@ public final class Loadout {
 
 	/**
 	 * Guns and heals need a free item slot (or a stack of the same thing with room); ammo and materials need room in
-	 * their slot (99).
+	 * their slot (99, materials 500).
 	 */
 	public static boolean canPickUp(ServerPlayer p, ItemStack s) {
 		if (p.isCreative()) return true;
 		if (ModItems.isAmmo(s)) {
 			int slot = slotFor(s);
+			if (MaterialStacks.is(s)) return slot >= 0 && MaterialStacks.amount(p.getInventory().getItem(slot)) < MaterialStacks.max(s.getItem());
 			return slot >= 0 && p.getInventory().getItem(slot).getCount() < CAP;
 		}
 		Inventory inv = p.getInventory();
@@ -207,7 +213,7 @@ public final class Loadout {
 	}
 
 	/**
-	 * Harvested materials: straight into their own slot, up to max (and never past the slot's 99). At the cap you just
+	 * Harvested materials: straight into their own slot, up to max (maxCarry, 500: MaterialStacks). At the cap you just
 	 * get no more, as in Fortnite (they used to spill into other slots and then be dropped on the ground).
 	 */
 	static void addMaterial(Player p, Item item, int amount, int max) {
@@ -215,8 +221,33 @@ public final class Loadout {
 		if (slot < 0) return;
 		ItemStack there = p.getInventory().getItem(slot);
 		if (!there.isEmpty() && !there.is(item)) return;
-		int n = Math.min(Math.min(CAP, max), there.getCount() + amount);
-		if (n > there.getCount()) p.getInventory().setItem(slot, new ItemStack(item, n));
+		int have = MaterialStacks.amount(there), n = Math.min(max, have + amount);
+		if (n > have) p.getInventory().setItem(slot, MaterialStacks.of(item, n));
+	}
+
+	/**
+	 * Materials off the ground: into their slot up to maxCarry (500); what doesn't fit stays on the ground (2.0.0, so a
+	 * pile bigger than 99 is never put in a slot of its own by Minecraft).
+	 */
+	public static void pickUpMaterial(ServerPlayer p, ItemEntity ground) {
+		ItemStack found = ground.getItem();
+		int slot = slotFor(found);
+		if (slot < 0 || ground.hasPickUpDelay() || p.isSpectator()) return;
+		Inventory inv = p.getInventory();
+		ItemStack there = inv.getItem(slot);
+		if (!there.isEmpty() && !there.is(found.getItem())) return;
+		int have = MaterialStacks.amount(there), on = MaterialStacks.amount(found);
+		int take = Math.min(on, MaterialStacks.max(found.getItem()) - have);
+		if (take <= 0) return;
+		inv.setItem(slot, MaterialStacks.of(found.getItem(), have + take));
+		if (take == on) {
+			p.take(ground, found.getCount()); // (the pickup animation and sound)
+			ground.discard();
+		} else {
+			ground.setItem(MaterialStacks.of(found.getItem(), on - take));
+			p.level().playSound(null, p.getX(), p.getY(), p.getZ(), net.minecraft.sounds.SoundEvents.ITEM_PICKUP,
+				net.minecraft.sounds.SoundSource.PLAYERS, 0.2F, 1.4F + p.getRandom().nextFloat() * 0.4F);
+		}
 	}
 
 	/** Puts a stack where the rules allow it, or drops it (Fortnite drops what doesn't fit). */
@@ -228,7 +259,16 @@ public final class Loadout {
 			return;
 		}
 		boolean ammo = ModItems.isAmmo(s);
-		if (ammo) { // into its own slot, up to 99; the rest is dropped
+		if (MaterialStacks.is(s)) { // into its own slot, up to maxCarry (500); the rest is dropped
+			int slot = slotFor(s);
+			ItemStack there = slot < 0 ? ItemStack.EMPTY : inv.getItem(slot);
+			if (slot >= 0 && (there.isEmpty() || there.is(s.getItem()))) {
+				int have = MaterialStacks.amount(there), on = MaterialStacks.amount(s);
+				int move = Math.max(0, Math.min(on, MaterialStacks.max(s.getItem()) - have));
+				if (move > 0) inv.setItem(slot, MaterialStacks.of(s.getItem(), have + move));
+				MaterialStacks.set(s, on - move);
+			}
+		} else if (ammo) { // into its own slot, up to 99; the rest is dropped
 			int slot = slotFor(s);
 			if (slot >= 0) {
 				ItemStack there = inv.getItem(slot);

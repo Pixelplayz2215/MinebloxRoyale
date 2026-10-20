@@ -2,6 +2,7 @@ package gg.minebloxroyale.match;
 
 import gg.minebloxroyale.MinebloxRoyale;
 import gg.minebloxroyale.ModItems;
+import gg.minebloxroyale.item.MaterialStacks;
 import gg.minebloxroyale.sheets.BuildPieceDef;
 import gg.minebloxroyale.sheets.MaterialDef;
 import gg.minebloxroyale.sheets.Sheets;
@@ -203,7 +204,7 @@ public final class Builds {
 	public static int materialCount(Player p, String material) {
 		var item = ModItems.MATERIALS.get(material);
 		int n = 0;
-		for (int i = 0; i < p.getInventory().getContainerSize(); i++) if (p.getInventory().getItem(i).is(item)) n += p.getInventory().getItem(i).getCount();
+		for (int i = 0; i < p.getInventory().getContainerSize(); i++) if (p.getInventory().getItem(i).is(item)) n += MaterialStacks.amount(p.getInventory().getItem(i));
 		return n;
 	}
 
@@ -212,8 +213,8 @@ public final class Builds {
 		for (int i = 0; i < p.getInventory().getContainerSize() && amount > 0; i++) {
 			ItemStack s = p.getInventory().getItem(i);
 			if (!s.is(item)) continue;
-			int take = Math.min(amount, s.getCount());
-			s.shrink(take);
+			int have = MaterialStacks.amount(s), take = Math.min(amount, have);
+			MaterialStacks.set(s, have - take);
 			amount -= take;
 		}
 	}

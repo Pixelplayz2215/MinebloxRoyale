@@ -38,7 +38,7 @@ public final class BotBag {
 		if (Reboot.isCard(s)) return; // reboot cards are carried apart (BotEntity.cards), never looted
 		for (var m : ModItems.MATERIALS.entrySet())
 			if (s.is(m.getValue())) {
-				addMaterial(m.getKey(), s.getCount());
+				addMaterial(m.getKey(), gg.minebloxroyale.item.MaterialStacks.amount(s)); // (a pile can hold up to 500)
 				return;
 			}
 		for (ItemStack have : items)
@@ -105,7 +105,7 @@ public final class BotBag {
 	public List<ItemStack> materialStacks() {
 		List<ItemStack> out = new ArrayList<>();
 		materials.forEach((id, n) -> {
-			if (n > 0) out.add(new ItemStack(ModItems.MATERIALS.get(id), n));
+			if (n > 0) out.add(gg.minebloxroyale.item.MaterialStacks.of(ModItems.MATERIALS.get(id), n)); // (up to 500)
 		});
 		return out;
 	}

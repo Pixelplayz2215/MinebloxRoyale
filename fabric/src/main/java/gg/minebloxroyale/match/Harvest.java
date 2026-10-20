@@ -439,7 +439,7 @@ public final class Harvest {
 	}
 
 	/**
-	 * Materials go straight into their own inventory slot (Fortnite), up to maxCarry (99); past that you get no more.
+	 * Materials go straight into their own inventory slot (Fortnite), up to maxCarry (500); past that you get no more.
 	 */
 	static void give(Player p, String material, int amount) {
 		if (amount > 0 && !MatchManager.noBuild()) Loadout.addMaterial(p, ModItems.MATERIALS.get(material), amount, Sheets.MATERIALS_BY_ID.get(material).maxCarry());
