@@ -68,7 +68,7 @@ public final class BuildMode {
 
 	public static Builds.Placement target(Minecraft mc) {
 		var p = mc.player;
-		return Builds.target(piece(), p.getX(), p.getY(), p.getZ(), p.getYRot(), p.getXRot());
+		return Builds.target(mc.level, piece(), p.getX(), p.getY(), p.getZ(), p.getYRot(), p.getXRot()); // (the level: ramps carry on up, 1.2.0)
 	}
 
 	/** Every client tick (after Minecraft has handled its keys). */

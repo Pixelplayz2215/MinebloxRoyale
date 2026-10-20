@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.2.0-test1 (test build, 2026-10-20, not released)
+
+1.0.1.5 (every connection fix from 1.0.1.1 to 1.0.1.5) with Fortnite-style building, from a tester on 1.0.1 ("In Fortnite the building is grid snapped so no matter where you try to place builds the builds will never be uneven or go into each other").
+
+- **Building on Fortnite's grid:** every piece now sits on the grid's lines, as Fortnite's do. A wall stands on the line between two tiles, so it's the same wall whichever side you build it from (before, walls from either side stood a block apart). A floor lies on its storey's line, and a ramp runs from one line to the next, so one ramp's top is the next one's bottom. Where pieces meet they share those blocks instead of fighting over them (a wall under a floor used to lose a row to it), and a shared block stays while any piece still has it.
+- **Ramp rush from anywhere on a ramp:** building a ramp while you're on a ramp facing up it carries on up from its top, wherever you are on it and even mid-jump; a floor ahead does too, and a wall goes in front of the next piece instead of across your way up. Before, the next ramp started at the bottom of the one you were on until you'd reached its very top edge.
+- Bots build on the same grid; one opening its box breaks the right wall (the corners are shared now).
+
 ## v1.0.1.5 (2026-10-19)
 
 Fixes from what players' Melty reported on 1.0.1.4.

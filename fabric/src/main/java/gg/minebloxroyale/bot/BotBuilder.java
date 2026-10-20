@@ -212,8 +212,9 @@ final class BotBuilder {
 		Direction d = Direction.fromYRot(yawTo(heading));
 		for (Builds.Placement p : box)
 			if (p.dir() == d) {
-				BlockPos any = Builds.shape(piece("wall"), Sheets.MATERIALS_BY_ID.get(boxMaterial), p).keySet().iterator().next();
-				Builds.breakPiece(level, any);
+				// (its middle block: the corners are shared with the walls beside it on the grid, 1.2.0)
+				List<BlockPos> blocks = new ArrayList<>(Builds.shape(piece("wall"), Sheets.MATERIALS_BY_ID.get(boxMaterial), p).keySet());
+				Builds.breakPiece(level, blocks.get(blocks.size() / 2));
 			}
 		box.clear();
 	}

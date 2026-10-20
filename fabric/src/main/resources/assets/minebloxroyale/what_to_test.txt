@@ -1,16 +1,9 @@
-Team modes (new in test6): get eliminated while a bot teammate is up: the match goes on while your reboot card is out, and they can reboot you
-Shirts and pants (new in test5): no white/grey flickering on the shirt front or the pants, from any side
-Knees and elbows (new in test5): nothing doubles up or flickers behind the knees or inside the elbows (sprint, kneel to revive, Flex)
-Loot chests (new in test5): smooth wooden and blue chests; hold F and watch the lid swing open
-Walking and running (new, with knees and elbows): heel-to-toe walk; sprint with knees up and arms pumping; sneak low and leaning in
-Jumping and falling: knees tuck on the way up, legs reach for the ground coming down, arms and legs spread falling fast
-Aiming a gun: the gun follows where you look, up and down, standing, walking and sprinting (watch others and bots too)
-Pickaxe and heals: a big over-the-shoulder chop each hit (hold it down to mine: smooth chops); bandages and med kits wrapped in front; shields drunk at the mouth
-Team modes: reviving kneels on one knee, rebooting types on the van's screen, holding F at a chest rummages; others see it (bots revive and reboot too)
-Swimming (front crawl or treading water), climbing ladders hand over hand, gliding with the legs dangling
-Knocked down: the crawl along the ground: one arm reaches ahead while the other pulls, legs pushing
-Emotes: new Dab (face in the elbow), Raise the Roof (pushing up), Breakdance Spin (a headspin), Floss (slower, right across)
-Shirts, pants and shoes bend with the knees and elbows: stripes, knee pads, cuffs, laces stay on
-Fixed models: army helmet camo, mohawk crown, cap stitching, halo, ear headbands, boot heels, pigtails, bus door, bandages, wrecked bonnets
-With a friend: host a game, and your friend joins with Melty's Join or your room code (/rc)
-Hub: the main board shows v1.0.1 - TEST 5 next to MINEBLOX ROYALE
+Ramp rush (new in 1.2.0): hold the ramp key and run up: from anywhere on a ramp, even jumping, the next ramp carries straight on up
+Walls (new): build a wall, then build the same wall from the other side: it's the same wall (no second wall, no materials spent)
+Floors and walls (new): a floor, a wall on its edge and a floor above it: every piece whole, no missing rows
+90s (new): ramp, wall, turn, again: the pieces line up and you can climb them
+Box (new): four walls round you close up at the corners; break one and the others stay whole
+Breaking (new): shoot or pickaxe a ramp that touches a wall: the wall stays whole
+Bots building: they ramp, do 90s and box up on the same grid
+With a friend: host a game; your friend joins with Melty's Join or your room code (/rc); /rejoin still works
+Hub: the main board shows v1.2.0 - TEST 1 next to MINEBLOX ROYALE
