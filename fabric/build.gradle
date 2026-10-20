@@ -26,6 +26,15 @@ loom {
 			programArgs "--username", "BRFriend"
 			vmArgs "--enable-native-access=ALL-UNNAMED"
 		}
+		// A brand-new player (from 2.0.0's Dev setup, creator: "a 3rd Build that has nothing unlocked"): its own folder
+		// (run3) and a name never used, so no unlocks and no gold. runClient3.
+		client3 {
+			client()
+			configName = "Minecraft Client 3 (new player)"
+			runDir "run3"
+			programArgs "--username", "BRNewPlayer"
+			vmArgs "--enable-native-access=ALL-UNNAMED"
+		}
 	}
 	mods {
 		"minebloxroyale" {
