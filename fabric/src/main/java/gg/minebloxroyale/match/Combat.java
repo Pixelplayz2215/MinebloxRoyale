@@ -254,8 +254,8 @@ public final class Combat {
 	}
 
 	/**
-	 * Every server tick: Slurp Juice gives +1 per interval, health first (from its own 75-point pool) and only once health
-	 * is full, shield (from another 75).
+	 * Every server tick: Slurp Juice gives +1 per interval, health first (from its own pool of the sheet's amount, 100) and
+	 * only once health is full, shield (from another 100).
 	 */
 	public static void tick(MinecraftServer server) {
 		if (REGEN.isEmpty()) return;
