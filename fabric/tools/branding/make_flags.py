@@ -3,7 +3,8 @@ Address", then "add it to v2.0.0"; Mockups\\Name Badges\\Country flags v2.0.0). 
 dark edge so white flags show on the name tag's box, all in one font picture (assets/minebloxroyale/textures/font/
 flags.png, U+E000 on); font/flags_order.txt lists the countries in that order for CountryFlag.java.
 
-Where the flags come from: a 4:3 picture per country in fabric/tools/branding/flags/<cc>.png (lower-case ISO code), and
+Where the flags come from: a 4:3 picture per country in fabric/tools/branding/flags/<cc>.png (lower-case ISO code; the 257 there are
+flag-icons 7.6.0 by Panayiotis Lipiridis, MIT licence, its flags/4x3 SVGs drawn 128 x 96 with resvg), and
 for any of the few drawn here (BUILTIN) that has none there, the drawing. A country with neither shows its two letters.
 
   python fabric/tools/branding/make_flags.py [preview.png]
