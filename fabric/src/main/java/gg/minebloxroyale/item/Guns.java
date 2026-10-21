@@ -6,6 +6,7 @@ import gg.minebloxroyale.hub.HubFun;
 import gg.minebloxroyale.match.Builds;
 import gg.minebloxroyale.match.CarBlock;
 import gg.minebloxroyale.match.Combat;
+import gg.minebloxroyale.match.Hitboxes;
 import gg.minebloxroyale.match.Knocked;
 import gg.minebloxroyale.match.CarEntity;
 import gg.minebloxroyale.match.MatchManager;
@@ -155,6 +156,11 @@ public final class Guns {
 
 	/** aim: where the player's crosshair points (null = straight along their look). */
 	public static boolean tryFire(LivingEntity shooter, ItemStack stack, WeaponDef w, float spreadMult, Vec3 aim) {
+		return tryFire(shooter, stack, w, spreadMult, aim, null);
+	}
+
+	/** cam: where the player's camera is (with aim, the crosshair's own line: Hitboxes; null = from the eyes). */
+	public static boolean tryFire(LivingEntity shooter, ItemStack stack, WeaponDef w, float spreadMult, Vec3 aim, Vec3 cam) {
 		if (!(shooter.level() instanceof ServerLevel level) || Knocked.is(shooter)) return false;
 		if (shooter.getVehicle() instanceof CarEntity) return false; // (v2.0.0: no shooting from a car, creator)
 		long now = level.getGameTime();
@@ -175,12 +181,12 @@ public final class Guns {
 		save(stack, tag);
 		RarityDef r = rarity(stack);
 		if (w.projectile().equals("rocket")) launch(level, shooter, w, r, aim);
-		else shoot(level, shooter, w, r, spreadMult, aim);
+		else shoot(level, shooter, w, r, spreadMult, aim, cam);
 		if (ammo - 1 <= 0) startReload(shooter, stack, w);
 		return true;
 	}
 
-	static void shoot(ServerLevel level, LivingEntity shooter, WeaponDef w, RarityDef r, float spreadMult, Vec3 aim) {
+	static void shoot(ServerLevel level, LivingEntity shooter, WeaponDef w, RarityDef r, float spreadMult, Vec3 aim, Vec3 cam) {
 		RandomSource rnd = shooter.getRandom();
 		Vec3 eye = shooter.getEyePosition();
 		// (2.0.0-test6.2) a boss's own shots: a share of its gun's damage, and never more than bossMaxHit a shot or blast;
@@ -192,13 +198,16 @@ public final class Guns {
 		Set<LivingEntity> headshots = new HashSet<>();
 		float[] ends = new float[3 * w.pellets()];
 		int hits = 0;
+		// (2.0.0, a player's Melty review: "hitbox not so good") a player's shot is tested along the crosshair's own line from
+		// the camera, against the body you see and where it was on your screen (Hitboxes); the bullet still comes from the gun
+		boolean crosshair = cam != null && aim != null && shooter instanceof ServerPlayer;
 		for (int p = 0; p < w.pellets(); p++) {
 			// Aimed at the crosshair, every gun hits exactly there; only the shotgun keeps its pellet spread (creator).
 			float spread = aim != null && w.pellets() <= 1 ? 0F : w.spreadDeg() * spreadMult;
 			// Towards the crosshair's point when the player sent one, else along the look; spread around that line.
 			float baseYaw = shooter.getYRot(), basePitch = shooter.getXRot();
 			if (aim != null) {
-				Vec3 d = aim.subtract(eye);
+				Vec3 d = aim.subtract(crosshair ? cam : eye);
 				baseYaw = (float) (Math.toDegrees(Math.atan2(-d.x, d.z)));
 				basePitch = (float) (-Math.toDegrees(Math.atan2(d.y, Math.sqrt(d.x * d.x + d.z * d.z))));
 			}
@@ -206,18 +215,41 @@ public final class Guns {
 			float pitch = basePitch + (rnd.nextFloat() - 0.5F) * 2F * spread;
 			Vec3 dir = Vec3.directionFromRotation(pitch, yaw);
 			if (aim == null && shooter instanceof Player pl && !(w.scope() && pl.isUsingItem())) dir = shoulderAim(level, pl, eye, dir, w.rangeBlocks());
-			Vec3 end = eye.add(dir.scale(w.rangeBlocks()));
-			BlockHitResult block = level.clip(new ClipContext(eye, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, shooter));
+			// (the crosshair's line starts level with your eyes: nothing behind you)
+			Vec3 from = crosshair ? cam.add(dir.scale(Math.max(0, eye.subtract(cam).dot(dir)))) : eye;
+			Vec3 end = from.add(dir.scale(w.rangeBlocks()));
+			BlockHitResult block = level.clip(new ClipContext(from, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, shooter));
 			if (block.getType() != HitResult.Type.MISS) end = block.getLocation();
 			// Outside a match (the hub's shooting range) bullets pass through other players: no damage, no hit markers.
 			boolean hubShot = shooter instanceof ServerPlayer hs && !MatchManager.get().isAlive(hs);
-			EntityHitResult hit = ProjectileUtil.getEntityHitResult(shooter, eye, end, new AABB(eye, end).inflate(1.0),
-				e -> e instanceof LivingEntity le && le.isAlive() && !e.isSpectator() && e != shooter && !(hubShot && e instanceof Player) && !Teams.sameTeam(shooter, e), eye.distanceToSqr(end));
+			java.util.function.Predicate<Entity> fighter = e -> e instanceof LivingEntity le && le.isAlive() && !e.isSpectator() && e != shooter
+				&& !(hubShot && e instanceof Player) && !Teams.sameTeam(shooter, e);
+			Hitboxes.Hit body = crosshair ? Hitboxes.pick(level, (ServerPlayer) shooter, from, end, fighter) : null;
+			EntityHitResult hit = crosshair ? (body == null ? null : new EntityHitResult(body.entity(), body.at()))
+				: ProjectileUtil.getEntityHitResult(shooter, eye, end, new AABB(eye, end).inflate(1.0), fighter, eye.distanceToSqr(end));
 			Vec3 impact = end;
 			// (v2.0.0) a driven car in the way takes the shot: its damage counts against the car's durability
-			EntityHitResult carHit = ProjectileUtil.getEntityHitResult(shooter, eye, end, new AABB(eye, end).inflate(1.5),
-				e -> e instanceof CarEntity c && !c.hasPassenger(shooter), eye.distanceToSqr(end));
-			if (carHit != null && (hit == null || eye.distanceToSqr(carHit.getLocation()) < eye.distanceToSqr(hit.getLocation()))) {
+			EntityHitResult carHit = ProjectileUtil.getEntityHitResult(shooter, from, end, new AABB(from, end).inflate(1.5),
+				e -> e instanceof CarEntity c && !c.hasPassenger(shooter), from.distanceToSqr(end));
+			if (crosshair) {
+				// The bullet comes from the gun: a wall between it and what the crosshair is on takes the shot instead.
+				Vec3 aimed = hit != null && (carHit == null || from.distanceToSqr(hit.getLocation()) <= from.distanceToSqr(carHit.getLocation()))
+					? hit.getLocation() : carHit != null ? carHit.getLocation() : end;
+				Vec3 path = aimed.subtract(eye);
+				double len = path.length();
+				if (len > 0.1) {
+					BlockHitResult wall = level.clip(new ClipContext(eye, eye.add(path.scale((len - 0.05) / len)), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, shooter));
+					if (wall.getType() != HitResult.Type.MISS) {
+						block = wall;
+						end = wall.getLocation();
+						impact = end;
+						hit = null;
+						body = null;
+						carHit = null;
+					}
+				}
+			}
+			if (carHit != null && (hit == null || from.distanceToSqr(carHit.getLocation()) < from.distanceToSqr(hit.getLocation()))) {
 				((CarEntity) carHit.getEntity()).damage(level, w.damage() * r.damageMult(), shooter);
 				hit = null;
 				end = carHit.getLocation();
@@ -225,7 +257,7 @@ public final class Guns {
 			} else if (hit != null && hit.getEntity() instanceof LivingEntity target) {
 				impact = hit.getLocation();
 				if (p < 32) hits |= 1 << p;
-				boolean head = impact.y > target.getEyeY() - 0.3;
+				boolean head = body != null ? body.head() : impact.y > target.getEyeY() - 0.3;
 				if (head) headshots.add(target);
 				damage.merge(target, w.damage() * r.damageMult() * bossMult * (head ? w.headshotMult() : 1F), Float::sum);
 			} else if (block.getType() == HitResult.Type.BLOCK && shooter instanceof ServerPlayer sp && level.getBlockState(block.getBlockPos()).is(Blocks.TARGET)) {

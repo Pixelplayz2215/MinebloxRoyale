@@ -440,19 +440,26 @@ public final class Net {
 					ItemStack stack = player.getMainHandItem();
 					if (stack.getItem() instanceof WeaponItem w && !player.isSpectator() && !Knocked.is(player)) {
 						// fire:x:y:z = where the player's crosshair points (used if it's believable: in front, in
-						// range).
-						Vec3 aim = null;
+						// range); 2.0.0: then :x:y:z of their camera, so the shot follows the crosshair's own line
+						// (Hitboxes; used if it's near their head).
+						Vec3 aim = null, cam = null;
 						String[] xyz = arg.split(":");
-						if (xyz.length == 3) {
+						if (xyz.length == 3 || xyz.length == 6) {
 							try {
 								aim = new Vec3(Double.parseDouble(xyz[0]), Double.parseDouble(xyz[1]), Double.parseDouble(xyz[2]));
 								Vec3 to = aim.subtract(player.getEyePosition());
 								if (to.length() > w.def.rangeBlocks() + 8 || to.length() < 0.5 || to.normalize().dot(player.getLookAngle()) < 0.7) aim = null;
+								if (aim != null && xyz.length == 6) {
+									cam = new Vec3(Double.parseDouble(xyz[3]), Double.parseDouble(xyz[4]), Double.parseDouble(xyz[5]));
+									Vec3 line = aim.subtract(cam);
+									if (cam.distanceTo(player.getEyePosition()) > 4 || line.length() < 0.5 || line.normalize().dot(player.getLookAngle()) < 0.7) cam = null;
+								}
 							} catch (NumberFormatException e) {
 								aim = null;
+								cam = null;
 							}
 						}
-						Guns.tryFire(player, stack, w.def, player.isUsingItem() ? w.def.adsSpreadMult() : 1F, aim);
+						Guns.tryFire(player, stack, w.def, player.isUsingItem() ? w.def.adsSpreadMult() : 1F, aim, cam);
 					}
 				}
 				default -> {

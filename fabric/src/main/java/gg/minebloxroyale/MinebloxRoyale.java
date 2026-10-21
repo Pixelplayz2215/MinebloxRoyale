@@ -167,6 +167,7 @@ public final class MinebloxRoyale implements ModInitializer {
 			if (server.getTickCount() % 600 == 0)
 				server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(), "time set noon");
 			Combat.tick(server);
+			gg.minebloxroyale.match.Hitboxes.record(server); // (where every fighter was: players' shots, 2.0.0)
 			Obby.tick(server);
 			HubFun.tick(server);
 			LootChests.tick(server);

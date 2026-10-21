@@ -160,9 +160,10 @@ public final class Aim {
 				// swallowed: guns don't punch or mine
 			}
 			if (down && (w.automatic() || !attackWasDown) && !(mc.player.getVehicle() instanceof CarEntity)) { // (no shooting from a car)
-				// Send where the crosshair points, so the shot goes exactly there (the camera is over the shoulder).
-				Vec3 at = Crosshair.aimPoint(mc, w.rangeBlocks());
-				ClientPlayNetworking.send(new Net.Action(String.format(Locale.ROOT, "fire:%.3f:%.3f:%.3f", at.x, at.y, at.z)));
+				// Send where the crosshair points, so the shot goes exactly there (the camera is over the shoulder), and
+				// where the camera is, so the hit follows the crosshair's own line (2.0.0, Hitboxes).
+				Vec3 at = Crosshair.aimPoint(mc, w.rangeBlocks()), cam = mc.gameRenderer.mainCamera().position();
+				ClientPlayNetworking.send(new Net.Action(String.format(Locale.ROOT, "fire:%.3f:%.3f:%.3f:%.3f:%.3f:%.3f", at.x, at.y, at.z, cam.x, cam.y, cam.z)));
 			}
 		}
 		// A grenade in hand (v2.0.0): a click throws one, towards the crosshair (GrenadeEntity).
