@@ -60,6 +60,11 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 		return interact;
 	}
 
+	/** G at first, build mode on and off (its name on the build bar). */
+	static KeyMapping buildKey() {
+		return build;
+	}
+
 	@Override
 	public void onInitializeClient() {
 		// Items drawn from Blender meshes (items/*.json "minebloxroyale:mesh"), registered before the item models load.
@@ -183,12 +188,16 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 		reload = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.minebloxroyale.reload", InputConstants.KEY_R, cat));
 		emote = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.minebloxroyale.emote", InputConstants.KEY_B, cat));
 		hub = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.minebloxroyale.hub", InputConstants.KEY_H, cat));
-		build = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.minebloxroyale.build", InputConstants.KEY_G, cat));
+		// Building's keys have their own section in Controls (2.0.0: every one can be changed, BuildMode).
+		KeyMapping.Category building = KeyMapping.Category.register(MinebloxRoyale.id("building"));
+		build = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.minebloxroyale.build", InputConstants.KEY_G, building));
+		BuildMode.registerKeys(building);
 		locker = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.minebloxroyale.locker", InputConstants.KEY_K, cat));
 		// F (held): revive a knocked teammate, or reboot teammates at a van. F no longer swaps hands (nothing to swap
 		// in Mineblox Royale; the offhand only holds reboot cards).
 		interact = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.minebloxroyale.interact", InputConstants.KEY_F, cat));
 		ClientTickEvents.START_CLIENT_TICK.register(mc -> {
+			BuildMode.beforeKeys(mc); // (while building, a build key wins over anything else on its key)
 			while (mc.options.keySwapOffhand.consumeClick()) {
 			}
 		});

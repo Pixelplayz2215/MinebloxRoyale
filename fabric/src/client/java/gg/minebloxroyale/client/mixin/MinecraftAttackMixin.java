@@ -11,7 +11,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
  * With a gun in hand, left mouse is the trigger (Aim), not punching or mining. In build mode both mouse buttons belong
- * to BuildMode (left places, right switches material), so Minecraft's attack and use are skipped.
+ * to BuildMode (at first left places and right switches material; Controls can change both), so Minecraft's attack
+ * and use are skipped.
  */
 @Mixin(Minecraft.class)
 public abstract class MinecraftAttackMixin {
