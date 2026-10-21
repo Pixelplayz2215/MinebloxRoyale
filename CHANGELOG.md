@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.2.0-test3 (test build, 2026-10-20, not released)
+## v1.2.0 (2026-10-23)
 
 1.0.1.5 (every connection fix from 1.0.1.1 to 1.0.1.5) with Fortnite-style building, from a tester on 1.0.1 ("In Fortnite the building is grid snapped so no matter where you try to place builds the builds will never be uneven or go into each other").
 
@@ -12,6 +12,9 @@
   - **The next island waits until 2 minutes into a match.** It used to be made from the moment the bus took off, right through the bus ride, the drop and the first fights, when every game is busiest (in an earlier profile it took 43% of the processor).
   - **The storm on the minimap and the map is drawn in one piece.** Its edge and the next circle were drawn a pixel at a time, thousands of separate pieces every frame, and Minecraft checks each new piece against the ones before it, so it got slower as the circles came into view. The sniper scope's dark surround the same.
   - **Lighter models far away:** every model over 1,500 triangles has a copy a tenth the size or less, drawn once it's far enough that you can't tell (hats, hair, back bling, shoes, gliders, cars, chests, the bus, vans, items on the ground). Every model also sends about half as many corners as before (the same shapes).
+- **The NVIDIA driver crash players' Melty reported on 1.0.1.5** (creator: "included in v1.2.0, add a fix for the latest Melty 1.0.1.5 crashlog"): the game closed inside NVIDIA's OpenGL driver (`nvoglv64.dll`, c0000409) about 3 minutes in, on an RTX 5070 (and once before on 1.0.1.3). Nothing in the mod leaks graphics memory (every texture is made once; everything is drawn through Minecraft), so the heaviest graphics work the mod does is what changed: the storm on the minimap and map, drawn as thousands of separate pieces every frame, is one piece now, and far-away models are a tenth the size (above). And so the next one can be pinned down:
+  - **After a crash, the next start says what the game was doing:** every 5 seconds the game notes where you were (menus, hub or match), the screen open, frames per second, entities, render distance, window size and OpenGL or Vulkan, and after a crash that goes in the log and melty.log line, so players' Melty reports carry it.
+  - **A second graphics driver crash in a row** also suggests Minecraft's own other graphics API in the chat line: Options > Video Settings > Graphics API > Prefer Vulkan (Experimental), or back to Default if it was already on Vulkan. Mojang marks Vulkan as experimental, so the game never switches by itself.
 
 ## v1.0.1.5 (2026-10-19)
 
