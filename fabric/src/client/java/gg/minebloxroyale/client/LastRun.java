@@ -20,6 +20,11 @@ import org.apache.logging.log4j.Logger;
  * crash report for javaw.exe (WER, for crashes it can't, like the driver's). The cause goes in latest.log and melty.log
  * as one plain line, so players' next reports carry it; a crash inside a graphics driver also gets a line in the chat
  * saying how to fix it, since only the player can (by updating the driver).
+ *
+ * (1.2.0, players' Melty, 1.0.1.5: nvoglv64.dll again, c0000409, about 3 minutes in, with nothing to say what was on
+ * screen.) Every few seconds the game notes what it's doing (doing.txt: where, the screen open, fps, entities, render
+ * distance, window, OpenGL or Vulkan), and that goes in the line after a crash. Driver crashes in a row are counted
+ * (driver-crashes.txt); from the second, the chat line also points to Minecraft's own other graphics API.
  */
 public final class LastRun {
 	private static final Logger LOG = LogManager.getLogger("MinebloxRoyale");
@@ -29,12 +34,15 @@ public final class LastRun {
 	private static volatile String chat;
 	/** The cause found at start, for melty.log (null: the last game ended normally, or this is the first). */
 	private static volatile String cause;
+	/** minebloxroyale/ (null until check()). */
+	private static volatile Path dir;
 
 	private LastRun() {
 	}
 
 	/** At start: what happened last time, then mark this game as running. */
 	public static void check(Path gameDir, Path brDir) {
+		dir = brDir;
 		Path marker = brDir.resolve("running.txt");
 		try {
 			if (Files.exists(marker)) {
@@ -49,11 +57,21 @@ public final class LastRun {
 				String what = found == null ? "no crash report found (a crash Windows didn't record, or the game was closed by force)"
 					: "crashed in " + found[0] + (found[1].isEmpty() ? "" : " (" + found[1] + ")");
 				String driver = found == null ? null : driver(found[0]);
-				cause = "the last game closed by itself: " + what + (driver == null ? "" : ", " + driver + " graphics driver");
+				String doing = doing(brDir, started);
+				cause = "the last game closed by itself: " + what + (driver == null ? "" : ", " + driver + " graphics driver") + (doing == null ? "" : "; it was " + doing);
 				LOG.info("BR: {}", cause);
+				int inARow = driver == null ? 0 : driverCrashes(brDir) + 1;
+				Files.createDirectories(brDir);
+				Files.writeString(brDir.resolve("driver-crashes.txt"), inARow + System.lineSeparator(), StandardCharsets.UTF_8);
 				if (driver != null) chat = "Your last game crashed inside your " + driver + " graphics driver (" + found[0] + "). Updating your graphics driver usually fixes this: "
-					+ (driver.equals("NVIDIA") ? "nvidia.com/drivers" : driver.equals("AMD") ? "amd.com/support" : "intel.com/support (Driver & Support Assistant)");
+					+ (driver.equals("NVIDIA") ? "nvidia.com/drivers" : driver.equals("AMD") ? "amd.com/support" : "intel.com/support (Driver & Support Assistant)")
+					+ (inARow < 2 ? "" : doing != null && doing.contains("Vulkan")
+						? ". Still crashing: set Options > Video Settings > Graphics API back to Default, then restart."
+						: ". Still crashing? Try Options > Video Settings > Graphics API > Prefer Vulkan (Experimental), then restart.");
+			} else {
+				Files.deleteIfExists(brDir.resolve("driver-crashes.txt")); // (the last game ended normally: none in a row)
 			}
+			Files.deleteIfExists(brDir.resolve("doing.txt"));
 			Files.createDirectories(brDir);
 			Files.writeString(marker, System.currentTimeMillis() + " " + ProcessHandle.current().pid() + System.lineSeparator(), StandardCharsets.UTF_8);
 			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -64,6 +82,37 @@ public final class LastRun {
 			}, "MinebloxRoyale last-run marker"));
 		} catch (IOException | RuntimeException e) { // never in the way of the game starting
 			LOG.info("BR: couldn't check how the last game ended ({})", e.toString());
+		}
+	}
+
+	/** Every few seconds from the client: what the game is doing (told after a crash). Never in the game's way. */
+	public static void note(String doing) {
+		Path d = dir;
+		if (d == null) return;
+		try {
+			Files.writeString(d.resolve("doing.txt"), doing, StandardCharsets.UTF_8);
+		} catch (IOException | RuntimeException ignored) {
+		}
+	}
+
+	/** What the last game noted it was doing, if it noted anything after it started (null: nothing). */
+	static String doing(Path brDir, long started) {
+		Path f = brDir.resolve("doing.txt");
+		try {
+			if (!Files.exists(f) || Files.getLastModifiedTime(f).toMillis() < started - 5000) return null;
+			String s = Files.readString(f, StandardCharsets.UTF_8).replaceAll("\s+", " ").trim();
+			return s.isEmpty() ? null : s.length() > 300 ? s.substring(0, 300) : s;
+		} catch (IOException | RuntimeException e) {
+			return null;
+		}
+	}
+
+	/** Graphics driver crashes in a row so far (driver-crashes.txt). */
+	static int driverCrashes(Path brDir) {
+		try {
+			return Integer.parseInt(Files.readString(brDir.resolve("driver-crashes.txt"), StandardCharsets.UTF_8).trim());
+		} catch (IOException | RuntimeException e) {
+			return 0;
 		}
 	}
 
