@@ -42,6 +42,8 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 	/** A second copy for multiplayer tests can start in a maximised window instead (MINEBLOXROYALE_WINDOW=windowed). */
 	private static final boolean WINDOWED = "windowed".equalsIgnoreCase(System.getenv("MINEBLOXROYALE_WINDOW"));
 	private static int maximizeIn = WINDOWED ? 10 : 0;
+	/** Ticks until the next note of what the game is doing (LastRun). */
+	private static int noteIn;
 
 	/** The revive / reboot key (F unless changed), for the HUD's prompts. */
 	static KeyMapping interactKey() {
@@ -166,6 +168,10 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 			LockerAudit.tick(mc);
 			WhatToTest.tick(mc);
 			if (maximizeIn > 0 && --maximizeIn == 0) SDLVideo.SDL_MaximizeWindow(mc.getWindow().handle()); // once it's left fullscreen
+			if (++noteIn >= 100) { // every 5 s: what the game is doing, told after a crash (LastRun, 1.2.0)
+				noteIn = 0;
+				LastRun.note(doing(mc));
+			}
 			if (mc.player == null) return;
 			// Fortnite camera: always third person from behind; F5 can't change it.
 			while (build.consumeClick()) BuildMode.toggle(mc);
@@ -238,5 +244,20 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 			if (mc.options.fullscreen().get() == WINDOWED) mc.options.fullscreen().set(!WINDOWED);
 			mc.options.save();
 		});
+	}
+
+	/**
+	 * What the game is doing, in a few words, for LastRun: told after a crash, so players' reports say what was on
+	 * screen when a graphics driver gave up (1.2.0, players' Melty: nvoglv64.dll about 3 minutes in).
+	 */
+	private static String doing(Minecraft mc) {
+		var device = com.mojang.blaze3d.systems.RenderSystem.tryGetDevice();
+		var screen = mc.gui.screen();
+		String title = screen == null ? "" : screen.getTitle().getString();
+		return (mc.level == null ? "in the menus" : ClientState.inMatch() ? "in a match" : "in the hub")
+			+ (screen == null ? "" : ", " + (title.isBlank() ? screen.getClass().getSimpleName() : title) + " open")
+			+ ", " + mc.getFps() + " fps" + (mc.level == null ? "" : ", " + mc.level.getEntityCount() + " entities")
+			+ ", render distance " + mc.options.renderDistance().get() + ", window " + mc.getWindow().getWidth() + "x" + mc.getWindow().getHeight()
+			+ (device == null ? "" : ", " + device.getDeviceInfo().backendName());
 	}
 }
