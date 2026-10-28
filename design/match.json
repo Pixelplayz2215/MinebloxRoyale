@@ -161,9 +161,9 @@
   },
   {
    "id": "customStructures",
-   "value": 26,
+   "value": 36,
    "unit": "buildings",
-   "meaning": "custom buildings on each island (shacks, watchtowers, supply depots, ruins, parking lots full of cars and container yards: those two break for metal), each with a loot chest; built as their area loads (was 16, creator: slightly more common) v2.0.0: 26 (creator: \"Add more custom structures. Bigger, Better.\"): warehouses, two-storey houses and forts too."
+   "meaning": "custom buildings on each island (shacks, watchtowers, supply depots, ruins, parking lots full of cars and container yards: those two break for metal), each with a loot chest; built as their area loads (was 16, creator: slightly more common) v2.0.0: 26 (creator: \"Add more custom structures. Bigger, Better.\"): warehouses, two-storey houses and forts too. 2.1.0: 36 (creator: \"add even more structures around the map\"): gas stations (a car at the pumps, for metal), campsites and barns too; with structuresEach 2 of every kind (3 parking lots) that is 25 guaranteed and 11 more at random."
   },
   {
    "id": "structuresEach",

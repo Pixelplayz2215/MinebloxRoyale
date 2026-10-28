@@ -30,24 +30,25 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
  * one of eight woods (with a matching door), a watchtower, a walled supply depot, stone ruins, and for metal (creator:
  * no structures gave metal) a parking lot full of cars and a container yard with shipping containers. Each has a loot
  * chest inside: the gold one, or (match enderChestStructure, 20%) the rare blue one with better loot. Every block they
- * replace is remembered by IslandRestore, so the land is put back after the match.
+ * replace is remembered by IslandRestore, so the land is put back after the match. 2.1.0 (creator: "add even more
+ * structures around the map"): gas stations (a car at the pumps, for metal), campsites and barns too, and more of them.
  */
 public final class CustomStructures {
 	private CustomStructures() {
 	}
 
 	private static final String[] KINDS = { "shack", "watchtower", "supply depot", "parking lot (metal)", "container yard (metal)", "ruins",
-		"warehouse (metal)", "house", "fort" };
-	private static final int LOT = 3, WAREHOUSE = 6, HOUSE = 7, FORT = 8;
+		"warehouse (metal)", "house", "fort", "gas station (metal)", "campsite", "barn" };
+	private static final int LOT = 3, WAREHOUSE = 6, HOUSE = 7, FORT = 8, GAS = 9, CAMP = 10, BARN = 11;
 	/** The big ones (v2.0.0, creator: "Add more custom structures. Bigger, Better."): they need the big, level ground a lot does. */
-	private static final List<Integer> BIG = List.of(LOT, WAREHOUSE, HOUSE, FORT);
+	private static final List<Integer> BIG = List.of(LOT, WAREHOUSE, HOUSE, FORT, GAS, BARN);
 	/**
 	 * Room round buildings (2.0.0-test5, creator: "structures are also so close together ... 4 structures in one spot";
 	 * they were only kept 26 apart middle to middle whatever their size, so two big ones could stand 6 blocks apart):
 	 * each kind's half size (its cleared footprint), the blocks between two buildings' edges, and the open, level
 	 * ground kept round each one (no hill or cliff in it more than CLIFF above the floor, trees in it felled whole).
 	 */
-	private static final int[] HALF = { 4, 3, 4, 10, 4, 3, 10, 7, 9 };
+	private static final int[] HALF = { 4, 3, 4, 10, 4, 3, 10, 7, 9, 10, 4, 10 };
 	private static final int APART = 16, MARGIN = 4, CLIFF = 2;
 	/** Late in the island's loading, with buildings still due and no open spot left: the ground round one is levelled instead. */
 	static boolean relaxed;
@@ -90,7 +91,7 @@ public final class CustomStructures {
 
 	/** The kinds' names for /br tp (DevCommands), in KINDS order. */
 	public static final List<String> TP_NAMES = List.of("shack", "watchtower", "supply_depot", "parking_lot", "container_yard", "ruins", "warehouse", "house",
-		"fort");
+		"fort", "gas_station", "campsite", "barn");
 
 	/** The floor middle of the nearest building of this kind built so far on this island (TP_NAMES index), or null. */
 	public static BlockPos nearest(int kind, double x, double z) {
@@ -156,6 +157,9 @@ public final class CustomStructures {
 			case WAREHOUSE -> warehouse(level, o, rnd);
 			case HOUSE -> house(level, o, rnd);
 			case FORT -> fort(level, o, rnd);
+			case GAS -> gasStation(level, o, rnd);
+			case CAMP -> campsite(level, o, rnd);
+			case BARN -> barn(level, o, rnd);
 			default -> ruins(level, o, rnd);
 		};
 		if (building != null) BUILT.add(building);
@@ -566,6 +570,134 @@ public final class CustomStructures {
 			case PICKUP -> lz >= -1 && lz <= 0 ? 2 : lz > 0 ? 1 : 0;
 			default -> lz >= -1 && lz <= 1 ? 1 : 0;
 		};
+	}
+
+	/**
+	 * (2.1.0) A gas station: an asphalt forecourt, a canopy on four white pillars (red edged, lit underneath) over two
+	 * pumps, a car filling up (most of the time: metal), and a little shop with a glass front, a counter and a door; a
+	 * chest in the shop and one by the pumps.
+	 */
+	private static BlockPos gasStation(ServerLevel level, BlockPos o, RandomSource rnd) {
+		int hx = 10, hz = 9;
+		clear(level, o, hx, hz, 8);
+		floor(level, o, hx, hz, block("minecraft:gray_concrete"), Blocks.COBBLESTONE.defaultBlockState());
+		BlockState white = block("minecraft:white_concrete"), red = block("minecraft:red_concrete");
+		for (int dz = -hz; dz <= hz; dz += 2) put(level, o.offset(-9, -1, dz), block("minecraft:yellow_concrete")); // (the road's edge, dashed)
+		// the canopy, x -8..2, z -4..4
+		for (int px : new int[] { -8, 2 })
+			for (int pz : new int[] { -4, 4 })
+				for (int dy = 0; dy < 5; dy++) put(level, o.offset(px, dy, pz), white);
+		for (int dx = -8; dx <= 2; dx++)
+			for (int dz = -4; dz <= 4; dz++) {
+				boolean edge = dx == -8 || dx == 2 || Math.abs(dz) == 4;
+				put(level, o.offset(dx, 5, dz), edge ? red : white);
+				if (!edge && (dx == -6 || dx == 0) && Math.abs(dz) == 2) put(level, o.offset(dx, 5, dz), Blocks.SEA_LANTERN.defaultBlockState());
+			}
+		// two pumps on an island between the lanes
+		for (int dx = -5; dx <= -1; dx++) put(level, o.offset(dx, -1, -1), block("minecraft:light_gray_concrete"));
+		for (int px : new int[] { -4, -2 }) {
+			put(level, o.offset(px, 0, -1), red);
+			put(level, o.offset(px, 1, -1), red);
+			put(level, o.offset(px, 2, -1), block("minecraft:smooth_quartz_slab").setValue(SlabBlock.TYPE, SlabType.BOTTOM));
+		}
+		if (rnd.nextFloat() < 0.75F) car(level, o.offset(-3, 0, 2), rnd, rnd.nextBoolean() ? Direction.WEST : Direction.EAST);
+		// the shop, x 4..9, z -4..4: glass along its front (-X, facing the pumps), a door in the middle
+		BlockState wall = block("minecraft:white_concrete"), glass = Blocks.GLASS.defaultBlockState();
+		for (int dx = 4; dx <= 9; dx++)
+			for (int dz = -4; dz <= 4; dz++) {
+				boolean edge = dx == 4 || dx == 9 || Math.abs(dz) == 4;
+				for (int dy = 0; dy < 4; dy++) {
+					if (!edge) continue;
+					if (dx == 4 && dz == 0 && dy < 2) continue; // the doorway
+					boolean front = dx == 4 && Math.abs(dz) < 4 && dy >= 1 && dy <= 2;
+					put(level, o.offset(dx, dy, dz), dy == 3 ? red : front ? glass : wall);
+				}
+				put(level, o.offset(dx, 4, dz), block("minecraft:smooth_stone_slab").setValue(SlabBlock.TYPE, SlabType.BOTTOM));
+			}
+		BlockState door = block("minecraft:iron_door").setValue(DoorBlock.FACING, Direction.EAST).setValue(DoorBlock.OPEN, true);
+		put(level, o.offset(4, 0, 0), door.setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER));
+		put(level, o.offset(4, 1, 0), door.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER));
+		for (int dz = -3; dz <= -1; dz++) put(level, o.offset(7, 0, dz), Blocks.SPRUCE_PLANKS.defaultBlockState()); // the counter
+		put(level, o.offset(6, 3, 0), Blocks.SEA_LANTERN.defaultBlockState());
+		lightPost(level, o.offset(-9, 0, -8));
+		MORE_CHESTS.add(o.offset(-6, 0, -3)); // by the pumps
+		return o.offset(8, 0, 2);
+	}
+
+	/**
+	 * (2.1.0) A campsite in a small clearing: two tents of wool (a white and a green one) round a campfire (not lit, so
+	 * it doesn't burn anyone), log benches by it, a chest by a tent.
+	 */
+	private static BlockPos campsite(ServerLevel level, BlockPos o, RandomSource rnd) {
+		clear(level, o, 4, 4);
+		floor(level, o, 4, Blocks.GRASS_BLOCK.defaultBlockState(), Blocks.DIRT.defaultBlockState());
+		put(level, o, Blocks.CAMPFIRE.defaultBlockState().setValue(net.minecraft.world.level.block.CampfireBlock.LIT, false));
+		for (int[] r : new int[][] { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } }) put(level, o.offset(r[0], -1, r[1]), Blocks.COBBLESTONE.defaultBlockState());
+		tent(level, o.offset(-3, 0, 0), Direction.Axis.Z, block("minecraft:white_wool"));
+		tent(level, o.offset(0, 0, 3), Direction.Axis.X, block("minecraft:green_wool"));
+		BlockState bench = Blocks.OAK_LOG.defaultBlockState().setValue(net.minecraft.world.level.block.RotatedPillarBlock.AXIS, Direction.Axis.X);
+		for (int dx = 1; dx <= 2; dx++) put(level, o.offset(dx, 0, -2), bench);
+		put(level, o.offset(2, 0, 1), Blocks.OAK_LOG.defaultBlockState().setValue(net.minecraft.world.level.block.RotatedPillarBlock.AXIS, Direction.Axis.Z));
+		put(level, o.offset(3, 0, -3), Blocks.LANTERN.defaultBlockState());
+		return o.offset(-2, 0, 3);
+	}
+
+	/** A tent, 3 long along `along`: wool walls leaning in to a ridge, open at its front end, closed at the back. */
+	private static void tent(ServerLevel level, BlockPos c, Direction.Axis along, BlockState wool) {
+		for (int i = -1; i <= 1; i++) {
+			BlockPos m = along == Direction.Axis.Z ? c.offset(0, 0, i) : c.offset(i, 0, 0);
+			for (int side = -1; side <= 1; side += 2) put(level, along == Direction.Axis.Z ? m.offset(side, 0, 0) : m.offset(0, 0, side), wool);
+			put(level, m.above(), wool);
+			if (i == 1) put(level, m, wool); // (the back)
+		}
+	}
+
+	/**
+	 * (2.1.0) A barn: 13 x 17, red walls on white posts, a wide open front (-Z), windows down the sides, hay bales, a
+	 * hayloft over the back half reached by a ladder, and a pitched roof (ridge along its length); a chest downstairs and
+	 * one in the loft.
+	 */
+	private static BlockPos barn(ServerLevel level, BlockPos o, RandomSource rnd) {
+		int hx = 6, hz = 8, wall = 6;
+		BlockState red = block("minecraft:mangrove_planks"), post = block("minecraft:stripped_birch_log"), glass = Blocks.GLASS.defaultBlockState();
+		BlockState boards = Blocks.SPRUCE_PLANKS.defaultBlockState(), hay = Blocks.HAY_BLOCK.defaultBlockState();
+		clear(level, o, hx + 2, hz + 2, wall + hx + 5);
+		floor(level, o, hx, hz, boards, Blocks.COBBLESTONE.defaultBlockState());
+		for (int dx = -hx; dx <= hx; dx++)
+			for (int dz = -hz; dz <= hz; dz++) {
+				boolean edge = Math.abs(dx) == hx || Math.abs(dz) == hz, corner = Math.abs(dx) == hx && Math.abs(dz) == hz;
+				if (!edge) continue;
+				put(level, o.offset(dx, -1, dz), Blocks.STONE_BRICKS.defaultBlockState()); // the footing
+				for (int dy = 0; dy < wall; dy++) {
+					if (dz == -hz && Math.abs(dx) <= 1 && dy < 4) continue; // the big doorway
+					boolean window = !corner && dy == 2 && Math.abs(dx) == hx && Math.abs(dz) % 4 == 2;
+					put(level, o.offset(dx, dy, dz), corner || dz == -hz && Math.abs(dx) == 2 ? post : window ? glass : red);
+				}
+			}
+		// the hayloft: a floor at 4 over the back half, a hole for the ladder in its corner
+		for (int dx = -hx + 1; dx <= hx - 1; dx++)
+			for (int dz = 1; dz <= hz - 1; dz++)
+				if (!(dx == -hx + 1 && dz == hz - 1)) put(level, o.offset(dx, 4, dz), boards);
+		for (int dy = 0; dy <= 4; dy++) put(level, o.offset(-hx + 1, dy, hz - 1), Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.NORTH));
+		// hay downstairs by the door and up in the loft
+		for (int[] h : new int[][] { { hx - 1, 0, -hz + 1 }, { hx - 2, 0, -hz + 1 }, { hx - 1, 1, -hz + 1 }, { hx - 1, 0, -hz + 2 }, { -hx + 1, 0, -hz + 1 },
+			{ hx - 1, 5, hz - 1 }, { hx - 2, 5, hz - 1 }, { hx - 1, 6, hz - 1 }, { hx - 1, 5, hz - 2 }, { 0, 5, hz - 1 } })
+			put(level, o.offset(h[0], h[1], h[2]), hay);
+		// the roof: stairs up both long sides to a ridge along z, gable ends filled with red boards
+		BlockState stairs = block("minecraft:dark_oak_stairs");
+		for (int k = 0; k <= hx + 1; k++) {
+			int y = wall + k;
+			for (int dz = -hz - 1; dz <= hz + 1; dz++) {
+				if (k <= hx) {
+					put(level, o.offset(-hx - 1 + k, y, dz), stairs.setValue(StairBlock.FACING, Direction.EAST));
+					put(level, o.offset(hx + 1 - k, y, dz), stairs.setValue(StairBlock.FACING, Direction.WEST));
+				} else put(level, o.offset(0, y, dz), block("minecraft:dark_oak_slab").setValue(SlabBlock.TYPE, SlabType.BOTTOM));
+			}
+			for (int dx = -hx + k; dx <= hx - k; dx++)
+				for (int side : new int[] { -hz, hz }) put(level, o.offset(dx, y, side), red); // the gable ends
+		}
+		MORE_CHESTS.add(o.offset(-2, 5, hz - 2)); // in the loft
+		return o.offset(-hx + 2, 0, -hz + 3);
 	}
 
 	/** A parking-lot light: an iron pole with a lamp on top. */
