@@ -20,7 +20,7 @@ SHELL, CHROME, HEAD, CYMBAL, STAND, WOOD, TIP = 0xC0282C, 0xC9CED6, 0xF2F0E8, 0x
 
 
 def drum(s, x, y, z, r, h, tilt=0.0, axis="y"):
-    """A drum: a shell in its colour, white heads top and bottom, chrome hoops and a few lugs round it."""
+    """A drum: a shell in its color, white heads top and bottom, chrome hoops and a few lugs round it."""
     def place():
         s.at(x, y, z)
         if axis == "z":

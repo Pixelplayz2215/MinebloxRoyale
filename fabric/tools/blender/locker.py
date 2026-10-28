@@ -2,7 +2,7 @@
 Pictures of the Locker (build.py locker <assets> <renders dir>; pictures only): every hat, haircut, face accessory,
 back bling, pair of shoes, shirt and pants on the stand-in avatar, every emote posed on it and every preset outfit,
 each from four sides, with what unlocks it. The cosmetics are the game's own model files (brm_import: what the game
-draws, including which faces it culls) on the joints the game puts them on, in the item's colours; shirts and pants
+draws, including which faces it culls) on the joints the game puts them on, in the item's colors; shirts and pants
 are the game's own painted designs (paint_clothes.py) wrapped round the body as the game wraps them.
 """
 import json

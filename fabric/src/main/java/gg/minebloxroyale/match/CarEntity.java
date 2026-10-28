@@ -40,7 +40,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * A car someone drives (v2.0.0, creator: "Drivable cars ... steal cars from the lots"). A parked car (CarBlock) becomes
- * one when someone gets in (F), keeping its type, colours, facing and damage; it stays a driven car
+ * one when someone gets in (F), keeping its type, colors, facing and damage; it stays a driven car
  * after (still in the way, still breakable). The creator's rules:
  * <ul>
  * <li>W A S D drive, Shift gets out, Space boosts: one press, one boost, 3 seconds at three times sprint speed (about 17
@@ -97,7 +97,7 @@ public class CarEntity extends Entity {
 
 	/**
 	 * Someone gets into a parked car: the car's blocks go and a driven car takes their place, the same car (type,
-	 * colours, facing, damage). Null if there was no car there.
+	 * colors, facing, damage). Null if there was no car there.
 	 */
 	public static @Nullable CarEntity fromParked(ServerLevel level, BlockPos anyPart) {
 		Set<BlockPos> parts = CarBlock.parts(level, anyPart);

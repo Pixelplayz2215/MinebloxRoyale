@@ -1078,7 +1078,7 @@ public final class MatchManager {
 	 * everything, with the whole team on it facing south: its players (those eliminated earlier too) in the middle,
 	 * its bots either side (an eliminated or far-off one stood up again for it). Its blocks go with the island.
 	 * 2.0.0-test6 (creator: "the camera doesn't show us on a podium"): a real podium, not a flat slab: three stepped
-	 * tiers with gold trim, each teammate on a pad of their own colour, lights along the front step, and a tall backdrop
+	 * tiers with gold trim, each teammate on a pad of their own color, lights along the front step, and a tall backdrop
 	 * behind them, blue with a gold frame and lights, so it reads from the camera in front.
 	 */
 	private double[] victoryStage(MinecraftServer server, int team, Set<UUID> winners) {
@@ -1127,7 +1127,7 @@ public final class MatchManager {
 		}
 		for (int i = 0; i < line.size(); i++) {
 			double x = c.getX() + 0.5 + (i - (line.size() - 1) / 2.0) * 3, z = c.getZ() + 0.5;
-			// (a pad in the teammate's own colour under them)
+			// (a pad in the teammate's own color under them)
 			int slot = line.get(i) instanceof ServerPlayer sp ? Teams.slotOfPlayer(sp.getUUID()) : ((BotRoster.Sim) line.get(i)).slot;
 			put(level, BlockPos.containing(x, y - 1, z), concrete(Teams.color(slot)));
 			if (line.get(i) instanceof ServerPlayer p) {
@@ -1161,7 +1161,7 @@ public final class MatchManager {
 		level.setBlock(b, state, 2 | 16);
 	}
 
-	/** The concrete nearest a colour (0xRRGGBB): a teammate's pad on the podium. */
+	/** The concrete nearest a color (0xRRGGBB): a teammate's pad on the podium. */
 	private static BlockState concrete(int rgb) {
 		DyeColor best = DyeColor.WHITE;
 		double bestD = Double.MAX_VALUE;

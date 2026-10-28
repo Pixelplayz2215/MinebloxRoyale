@@ -1,7 +1,7 @@
 {
  "sheet": "modes",
  "class": "ModeDef",
- "about": "Match modes (creator: Solo, Duos, Trios and Squads, each with its own portal in the hub; the match starts in the mode everyone is standing on). teamSize = fighters per team; bots play in teams of the same size and fill a short party. portal = its hub piece, which fills one floor square in the mode's colour: edge = its rim block, the hub row's block = its glass (creator: match the hologram's colour). noBuild (v2.0.0, creator: \"4 new portals for Solo, Duos, Trios, Squad NO BUILD mode\"): nobody builds and harvesting gives no materials (bots too); its portals stand in their own zone beside the build modes'.",
+ "about": "Match modes (creator: Solo, Duos, Trios and Squads, each with its own portal in the hub; the match starts in the mode everyone is standing on). teamSize = fighters per team; bots play in teams of the same size and fill a short party. portal = its hub piece, which fills one floor square in the mode's color: edge = its rim block, the hub row's block = its glass (creator: match the hologram's color). noBuild (v2.0.0, creator: \"4 new portals for Solo, Duos, Trios, Squad NO BUILD mode\"): nobody builds and harvesting gives no materials (bots too); its portals stand in their own zone beside the build modes'.",
  "columns": {
   "id": "string",
   "name": "string",

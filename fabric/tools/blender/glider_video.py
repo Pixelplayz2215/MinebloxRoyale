@@ -71,18 +71,18 @@ PIVOT = (0.0, 3.7, -0.22)  # the crossbar (gliders.py BAR_Y, BAR_Z)
 # Contrails: how each look is drawn (the game draws the same: Contrails.java). width (studs, at the head of the trail),
 # life (seconds a point lasts), and the style.
 CONTRAILS = {
-    "streak": dict(width=0.34, life=0.6),  # the colour fading into the second colour, tapering
-    "rainbow": dict(width=0.38, life=0.7),  # every colour along it, moving
-    "bands": dict(width=0.36, life=0.6),  # stripes of the two colours
+    "streak": dict(width=0.34, life=0.6),  # the color fading into the second color, tapering
+    "rainbow": dict(width=0.38, life=0.7),  # every color along it, moving
+    "bands": dict(width=0.36, life=0.6),  # stripes of the two colors
     "neon": dict(width=0.16, life=0.55),  # a thin white-hot core in a wide glow
     "sparkle": dict(width=0.24, life=0.75),  # a faint streak with bright sparks along it
-    "flame": dict(width=0.42, life=0.45),  # flickering, hot colour to the second
+    "flame": dict(width=0.42, life=0.45),  # flickering, hot color to the second
     "wave": dict(width=0.4, life=0.8),  # a wide pale ribbon weaving side to side
     "dots": dict(width=0.34, life=0.7),  # just bubbles
     # 2.0.0-test3 (creator: "more contrails")
     "zigzag": dict(width=0.2, life=0.5),  # a forked bolt, flickering into a new shape twelve times a second
-    "ribbon": dict(width=0.4, life=0.75),  # a ribbon twisting over and over, one colour a side
-    "pixel": dict(width=0.3, life=0.8),  # square blocks in the two colours by turns
+    "ribbon": dict(width=0.4, life=0.75),  # a ribbon twisting over and over, one color a side
+    "pixel": dict(width=0.3, life=0.8),  # square blocks in the two colors by turns
     "hearts": dict(width=0.32, life=0.8),  # hearts, beating
 }
 HEART = 14  # (slices a heart is drawn with)
@@ -126,7 +126,7 @@ def resample(pts, m):
 
 
 def look_at(style, c1, c2, u, time):
-    """A contrail's colour and opacity, and its width factor, at u along it (0 = at the hand, 1 = the end), at time
+    """A contrail's color and opacity, and its width factor, at u along it (0 = at the hand, 1 = the end), at time
     (seconds): the game's Contrails.look, line for line."""
     fade = (1 - u) ** 1.4
     w = 1 - u * 0.85
@@ -145,7 +145,7 @@ def look_at(style, c1, c2, u, time):
         rgb = tuple(a + (b - a) * u for a, b in zip(c1, c2))
         fade *= 0.45
     elif style == "ribbon":
-        rgb = c1  # (ribbons() colours each face)
+        rgb = c1  # (ribbons() colors each face)
         fade *= 0.9
     else:
         rgb = tuple(a + (b - a) * u for a, b in zip(c1, c2))
@@ -331,7 +331,7 @@ def blender_main(args):
 
     def ribbons(trails, style, c1, c2, time, base_width, view):
         """The contrails this frame as one mesh: each trail (points in root space, head first) a flat band facing the
-        camera (view: the direction it looks along, root space), its colour, opacity and width from look_at; sparks and
+        camera (view: the direction it looks along, root space), its color, opacity and width from look_at; sparks and
         bubbles as little squares; bolts, twisting ribbons, pixels and hearts as the game's Contrails draws them."""
         verts, faces, cols = [], [], []
 
@@ -367,7 +367,7 @@ def blender_main(args):
                 pts = [p + side * 0.35 * u * math.sin(u * 9 - time * 6) for p, u in zip(pts, us)]
             if style == "zigzag":  # (a bolt, flickering)
                 pts = [p + sd * 0.42 * zig(u, time) for p, sd, u in zip(pts, sides(pts), us)]
-            if style == "ribbon":  # twisting: the width turns through the trail's plane, a colour a face
+            if style == "ribbon":  # twisting: the width turns through the trail's plane, a color a face
                 sd = sides(pts)
                 hs, cs = [], []
                 for (rgb, a, w), u in zip(looks, us):
@@ -418,7 +418,7 @@ def blender_main(args):
                         h0, h1 = base_width * w0 * wk / 2, base_width * w1 * wk / 2
                         if style == "bands":
                             # cut where a stripe ends between the two points (the game's Contrails.band): each piece one
-                            # colour, so the edges are sharp and slide as the stripes move
+                            # color, so the edges are sharp and slide as the stripes move
                             st0, st1 = us[k] * STRIPES - time * STRIPE_SPEED, us[k + 1] * STRIPES - time * STRIPE_SPEED
                             stripe, fr = math.floor(st0), 0.0
                             while fr < 1:
@@ -430,7 +430,7 @@ def blender_main(args):
                                 fr, stripe = to, stripe + 1
                             continue
                         core = style == "neon" and wk == 1.0
-                        if style == "zigzag":  # (a core in the first colour, a glow of the second)
+                        if style == "zigzag":  # (a core in the first color, a glow of the second)
                             ca = (c1 if wk == 1.0 else c2) + (a0 * ak,)
                             cb = (c1 if wk == 1.0 else c2) + (a1 * ak,)
                         else:

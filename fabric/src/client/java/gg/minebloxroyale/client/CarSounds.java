@@ -12,14 +12,14 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 
 /**
- * Cars' engines and tyres (2.0.0-test3, creator: "Cars should have a driving animation (also sounds)"): each car near you
+ * Cars' engines and tires (2.0.0-test3, creator: "Cars should have a driving animation (also sounds)"): each car near you
  * with someone in it hums its engine (the car.engine loop, its pitch and loudness rising with its speed, louder still
- * boosting), and its tyres roll on the ground (car.tyres, 2.1.0: no squeal; creator: they "sound very odd"). How it's moving comes from CarEntityRenderer, which
+ * boosting), and its tires roll on the ground (car.tires, 2.1.0: no squeal; creator: they "sound very odd"). How it's moving comes from CarEntityRenderer, which
  * works that out each frame; the boost and the doors are one-off sounds (CarEntity, CarEntityRenderer).
  */
 public final class CarSounds {
 	private static final SoundEvent ENGINE = SoundEvent.createVariableRangeEvent(MinebloxRoyale.id("car.engine")),
-		TYRES = SoundEvent.createVariableRangeEvent(MinebloxRoyale.id("car.tyres"));
+		TIRES = SoundEvent.createVariableRangeEvent(MinebloxRoyale.id("car.tires"));
 	/** How far off a car's engine is heard (blocks). */
 	private static final double RANGE = 48;
 	private static final Map<Integer, Loop[]> PLAYING = new HashMap<>();
@@ -44,15 +44,15 @@ public final class CarSounds {
 		PLAYING.values().removeIf(l -> l[0].isStopped());
 	}
 
-	/** A car's engine (or its tyres) going round and round, following it, changing with how it moves. */
+	/** A car's engine (or its tires) going round and round, following it, changing with how it moves. */
 	private static final class Loop extends AbstractTickableSoundInstance {
 		private final CarEntity car;
-		private final boolean tyres;
+		private final boolean tires;
 
-		Loop(CarEntity car, boolean tyres) {
-			super(tyres ? TYRES : ENGINE, SoundSource.NEUTRAL, RandomSource.create());
+		Loop(CarEntity car, boolean tires) {
+			super(tires ? TIRES : ENGINE, SoundSource.NEUTRAL, RandomSource.create());
 			this.car = car;
-			this.tyres = tyres;
+			this.tires = tires;
 			this.looping = true;
 			this.delay = 0;
 			this.volume = 0.01F;
@@ -74,7 +74,7 @@ public final class CarSounds {
 			z = car.getZ();
 			float[] m = CarEntityRenderer.motion(car.getId());
 			float speed = Math.abs(m[0]), fast = Math.min(1, speed / 17F); // (blocks a second; boosting is about 17)
-			if (tyres) {
+			if (tires) {
 				// (2.1.0) rolling: louder and higher with speed, a little more taking a turn; silent standing still
 				float turn = Math.min(1, Math.abs(m[1])) * Math.min(1, speed / 8F);
 				float want = speed < 0.5F ? 0 : 0.12F + 0.38F * fast + 0.15F * turn;

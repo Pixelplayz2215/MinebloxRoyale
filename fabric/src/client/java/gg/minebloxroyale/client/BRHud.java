@@ -98,7 +98,7 @@ public final class BRHud {
 
 	/**
 	 * The match's hotbar, Fortnite-style (v2.0.0, creator: "Cleaner UI"): the pickaxe and the five item slots as rounded
-	 * tiles, a gun's in its rarity's colour with its magazine count, a stack's count, each slot's number; the one in hand
+	 * tiles, a gun's in its rarity's color with its magazine count, a stack's count, each slot's number; the one in hand
 	 * raised and outlined in white. (Minecraft's three slots after them are locked in a match: not shown.)
 	 */
 	private static void matchHotbar(GuiGraphicsExtractor g, Minecraft mc) {
@@ -214,7 +214,7 @@ public final class BRHud {
 			}
 	}
 
-	/** A colour with its alpha scaled by f (0 to 1). */
+	/** A color with its alpha scaled by f (0 to 1). */
 	private static int faded(int argb, float f) {
 		return Math.round((argb >>> 24) * f) << 24 | argb & 0xFFFFFF;
 	}
@@ -268,7 +268,7 @@ public final class BRHud {
 				Smooth.panel(g, x - 0.4F, y + 4.5F, 0.8F, 5, 0.4F, (alpha / 2 << 24) | 0xFFFFFF);
 			}
 		}
-		// Teammates' waypoints in their colours (team modes), then yours in red on top: a mark at its bearing (held at
+		// Teammates' waypoints in their colors (team modes), then yours in red on top: a mark at its bearing (held at
 		// the bar's end when it's outside the bar).
 		for (double[] t : Waypoint.teammates()) compassMark(g, cx, y, w, span, heading, Waypoint.bearingTo(mc, t[0], t[1]), (int) t[2]);
 		for (double[] c : Waypoint.cards()) compassMark(g, cx, y, w, span, heading, Waypoint.bearingTo(mc, c[0], c[1]), (int) c[2]);
@@ -323,7 +323,7 @@ public final class BRHud {
 		g.pose().pushMatrix();
 		g.pose().translate(g.guiWidth() + d.x() - d.size() - 3, d.y());
 		g.pose().scale(s, s);
-		Smooth.panel(g, 0, 0, natural + 6, 16, 3, 0xE0101420, 0xE0080B12); // the minimap frame's colour, hanging from it
+		Smooth.panel(g, 0, 0, natural + 6, 16, 3, 0xE0101420, 0xE0080B12); // the minimap frame's color, hanging from it
 		// The storm's clock, players left, your eliminations, then (team match) your whole team's, you included.
 		int total = hud.kills();
 		if (team) for (var m : ClientState.squad.mates()) total += m.kills();
@@ -396,7 +396,7 @@ public final class BRHud {
 		float x = g.guiWidth() + d.x(), y = g.guiHeight() + d.y();
 		float width = Math.max(d.size(), Smooth.width(name, 7.5F) + 12);
 		int rc = 0xFF000000 | r.color();
-		// The plate: the gun's name on its rarity's colour, then its ammo type's icon, the magazine big and what's left.
+		// The plate: the gun's name on its rarity's color, then its ammo type's icon, the magazine big and what's left.
 		Smooth.panel(g, x - width, y - 6, width + 2, 30, 5, 0x9010141E, 0xB0080B12);
 		Smooth.panel(g, x - width, y - 6, width + 2, 11.5F, 5, Smooth.lighter(rc, 0.2F), Smooth.mix(rc, 0xFF000000, 0.25F));
 		Smooth.text(g, name, x - 4, y - 4.6F, 7.5F, 0xFFFFFFFF, Smooth.RIGHT, true);

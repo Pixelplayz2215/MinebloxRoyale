@@ -1,7 +1,7 @@
 """
 The Locker's hats, hair, face accessories and shoes, made in Blender (v1.0.1, creator: cosmetics like real Roblox catalog
 items, rebuilt in Blender). Ported from the code-drawn ones line for line (shapes.S is the Java Smooth), so every piece
-keeps its size and fit; each is one model per shape, in the item's two colours (tint channels 1 and 2).
+keeps its size and fit; each is one model per shape, in the item's two colors (tint channels 1 and 2).
 
 Head joint space (studs, y up, the face towards -z), measured on the default Roblox head as the game measures it
 (Cosmetics.bounds): the head spans x and z +-0.599, y 0 .. 1.2. Hair under a hat stops where that hat starts, so each
@@ -152,7 +152,7 @@ def hat(s, shape, h, a="a", b="b"):
         s.at(cx, base + 0.17, cz - 1.15 * hd).color(0xFF4FD8).ellipsoid(0.1, 0.1, 0.045)
     elif shape == "storm_hood":
         # (2.0.0-test3, the Storm Raider preset) a hood over the whole head (the hair hidden), open round the face below
-        # the brow, its opening edged with a glowing trim in the second colour
+        # the brow, its opening edged with a glowing trim in the second color
         shell(s, h, 1.13, brow - 0.04, top + 0.13, 0.5, False, 0, 360, a)
         shell(s, h, 1.15, h.bottom - 0.02, brow, 0.05, False, -38, 218, a)
         # (2.0.0-test6: the trim half sunk into the hood's edges (the top one rounds in to 1.11 out), so it doesn't

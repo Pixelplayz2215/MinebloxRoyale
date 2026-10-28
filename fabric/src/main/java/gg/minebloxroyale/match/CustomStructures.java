@@ -411,7 +411,7 @@ public final class CustomStructures {
 	/** Shack woods (creator: shacks of different woods, with matching doors). */
 	private static final String[] WOODS = { "oak", "spruce", "birch", "jungle", "acacia", "dark_oak", "mangrove", "cherry" };
 
-	/** A block by id (26.3 keeps coloured and copper blocks in collections, not as named fields). */
+	/** A block by id (26.3 keeps colored and copper blocks in collections, not as named fields). */
 	private static BlockState block(String id) {
 		var b = BuiltInRegistries.BLOCK.getOptional(Identifier.parse(id));
 		if (b.isEmpty()) MinebloxRoyale.LOG.warn("BR: no block {} in this version, iron used instead", id);
@@ -525,15 +525,15 @@ public final class CustomStructures {
 		return o;
 	}
 
-	/** Car body colours (creator: other colours too): Fortnite's bright paints, plus white, black and silver. */
+	/** Car body colors (creator: other colors too): Fortnite's bright paints, plus white, black and silver. */
 	private static final int[] PAINT = { 0xFFD8352C, 0xFF2F6BD8, 0xFFF2C230, 0xFFF08A24, 0xFF3BB84A, 0xFF1EB8A6, 0xFFF2F4F8, 0xFF2A2D33, 0xFFB9C1CC,
 		0xFF8A4FD8, 0xFFF06AA8, 0xFF7A1F2B };
 
 	/**
-	 * A parked car, nose to `front` (creator: smooth models like the reboot van and Battle Bus, other types and colours,
+	 * A parked car, nose to `front` (creator: smooth models like the reboot van and Battle Bus, other types and colors,
 	 * and they still break for metal): a sedan, sports car, pickup, SUV, hatchback, police car or taxi. The server only
 	 * puts down its invisible body (CarBlock, 3 wide and 5 long, a second layer where the cabin is); every player's game
-	 * draws the car itself (CarRenderer), from the type, colours and facing kept in the core block.
+	 * draws the car itself (CarRenderer), from the type, colors and facing kept in the core block.
 	 */
 	private static void car(ServerLevel level, BlockPos c, RandomSource rnd, Direction front) {
 		CarBlockEntity.Kind kind = pickKind(rnd);

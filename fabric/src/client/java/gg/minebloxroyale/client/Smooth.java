@@ -50,13 +50,13 @@ public final class Smooth {
 
 	// ---- panels ----
 
-	/** A rounded rectangle (radius r), one colour. */
+	/** A rounded rectangle (radius r), one color. */
 	public static void panel(GuiGraphicsExtractor g, float x, float y, float w, float h, float r, int color) {
 		panel(g, x, y, w, h, r, color, color);
 	}
 
 	/**
-	 * A rounded rectangle shading from top to bottom (colours ARGB), its corners anti-aliased: drawn in screen pixels,
+	 * A rounded rectangle shading from top to bottom (colors ARGB), its corners anti-aliased: drawn in screen pixels,
 	 * each row of a corner as a solid run with one partly covered pixel at each end.
 	 */
 	public static void panel(GuiGraphicsExtractor g, float x, float y, float w, float h, float r, int top, int bottom) {
@@ -115,7 +115,7 @@ public final class Smooth {
 		}
 
 		/**
-		 * (2.0.0) Any four-cornered shape, each corner its own colour (the storm's rings and its purple on the maps):
+		 * (2.0.0) Any four-cornered shape, each corner its own color (the storm's rings and its purple on the maps):
 		 * put in the same turning order as the plain quads.
 		 */
 		void quad(float xa, float ya, int ca, float xb, float yb, int cb, float xc, float yc, int cc, float xd, float yd, int cd) {
@@ -137,7 +137,7 @@ public final class Smooth {
 			maxY = Math.max(maxY, Math.max(Math.max(ya, yb), Math.max(yc, yd)));
 		}
 
-		/** A plain quad shading from colour top to bottom (as GuiGraphicsExtractor.fillGradient). */
+		/** A plain quad shading from color top to bottom (as GuiGraphicsExtractor.fillGradient). */
 		void quad(float x0, float y0, float x1, float y1, int top, int bottom) {
 			textured(x0, y0, x1, y1, 0, 0, 0, 0, top, bottom);
 		}
@@ -199,7 +199,7 @@ public final class Smooth {
 	}
 
 	/**
-	 * A bar: its rounded track, then filled frac of the way in colour (a lighter top half, Fortnite-style), split into
+	 * A bar: its rounded track, then filled frac of the way in color (a lighter top half, Fortnite-style), split into
 	 * segments by thin gaps.
 	 */
 	public static void bar(GuiGraphicsExtractor g, float x, float y, float w, float h, float frac, int color, int segments) {
@@ -312,7 +312,7 @@ public final class Smooth {
 		}
 	}
 
-	// ---- colours ----
+	// ---- colors ----
 
 	static int alpha(int argb, float f) {
 		return Math.round((argb >>> 24) * Math.max(0, Math.min(1, f))) << 24 | argb & 0xFFFFFF;

@@ -42,7 +42,7 @@ ITEM_DISPLAY = {
     "head": {"rotation": [0, 180, 0], "translation": [0, 13, 7], "scale": [1, 1, 1]},
     "gui": {"rotation": [0, 0, 0], "scale": [1, 1, 1]},
 }
-COMMON = 0xB0B0B0  # a gun's rarity colour when it has none (common)
+COMMON = 0xB0B0B0  # a gun's rarity color when it has none (common)
 # How items.py's icon camera looked at each kind (turned yaw, tilted pitch): a slot shows the model the same way.
 GUN_VIEW, ITEM_VIEW, PICKAXE_VIEW = (24, 12), (-28, 18), (0, 0)
 

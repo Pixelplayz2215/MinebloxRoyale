@@ -168,7 +168,7 @@ public final class MatchStats {
 		r.addProperty("damage", Math.round(l.damage));
 		r.addProperty("revives", l.revives);
 		r.addProperty("reboots", l.reboots);
-		r.addProperty("color", Teams.color(l.slot)); // (their teammate colour: team_colors, by slot)
+		r.addProperty("color", Teams.color(l.slot)); // (their teammate color: team_colors, by slot)
 		return r;
 	}
 }

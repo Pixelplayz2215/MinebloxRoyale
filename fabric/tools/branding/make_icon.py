@@ -16,7 +16,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")
 TEXTURE = os.path.join(ROOT, "fabric", "src", "main", "resources", "assets", "minebloxroyale", "textures", "item", "icon.png")
 BRANDING = os.path.join(ROOT, "Branding")
 
-# Colours.
+# Colors.
 RING_DARK = (34, 10, 66)
 STORM_IN = (150, 72, 235)
 STORM_OUT = (74, 22, 148)
@@ -111,8 +111,8 @@ def smooth_icon(size, small=False):
         img.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(0.8 * k)))
     d = ImageDraw.Draw(img)
     ow = round(1.0 * k) if small else max(2, round(0.55 * k))
-    for poly, colour in ((CUBE_LEFT, DIRT_LEFT), (CUBE_RIGHT, DIRT_RIGHT), (GRASS_LEFT, GRASS_SIDE), (GRASS_RIGHT, GRASS_SIDE), (CUBE_TOP, GRASS_TOP)):
-        d.polygon(pts(poly), fill=colour)
+    for poly, color in ((CUBE_LEFT, DIRT_LEFT), (CUBE_RIGHT, DIRT_RIGHT), (GRASS_LEFT, GRASS_SIDE), (GRASS_RIGHT, GRASS_SIDE), (CUBE_TOP, GRASS_TOP)):
+        d.polygon(pts(poly), fill=color)
     # Specks in the dirt, a lit edge on top.
     for x, y in ((9, 21), (12, 25), (10, 24), (19, 22), (22, 20), (21, 25), (13.5, 22.5), (23, 23)):
         d.rectangle((x * k, y * k, (x + 0.9) * k, (y + 0.9) * k), fill=DIRT_DARK)
@@ -124,9 +124,9 @@ def smooth_icon(size, small=False):
     d.polygon(pts([(8.6, 10.4), (8.6, 6), (11.5, 8.9), (16, 3.4), (16, 9)]), fill=GOLD_LIGHT)
     d.polygon(pts(CROWN_BAND), fill=GOLD_DARK)
     d.polygon(pts(CROWN), outline=OUTLINE, width=ow)
-    for (x, y), colour in JEWELS:
-        r = 1.15 if colour == RUBY else 0.85
-        d.ellipse(((x + 0.5 - r) * k, (y + 0.5 - r) * k, (x + 0.5 + r) * k, (y + 0.5 + r) * k), fill=colour, outline=OUTLINE, width=max(1, ow // 2))
+    for (x, y), color in JEWELS:
+        r = 1.15 if color == RUBY else 0.85
+        d.ellipse(((x + 0.5 - r) * k, (y + 0.5 - r) * k, (x + 0.5 + r) * k, (y + 0.5 + r) * k), fill=color, outline=OUTLINE, width=max(1, ow // 2))
         d.ellipse(((x + 0.2) * k, (y + 0.1) * k, (x + 0.55) * k, (y + 0.45) * k), fill=(255, 255, 255, 220))
     return img.resize((size, size), Image.LANCZOS)
 

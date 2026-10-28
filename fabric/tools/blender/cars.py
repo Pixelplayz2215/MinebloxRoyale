@@ -79,7 +79,7 @@ KINDS = {
     "taxi": ("Taxi", SEDAN),
 }
 STAGES = {1: "New", 2: "Scuffed", 3: "Damaged", 4: "Nearly wrecked"}
-# Colours for the renders (the game picks them per car: CustomStructures).
+# Colors for the renders (the game picks them per car: CustomStructures).
 SAMPLE = {"sedan": ("#D8352C", "#F2F4F8"), "sports": ("#F2C230", "#22252B"), "pickup": ("#2F6BD8", "#F2F4F8"), "suv": ("#3BB84A", "#F2F4F8"),
           "hatchback": ("#F08A24", "#F2F4F8"), "police": ("#22252B", "#F2F4F8"), "taxi": ("#F2C230", "#22252B")}
 
@@ -110,7 +110,7 @@ def body(c, kind):
 
 
 def cabin(c, kind):
-    """The cabin in the paint colour: a roof on sloping sides, glass set into each face inside a frame of pillars."""
+    """The cabin in the paint color: a roof on sloping sides, glass set into each face inside a frame of pillars."""
     y0, y1, z0, z1, zt0, zt1, a, b = c.y0, c.y1, c.z0, c.z1, c.zt0, c.zt1, c.hx0, c.hx1
     v = [(-a, y0, z1), (a, y0, z1), (a, y0, z0), (-a, y0, z0), (-b, y1, zt1), (b, y1, zt1), (b, y1, zt0), (-b, y1, zt0)]
     f = [(0, 1, 2, 3), (4, 5, 6, 7), (0, 1, 5, 4), (2, 3, 7, 6), (1, 2, 6, 5), (3, 0, 4, 7)]
@@ -220,7 +220,7 @@ def face_normal(face, centre):
 # ---------------------------------------------------------------- wheels, lights, trim
 
 def wheels(c, stage):
-    """Four wheels: a rounded tyre with tread grooves, a five-spoke silver rim with a centre cap. Damaged, the front left
+    """Four wheels: a rounded tire with tread grooves, a five-spoke silver rim with a centre cap. Damaged, the front left
     one has lost its hubcap: a bare dark hub and its wheel nuts."""
     for z in (c.zf, c.zb):
         for s in (-1, 1):
@@ -280,7 +280,7 @@ def back(c):
 
 
 def mirrors(c, stage):
-    """Side mirrors at the foot of the front pillars: an arm, a housing in the paint colour and the mirror glass facing
+    """Side mirrors at the foot of the front pillars: an arm, a housing in the paint color and the mirror glass facing
     back. Damaged, the left one has snapped off at its arm."""
     y = c.y0 + 0.13
     t = (y - c.y0) / (c.y1 - c.y0)
@@ -340,7 +340,7 @@ def extras(c, kind, stage):
         cyl(0, 1.25, -2.52, 0.2, 0.03, "z", RIM(), verts=20)
         cyl(0, 1.25, -2.545, 0.07, 0.02, "z", DARK(), verts=12)
     elif kind == "police":
-        # White front doors (the trim colour), a light bar (red and blue) on the roof.
+        # White front doors (the trim color), a light bar (red and blue) on the roof.
         d0, d1 = c.door_start(), c.z1 - 0.05
         for s in (-1, 1):
             if stage >= 4 and s > 0:

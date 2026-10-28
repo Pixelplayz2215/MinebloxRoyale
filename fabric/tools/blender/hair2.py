@@ -218,7 +218,7 @@ def tail(hr, knot, path, radii, locks=12, spread=1.0):
 
 def sleek(hr, shape, h, tie, phones=False):
     """Hair pulled back smooth to a tie (ponytail), a bun, or parted down the middle to two ties (pigtails): a smooth
-    base in the hair's own colour and fine combed strands over it, all running to the tie(s). phones: worn with
+    base in the hair's own color and fine combed strands over it, all running to the tie(s). phones: worn with
     headphones, the pigtails tied further back, behind the ear cups (they came out through them)."""
     top, cy = h.top, h.cy
     # (2.0.0-test6: 1.03 out, was 1.04, as far out as the beanie's cuff inside and the domino mask: they flickered)

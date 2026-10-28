@@ -1,7 +1,7 @@
 Test 2.1-3 - Hold a gun: one slim line above the materials with its damage, shots a second and reload (icons), changing with each gun and rarity; gone in a car or with no gun
 Test 2.1-2 - Skydive: wind rising as you fall (louder looking down), softer under the glider; a whoosh out of the bus and closing the glider
 Test 2.1-2 - The glider's own open and close sounds (and closing as you land)
-Test 2.1-2 - Cars: tyres rumble with speed, no squeal
+Test 2.1-2 - Cars: tires rumble with speed, no squeal
 Test 2.1-2 - Storm closing in: the new urgent sound, only while it shrinks, louder near the edge; the new-phase sound as before
 Test 2.1-2 - Holding a teammate's reboot card: its blue tile right of the hotbar, 'Holding <name>'s reboot card' just above the hotbar
 Test 2.1-2 - Hover a gun in your inventory or a chest: damage, fire rate, reload, magazine
@@ -66,7 +66,7 @@ Test 3 - Shop: hover anything (owned too) to see it on you; your pickaxe is in y
 Test 3 - Pickaxes: Royal Cleaver and Prism Breaker (the old Golden and Diamond picks) and 8 new ones in the Locker
 Test 3 - Contrails: 10 new (lightning, twisting ribbon, pixels, hearts...); Shop presets: Victory Royale, Storm Raider, Neon Rider, Sweet Tooth
 Test 3 - Bosses: a shield and health bar over the name, 200 health + 100 shield, a red Boss-rarity gun they drop
-Test 3 - Cars: wheels turn and steer, the body leans; the door opens as you get in; engine, tyre, boost and door sounds
+Test 3 - Cars: wheels turn and steer, the body leans; the door opens as you get in; engine, tire, boost and door sounds
 Test 3 - Boost trails (Locker tab, gold): the car preview shows the hovered one; yours streams from the car when you boost
 Test 3 - 3D ammo, wood/brick/metal and reboot card in the inventory, the creative tab and on the ground; the new rocket (HUD too)
 Test 3 - Reboot cards: a teammate's card never runs out once picked up (CARD PICKED UP in the squad list); dropped again, it runs out
@@ -74,7 +74,7 @@ Test 2 - Shop: items under their category's title; hover one to see it on you (p
 Test 2 - Pickaxes tab: your pickaxe shows in your hand on the preview
 Test 2 - Contrails: smooth curves, and Candy Stripe's stripes slide instead of jumping (Locker preview and skydiving)
 Test 2 - HUD about 15% bigger (health, hotbar, ammo, minimap, compass, banners, prompts); nothing should overlap
-Test 2 - Hotbar and inventory: 3D models (guns in their rarity colour); the hub's Gun Rarity and Heals & Shields boards too
+Test 2 - Hotbar and inventory: 3D models (guns in their rarity color); the hub's Gun Rarity and Heals & Shields boards too
 Test 2 - Reboot vans on every island, Solo too: 8, some near the middle and some at the edge, all on the map (Tab) from the start
 Test 2 - Bosses: 4 a match out of 6 (new: Sergeant Bacon, Doctor Kaboom with a rocket launcher, Sheriff Noobly)
 Test 2 - Rocket launchers, rockets and grenades about twice as common in chests and on the floor

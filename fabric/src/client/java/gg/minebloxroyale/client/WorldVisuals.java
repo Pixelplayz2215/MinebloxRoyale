@@ -100,7 +100,7 @@ public final class WorldVisuals {
 		});
 	}
 
-	/** A flat-coloured quad, both windings (Build mode's preview, waypoint beams). */
+	/** A flat-colored quad, both windings (Build mode's preview, waypoint beams). */
 	static void quad(VertexConsumer vc, PoseStack.Pose pose, Vec3 cam, double x0, double z0, double x1, double z1, double y0, double y1, float nx, float nz, int color) {
 		v(vc, pose, cam, x0, y1, z0, color, nx, nz);
 		v(vc, pose, cam, x0, y0, z0, color, nx, nz);

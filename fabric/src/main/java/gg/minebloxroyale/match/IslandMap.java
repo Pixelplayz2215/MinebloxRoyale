@@ -90,7 +90,7 @@ public final class IslandMap {
 		}
 	}
 
-	/** Called for every generated island chunk: fills the pixels inside it (top block's map colour, height). */
+	/** Called for every generated island chunk: fills the pixels inside it (top block's map color, height). */
 	static void sample(ChunkAccess chunk) {
 		if (rgb == null) return;
 		double bpp = span / RES;
@@ -103,7 +103,7 @@ public final class IslandMap {
 			for (int px = Math.max(0, px0); px <= Math.min(RES - 1, px1); px++) {
 				int wx = (int) Math.floor(originX + px * bpp), wz = (int) Math.floor(originZ + pz * bpp);
 				int y = chunk.getHeight(Heightmap.Types.WORLD_SURFACE, wx & 15, wz & 15);
-				// The heightmap can point at the air just above the ground: step down to the first block with a colour.
+				// The heightmap can point at the air just above the ground: step down to the first block with a color.
 				MapColor c = MapColor.NONE;
 				for (int down = 0; down < 4 && c == MapColor.NONE; down++) {
 					pos.set(wx, y - down, wz);

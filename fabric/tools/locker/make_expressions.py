@@ -1,11 +1,11 @@
 """
 Facial expressions (2.1.0, creator: "Facial expressions that work with every face accessory, on a page of their own in
 the Locker; some free, some unlocked by a condition, some for gold"): each one a face decal of our own, drawn here in
-the classic flat style (black eyes and mouth; the odd touch of colour), 128 x 128 like Roblox's own face.png and with
+the classic flat style (black eyes and mouth; the odd touch of color), 128 x 128 like Roblox's own face.png and with
 the eyes where it has them (x 0.38-0.63, y 0.21-0.34), so glasses, masks and the rest of the face accessories sit on
 them as they do on the default face. Written to assets/minebloxroyale/textures/expression/<shape>.png; the cosmetics
 sheet's "expression" rows name them (shape). The game lays them side by side with the player's own Roblox face
-(the default) in one texture and tints them with the head colour, as it does that face.
+(the default) in one texture and tints them with the head color, as it does that face.
 
 python fabric/tools/locker/make_expressions.py
 """

@@ -10,9 +10,9 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 
 /**
- * Name colours in chat: the server sends every real player's name in blue (bots stay white). On each player's own
+ * Name colors in chat: the server sends every real player's name in blue (bots stay white). On each player's own
  * screen, their own blue name becomes purple, so you always spot yourself; everyone else still sees you in blue.
- * Teammates (team modes; your party in the hub) show in their teammate colour, on their teammates' screens only
+ * Teammates (team modes; your party in the hub) show in their teammate color, on their teammates' screens only
  * (creator): other teams still see them blue. Bot teammates too.
  */
 public final class NameColors {

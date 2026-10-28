@@ -68,7 +68,7 @@ public final class Guns {
 		stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
 		stack.set(DataComponents.CUSTOM_NAME, Component.literal(r.name() + " " + w.name())
 			.withStyle(Style.EMPTY.withColor(TextColor.fromRgb(r.color())).withItalic(false)));
-		// The model's accent parts (and the icon's stripe) are drawn in the rarity colour (items/gun_*.json tints).
+		// The model's accent parts (and the icon's stripe) are drawn in the rarity color (items/gun_*.json tints).
 		stack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(List.of(), List.of(), List.of(), List.of(r.color())));
 		return stack;
 	}

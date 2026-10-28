@@ -60,7 +60,7 @@ public final class RobloxAssets {
 				MESHES.put(part.id(), mesh);
 			}
 			// One texture of faces (2.1.0: CELLS x CELLS of them, 128 square each): Roblox's face decal (cell 0) and the
-			// facial expressions over white (tinted by the head colour at draw time); the corner stays white for body parts.
+			// facial expressions over white (tinted by the head color at draw time); the corner stays white for body parts.
 			NativeImage img = new NativeImage(128 * CELLS, 128 * CELLS, false);
 			img.fillRect(0, 0, 128 * CELLS, 128 * CELLS, 0xFFFFFFFF);
 			Path face = content.resolve("textures/face.png");

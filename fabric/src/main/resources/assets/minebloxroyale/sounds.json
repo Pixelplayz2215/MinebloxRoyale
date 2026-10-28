@@ -596,9 +596,9 @@
       "minebloxroyale:storm/closing"
     ]
   },
-  "car.tyres": {
+  "car.tires": {
     "sounds": [
-      "minebloxroyale:car/tyres"
+      "minebloxroyale:car/tires"
     ]
   }
 }

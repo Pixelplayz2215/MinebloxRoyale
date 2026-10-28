@@ -22,7 +22,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 /**
- * Locker cosmetics on the Roblox avatar (cosmetics sheet): shirt and pants colours and prints, plus hats, hair, face
+ * Locker cosmetics on the Roblox avatar (cosmetics sheet): shirt and pants colors and prints, plus hats, hair, face
  * and back accessories and shoes (Blender models, like real Roblox catalog items), drawn on the moving body parts.
  * Looks only.
  */
@@ -112,7 +112,7 @@ public final class Cosmetics {
 	 * Every worn accessory (hats, hair, face, back bling, shoes) and the 3D parts of shirts and pants (collars, cuffs,
 	 * belts, pockets, straps... over their painted designs): Blender models (fabric/tools/blender/cosmetic_meshes.py),
 	 * each on its body part's joint so it moves with it, bending with an arm's elbow or a leg's knee, in the item's two
-	 * colours; the lighter copies far away.
+	 * colors; the lighter copies far away.
 	 */
 	static void submit(SubmitNodeCollector collector, PoseStack poseStack, LivingEntityRenderState state, Map<String, String> outfit,
 		RobloxAvatarRenderer.Pose pose, double distSq, int light, int overlay) {
@@ -229,7 +229,7 @@ public final class Cosmetics {
 
 	/**
 	 * Draws the worn shirt's and pants' designs as pictures on the torso and legs, just outside the body (the parts
-	 * themselves are already coloured with the items' main colours), bending with the knees.
+	 * themselves are already colored with the items' main colors), bending with the knees.
 	 */
 	static void submitClothes(SubmitNodeCollector collector, PoseStack poseStack, LivingEntityRenderState state, Map<String, String> outfit,
 		RobloxAvatarRenderer.Pose pose, int light, int overlay) {

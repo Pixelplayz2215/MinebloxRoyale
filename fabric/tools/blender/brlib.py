@@ -3,12 +3,12 @@ Mineblox Royale's Blender kit (v1.0.1, creator: "remade using Blender"): build a
 bake soft shadows into it, export it for the game, and render it.
 
 Coordinates are Minecraft's (x right, y up, z towards the viewer); the kit turns them into Blender's (X, -Z, Y) and
-back, so the model scripts read like the Java that draws them. Every part has a material from mat(): its colour, and
-optionally a tint channel (1 = the item's main colour: a gun's rarity, a car's paint, a hat's first colour; 2 = its
-second colour) or glow (drawn full bright: headlights, lenses).
+back, so the model scripts read like the Java that draws them. Every part has a material from mat(): its color, and
+optionally a tint channel (1 = the item's main color: a gun's rarity, a car's paint, a hat's first color; 2 = its
+second color) or glow (drawn full bright: headlights, lenses).
 
-The game's mesh file (.brm, written by brm.py): per corner (three per triangle) its place, normal, colour (the
-material colour with the baked shadow) and flags (the tint channel, glow). Read by gg.minebloxroyale.client.mesh.Mesh.
+The game's mesh file (.brm, written by brm.py): per corner (three per triangle) its place, normal, color (the
+material color with the baked shadow) and flags (the tint channel, glow). Read by gg.minebloxroyale.client.mesh.Mesh.
 """
 import json
 import math
@@ -54,7 +54,7 @@ _mats = {}
 
 
 def mat(name, color, ch=0, glow=False, rough=0.55, metal=0.0):
-    """A material: colour '#rrggbb' (sRGB). ch: tint channel (the colour is then the shade under the tint: keep it
+    """A material: color '#rrggbb' (sRGB). ch: tint channel (the color is then the shade under the tint: keep it
     light grey or white). glow: full bright in the game, emissive in renders."""
     key = name
     if key in _mats:
@@ -73,7 +73,7 @@ def mat(name, color, ch=0, glow=False, rough=0.55, metal=0.0):
 
 
 def _set_preview(m, tints):
-    """Render colours: a tinted material shows the given tint (sRGB hex) times its own shade."""
+    """Render colors: a tinted material shows the given tint (sRGB hex) times its own shade."""
     c = hexrgb(m["br_col"])
     ch = m["br_ch"]
     if ch and tints and ch in tints:

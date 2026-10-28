@@ -1,7 +1,7 @@
 {
   "sheet": "avatar_colors",
   "class": "AvatarColorDef",
-  "about": "Body colour sets (Roblox BrickColor values). 'classic' is every player's look; bots pick from the rest.",
+  "about": "Body color sets (Roblox BrickColor values). 'classic' is every player's look; bots pick from the rest.",
   "columns": {
     "id": "string",
     "head": "color",

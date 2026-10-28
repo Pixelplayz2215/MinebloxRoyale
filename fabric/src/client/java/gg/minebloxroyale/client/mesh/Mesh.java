@@ -19,9 +19,9 @@ import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A model made in Blender (v1.0.1, creator: "remade using Blender"; fabric/tools/blender): triangles with a colour per
- * corner (its material, with soft shadows baked in) and flags saying which corners take one of the two tint colours (a
- * gun's rarity, a car's paint and trim, a hat's colours) and which glow (drawn full bright). Loaded once from
+ * A model made in Blender (v1.0.1, creator: "remade using Blender"; fabric/tools/blender): triangles with a color per
+ * corner (its material, with soft shadows baked in) and flags saying which corners take one of the two tint colors (a
+ * gun's rarity, a car's paint and trim, a hat's colors) and which glow (drawn full bright). Loaded once from
  * assets/minebloxroyale/meshes/<id>.brm (brlib.export writes them; brm.py describes the format); an id with no file
  * draws nothing.
  *
@@ -118,7 +118,7 @@ public final class Mesh {
 	 * Pairs triangles into quads (2.0.0-test3, lag): a triangle a b c and its neighbour across the edge c-a, wound c d a,
 	 * with the same corners on that edge, are the quad a b c d, drawn as exactly those two triangles: four corners for
 	 * two triangles, not eight. The rest go alone (a b c c). vid: which corner each triangle's corner is (3 a triangle;
-	 * the same number for corners alike in every way: place, normal, colour...); group (null: all one): only triangles of
+	 * the same number for corners alike in every way: place, normal, color...); group (null: all one): only triangles of
 	 * the same group pair up. Returns the quads' corners (as places in vid), four a quad.
 	 */
 	public static int[] pairQuads(int[] vid, int @Nullable [] group) {
@@ -300,7 +300,7 @@ public final class Mesh {
 
 	/**
 	 * Draws it: each corner through `local` (null: as it is), then the pose, as one matrix (and one for the normals).
-	 * tintA, tintB: the colours (0xRRGGBB) of tint channels 1 and 2.
+	 * tintA, tintB: the colors (0xRRGGBB) of tint channels 1 and 2.
 	 */
 	public void draw(PoseStack.Pose pose, @Nullable Matrix4f local, VertexConsumer vc, int light, int overlay, int tintA, int tintB) {
 		Matrix4f m = local == null ? pose.pose() : new Matrix4f(pose.pose()).mul(local);

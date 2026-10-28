@@ -19,11 +19,11 @@ import org.joml.Vector3fc;
 /**
  * Your own map marker (placed on the full map, Tab): a red beacon beam, a red mark on the compass bar and an on-screen
  * marker with the distance. In Solo it stays private. In Duos, Trios and Squads it's shared with your teammates, and
- * theirs show on your screen in their teammate colours, like Fortnite's (creator): map, beacon and compass bar. Your
- * team's reboot cards lying on the ground get a cyan-blue one each, marked CARD (creator: a colour no teammate has).
+ * theirs show on your screen in their teammate colors, like Fortnite's (creator): map, beacon and compass bar. Your
+ * team's reboot cards lying on the ground get a cyan-blue one each, marked CARD (creator: a color no teammate has).
  */
 public final class Waypoint {
-	/** Cyan-blue, for reboot cards: not a teammate colour (yellow, orange, pink and bright cyan). */
+	/** Cyan-blue, for reboot cards: not a teammate color (yellow, orange, pink and bright cyan). */
 	static final int CARD = 0xFF1E90FF;
 	private static Double x, z;
 
@@ -46,7 +46,7 @@ public final class Waypoint {
 		z = null;
 	}
 
-	/** Your team's reboot cards on the ground (team modes): {x, z, colour} each. */
+	/** Your team's reboot cards on the ground (team modes): {x, z, color} each. */
 	static List<double[]> cards() {
 		List<double[]> out = new ArrayList<>();
 		if (!ClientState.teamMatch()) return out;
@@ -54,7 +54,7 @@ public final class Waypoint {
 		return out;
 	}
 
-	/** Teammates' waypoints: {x, z, colour} each. */
+	/** Teammates' waypoints: {x, z, color} each. */
 	static List<double[]> teammates() {
 		List<double[]> out = new ArrayList<>();
 		if (!ClientState.teamMatch()) return out;
@@ -88,7 +88,7 @@ public final class Waypoint {
 	}
 
 	/**
-	 * The red beacon beam (yours) and your teammates' in their colours: a bright core and a soft glow, ground to sky.
+	 * The red beacon beam (yours) and your teammates' in their colors: a bright core and a soft glow, ground to sky.
 	 */
 	static void beacon(PoseStack ps, SubmitNodeCollector out, Vec3 cam) {
 		Minecraft mc = Minecraft.getInstance();
@@ -130,7 +130,7 @@ public final class Waypoint {
 	}
 
 	/**
-	 * On-screen markers: yours (red), your teammates' (their colours) and your team's reboot cards, each with the
+	 * On-screen markers: yours (red), your teammates' (their colors) and your team's reboot cards, each with the
 	 * distance in metres.
 	 */
 	static void screenMarker(GuiGraphicsExtractor g, Minecraft mc) {

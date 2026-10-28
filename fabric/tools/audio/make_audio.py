@@ -9,9 +9,9 @@ assets' sounds.json:
   gun/<gun>_1..3                   each gun's shot, three takes so repeats don't sound copied (the rocket launcher too)
   boom/explosion_1..3              a rocket or grenade going off; boom/grenade_bounce, a grenade knocking on the ground
   storm/warning                    the storm starting to close in
-  car/engine, car/tyres            a car's engine and its tyres on the ground: seamless loops the game pitches and fades
+  car/engine, car/tires            a car's engine and its tires on the ground: seamless loops the game pitches and fades
                                    with how fast the car goes and turns (2.0.0-test3, creator: "Cars should have a driving
-                                   animation (also sounds)"; 2.1.0, creator: the tyres "sound very odd; no screeching": a
+                                   animation (also sounds)"; 2.1.0, creator: the tires "sound very odd; no screeching": a
                                    rolling rumble and a little grit, no squeal; it was car/skid)
   car/boost, car/door_open, car/door_close
                                    a boost kicking in, a car door opening and shutting
@@ -32,7 +32,7 @@ assets' sounds.json:
                                    wailing tone and crackling static; storm/warning still marks each new phase
 
 python fabric/tools/audio/make_audio.py [cars|use|emotes|sky]      (cars, use, emotes, sky: just those sounds; sky: the
-                                                                  2.1.0 ones, the storm's closing loop and the tyres too)
+                                                                  2.1.0 ones, the storm's closing loop and the tires too)
 """
 import json
 import os
@@ -320,8 +320,8 @@ def car_engine():
     return norm(soft(out, 1.5), 0.8)
 
 
-def car_tyres():
-    """(2.1.0, creator: the tyres "sound very odd; no screeching") Tyres rolling over the ground: a low rumble of road
+def car_tires():
+    """(2.1.0, creator: the tires "sound very odd; no screeching") Tires rolling over the ground: a low rumble of road
     noise and a little grit, no squeal; 2 s that loop (the noise filtered round the loop, the wobble whole cycles)."""
     sec = 2.0
     n = int(sec * SR)
@@ -386,7 +386,7 @@ def car_door(close):
 
 
 def cars(snd, reg):
-    for name, make in (("engine", car_engine), ("tyres", car_tyres), ("boost", car_boost), ("door_open", lambda: car_door(False)),
+    for name, make in (("engine", car_engine), ("tires", car_tires), ("boost", car_boost), ("door_open", lambda: car_door(False)),
                        ("door_close", lambda: car_door(True))):
         seeded(f"car/{name}")
         write_ogg(os.path.join(snd, "car", f"{name}.ogg"), make())
@@ -478,7 +478,7 @@ def storm_closing():
 
 def sky(snd, reg):
     for name, make, folder in (("wind", sky_wind, "sky"), ("whoosh", sky_whoosh, "sky"), ("glider_open", glider_open, "sky"),
-                               ("glider_close", glider_close, "sky"), ("closing", storm_closing, "storm"), ("tyres", car_tyres, "car")):
+                               ("glider_close", glider_close, "sky"), ("closing", storm_closing, "storm"), ("tires", car_tires, "car")):
         seeded(f"{folder}/{name}")
         write_ogg(os.path.join(snd, folder, f"{name}.ogg"), make())
         reg[f"{folder}.{name}"] = {"sounds": [f"minebloxroyale:{folder}/{name}"]}
@@ -486,7 +486,7 @@ def sky(snd, reg):
     old = os.path.join(snd, "car", "skid.ogg")
     if os.path.exists(old):
         os.remove(old)
-    print("sky, glider, storm closing and tyre sounds")
+    print("sky, glider, storm closing and tire sounds")
 
 
 # ------------------------------------------------------------------------------------------------- heals and shields

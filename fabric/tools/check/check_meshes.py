@@ -2,7 +2,7 @@
 Checks the Blender models (assets/minebloxroyale/meshes/*.brm) without the game, as ModelAudit did for the code-drawn
 ones: every file reads and has sane numbers (the -low copies for far away too, lod.py); every model the game asks for is
 there with its far copy (cosmetics in each form the avatar picks: hats over an afro, every haircut under every kind of
-hat edge; gliders; cars at every damage stage); and no two surfaces of different colours lie on the same plane over each
+hat edge; gliders; cars at every damage stage); and no two surfaces of different colors lie on the same plane over each
 other where they'd flicker, both in each model and between the head pieces worn together (every hat + hair, hat + face
 and hair + face pair, as Cosmetics.submit picks them).
 
@@ -31,7 +31,7 @@ cache = {}
 
 
 def load(mid):
-    """Corner positions (n, 3, 3) and each triangle's colour: r, g, b (its corners' mean) and tint channel."""
+    """Corner positions (n, 3, 3) and each triangle's color: r, g, b (its corners' mean) and tint channel."""
     if mid not in cache:
         c = brm.read(os.path.join(MESHES, mid + ".brm"))
         a = np.array([x[:3] for x in c], dtype=np.float64).reshape(-1, 3, 3)
@@ -41,8 +41,8 @@ def load(mid):
     return cache[mid]
 
 
-def same_colour(p, q):
-    """The same material, maybe shaded differently by the baked shadows (one colour a little darker than the other)."""
+def same_color(p, q):
+    """The same material, maybe shaded differently by the baked shadows (one color a little darker than the other)."""
     if p[3] != q[3]:
         return False
     a, b = p[:3] + 1, q[:3] + 1
@@ -89,7 +89,7 @@ def overlap_2d(p, q, eps):
 
 
 def flicker(tris, cols, piece, cross_only, scale):
-    """Pairs of triangles facing the same way on the same plane, overlapping, of different colours."""
+    """Pairs of triangles facing the same way on the same plane, overlapping, of different colors."""
     e1, e2 = tris[:, 1] - tris[:, 0], tris[:, 2] - tris[:, 0]
     n = np.cross(e1, e2)
     area = np.linalg.norm(n, axis=1)
@@ -110,7 +110,7 @@ def flicker(tris, cols, piece, cross_only, scale):
         group = order[start:end]
         if 1 < len(group) <= 400:
             for i, j in itertools.combinations(group, 2):
-                if (cross_only and piece[i] == piece[j]) or n[i] @ n[j] < 0.999 or (not cross_only and same_colour(cols[i], cols[j])):
+                if (cross_only and piece[i] == piece[j]) or n[i] @ n[j] < 0.999 or (not cross_only and same_color(cols[i], cols[j])):
                     continue
                 ax = np.argmax(np.abs(n[i]))
                 keep = [k for k in range(3) if k != ax]
@@ -165,7 +165,7 @@ def main():
         scale = float(np.ptp(a.reshape(-1, 3), axis=0).max()) or 1.0
         hits = flicker(a, cols, None, False, scale / 4)
         if hits:
-            notes.append((max(hits), f"{mid}: {len(hits)} overlapping surface pair(s) of different colours (biggest {max(hits):.4f})"))
+            notes.append((max(hits), f"{mid}: {len(hits)} overlapping surface pair(s) of different colors (biggest {max(hits):.4f})"))
     # Head pieces worn together.
     combos = []
     for h in shapes["hat"]:

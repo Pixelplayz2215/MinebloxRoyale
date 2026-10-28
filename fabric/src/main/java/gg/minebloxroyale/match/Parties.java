@@ -221,7 +221,7 @@ public final class Parties {
 		return teams;
 	}
 
-	/** Every player's party, to their own game (hub list, teammate colours, the spectator teleport menu). */
+	/** Every player's party, to their own game (hub list, teammate colors, the spectator teleport menu). */
 	public static void sendAll(MinecraftServer server) {
 		for (ServerPlayer p : server.getPlayerList().getPlayers()) sendTo(server, p);
 	}

@@ -35,7 +35,7 @@ Modes and parties (Solo, Duos, Trios, Squads)
     the party can invite. Leaving the room (/rc to another room, /leave) leaves the party.
   - Your party is your team in Duos, Trios and Squads (a party bigger than the mode is split into
     teams). Empty places in a team are filled with bot teammates, and the bots play in teams too.
-  - Teammates each have their own colour: their name over their head, in chat (on your screen),
+  - Teammates each have their own color: their name over their head, in chat (on your screen),
     their dot on the map and minimap, and their waypoint (map, beam in the world, compass bar).
     Their health and shield are in the top-left corner. No friendly fire.
   - Knocked, not out: at 0 health with a teammate still standing you're knocked. Crawl to cover;

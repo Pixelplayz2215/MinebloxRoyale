@@ -123,7 +123,7 @@ public class BotEntity extends PathfinderMob {
 	private final Map<BlockPos, Integer> unreachable = new HashMap<>();
 	private BotBuilder builder;
 	private BotMovement movement;
-	/** Team modes: its team and slot (teammate colour), the real player it sticks with (null: a bot team). */
+	/** Team modes: its team and slot (teammate color), the real player it sticks with (null: a bot team). */
 	private int team = -1, slot;
 	private UUID leader;
 	private LivingEntity follow, reviving;

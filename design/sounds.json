@@ -297,7 +297,7 @@
    "file": "car.boost",
    "volume": 1.0,
    "pitch": 1.0,
-   "use": "a car's boost kicking in (2.0.0-test3; its engine and tyres are CarSounds' loops, car.engine and car.skid)"
+   "use": "a car's boost kicking in (2.0.0-test3; its engine and tires are CarSounds' loops, car.engine and car.skid)"
   },
   {
    "id": "emote_wave",

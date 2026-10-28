@@ -18,7 +18,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 
 /**
  * A parked car's data, kept in its core block (CarBlock) and sent to every player's game, which draws the car: its type
- * (CarBlockEntity.Kind), body and trim colours, the way its nose points, and the damage it has taken.
+ * (CarBlockEntity.Kind), body and trim colors, the way its nose points, and the damage it has taken.
  */
 public class CarBlockEntity extends BlockEntity {
 	/**

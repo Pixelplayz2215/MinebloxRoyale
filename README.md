@@ -47,7 +47,7 @@ A Minecraft × Roblox × Fortnite mashup for **Minecraft: Java Edition 26.3** (F
   - parties of up to 4;
   - knocked and revived (hold **F**);
   - reboot cards and reboot vans;
-  - teammate colours, waypoints and a team panel.
+  - teammate colors, waypoints and a team panel.
 - **The hub:**
   - mode portals for building and No Build, an obby and the Sky Tower;
   - a shooting range with timed rounds;
