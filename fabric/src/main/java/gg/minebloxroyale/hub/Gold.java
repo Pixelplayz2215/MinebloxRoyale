@@ -143,6 +143,25 @@ public final class Gold {
 		MinebloxRoyale.LOG.info("BR: {} bought {} for {} gold", p.getName().getString(), id, it.price());
 	}
 
+	/**
+	 * (2.0.0) A preset earned by playing (presets sheet unlock tower: a Sky Tower's top; obbytime: a fast obby run): it
+	 * and every piece of it become the player's, kept with what they bought (no gold spent), so it follows them into
+	 * every world like a bought one. True if it's new to them.
+	 */
+	public static boolean grant(ServerPlayer p, PresetDef preset) {
+		if (Obby.career(p).owned().contains(preset.id())) return false;
+		MinecraftServer server = p.level().getServer();
+		load(server);
+		GOLD.computeIfAbsent(p.getUUID(), k -> new int[2]); // (a line in the file, so it's saved)
+		Set<String> owned = OWNED.computeIfAbsent(p.getUUID(), k -> new LinkedHashSet<>());
+		owned.add(preset.id());
+		for (String[] piece : Locker.pieces(preset)) if (piece[1] != null && !piece[1].equals("-")) owned.add(piece[1]);
+		save(server);
+		Obby.sendUnlocks(p);
+		MinebloxRoyale.LOG.info("BR: {} earned the {} preset", p.getName().getString(), preset.id());
+		return true;
+	}
+
 	private static Path file(MinecraftServer server) {
 		return server.getWorldPath(LevelResource.ROOT).resolve("minebloxroyale_gold.txt");
 	}

@@ -14,6 +14,8 @@ Test 2.1-1 - In a car: shots, pickaxe hits and grenades wear the car down, not y
 Test 2.1-1 - Boosting: hills, dirt paths and rock don't break; trees, builds and buildings still do
 Test 2.1-1 - Each new storm circle has at least 2 reboot vans inside it on the map (Tab); never one put down on top of anyone
 Test 2.1-1 - An enemy can't get into your car
+Test 2.0 - Three Sky Towers: Easy on the old spot, Normal behind the spawn, Hard in the south-east; each top gives its preset once (Cloud Hopper, Sky Climber, Summit Legend)
+Test 2.0 - Obby timer: starts at the first red jump, keeps going after a checkpoint fall, stops at the gold (New best!); 45/30/15 s or less gives Quick Feet/Speedster/Lightning Runner
 Test 6.2 - Bosses: no more one-shots from full shield and health; they aim at your chest (the odd headshot), no hit over 90
 Test 6.2 - Ordinary bots aim at your chest too, and no bot shot does over 120: a bot sniper can't one-tap you from full (your own shots aren't capped)
 Test 6.2 - A badge in front of every player's name for their launcher (Dev: a gold wrench; Melty, Prism, Modrinth, Lunar, CurseForge...), seen by everyone

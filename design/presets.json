@@ -12,7 +12,7 @@
     "shirt": "ref:cosmetics?",
     "pants": "ref:cosmetics?",
     "shoes": "ref:cosmetics?",
-    "unlock": "enum:default|shop",
+    "unlock": "enum:default|shop|tower|obbytime",
     "need": "int"
   },
   "rows": [
@@ -52,6 +52,12 @@
     { "id": "preset_victory_royale", "name": "Victory Royale", "hat": "hat_victory_crown", "hair": "hair_victory_swoop", "face": "-", "back": "back_victory_banner", "shirt": "shirt_victory", "pants": "pants_victory", "shoes": "shoes_victory", "unlock": "shop", "need": 1500 },
     { "id": "preset_storm_raider", "name": "Storm Raider", "hat": "hat_storm_hood", "hair": "-", "face": "face_storm_visor", "back": "back_storm_tank", "shirt": "shirt_storm", "pants": "pants_storm", "shoes": "shoes_storm", "unlock": "shop", "need": 1200 },
     { "id": "preset_neon_rider", "name": "Neon Rider", "hat": "hat_neon_cap", "hair": "hair_neon_spiky", "face": "face_neon_shades", "back": "back_neon_board", "shirt": "shirt_neon", "pants": "pants_neon", "shoes": "shoes_neon", "unlock": "shop", "need": 1000 },
-    { "id": "preset_sweet_tooth", "name": "Sweet Tooth", "hat": "hat_candy_beanie", "hair": "hair_candy_bob", "face": "-", "back": "back_candy_balloons", "shirt": "shirt_candy", "pants": "pants_candy", "shoes": "shoes_candy", "unlock": "shop", "need": 900 }
+    { "id": "preset_sweet_tooth", "name": "Sweet Tooth", "hat": "hat_candy_beanie", "hair": "hair_candy_bob", "face": "-", "back": "back_candy_balloons", "shirt": "shirt_candy", "pants": "pants_candy", "shoes": "shoes_candy", "unlock": "shop", "need": 900 },
+    { "id": "preset_sky_easy", "name": "Cloud Hopper", "hat": "hat_sky_easy", "hair": "hair_sky_easy", "face": "-", "back": "back_sky_easy", "shirt": "shirt_sky_easy", "pants": "pants_sky_easy", "shoes": "shoes_sky_easy", "unlock": "tower", "need": 1 },
+    { "id": "preset_sky_normal", "name": "Sky Climber", "hat": "hat_sky_normal", "hair": "hair_sky_normal", "face": "face_sky_normal", "back": "back_sky_normal", "shirt": "shirt_sky_normal", "pants": "pants_sky_normal", "shoes": "shoes_sky_normal", "unlock": "tower", "need": 2 },
+    { "id": "preset_sky_hard", "name": "Summit Legend", "hat": "hat_sky_hard", "hair": "hair_sky_hard", "face": "-", "back": "back_sky_hard", "shirt": "shirt_sky_hard", "pants": "pants_sky_hard", "shoes": "shoes_sky_hard", "unlock": "tower", "need": 3 },
+    { "id": "preset_obby_45", "name": "Quick Feet", "hat": "hat_obby_45", "hair": "hair_obby_45", "face": "-", "back": "back_obby_45", "shirt": "shirt_obby_45", "pants": "pants_obby_45", "shoes": "shoes_obby_45", "unlock": "obbytime", "need": 45 },
+    { "id": "preset_obby_30", "name": "Speedster", "hat": "-", "hair": "hair_obby_30", "face": "face_obby_30", "back": "back_obby_30", "shirt": "shirt_obby_30", "pants": "pants_obby_30", "shoes": "shoes_obby_30", "unlock": "obbytime", "need": 30 },
+    { "id": "preset_obby_15", "name": "Lightning Runner", "hat": "-", "hair": "hair_obby_15", "face": "face_obby_15", "back": "back_obby_15", "shirt": "shirt_obby_15", "pants": "pants_obby_15", "shoes": "shoes_obby_15", "unlock": "obbytime", "need": 15 }
   ]
 }

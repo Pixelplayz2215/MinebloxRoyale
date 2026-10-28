@@ -6,6 +6,8 @@ import gg.minebloxroyale.item.Guns;
 import gg.minebloxroyale.item.WeaponItem;
 import gg.minebloxroyale.match.MatchManager;
 import gg.minebloxroyale.sheets.HubPieceDef;
+import gg.minebloxroyale.sheets.PresetDef;
+import gg.minebloxroyale.sheets.Sheets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,7 +36,7 @@ import net.minecraft.world.phys.Vec3;
 /**
  * Things to do in the hub while the next island is made (creator: more fun): a shooting range with pop-up targets and
  * a practice rifle (timed rounds: your best round score and your bullseyes unlock emotes and gliders, RangeStats), and
- * the Sky Tower (a second obby, spiralling up), each in a neat bordered zone (creator: clean and tidy). Built
+ * the Sky Towers (2.0.0: Easy, Normal and Hard, each spiralling up), each in a neat bordered zone (creator: clean and tidy). Built
  * from the hub sheet (kinds shooting_range, tower_obby); this class builds them and runs them every tick. It also keeps
  * each player in the hub empty-handed. Only players in the hub count, never those in a match.
  */
@@ -141,26 +143,58 @@ public final class HubFun {
 	}
 
 	/**
-	 * The Sky Tower: a white pillar with blue, teal and white platforms spiralling up round it, one block per step, a golden
-	 * platform on top. The last step is one block below the gold (creator: the old last jump was two blocks, too high).
-	 * The steps sit outside the gold's 5 x 5, so nobody bumps their head under it.
+	 * (2.0.0, creator: "3 different sky towers, Easy Difficulty, Normal/Intermediate Difficulty, Hard Difficulty", built
+	 * as the mockups in Mockups/Sky Towers and Obby v2.0.0) Each tower's steps, by its hub-sheet id (its place, height,
+	 * pillar block and sign are the sheet's): which one it is (1 to 3: the preset its top earns, presets sheet unlock
+	 * tower), how far round one step is from the last (degrees) and how far out from the middle, each step's size
+	 * (blocks square), the pillar's band every 5 blocks (or none), the steps' blocks in turn and the sign's color.
+	 * Easy: 3 x 3 steps side by side, no gaps. Normal: today's tower, 2 x 2, gaps up to a block. Hard: single blocks,
+	 * gaps up to two (a running jump).
+	 */
+	record Tower(int number, int stepDeg, double radius, int size, String band, String[] steps, String color) {
+	}
+
+	static final Map<String, Tower> TOWERS = Map.of(
+		"sky_tower_easy", new Tower(1, 30, 4.0, 3, "minecraft:lime_concrete", new String[] { "minecraft:lime_concrete", "minecraft:white_concrete", "minecraft:green_concrete" }, "green"),
+		"sky_tower_normal", new Tower(2, 40, 3.6, 2, null, THEME, "aqua"),
+		"sky_tower_hard", new Tower(3, 45, 3.6, 1, "minecraft:red_concrete", new String[] { "minecraft:red_concrete", "minecraft:purple_concrete", "minecraft:gray_concrete" }, "red"));
+
+	/**
+	 * A Sky Tower: a pillar with steps spiralling up round it, one block up per step, a golden platform on top. The last
+	 * step is one block below the gold (creator: the old last jump was two blocks, too high). The steps sit outside the
+	 * gold's 5 x 5, so nobody bumps their head under it.
 	 */
 	static void buildTower(ServerLevel level, HubPieceDef p, int hubY) {
+		Tower t = TOWERS.getOrDefault(p.id(), TOWERS.get("sky_tower_normal"));
 		int cx = Math.round(p.x()), cz = Math.round(p.z()), top = Math.round(p.height());
+		BlockState pillar = b(p.block()).defaultBlockState(), band = t.band() == null ? pillar : b(t.band()).defaultBlockState();
 		for (int y = 1; y <= top; y++)
 			for (int dx = -1; dx <= 1; dx++)
-				for (int dz = -1; dz <= 1; dz++) set(level, new BlockPos(cx + dx, hubY + y, cz + dz), Blocks.QUARTZ_BLOCK.defaultBlockState());
+				for (int dz = -1; dz <= 1; dz++) set(level, new BlockPos(cx + dx, hubY + y, cz + dz), y % 5 == 0 ? band : pillar);
+		int s = t.size();
 		for (int i = 0; i < top; i++) {
-			double a = Math.toRadians(i * 40);
-			int px = cx + (int) Math.round(Math.cos(a) * 3.6), pz = cz + (int) Math.round(Math.sin(a) * 3.6);
-			BlockState c = b(THEME[i % THEME.length]).defaultBlockState();
-			for (int dx = 0; dx <= 1; dx++)
-				for (int dz = 0; dz <= 1; dz++) set(level, new BlockPos(px + dx - (px < cx ? 1 : 0), hubY + 1 + i, pz + dz - (pz < cz ? 1 : 0)), c);
+			double a = Math.toRadians(i * t.stepDeg());
+			int px = (int) Math.round(Math.cos(a) * t.radius()), pz = (int) Math.round(Math.sin(a) * t.radius());
+			// (an odd size centred on its spot; 2 x 2 reaching outwards from it, as the tower always was)
+			int ox = s % 2 == 1 ? -(s / 2) : px < 0 ? -1 : 0, oz = s % 2 == 1 ? -(s / 2) : pz < 0 ? -1 : 0;
+			BlockState c = b(t.steps()[i % t.steps().length]).defaultBlockState();
+			for (int dx = 0; dx < s; dx++)
+				for (int dz = 0; dz < s; dz++) set(level, new BlockPos(cx + px + ox + dx, hubY + 1 + i, cz + pz + oz + dz), c);
 		}
 		for (int dx = -2; dx <= 2; dx++)
 			for (int dz = -2; dz <= 2; dz++) set(level, new BlockPos(cx + dx, hubY + top + 1, cz + dz), Blocks.GOLD_BLOCK.defaultBlockState());
 		border(level, hubY, cx - 6, cz - 6, cx + 6, cz + 6);
-		sign(level, cx + 0.5, hubY + 1.9, cz - 6.5, "SKY TOWER", "light_purple");
+		sign(level, cx + 0.5, hubY + 1.9, cz - 6.5, p.label(), t.color());
+	}
+
+	/** On a tower's gold: fireworks and a cheer; the first time, the preset it earns (presets sheet unlock tower). */
+	private static void climbed(ServerPlayer p, ServerLevel level, Tower t) {
+		String name = UnlockRule.tower(t.number());
+		p.sendSystemMessage(Component.literal("You climbed the " + name + " Sky Tower!").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD));
+		level.playSound(null, p.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1F, 1F);
+		level.sendParticles(ParticleTypes.FIREWORK, p.getX(), p.getY() + 1.5, p.getZ(), 60, 0.6, 0.6, 0.6, 0.2);
+		for (PresetDef preset : Sheets.PRESETS)
+			if (preset.unlock().equals("tower") && preset.need() == t.number() && Gold.grant(p, preset)) Obby.presetEarned(p, preset);
 	}
 
 	// ---- every tick ----
@@ -175,13 +209,14 @@ public final class HubFun {
 	private static final Map<UUID, Round> ROUNDS = new HashMap<>();
 	/** Players whose round ran out: no rifle and no new round until they step off the range and back on (creator). */
 	private static final Set<UUID> RESTING = new HashSet<>();
-	private static final Set<UUID> ON_TOP = new HashSet<>();
+	/** Who stands on which tower's top (uuid + tower id): the celebration once per climb. */
+	private static final Set<String> ON_TOP = new HashSet<>();
 	private static int spawnTimer;
 
 	public static void tick(MinecraftServer server) {
 		ServerLevel level = server.overworld();
 		MatchManager mm = MatchManager.get();
-		HubPieceDef range = HubBuilder.piece("shooting_range"), tower = HubBuilder.piece("sky_tower");
+		HubPieceDef range = HubBuilder.piece("shooting_range");
 		int hubY = HubBuilder.hubY();
 		boolean anyoneShooting = false;
 		for (ServerPlayer p : server.getPlayerList().getPlayers()) {
@@ -231,16 +266,16 @@ public final class HubFun {
 				p.sendSystemMessage(Component.literal("Range round: " + round.score + " points - " + (round.ends - now) / 20 + " s left").withStyle(ChatFormatting.AQUA), true);
 			else if (round == null && inRange && RESTING.contains(p.getUUID()) && now % 40 == 0)
 				p.sendSystemMessage(Component.literal("Step off the range and back on for another round").withStyle(ChatFormatting.AQUA), true);
-			// The Sky Tower's top: a little celebration, once per climb.
-			if (tower != null) {
+			// A Sky Tower's top: a little celebration, once per climb; the first time, its preset (2.0.0).
+			for (String id : TOWERS.keySet()) {
+				HubPieceDef tower = HubBuilder.piece(id);
+				if (tower == null) continue;
 				int tx = Math.round(tower.x()), tz = Math.round(tower.z()), top = hubY + Math.round(tower.height()) + 2;
 				// Standing on the gold itself (the last step is just one block lower, so only the exact height counts).
 				boolean atTop = p.onGround() && Math.abs(p.getX() - (tx + 0.5)) < 3 && Math.abs(p.getZ() - (tz + 0.5)) < 3 && Math.abs(p.getY() - top) < 0.5;
-				if (atTop && ON_TOP.add(p.getUUID())) {
-					p.sendSystemMessage(Component.literal("You climbed the Sky Tower!").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD));
-					level.playSound(null, p.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1F, 1F);
-					level.sendParticles(ParticleTypes.FIREWORK, p.getX(), p.getY() + 1.5, p.getZ(), 60, 0.6, 0.6, 0.6, 0.2);
-				} else if (!atTop && p.getY() < top - 4) ON_TOP.remove(p.getUUID());
+				String key = p.getUUID() + "|" + id;
+				if (atTop && ON_TOP.add(key)) climbed(p, level, TOWERS.get(id));
+				else if (!atTop && p.getY() < top - 4) ON_TOP.remove(key);
 			}
 		}
 		if (range == null) return;
