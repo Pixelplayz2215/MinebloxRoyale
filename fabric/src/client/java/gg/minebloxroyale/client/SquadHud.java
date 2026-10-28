@@ -120,10 +120,7 @@ public final class SquadHud {
 			if (van == null) prompt = null;
 			else if (van.readyIn() > 0) prompt = "Reboot van recharging - " + clock(van.readyIn());
 			else prompt = "Hold " + key() + " to reboot " + String.join(", ", cards);
-			if (van == null) {
-				String carry = "Carrying " + String.join(", ", cards) + "'s reboot card - take it to a reboot van (on the map)";
-				Smooth.text(g, carry, cx, y + 14, 8.5F, 0xFF5CE1FF, Smooth.CENTER, true);
-			}
+			// (2.1.0: the card you're holding shows by the hotbar now, BRHud, not here in the middle of the screen)
 		}
 		if (prompt == null) return false;
 		prompt(g, mc, cx, y, prompt);

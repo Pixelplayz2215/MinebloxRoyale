@@ -67,6 +67,7 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
+		GunTooltip.init(); // (2.1.0: a gun's damage, fire rate and reload when hovered)
 		// Items drawn from Blender meshes (items/*.json "minebloxroyale:mesh"), registered before the item models load.
 		SpecialModelRenderersAccessor.minebloxroyale$types().put(MinebloxRoyale.id("mesh"), MeshItemRenderer.Unbaked.MAP_CODEC);
 		// Renamed from Block Royale: the game folder's files, the world and the account record come across first.

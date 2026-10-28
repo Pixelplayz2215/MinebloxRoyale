@@ -6,6 +6,7 @@ import gg.minebloxroyale.item.Guns;
 import gg.minebloxroyale.item.MaterialStacks;
 import gg.minebloxroyale.item.WeaponItem;
 import gg.minebloxroyale.match.CarEntity;
+import gg.minebloxroyale.match.Reboot;
 import gg.minebloxroyale.sheets.HudElementDef;
 import gg.minebloxroyale.sheets.LoadoutDef;
 import gg.minebloxroyale.sheets.RarityDef;
@@ -124,6 +125,23 @@ public final class BRHud {
 				else if (MaterialStacks.amount(st) > 1) Smooth.text(g, MaterialStacks.amount(st) + "", x + tile - 1.4F, y + tile - 7.6F, 6.5F, 0xFFFFFFFF, Smooth.RIGHT, true);
 			}
 			Smooth.text(g, (i + 1) + "", x + 1.6F, y + 0.8F, 5F, on ? 0xFFFFFFFF : 0xA0FFFFFF, Smooth.LEFT, false);
+		}
+		// (2.1.0, creator: a teammate's reboot card you're holding "shown at the bottom of the HUD by the hotbar, and the
+		// line 'Holding <name>'s reboot card' just above the hotbar, not in the middle of the screen") its own tile after
+		// the slots, in the cards' cyan-blue, and the line over the slots
+		ItemStack card = mc.player.getOffhandItem();
+		if (Reboot.isCard(card)) {
+			int c = Waypoint.CARD;
+			float x = x0 + total + gap * 3;
+			Smooth.panel(g, x - 1.3F, y0 - 1.3F, tile + 2.6F, tile + 2.6F, 4.6F, c);
+			Smooth.panel(g, x, y0, tile, tile, 3.6F, 0xF0000000 | Smooth.mix(c, 0xFF000000, 0.35F) & 0xFFFFFF, 0xF0000000 | Smooth.mix(c, 0xFF000000, 0.7F) & 0xFFFFFF);
+			g.item(card, Math.round(x + 2), Math.round(y0 + 2));
+			java.util.List<String> names = new java.util.ArrayList<>();
+			for (Reboot.Owner o : Reboot.owners(card)) names.add(o.name() + "'s");
+			String who = names.size() < 2 ? String.join("", names)
+				: String.join(", ", names.subList(0, names.size() - 1)) + " and " + names.get(names.size() - 1);
+			String line = "Holding " + who + (names.size() > 1 ? " reboot cards" : " reboot card");
+			Smooth.text(g, line, g.guiWidth() / 2F, y0 - 12.5F, 7.5F, c, Smooth.CENTER, true);
 		}
 	}
 
