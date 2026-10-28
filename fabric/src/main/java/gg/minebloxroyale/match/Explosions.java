@@ -99,10 +99,13 @@ public final class Explosions {
 	/**
 	 * The island's ground: dirt, sand, stone, ores, snow, clay, gravel and the like (2.1.0, creator: "Cars don't break the
 	 * ground: only trees, walls, ramps, buildings and structures"; paths, farmland and the mountains' rock added).
+	 * SUBSTRATE_OVERWORLD: in Minecraft 26.3 the dirt tag is only dirt, coarse and rooted dirt; grass blocks, podzol,
+	 * mycelium, mud and moss are in this one, so without it a boosting car or a blast broke the grass (creator: "it still
+	 * breaks ground").
 	 */
 	static boolean ground(BlockState st) {
 		if (BuiltInRegistries.BLOCK.getKey(st.getBlock()).getPath().endsWith("_ore")) return true;
-		return st.is(BlockTags.DIRT) || st.is(BlockTags.SAND) || st.is(BlockTags.BASE_STONE_OVERWORLD) || st.is(BlockTags.TERRACOTTA)
+		return st.is(BlockTags.SUBSTRATE_OVERWORLD) || st.is(BlockTags.DIRT) || st.is(BlockTags.SAND) || st.is(BlockTags.BASE_STONE_OVERWORLD) || st.is(BlockTags.TERRACOTTA)
 			|| st.is(BlockTags.SNOW) || st.is(BlockTags.ICE) || st.is(Blocks.GRAVEL) || st.is(Blocks.SUSPICIOUS_GRAVEL) || st.is(Blocks.CLAY)
 			|| st.is(Blocks.BEDROCK) || st.is(Blocks.SANDSTONE) || st.is(Blocks.RED_SANDSTONE) || st.is(Blocks.MUD) || st.is(Blocks.PACKED_MUD)
 			|| st.is(Blocks.MOSS_BLOCK) || st.is(Blocks.DIRT_PATH) || st.is(Blocks.FARMLAND) || st.is(Blocks.CALCITE) || st.is(Blocks.DRIPSTONE_BLOCK)

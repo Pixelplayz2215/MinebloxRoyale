@@ -89,7 +89,8 @@ public final class LootChests {
 	}
 
 	private static boolean naturalGround(BlockState s) {
-		return s.is(BlockTags.DIRT) || s.is(BlockTags.SAND) || s.is(BlockTags.BASE_STONE_OVERWORLD) || s.is(BlockTags.TERRACOTTA) || s.is(BlockTags.SNOW)
+		// (SUBSTRATE_OVERWORLD: grass, podzol, mycelium, mud and moss; 26.3's dirt tag no longer has them, so chests on grass were passed over)
+		return s.is(BlockTags.SUBSTRATE_OVERWORLD) || s.is(BlockTags.DIRT) || s.is(BlockTags.SAND) || s.is(BlockTags.BASE_STONE_OVERWORLD) || s.is(BlockTags.TERRACOTTA) || s.is(BlockTags.SNOW)
 			|| s.is(Blocks.GRAVEL) || s.is(Blocks.CLAY) || s.is(Blocks.DIRT_PATH) || s.is(Blocks.FARMLAND);
 	}
 
