@@ -52,6 +52,7 @@ public final class BRHud {
 			scaled(g, "tip", g.guiWidth() / 2F, g.guiHeight(), () -> FirstTips.draw(g, mc)); // (2.0.0-test6.3: first-time control tips)
 		} else {
 			scaled(g, "hub_hint", g.guiWidth() / 2F, 0, () -> hubHint(g, mc));
+			scaled(g, "obby_timer", g.guiWidth() / 2F, 0, () -> ObbyTimerHud.draw(g)); // (2.0.0: the obby timer)
 		}
 		if (!mc.player.isSpectator()) scaled(g, "health_shield", 0, g.guiHeight(), () -> healthShield(g, mc));
 	}

@@ -113,6 +113,7 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 			var me = ctx.client().player;
 			if (me != null && me.getUUID().toString().equals(p.uuid())) MyLocker.onOwnOutfit(p.outfit());
 		});
+		ClientPlayNetworking.registerGlobalReceiver(Net.ObbyTimer.TYPE, (p, ctx) -> ObbyTimerHud.receive(p)); // (2.0.0)
 		ClientPlayNetworking.registerGlobalReceiver(Net.DamageNumber.TYPE, (p, ctx) -> {
 			DamageNumbers.add(p);
 			Aim.hit(p.kind() == 2); // the scope's hit marker (kind 2 = headshot)

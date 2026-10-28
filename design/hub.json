@@ -196,16 +196,40 @@
    "label": "SHOOTING RANGE"
   },
   {
-   "id": "sky_tower",
+   "id": "sky_tower_easy",
    "kind": "tower_obby",
    "x": -26,
    "y": 1,
    "z": 36,
-   "width": 9,
+   "width": 13,
+   "height": 20,
+   "facing": "north",
+   "block": "minecraft:white_concrete",
+   "label": "SKY TOWER: EASY"
+  },
+  {
+   "id": "sky_tower_normal",
+   "kind": "tower_obby",
+   "x": 8,
+   "y": 1,
+   "z": 40,
+   "width": 13,
    "height": 30,
    "facing": "north",
    "block": "minecraft:quartz_block",
-   "label": "SKY TOWER"
+   "label": "SKY TOWER: NORMAL"
+  },
+  {
+   "id": "sky_tower_hard",
+   "kind": "tower_obby",
+   "x": 42,
+   "y": 1,
+   "z": 36,
+   "width": 13,
+   "height": 45,
+   "facing": "north",
+   "block": "minecraft:black_concrete",
+   "label": "SKY TOWER: HARD"
   },
   {
    "id": "obby_entry",

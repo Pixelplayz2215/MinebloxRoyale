@@ -49,13 +49,13 @@ A Minecraft × Roblox × Fortnite mashup for **Minecraft: Java Edition 26.3** (F
   - reboot cards and reboot vans;
   - teammate colours, waypoints and a team panel.
 - **The hub:**
-  - mode portals for building and No Build, an obby and the Sky Tower;
+  - mode portals for building and No Build, an obby with a timer and three Sky Towers (Easy, Normal, Hard);
   - a shooting range with timed rounds;
   - boards for guns, heals, the rules and what's new, and a leaderboard;
   - the Battle Bus floating overhead.
 - **Locker (K):**
   - Roblox-style outfits, hats, faces, back bling, emotes, gliders, contrails, pickaxes and particles;
-  - unlocked by eliminations, wins, the obby and the shooting range, or bought with gold in the Shop (gold comes from matches);
+  - unlocked by eliminations, wins, the obby (and its timer), the Sky Towers and the shooting range, or bought with gold in the Shop (gold comes from matches);
   - your unlocks go with you into every world.
 - **Bots that play:**
   - they search chests, heal, farm materials and swim;

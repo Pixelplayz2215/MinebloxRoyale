@@ -8,6 +8,7 @@ import gg.minebloxroyale.sheets.CosmeticDef;
 import gg.minebloxroyale.sheets.EmoteDef;
 import gg.minebloxroyale.sheets.GliderDef;
 import gg.minebloxroyale.sheets.GrantDef;
+import gg.minebloxroyale.sheets.PresetDef;
 import gg.minebloxroyale.sheets.Sheets;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -51,6 +52,14 @@ public final class Obby {
 	private static final int FLOOR_TICKS = 10;
 	private static final Map<UUID, Set<String>> UNLOCKS = new HashMap<>();
 	/**
+	 * The obby timer (2.0.0, creator: "Add a timer to the Obby that starts as soon as you touch the first red Obby Jump"):
+	 * the server tick each player's run started on (touching the first stage), and each player's best time in this world
+	 * (ticks, minebloxroyale_obby_times.txt). A fall back to a checkpoint keeps it running; back to the blue start, or
+	 * onto the hub's floor, stops it without a time (it starts again at the first red jump).
+	 */
+	private static final Map<UUID, Long> RUN = new HashMap<>();
+	private static final Map<UUID, Integer> BEST = new HashMap<>();
+	/**
 	 * Each player's stats from their other Mineblox Royale worlds, as their own game reports them on joining
 	 * (MyUnlocks): unlocks belong to the player, not the world (creator: emotes and gliders vanished in a friend's
 	 * world). Trusted as reported: it's friends playing together.
@@ -81,10 +90,17 @@ public final class Obby {
 				&& ON_FLOOR.merge(p.getUUID(), 1, Integer::sum) >= FLOOR_TICKS) {
 				AT_START.remove(p.getUUID());
 				ON_FLOOR.remove(p.getUUID());
+				stopTimer(p);
 			}
+			if (RUN.containsKey(p.getUUID()) && HubBuilder.onHubFloor(p.getX(), p.getY(), p.getZ())) stopTimer(p); // (walked off the course)
 			for (HubBuilder.Platform pl : HubBuilder.platforms()) {
 				if (!pl.contains(p.getX(), p.getY(), p.getZ())) continue;
 				int idx = pl.stage().index();
+				// The first red jump starts the timer (once a run).
+				if (idx == firstStage() && !RUN.containsKey(p.getUUID())) {
+					RUN.put(p.getUUID(), (long) server.getTickCount());
+					ServerPlayNetworking.send(p, new Net.ObbyTimer(1, 0, BEST.getOrDefault(p.getUUID(), 0), ""));
+				}
 				if (pl.stage().finish()) {
 					finish(server, p);
 					break;
@@ -100,8 +116,56 @@ public final class Obby {
 		}
 	}
 
+	/** The first stage of the course (its lowest index): the first red jump, where the timer starts. */
+	private static int firstStage() {
+		int first = Integer.MAX_VALUE;
+		for (HubBuilder.Platform pl : HubBuilder.platforms()) if (!pl.stage().finish()) first = Math.min(first, pl.stage().index());
+		return first;
+	}
+
+	/** A run that ends without a time (back to the blue start, onto the hub's floor): the timer goes from their screen. */
+	private static void stopTimer(ServerPlayer p) {
+		if (RUN.remove(p.getUUID()) != null) ServerPlayNetworking.send(p, new Net.ObbyTimer(0, 0, 0, ""));
+	}
+
+	/**
+	 * The run's time at the gold platform: their best in this world (New best!), and the obby-time presets it earns
+	 * (presets sheet unlock obbytime: 45, 30 and 15 seconds or less), shown on their screen for 4 seconds.
+	 */
+	private static void timed(MinecraftServer server, ServerPlayer p) {
+		Long start = RUN.remove(p.getUUID());
+		if (start == null) return;
+		int ticks = (int) (server.getTickCount() - start), best = BEST.getOrDefault(p.getUUID(), 0);
+		boolean newBest = best == 0 || ticks < best;
+		if (newBest) {
+			BEST.put(p.getUUID(), ticks);
+			saveTimes(server);
+		}
+		List<String> earned = new ArrayList<>();
+		for (PresetDef preset : Sheets.PRESETS)
+			if (preset.unlock().equals("obbytime") && ticks <= preset.need() * 20 && Gold.grant(p, preset)) earned.add(preset.name());
+		String line = (newBest ? "New best!" : "Best " + clock(best)) + (earned.isEmpty() ? "" : "  Unlocked: " + String.join(", ", earned));
+		ServerPlayNetworking.send(p, new Net.ObbyTimer(2, ticks, newBest ? ticks : best, line));
+		if (!earned.isEmpty())
+			p.sendSystemMessage(Component.literal("Unlocked: " + String.join(", ", earned) + " - wear it from the Locker (K)").withStyle(ChatFormatting.GOLD));
+		MinebloxRoyale.LOG.info("BR: {} ran the obby in {}{}", p.getName().getString(), clock(ticks), newBest ? " (best)" : "");
+	}
+
+	/** m:ss.t (ticks). */
+	static String clock(int ticks) {
+		int tenths = ticks / 2;
+		return tenths / 600 + ":" + String.format(java.util.Locale.ROOT, "%02d.%d", tenths / 10 % 60, tenths % 10);
+	}
+
+	/** (2.0.0) A preset earned by playing (a Sky Tower's top): told on screen, the Locker's NEW badge does the rest. */
+	public static void presetEarned(ServerPlayer p, PresetDef preset) {
+		p.connection.send(new ClientboundSetSubtitleTextPacket(Component.literal(preset.name() + " - wear it from the Locker (K)")));
+		p.connection.send(new ClientboundSetTitleTextPacket(Component.literal("PRESET UNLOCKED").withStyle(ChatFormatting.GOLD)));
+	}
+
 	/** The gold platform: unlock the obby emote (once), then back to the middle of the hub with checkpoints reset. */
 	private static void finish(MinecraftServer server, ServerPlayer p) {
+		timed(server, p);
 		boolean had = obbyDone(p), unlocked = false;
 		for (EmoteDef e : Sheets.EMOTES) {
 			if (!e.unlock().equals("obby")) continue;
@@ -137,6 +201,7 @@ public final class Obby {
 	public static void respawnAtCheckpoint(ServerPlayer p) {
 		int cp = CHECKPOINT.getOrDefault(p.getUUID(), 0);
 		boolean start = cp == 0 && AT_START.contains(p.getUUID());
+		if (cp == 0) stopTimer(p); // (back to the start: the next run's timer starts at the first red jump again)
 		Vec3 at = start ? HubBuilder.obbyStartPos() : cp == 0 ? HubBuilder.spawnPos()
 			: HubBuilder.platforms().stream().filter(pl -> pl.stage().index() == cp).findFirst().map(HubBuilder.Platform::top).orElse(HubBuilder.spawnPos());
 		p.fallDistance = 0;
@@ -146,6 +211,7 @@ public final class Obby {
 	}
 
 	public static void resetProgress(ServerPlayer p) {
+		stopTimer(p);
 		CHECKPOINT.remove(p.getUUID());
 		AT_START.remove(p.getUUID());
 		ON_FLOOR.remove(p.getUUID());
@@ -281,11 +347,34 @@ public final class Obby {
 		return server.getWorldPath(LevelResource.ROOT).resolve("minebloxroyale_unlocks.txt");
 	}
 
+	private static Path timesFile(MinecraftServer server) {
+		return server.getWorldPath(LevelResource.ROOT).resolve("minebloxroyale_obby_times.txt");
+	}
+
+	private static void saveTimes(MinecraftServer server) {
+		StringBuilder b = new StringBuilder();
+		BEST.forEach((k, v) -> b.append(k).append('=').append(v).append('\n'));
+		try {
+			Files.writeString(timesFile(server), b.toString());
+		} catch (IOException e) {
+			MinebloxRoyale.couldntSave("obby times", timesFile(server), e);
+		}
+	}
+
 	private static void load(MinecraftServer server) {
 		loadedFor = server;
 		UNLOCKS.clear();
 		CHECKPOINT.clear();
 		ELSEWHERE.clear();
+		RUN.clear();
+		BEST.clear();
+		try {
+			for (String line : Files.readAllLines(timesFile(server))) {
+				String[] kv = line.split("=", 2);
+				if (kv.length == 2) BEST.put(UUID.fromString(kv[0].trim()), Integer.parseInt(kv[1].trim()));
+			}
+		} catch (IOException | RuntimeException ignored) { // (no times yet)
+		}
 		try {
 			for (String line : Files.readAllLines(file(server))) {
 				String[] kv = line.split("=", 2);

@@ -335,6 +335,23 @@ public final class Net {
 		}
 	}
 
+	/**
+	 * (2.0.0) Server -> client: the obby timer. state 0: none (off the course); 1: running from now (best: this world's
+	 * best, ticks, 0 = none yet); 2: finished in ticks, with the line under it (New best! or the best, and any preset it
+	 * unlocked), shown for 4 seconds.
+	 */
+	public record ObbyTimer(int state, int ticks, int best, String line) implements CustomPacketPayload {
+		public static final Type<ObbyTimer> TYPE = new Type<>(MinebloxRoyale.id("obby_timer"));
+		public static final StreamCodec<RegistryFriendlyByteBuf, ObbyTimer> CODEC = StreamCodec.of((buf, p) -> {
+			buf.writeVarInt(p.state); buf.writeVarInt(p.ticks); buf.writeVarInt(p.best); buf.writeUtf(p.line);
+		}, buf -> new ObbyTimer(buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readUtf()));
+
+		@Override
+		public Type<? extends CustomPacketPayload> type() {
+			return TYPE;
+		}
+	}
+
 	public static void damageNumberTo(ServerPlayer attacker, Entity target, float amount, int kind) {
 		ServerPlayNetworking.send(attacker, new DamageNumber((float) target.getX(), (float) (target.getY() + target.getBbHeight() + 0.3), (float) target.getZ(), amount, kind));
 	}
@@ -367,6 +384,7 @@ public final class Net {
 		PayloadTypeRegistry.clientboundPlay().register(Room.TYPE, Room.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(IslandMapImage.TYPE, IslandMapImage.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(DamageNumber.TYPE, DamageNumber.CODEC);
+		PayloadTypeRegistry.clientboundPlay().register(ObbyTimer.TYPE, ObbyTimer.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(LockerOutfit.TYPE, LockerOutfit.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(Squad.TYPE, Squad.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(Knocks.TYPE, Knocks.CODEC);

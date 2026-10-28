@@ -45,11 +45,12 @@ public final class UnlockRule {
 
 	/**
 	 * Does the player have item id (shop: bought it with gold; preset: bought the Shop preset it comes with, which makes
-	 * every piece theirs, 2.0.0-test3; the rest: their stats).
+	 * every piece theirs, 2.0.0-test3; tower and obbytime, 2.0.0: earned a preset by reaching a Sky Tower's top or by a
+	 * fast obby run, which makes it and every piece theirs the same way, Gold.grant; the rest: their stats).
 	 */
 	public static boolean has(String unlock, int need, Stats s, String id) {
 		return switch (unlock) {
-			case "shop", "preset" -> id != null && s.owned().contains(id);
+			case "shop", "preset", "tower", "obbytime" -> id != null && s.owned().contains(id);
 			case "default" -> true;
 			case "obby" -> s.obby();
 			case "victory" -> s.wins() >= 1;
@@ -69,6 +70,8 @@ public final class UnlockRule {
 		return switch (unlock) {
 			case "shop" -> need + " gold";
 			case "preset" -> "Shop preset";
+			case "tower" -> tower(need) + " Sky Tower";
+			case "obbytime" -> "Obby in " + need + " s";
 			case "obby" -> "Finish obby";
 			case "victory" -> "1 win";
 			case "kills" -> need + " kills";
@@ -79,11 +82,22 @@ public final class UnlockRule {
 		};
 	}
 
+	/** A Sky Tower's name by its number (presets sheet unlock tower, need 1 to 3; HubFun.TOWERS). */
+	public static String tower(int n) {
+		return switch (n) {
+			case 1 -> "Easy";
+			case 2 -> "Normal";
+			default -> "Hard";
+		};
+	}
+
 	/** The line under the Locker grid while a locked item is hovered: what unlocks it and how far along you are. */
 	public static String hint(String unlock, int need, Stats s) {
 		return switch (unlock) {
 			case "shop" -> "Shop: " + need + " gold (you have " + s.gold() + ") - click to buy";
 			case "preset" -> "Locked: comes with a preset from the Shop (buy the whole outfit with gold)";
+			case "tower" -> "Locked: reach the top of the " + tower(need) + " Sky Tower in the hub";
+			case "obbytime" -> "Locked: finish the obby in " + need + " seconds or less (the timer starts at the first red jump)";
 			case "obby" -> "Locked: finish the obby in the lobby";
 			case "victory" -> "Locked: win a Victory Royale";
 			case "kills" -> "Locked: get " + need + " eliminations (you have " + s.kills() + ")";
