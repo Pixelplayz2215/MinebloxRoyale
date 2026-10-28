@@ -17,7 +17,7 @@ import glob, hashlib, json, os, shutil, sys, zipfile
 
 SP = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(SP, "..", "..", ".."))  # the project (this script is in fabric/tools/package)
-# The downloaded tools (FFmpeg, the portable Prism and what it bundles): .tools in the project, or MINEBLOXROYALE_TOOLS.
+# The downloaded tools (the portable Prism and what it bundles): .tools in the project, or MINEBLOXROYALE_TOOLS.
 TOOLS = os.environ.get("MINEBLOXROYALE_TOOLS") or os.path.join(ROOT, ".tools")
 VER = [l.split("=", 1)[1].strip() for l in open(os.path.join(ROOT, "fabric", "gradle.properties")) if l.startswith("version=")][0]
 NAME = f"MinebloxRoyale-{VER}"
@@ -26,15 +26,14 @@ HOME = os.environ["USERPROFILE"]
 JAR = os.path.join(ROOT, "fabric", "build", "libs", f"minebloxroyale-{VER}.jar")
 FAPI = glob.glob(os.path.join(HOME, ".gradle", "caches", "modules-2", "files-2.1", "net.fabricmc.fabric-api", "fabric-api", "0.161.0+26.3", "*", "fabric-api-0.161.0+26.3.jar"))[0]
 E4MC = glob.glob(os.path.join(HOME, ".gradle", "caches", "**", "e4mc-AouleFRY.jar"), recursive=True)[0]
-FF = os.path.join(TOOLS, "ffmpeg", "ffmpeg-n9.0-latest-win64-lgpl-shared-9.0")
 PRISM = os.path.join(TOOLS, "prism")
 # Prism's Windows build needs Microsoft's Visual C++ runtime, which not every PC has (Melty's check): its DLLs go
 # beside prismlauncher.exe (Microsoft lets programs carry them).
 VCRT = {n: os.path.join(os.environ["SystemRoot"], "System32", n)
         for n in ("vcruntime140.dll", "vcruntime140_1.dll", "msvcp140.dll", "msvcp140_1.dll", "msvcp140_2.dll")}
 MODS ={f"minebloxroyale-{VER}.jar": JAR, "fabric-api-0.161.0+26.3.jar": FAPI, "e4mc-6.2.2.jar": E4MC}
-FFMPEG = {"ffmpeg.exe": os.path.join(FF, "bin", "ffmpeg.exe"), "LICENSE.txt": os.path.join(FF, "LICENSE.txt")}
-FFMPEG.update({os.path.basename(p): p for p in glob.glob(os.path.join(FF, "bin", "*.dll"))})
+# (1.2.0.1: no ffmpeg any more: Windows' Smart App Control blocked it as unsigned, and Melty then couldn't start the
+# game; Roblox sounds decode in the game, AudioDecode)
 DOCS = {n: os.path.join(SP, "pkg", n) for n in ("HOW TO PLAY.txt", "THIRD-PARTY NOTICES.txt")}
 # e4mc's two native libraries, which it otherwise downloads from natives.e4mc.link the first time a world opens to
 # friends (blocked or timing out on some players' networks, Melty 2026-10-16): in minebloxroyale/e4mc, where the mod
@@ -61,7 +60,7 @@ sys.path.insert(0, SP)
 import version_icon  # noqa: E402
 os.makedirs(os.path.join(ROOT, "fabric", "build", "package"), exist_ok=True)
 ICON = version_icon.make(VER, os.path.join(ROOT, "fabric", "build", "package", f"icon {VER}.png"), ICON)
-for p in [JAR, FAPI, E4MC, PRISM, ICON, JAVA, *PATCHES.values(), *VCRT.values(), *FFMPEG.values(), *DOCS.values(), *NATIVES.values()]:
+for p in [JAR, FAPI, E4MC, PRISM, ICON, JAVA, *PATCHES.values(), *VCRT.values(), *DOCS.values(), *NATIVES.values()]:
     if not os.path.exists(p):
         sys.exit("missing: " + p)
 for n, sha in E4MC_NATIVES.items():
@@ -174,7 +173,6 @@ docs = {n: p for n, p in DOCS.items()}
 
 # Mods + the minebloxroyale folder, for a launcher's Fabric 26.3 profile by hand.
 mo = {f"{NAME}/mods/{n}": p for n, p in MODS.items()}
-mo.update({f"{NAME}/minebloxroyale/ffmpeg/{n}": p for n, p in FFMPEG.items()})
 mo.update({f"{NAME}/minebloxroyale/e4mc/{n}": p for n, p in NATIVES.items()})
 mo.update({f"{NAME}/{n}": p for n, p in docs.items()})
 mo[f"{NAME}/Mineblox Royale icon.png"] = ICON
@@ -183,7 +181,6 @@ write_zip(os.path.join(WORK, "mods"), mo)
 # CurseForge profile.
 cf = {"manifest.json": CF_MANIFEST, "icon.png": ICON}
 cf.update({f"overrides/mods/{n}": p for n, p in MODS.items()})
-cf.update({f"overrides/minebloxroyale/ffmpeg/{n}": p for n, p in FFMPEG.items()})
 cf.update({f"overrides/minebloxroyale/e4mc/{n}": p for n, p in NATIVES.items()})
 cf.update({f"overrides/{n}": p for n, p in docs.items()})
 write_zip(os.path.join(WORK, "curseforge"), cf)
@@ -192,7 +189,6 @@ write_zip(os.path.join(WORK, "curseforge"), cf)
 # it).
 inst = {"instance.cfg": INSTANCE_CFG, "mmc-pack.json": MMC_PACK, "minebloxroyale.png": ICON, "icon.png": ICON, **PATCHES}
 inst.update({f"minecraft/mods/{n}": p for n, p in MODS.items()})
-inst.update({f"minecraft/minebloxroyale/ffmpeg/{n}": p for n, p in FFMPEG.items()})
 inst.update({f"minecraft/minebloxroyale/e4mc/{n}": p for n, p in NATIVES.items()})
 inst.update({f"minecraft/{n}": p for n, p in docs.items()})
 write_zip(os.path.join(WORK, "instance"), inst)
@@ -215,7 +211,6 @@ for d, _, fs in os.walk(JAVA):
     for f in fs:
         prism[f"{NAME}/Prism Launcher/java/java-runtime-epsilon/" + os.path.relpath(os.path.join(d, f), JAVA).replace("\\", "/")] = os.path.join(d, f)
 prism.update({f"{pi}/minecraft/mods/{n}": p for n, p in MODS.items()})
-prism.update({f"{pi}/minecraft/minebloxroyale/ffmpeg/{n}": p for n, p in FFMPEG.items()})
 prism.update({f"{pi}/minecraft/minebloxroyale/e4mc/{n}": p for n, p in NATIVES.items()})
 prism.update({f"{NAME}/{n}": p for n, p in docs.items()})
 write_zip(os.path.join(WORK, "prism"), prism)
@@ -223,7 +218,6 @@ write_zip(os.path.join(WORK, "prism"), prism)
 # Modrinth's .mrpack: Fabric API and e4mc downloaded from Modrinth, the rest as overrides.
 mr = {"modrinth.index.json": MRPACK_INDEX, "icon.png": ICON}
 mr.update({f"overrides/mods/{n}": p for n, p in MODS.items() if n not in MODRINTH})
-mr.update({f"overrides/minebloxroyale/ffmpeg/{n}": p for n, p in FFMPEG.items()})
 mr.update({f"overrides/minebloxroyale/e4mc/{n}": p for n, p in NATIVES.items()})
 mr.update({f"overrides/{n}": p for n, p in docs.items()})
 write_zip(os.path.join(WORK, "mrpack"), mr)
@@ -231,7 +225,6 @@ write_zip(os.path.join(WORK, "mrpack"), mr)
 # Melty: the mods and the minebloxroyale folder at the top, for the Minecraft instance Melty sets up (melty.json maps
 # mods/ and minebloxroyale/ into it); the docs ride in minebloxroyale.
 me = {f"mods/{n}": p for n, p in MODS.items()}
-me.update({f"minebloxroyale/ffmpeg/{n}": p for n, p in FFMPEG.items()})
 me.update({f"minebloxroyale/e4mc/{n}": p for n, p in NATIVES.items()})
 me.update({f"minebloxroyale/{n}": p for n, p in docs.items()})
 write_zip(os.path.join(OUT, f"{NAME}.zip"), me)

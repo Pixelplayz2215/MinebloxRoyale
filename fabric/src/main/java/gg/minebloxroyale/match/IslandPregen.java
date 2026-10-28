@@ -102,6 +102,15 @@ public final class IslandPregen {
 	private static volatile boolean haveLast;
 	/** The chunk area of a next island dropped for lack of disk space: its half-made chunks are never written. */
 	private static volatile int @Nullable [] lowDiskDrop;
+	/**
+	 * (1.2.0.1, players' Melty: a game on an 8 GB PC closed by itself while its first island was made, with Windows' page
+	 * file down to 8 MB) What Windows can still hand out (RAM and page file together, its "commit"): under LOW_MEMORY the
+	 * island waits until there's MEMORY_OK again, and the hub says so; on a PC with SMALL_PC of RAM or less it also makes
+	 * fewer chunks at once.
+	 */
+	private static final long LOW_MEMORY = 1536L << 20, MEMORY_OK = 2048L << 20, SMALL_PC = 9L << 30;
+	/** Since when the island has been waiting for free memory (0 = it isn't). */
+	private static volatile long memoryWaitSince;
 
 	private IslandPregen() {
 	}
@@ -109,6 +118,30 @@ public final class IslandPregen {
 	/** Low on disk space, so the next match is on the island just played (the hub says so). */
 	public static boolean sameIsland() {
 		return sameIsland;
+	}
+
+	/** Windows' free commit (RAM and page file it can still give out), or -1 where that can't be told (other systems). */
+	private static long freeCommit() {
+		if (!System.getProperty("os.name", "").startsWith("Windows")) return -1;
+		return java.lang.management.ManagementFactory.getOperatingSystemMXBean() instanceof com.sun.management.OperatingSystemMXBean os
+			? os.getFreeSwapSpaceSize() : -1; // (on Windows: GlobalMemoryStatusEx's ullAvailPageFile, the commit left)
+	}
+
+	/** The PC has SMALL_PC of RAM or less. */
+	private static boolean smallPc() {
+		return java.lang.management.ManagementFactory.getOperatingSystemMXBean() instanceof com.sun.management.OperatingSystemMXBean os
+			&& os.getTotalMemorySize() <= SMALL_PC;
+	}
+
+	/** Waits (island thread) while Windows is low on memory; said once each way in the log. */
+	private static void waitForMemory() {
+		long free = freeCommit();
+		if (free < 0 || free >= LOW_MEMORY) return;
+		memoryWaitSince = System.currentTimeMillis();
+		MinebloxRoyale.LOG.info("BR: Windows is low on memory ({} MB left to give out): the island waits", free >> 20);
+		while (running && (free = freeCommit()) >= 0 && free < MEMORY_OK) sleep(1000);
+		memoryWaitSince = 0;
+		if (running) MinebloxRoyale.LOG.info("BR: memory again ({} MB): the island carries on", free >> 20);
 	}
 
 	private static long freeSpace(MinecraftServer server) {
@@ -143,7 +176,7 @@ public final class IslandPregen {
 	public static int secondsLeft() {
 		long now = System.currentTimeMillis();
 		int done = doneCount.get(), left = total - done;
-		if (ready() || worker == null || !worker.isAlive() || total <= 1 || waitingForDisk() || diskFullSince != 0) {
+		if (ready() || worker == null || !worker.isAlive() || total <= 1 || waitingForDisk() || diskFullSince != 0 || memoryWaitSince != 0) {
 			PROGRESS.clear();
 			finishGuess = 0;
 			return ready() ? 0 : -1;
@@ -169,6 +202,7 @@ public final class IslandPregen {
 	public static String timeLeft() {
 		int s = secondsLeft();
 		if (diskFullSince != 0) return "disk full: free up space";
+		if (memoryWaitSince != 0) return "low on memory: close other programs";
 		if (waitingForDisk()) return "saving to disk";
 		return s < 0 ? "" : String.format(Locale.ROOT, "%d:%02d left", s / 60, s % 60);
 	}
@@ -264,6 +298,10 @@ public final class IslandPregen {
 		finished = false;
 		running = true;
 		Thread finder = new Thread(() -> {
+			// (1.2.0.1) the search too waits out the match's busy start: it read the land for about 17 s right as the bus
+			// flew and everyone dropped in (players' Melty: a crash then)
+			while (inMatch && System.currentTimeMillis() < quietUntil && !stopping) sleep(200);
+			if (stopping) return;
 			double[] c = search.get();
 			server.execute(() -> {
 				if (stopping) return; // the world closed while we were looking
@@ -312,6 +350,7 @@ public final class IslandPregen {
 		final boolean canDrop = haveLast; // a next island, with the one being played to go back to
 		worker = new Thread(() -> {
 			AtomicInteger inFlight = new AtomicInteger();
+			boolean small = smallPc();
 			long[] nextDiskCheck = { 0 };
 			boolean outOfDisk = false;
 			// A gentle start: one chunk at a time for the first minute, then six (three while a match is played).
@@ -327,7 +366,9 @@ public final class IslandPregen {
 				if (attempt > 0) MinebloxRoyale.LOG.info("BR: asking again for {} island chunks that didn't load", pass.size());
 				for (int i = 0; i < pass.size() && running; i++) {
 					while (inMatch && System.currentTimeMillis() < quietUntil && running) sleep(100);
-					while (inFlight.get() >= (System.currentTimeMillis() < gentleUntil ? 1 : inMatch ? 3 : 6) && running) sleep(5);
+					int most = System.currentTimeMillis() < gentleUntil ? 1 : inMatch ? (small ? 2 : 3) : (small ? 3 : 6);
+					while (inFlight.get() >= most && running) sleep(5);
+					waitForMemory();
 					// Never get far ahead of the disk: chunks can be made faster than Minecraft writes them, and
 					// closing the world waits for every write still queued (measured: 23-86 s when closing mid-island).
 					// Pause while more than MAX_QUEUED_WRITES are waiting, so closing has only a moment's worth left.

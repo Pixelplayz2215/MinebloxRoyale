@@ -17,12 +17,12 @@ import net.minecraft.client.Minecraft;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Where the player's own games and the bundled ffmpeg are. MINEBLOXROYALE_ROBLOX and MINEBLOXROYALE_FORTNITE can give
+ * Where the player's own games are. MINEBLOXROYALE_ROBLOX and MINEBLOXROYALE_FORTNITE can give
  * the games' folders; without them the usual install places are tried. (1.0.1.1: Melty no longer passes them, since
  * naming {game:fortnite} in the launch made Melty stop Play for players without Fortnite, which is optional.) Nothing is copied out of these folders: files are read and decoded in memory while playing.
  */
 public final class GameDirs {
-	private static Path robloxContent, fortnite, ffmpeg;
+	private static Path robloxContent, fortnite;
 	private static boolean resolved;
 
 	private GameDirs() {
@@ -33,8 +33,7 @@ public final class GameDirs {
 		resolved = true;
 		robloxContent = findRobloxContent();
 		fortnite = findFortnite();
-		ffmpeg = findFfmpeg();
-		MinebloxRoyale.LOG.info("BR media: roblox content={} fortnite={} ffmpeg={}", robloxContent, fortnite, ffmpeg);
+		MinebloxRoyale.LOG.info("BR media: roblox content={} fortnite={}", robloxContent, fortnite);
 	}
 
 	public static @Nullable Path robloxContent() {
@@ -45,11 +44,6 @@ public final class GameDirs {
 	public static @Nullable Path fortnite() {
 		resolve();
 		return fortnite;
-	}
-
-	public static @Nullable Path ffmpeg() {
-		resolve();
-		return ffmpeg;
 	}
 
 	private static @Nullable Path env(String name) {
@@ -203,26 +197,5 @@ public final class GameDirs {
 			while (m.find()) into.add(Path.of(m.group(1).replace("\\\\", "\\")));
 		} catch (IOException | RuntimeException ignored) {
 		}
-	}
-
-	private static @Nullable Path findFfmpeg() {
-		Path given = env("MINEBLOXROYALE_FFMPEG");
-		if (given != null && Files.isRegularFile(given)) return given;
-		Path gameDir = Minecraft.getInstance().gameDirectory.toPath().toAbsolutePath();
-		for (String folder : new String[] { Legacy.NEW_FOLDER, Legacy.OLD_FOLDER }) { // (an older build's folder, if it couldn't be moved)
-			Path bundled = gameDir.resolve(folder).resolve("ffmpeg/ffmpeg.exe");
-			if (Files.isRegularFile(bundled)) return bundled;
-		}
-		// Development: the project's .tools folder above the run directory.
-		for (Path p = gameDir; p != null; p = p.getParent()) {
-			Path tools = p.resolve(".tools/ffmpeg");
-			if (!Files.isDirectory(tools)) continue;
-			try (Stream<Path> s = Files.walk(tools, 3)) {
-				return s.filter(f -> f.getFileName().toString().equals("ffmpeg.exe")).findFirst().orElse(null);
-			} catch (IOException e) {
-				return null;
-			}
-		}
-		return null;
 	}
 }

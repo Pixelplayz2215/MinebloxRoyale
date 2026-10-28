@@ -85,6 +85,21 @@ public final class LogWatch extends AbstractFilter implements PreLaunchEntrypoin
 		super(Filter.Result.NEUTRAL, Filter.Result.NEUTRAL);
 	}
 
+	/**
+	 * (1.2.0.1) The ffmpeg an older build brought (minebloxroyale/ffmpeg): no longer used (Roblox sounds decode through
+	 * AudioDecode), and Windows' Smart App Control blocks it as unsigned, so it goes. Never in the way of starting.
+	 */
+	private static void dropOldFfmpeg(Path folder) {
+		if (!Files.isDirectory(folder)) return;
+		try (var files = Files.list(folder)) {
+			for (Path f : files.toList()) Files.deleteIfExists(f);
+			Files.deleteIfExists(folder);
+			LOG.info("BR: the old bundled ffmpeg is gone from the game folder (Roblox sounds no longer need it)");
+		} catch (IOException | RuntimeException e) {
+			LOG.info("BR: couldn't remove the old bundled ffmpeg ({}); it isn't used any more", e.toString());
+		}
+	}
+
 	static Path dir() {
 		return FabricLoader.getInstance().getGameDir().resolve("minebloxroyale");
 	}
@@ -94,6 +109,7 @@ public final class LogWatch extends AbstractFilter implements PreLaunchEntrypoin
 		if (FabricLoader.getInstance().getEnvironmentType() != EnvType.CLIENT) return;
 		OldInstall.moveTo(FabricLoader.getInstance().getGameDir());
 		E4mcNatives.use(dir().resolve("e4mc"));
+		dropOldFfmpeg(dir().resolve("ffmpeg"));
 		LastRun.check(FabricLoader.getInstance().getGameDir(), dir()); // (1.0.1.4: how the last game ended)
 		try {
 			Files.createDirectories(dir());

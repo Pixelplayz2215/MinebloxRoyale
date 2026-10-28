@@ -54,8 +54,10 @@ public final class LastRun {
 				}
 				String[] found = fromHsErr(gameDir, brDir, started);
 				if (found == null) found = fromWer(started);
-				String what = found == null ? "no crash report found (a crash Windows didn't record, or the game was closed by force)"
-					: "crashed in " + found[0] + (found[1].isEmpty() ? "" : " (" + found[1] + ")");
+				String report = found == null ? fromCrashReport(gameDir, started) : null;
+				String what = found != null ? "crashed in " + found[0] + (found[1].isEmpty() ? "" : " (" + found[1] + ")")
+					: report != null ? "Minecraft stopped with an error: " + report
+					: "no crash report found (a crash Windows didn't record, or the game was closed by force)";
 				String driver = found == null ? null : driver(found[0]);
 				String doing = doing(brDir, started);
 				cause = "the last game closed by itself: " + what + (driver == null ? "" : ", " + driver + " graphics driver") + (doing == null ? "" : "; it was " + doing);
@@ -85,10 +87,22 @@ public final class LastRun {
 		}
 	}
 
-	/** Every few seconds from the client: what the game is doing (told after a crash). Never in the game's way. */
+	/** When the doing line last went in latest.log. */
+	private static long loggedAt;
+
+	/**
+	 * Every few seconds from the client: what the game is doing (told after a crash). Once a minute it also goes in
+	 * latest.log (1.2.0.1: players' Melty sends the crashed game's own log, which said nothing of what was on screen).
+	 * Never in the game's way.
+	 */
 	public static void note(String doing) {
 		Path d = dir;
 		if (d == null) return;
+		long now = System.currentTimeMillis();
+		if (now - loggedAt >= 60_000) {
+			loggedAt = now;
+			LOG.info("BR: doing: {}", doing);
+		}
 		try {
 			Files.writeString(d.resolve("doing.txt"), doing, StandardCharsets.UTF_8);
 		} catch (IOException | RuntimeException ignored) {
@@ -149,6 +163,45 @@ public final class LastRun {
 			return best;
 		}
 		return best;
+	}
+
+	/**
+	 * (1.2.0.1) Minecraft's own crash report from that game (crash-reports/crash-*.txt, newer than its start): what it
+	 * says happened and the error, e.g. "Exception in server tick loop (java.util.ConcurrentModificationException)", or
+	 * null. Players' Melty had them cut off at the top.
+	 */
+	static String fromCrashReport(Path gameDir, long started) {
+		Path newest = null;
+		try (DirectoryStream<Path> files = Files.newDirectoryStream(gameDir.resolve("crash-reports"), "crash-*.txt")) {
+			long best = started - 5000;
+			for (Path f : files) {
+				long t = Files.getLastModifiedTime(f).toMillis();
+				if (t >= best) {
+					best = t;
+					newest = f;
+				}
+			}
+			return newest == null ? null : parseCrashReport(Files.readString(newest, StandardCharsets.UTF_8));
+		} catch (IOException | RuntimeException e) {
+			return null;
+		}
+	}
+
+	/** "Description (first error line)" from a crash report's text, or null. */
+	static String parseCrashReport(String text) {
+		String[] lines = text.split("\\r?\\n");
+		for (int i = 0; i < lines.length && i < 40; i++) {
+			if (!lines[i].startsWith("Description: ")) continue;
+			String description = lines[i].substring(13).trim(), error = "";
+			for (int j = i + 1; j < lines.length && j < i + 6; j++)
+				if (!lines[j].isBlank()) {
+					error = lines[j].trim();
+					break;
+				}
+			if (error.length() > 160) error = error.substring(0, 160);
+			return error.isEmpty() ? description : description + " (" + error + ")";
+		}
+		return null;
 	}
 
 	/** The faulting module and the exception from an hs_err file ({module, code}), or null. */
