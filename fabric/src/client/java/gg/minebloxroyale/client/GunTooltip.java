@@ -8,6 +8,7 @@ import java.util.Locale;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * (2.1.0, Ultraslayerz via the creator: "Gun stats (reload time, fire rate, damage)") A gun's numbers when you hover it
@@ -31,6 +32,19 @@ public final class GunTooltip {
 			lines.add(stat("Reload", String.format(Locale.ROOT, "%.1f", Math.round(w.reloadTicks() * r.reloadMult()) / 20F) + " s"));
 			lines.add(stat("Magazine", w.magazine() + ""));
 		});
+	}
+
+	/**
+	 * (2.1.0, for the HUD's slim line of stats, BRHud.gunStats) {damage, fire rate, reload} short: "33" (a shotgun's
+	 * "10x10": per pellet, rounded, times its pellets), "5.0/s", "2.1s".
+	 */
+	static String[] chips(ItemStack stack) {
+		WeaponDef w = ((WeaponItem) stack.getItem()).def;
+		RarityDef r = Guns.rarity(stack);
+		float dmg = w.damage() * r.damageMult();
+		return new String[] { w.pellets() > 1 ? Math.round(dmg) + "x" + w.pellets() : num(dmg),
+			String.format(Locale.ROOT, "%.1f", 20F / Math.max(1, w.fireIntervalTicks())) + "/s",
+			String.format(Locale.ROOT, "%.1f", Math.round(w.reloadTicks() * r.reloadMult()) / 20F) + "s" };
 	}
 
 	private static Component stat(String name, String value) {

@@ -49,6 +49,7 @@ public final class BRHud {
 			scaled(g, "ammo", g.guiWidth(), g.guiHeight(), () -> ammo(g, mc));
 			reloadingText(g, mc);
 			scaled(g, "materials", g.guiWidth(), g.guiHeight(), () -> materials(g, mc));
+			scaled(g, "gun_stats", g.guiWidth(), g.guiHeight(), () -> gunStats(g, mc)); // (2.1.0)
 			scaled(g, "bus_hint", g.guiWidth() / 2F, g.guiHeight(), () -> busHint(g, mc));
 			scaled(g, "tip", g.guiWidth() / 2F, g.guiHeight(), () -> FirstTips.draw(g, mc)); // (2.0.0-test6.3: first-time control tips)
 		} else {
@@ -454,6 +455,31 @@ public final class BRHud {
 			Smooth.icon(g, m.id(), cx - 1, y - 2.5F, 12, -1); // (wood, brick, metal: the Blender icons)
 			Smooth.text(g, "" + n, cx + 12, y - 0.6F, 8.5F, n == 0 ? 0xFF9AA2AD : 0xFFFFFFFF, Smooth.LEFT, true);
 			i++;
+		}
+	}
+
+	/**
+	 * (2.1.0, creator's pick C of four mockups: "C build into test3") The gun in your hand's stats in one slim line just
+	 * above the materials row and as wide as it (hud sheet "gun_stats"): three chips, each a Blender icon and a number,
+	 * damage a shot, shots a second and the reload, for its rarity (GunTooltip.chips, the numbers the guns use). Not in a
+	 * car (its fuel plate is where the ammo goes).
+	 */
+	private static void gunStats(GuiGraphicsExtractor g, Minecraft mc) {
+		if (mc.player.getVehicle() instanceof CarEntity) return;
+		ItemStack stack = mc.player.getMainHandItem();
+		if (!(stack.getItem() instanceof WeaponItem)) return;
+		HudElementDef d = Sheets.HUD_BY_ID.get("gun_stats");
+		String[] values = GunTooltip.chips(stack);
+		String[] icons = { "stat_damage", "stat_rate", "stat_reload" };
+		float x = g.guiWidth() + d.x() - d.size() - 4, y = g.guiHeight() + d.y(), gap = 2, h = 13;
+		float cw = (d.size() + 6 - gap * 2) / 3F;
+		for (int i = 0; i < 3; i++) {
+			float cx = x + i * (cw + gap);
+			Smooth.panel(g, cx, y, cw, h, 4.5F, 0x9610141E, 0xB6080B12);
+			Smooth.icon(g, icons[i], cx + 1.5F, y + 1.5F, 10, -1);
+			// (a long number shrinks to fit beside its icon)
+			float room = cw - 15, size = Math.min(7.5F, 7.5F * room / Math.max(1, Smooth.width(values[i], 7.5F)));
+			Smooth.text(g, values[i], cx + cw - 2.5F, y + (h - size) / 2F - 0.3F, size, 0xFFFFFFFF, Smooth.RIGHT, true);
 		}
 	}
 

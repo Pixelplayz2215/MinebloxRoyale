@@ -19,6 +19,7 @@
 ### Looks (2.1.0-test2)
 - **The reboot card you're holding** sits at the bottom of the screen in its own blue tile to the right of the hotbar. "Holding <name>'s reboot card" shows just above the hotbar, not in the middle of the screen.
 - **Gun stats** (from Ultraslayerz: "Gun stats (reload time, fire rate, damage)"): hover a gun in your inventory or a chest to see its damage (for its rarity, a shotgun's per pellet, and a headshot's), shots a second, reload time and magazine.
+- **Gun stats on screen** (2.1.0-test3, creator's pick C of four mockups): while you hold a gun, one slim line just above your materials shows its damage, shots a second and reload time, each with its own icon.
 - **Facial expressions:** a new Expressions page in the Locker, right after Face. There are 15 of our own: 6 free (Big Grin, Wink, Happy, Surprised, Smirk, Angry), 6 unlocked by playing (Determined: 10 kills; Tongue Out: finish the obby; Worried: 10 bullseyes; Laughing: score 30 at the range; Victory Smile: a win; Too Cool: 3 wins) and 3 for gold (Sleepy 300, Heart Eyes 350, Starstruck 400). Each one replaces your Roblox face, and every face accessory (glasses, masks, beards...) sits on it the same way. Hover one to see it on you. Half the bots wear one too.
 
 ### More buildings (2.1.0-test2)

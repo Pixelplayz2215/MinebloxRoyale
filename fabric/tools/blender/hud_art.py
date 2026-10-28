@@ -195,12 +195,34 @@ def main(scratch):
             cyl(tx, 0.62 + h / 2, 0, 0.12, h, "y", gold, verts=4, r2=0.01)
             sphere(tx, 0.62 + h + 0.05, 0, 0.07, 0.07, 0.07, mat("hud_crown_gem", "#E8263A", rough=0.15), segs=12, rings=8)
 
+    def stat_damage():
+        """(2.1.0) A gun's damage, for the HUD's gun stats (BRHud.gunStats): a bright burst, like a hit."""
+        pts = [(math.cos(math.radians(90 + i * 22.5)) * (1.15 if i % 2 == 0 else 0.55), math.sin(math.radians(90 + i * 22.5)) * (1.15 if i % 2 == 0 else 0.55))
+               for i in range(16)]
+        slab(pts, -0.18, 0.18, mat("hud_burst", "#FF8A2A", rough=0.3), bevel=0.06)
+        slab(scaled(pts, 0.55), 0.18, 0.3, mat("hud_burst_in", "#FFE15A", rough=0.25), bevel=0.04)
+
+    def stat_rate():
+        """(2.1.0) Fire rate: three bullets side by side, speed streaks under them."""
+        for x in (-0.55, 0.0, 0.55):
+            bullet(x, 0.05, 1.0, 0.19, "#E3B04B", "#C9CED6")
+        streak = mat("hud_streak", "#8FD3FF", rough=0.4)
+        for x in (-0.55, 0.0, 0.55):
+            box(x - 0.06, -1.25, -0.06, x + 0.06, -0.7, 0.06, streak, bevel=0.04, seg=2)
+
+    def stat_reload():
+        """(2.1.0) Reload: a round arrow going round, its head pointing into the gap."""
+        b = mat("hud_reload", "#6EC1FF", rough=0.3)
+        tube([(math.cos(math.radians(a)) * 0.85, math.sin(math.radians(a)) * 0.85, 0) for a in range(70, 361, 10)], 0.17, b, segs=12)
+        slab([(0.85 - 0.4, 0.02), (0.85 + 0.4, 0.02), (0.85, 0.55)], -0.17, 0.17, b, bevel=0.04)
+
     ICONS = {
         "shield": ("Shield", shield), "health": ("Health", health), "storm": ("Storm", storm), "players": ("Players Left", players),
         "kills": ("Eliminations", kills), "team": ("Team Eliminations", team), "wood": ("Wood", wood), "brick": ("Brick", brick),
         "metal": ("Metal", metal), "ammo_light": ("Light Ammo", ammo_light), "ammo_medium": ("Medium Ammo", ammo_medium),
         "ammo_heavy": ("Heavy Ammo", ammo_heavy), "ammo_shells": ("Shells", ammo_shells), "ammo_rockets": ("Rockets", ammo_rockets),
-        "gold": ("Gold", gold), "boss": ("Boss", boss),
+        "gold": ("Gold", gold), "boss": ("Boss", boss), "stat_damage": ("Damage", stat_damage), "stat_rate": ("Fire Rate", stat_rate),
+        "stat_reload": ("Reload", stat_reload),
     }
     only = set(sys.argv[sys.argv.index("--") + 2:]) if "--" in sys.argv else set()
     made = []

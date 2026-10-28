@@ -1,3 +1,4 @@
+Test 2.1-3 - Hold a gun: one slim line above the materials with its damage, shots a second and reload (icons), changing with each gun and rarity; gone in a car or with no gun
 Test 2.1-2 - Skydive: wind rising as you fall (louder looking down), softer under the glider; a whoosh out of the bus and closing the glider
 Test 2.1-2 - The glider's own open and close sounds (and closing as you land)
 Test 2.1-2 - Cars: tyres rumble with speed, no squeal
