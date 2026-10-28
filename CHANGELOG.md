@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.1.0 (in progress)
+
+### Storm, cars and reboot vans (2.1.0-test1)
+- **The storm hurts your health, not your shield** (from Ultraslayerz: "Storm does health damage not shield (like fortinte)"), as in Fortnite. It used to take the shield first. Shots, blasts and the pickaxe still hit the shield first.
+- **Boosting into an enemy hurts them** (30 damage, credited to the driver, shield first) **and throws them** a few blocks forwards and up. It only counts while boosting, never for teammates, and hits each person once a second at most. Just driving into someone still does nothing.
+- **Whoever is in a car can't be shot, hit or blown up.** Shots, pickaxe hits and blasts on the people inside go to the car instead and wear it down (a pickaxe hit still gives metal). When the car is wrecked, everyone inside is thrown out unhurt, as before.
+- **Boosting cars don't break the ground:** paths, farmland and the mountains' rock (calcite, dripstone, basalt and the like) were added to the ground they leave alone. Trees, builds, walls and the island's buildings still break.
+- **At least 2 reboot vans inside every safe circle:** each new circle is picked to hold at least two vans if it can, and any still missing are put inside it (never on top of anyone). Every circle gets them except the very last one, which closes to nothing.
+- Only teammates can get into a car with you (already the rule in 2.0.0).
+
 ## v2.0.0 (2026-11-11)
 
 A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and a new look and sound.

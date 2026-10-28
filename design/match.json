@@ -148,6 +148,18 @@
    "meaning": "damage a parked car takes before it's wrecked; it adds up and stays between hits (creator). A pickaxe hit does carDurability / the harvest sheet's h_car maxBlocks (600 / 6 = 100) and still gives h_car perBlock metal; a gun shot does its own damage (rarity included). The car looks more damaged at 450, 300 and 150 left"
   },
   {
+   "id": "carBoostHitDamage",
+   "value": 30,
+   "unit": "damage",
+   "meaning": "2.1.0 (creator: cars hurt people only when boosting into them, with some knockback, only enemies): what a boosting car does to an enemy it runs into (shield first, credited to the driver); once a second at most per person. Driving without a boost hurts no one"
+  },
+  {
+   "id": "carBoostKnockback",
+   "value": 1.2,
+   "unit": "strength",
+   "meaning": "how hard a boosting car throws an enemy it hits: blocks a tick forwards (1.2 is a throw of a few blocks), and a little up"
+  },
+  {
    "id": "customStructures",
    "value": 26,
    "unit": "buildings",
@@ -350,6 +362,18 @@
    "value": 8,
    "unit": "vans",
    "meaning": "reboot vans on each island, every mode (every other one near the middle, the rest out towards the edge)"
+  },
+  {
+   "id": "rebootVansPerCircle",
+   "value": 2,
+   "unit": "vans",
+   "meaning": "2.1.0 (creator: \"Reboot vans: at least 2 inside every storm circle's safe zone, at every phase\"): each new safe circle is picked to have at least this many vans in it if it can; any still missing are put inside it"
+  },
+  {
+   "id": "rebootVanMinCircle",
+   "value": 8,
+   "unit": "blocks",
+   "meaning": "the smallest safe circle (radius) that gets rebootVansPerCircle: every circle but the very last (0 blocks, nothing fits); raise it to keep vans out of the last small circles"
   },
   {
    "id": "rebootVanCooldownSeconds",

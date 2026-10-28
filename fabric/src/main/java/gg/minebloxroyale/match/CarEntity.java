@@ -49,9 +49,11 @@ import org.jspecify.annotations.Nullable;
  * <li>About 5 minutes of fuel, no way to refuel: out of fuel, it stays where it stopped.</li>
  * <li>No shooting from a car (Guns), no grenades either.</li>
  * <li>Boosting into a building smashes through it (builds, the island's houses and structures); the ground (hills,
- * cliffs) stops it, and it won't drive into water. A moving car doesn't hurt anyone it runs into.</li>
+ * cliffs) stops it, and it won't drive into water.</li>
+ * <li>(2.1.0) Boosting into an enemy (a player or a bot, never a teammate) hurts them (carBoostHitDamage, credited to
+ * the driver) and throws them (carBoostKnockback); just driving into someone doesn't.</li>
  * <li>600 durability: pickaxe hits, shots, rockets (300) and grenades (100) all count, from anyone not inside; wrecked,
- * everyone inside is thrown out unhurt.</li>
+ * everyone inside is thrown out unhurt. (2.1.0) Those inside can't be shot or hit: the car takes it.</li>
  * </ul>
  * The driver's own game moves the car (like a boat) from their keys; the server keeps the fuel, the boosts and the
  * damage, and smashes what a boosting car runs into. A bot drives it on the server (BotEntity, botInput).
@@ -76,6 +78,10 @@ public class CarEntity extends Entity {
 	public static Supplier<Input> localInput = () -> Input.EMPTY;
 	private float speed, turning;
 	private boolean jumpWas;
+	/** (2.1.0) Where the server last saw the car, and how fast it's been going since (blocks a tick, smoothed). */
+	private double lastX, lastZ, seenSpeed;
+	/** (2.1.0) Enemies a boost has hit, and when (game time): once a second at most each. */
+	private final java.util.Map<java.util.UUID, Long> boostHits = new java.util.HashMap<>();
 	/** A bot driving: its keys (server side). */
 	private Input botInput = Input.EMPTY;
 
@@ -246,6 +252,12 @@ public class CarEntity extends Entity {
 		LivingEntity driver = getControllingPassenger();
 		Input in = driver instanceof ServerPlayer sp ? sp.getLastClientInput() : driver != null ? botInput : Input.EMPTY;
 		int fuel = fuelTicks(), boost = entityData.get(BOOSTING);
+		// (the driver's own game moves the car between ticks, so how fast it goes is measured here; a jump of more than 4
+		// blocks is the car being put somewhere, not driving)
+		double moved = Math.sqrt(Mth.square(getX() - lastX) + Mth.square(getZ() - lastZ));
+		lastX = getX();
+		lastZ = getZ();
+		seenSpeed = moved > 4 ? 0 : seenSpeed * 0.5 + moved * 0.5;
 		if (in.jump() && !jumpWas && boost == 0 && boostsLeft() > 0 && fuel > 0) {
 			entityData.set(BOOSTS, boostsLeft() - 1);
 			entityData.set(BOOSTING, BOOST_TICKS);
@@ -256,6 +268,7 @@ public class CarEntity extends Entity {
 		if (boost > 0) {
 			entityData.set(BOOSTING, boost - 1);
 			smashAhead(level);
+			if (driver != null && seenSpeed > 0.35) runOver(level, driver); // (still moving: not stopped against a wall)
 		}
 		if (driver != null && (in.forward() || in.backward()) && fuel > 0) fuel--;
 		if (fuel != fuelTicks()) entityData.set(FUEL, fuel);
@@ -275,6 +288,29 @@ public class CarEntity extends Entity {
 						level.destroyBlock(p, false, getControllingPassenger());
 					}
 				}
+	}
+
+	/**
+	 * (2.1.0, creator: "Cars hurt people only when boosting into them ... with some knockback; never teammates, only
+	 * enemies") Enemies (players in the match and bots) just ahead of a boosting car: hurt like a shot from the driver
+	 * (shield first, the driver's damage number) and thrown forwards; once a second at most each.
+	 */
+	private void runOver(ServerLevel level, LivingEntity driver) {
+		double yaw = Math.toRadians(getYRot());
+		double fx = -Math.sin(yaw), fz = Math.cos(yaw);
+		long now = level.getGameTime();
+		boostHits.values().removeIf(t -> now - t >= 20);
+		net.minecraft.world.phys.AABB front = getBoundingBox().inflate(0.3, 0, 0.3).expandTowards(fx, 0, fz);
+		for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, front, e -> e.isAlive() && !e.isSpectator()
+			&& Combat.isFighter(e) && !(e.getVehicle() instanceof CarEntity) && !Teams.sameTeam(driver, e))) {
+			if (e instanceof ServerPlayer p && !MatchManager.get().isAlive(p)) continue;
+			if (boostHits.putIfAbsent(e.getUUID(), now) != null) continue;
+			Combat.gunDamage(level, driver, e, MinebloxRoyale.setting("carBoostHitDamage"), false);
+			double k = MinebloxRoyale.setting("carBoostKnockback");
+			Vec3 v = e.getDeltaMovement();
+			e.setDeltaMovement(v.x * 0.5 + fx * k, Math.max(v.y, 0.4), v.z * 0.5 + fz * k);
+			e.needsSync = true; // (a player's own game moves them, so it's told)
+		}
 	}
 
 	/** Each player's game: smoke from a nearly wrecked engine, flame out of the back while boosting. */

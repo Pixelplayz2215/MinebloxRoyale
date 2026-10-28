@@ -684,13 +684,25 @@ public final class MatchManager {
 		fromX = toX;
 		fromZ = toZ;
 		fromR = radius;
-		// Fortnite: the next circle lies somewhere inside the current one.
+		// Fortnite: the next circle lies somewhere inside the current one. (2.1.0, creator: "Reboot vans: at least 2 inside
+		// every storm circle's safe zone, at every phase") Of up to 30 such circles, the first with enough reboot vans in
+		// it (else the one with the most); any still missing are put inside it. (Not the last circles, too small for one.)
 		RandomSource rnd = level.getRandom();
 		float slack = Math.max(0, radius - def.endRadius());
-		double a = rnd.nextDouble() * Math.PI * 2, d = rnd.nextDouble() * slack;
-		toX = fromX + Math.cos(a) * d;
-		toZ = fromZ + Math.sin(a) * d;
 		toR = def.endRadius();
+		int want = toR >= MinebloxRoyale.setting("rebootVanMinCircle") ? Math.round(MinebloxRoyale.setting("rebootVansPerCircle")) : 0;
+		int most = -1;
+		for (int i = 0; i < 30 && most < want; i++) {
+			double a = rnd.nextDouble() * Math.PI * 2, d = rnd.nextDouble() * slack;
+			double x = fromX + Math.cos(a) * d, z = fromZ + Math.sin(a) * d;
+			int n = Reboot.inside(x, z, toR);
+			if (n > most) {
+				most = n;
+				toX = x;
+				toZ = z;
+			}
+		}
+		Reboot.fillCircle(toX, toZ, toR, want, rnd);
 		broadcast(level.getServer(), Component.literal("Storm eye forming! Shrinks in " + def.waitSeconds() + "s").withStyle(ChatFormatting.LIGHT_PURPLE));
 		MinebloxRoyale.LOG.info("BR: storm phase {} -> radius {}", phase + 1, toR);
 	}

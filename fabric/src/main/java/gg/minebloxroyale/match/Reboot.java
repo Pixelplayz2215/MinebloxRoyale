@@ -93,6 +93,10 @@ public final class Reboot {
 		final int slice, slices;
 		final boolean outer;
 		int tries;
+		/** (2.1.0) A van planned inside a storm circle (fillCircle): the circle's middle and radius; inR < 0: none. */
+		double inX, inZ, inR = -1;
+		/** (2.1.0) Someone stood where it goes: not tried again before this game time. */
+		long notBefore;
 
 		Van(int slice, int slices, boolean outer, float yaw) {
 			this.slice = slice;
@@ -144,8 +148,17 @@ public final class Reboot {
 		}
 	}
 
-	/** A spot for the van in its slice of the island (not bunched up), in its ring: near the middle, or out towards the edge. */
+	/**
+	 * A spot for the van in its slice of the island (not bunched up), in its ring: near the middle, or out towards the
+	 * edge. A van for a storm circle (fillCircle): anywhere inside the circle, with room for its body.
+	 */
 	private static void plan(Van v, RandomSource rnd) {
+		if (v.inR >= 0) {
+			double a = rnd.nextDouble() * Math.PI * 2, d = Math.sqrt(rnd.nextDouble()) * Math.max(0, v.inR - 4);
+			v.x = Math.floor(v.inX + Math.cos(a) * d) + 0.5;
+			v.z = Math.floor(v.inZ + Math.sin(a) * d) + 0.5;
+			return;
+		}
 		double a = (v.slice + rnd.nextDouble() * 0.7) / v.slices * Math.PI * 2;
 		double d = (v.outer ? 0.55 + rnd.nextDouble() * 0.3 : 0.15 + rnd.nextDouble() * 0.3) * islandR;
 		v.x = Math.floor(centreX + Math.cos(a) * d) + 0.5;
@@ -154,6 +167,30 @@ public final class Reboot {
 
 	public static List<Van> vans() {
 		return VANS;
+	}
+
+	/** Vans (on the ground or still planned) standing inside the circle, their whole body in it. */
+	static int inside(double cx, double cz, double r) {
+		int n = 0;
+		for (Van v : VANS)
+			if (Math.hypot(v.x - cx, v.z - cz) <= r - 3) n++;
+		return n;
+	}
+
+	/**
+	 * (2.1.0, creator: "Reboot vans: at least 2 inside every storm circle's safe zone, at every phase") New vans planned
+	 * inside the circle until it has `want`; they go on the ground like the others, as their ground loads (prepare).
+	 */
+	static void fillCircle(double cx, double cz, double r, int want, RandomSource rnd) {
+		for (int n = inside(cx, cz, r); n < want; n++) {
+			Van v = new Van(0, 1, false, rnd.nextInt(4) * 90F);
+			v.inX = cx;
+			v.inZ = cz;
+			v.inR = r;
+			plan(v, rnd);
+			VANS.add(v);
+			MinebloxRoyale.LOG.info("BR: reboot van added for the storm circle at {} {} (radius {})", (int) cx, (int) cz, (int) r);
+		}
 	}
 
 	/** How far a van may move from its planned spot to stand in the open. */
@@ -170,7 +207,7 @@ public final class Reboot {
 	static void prepare(ServerLevel level) {
 		Van next = null;
 		for (Van v : VANS) {
-			if (v.placed) continue;
+			if (v.placed || level.getGameTime() < v.notBefore) continue;
 			int bx = (int) Math.floor(v.x), bz = (int) Math.floor(v.z), r = SEARCH + 3;
 			if (!level.hasChunk((bx - r) >> 4, (bz - r) >> 4) || !level.hasChunk((bx + r) >> 4, (bz + r) >> 4)
 				|| !level.hasChunk((bx - r) >> 4, (bz + r) >> 4) || !level.hasChunk((bx + r) >> 4, (bz - r) >> 4)) {
@@ -179,11 +216,18 @@ public final class Reboot {
 			}
 			boolean alongX = Math.round(v.yaw / 90F) % 2 == 1;
 			BlockPos at = openSpot(level, bx, bz, alongX);
+			// (a storm circle's van: an open spot that's out of its circle won't do)
+			if (at != null && v.inR >= 0 && Math.hypot(at.getX() + 0.5 - v.inX, at.getZ() + 0.5 - v.inZ) > v.inR - 3) at = null;
 			if (at == null && v.tries++ < 6) {
 				plan(v, level.getRandom());
 				continue;
 			}
 			if (at == null) at = new BlockPos(bx, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, bx, bz), bz); // (none found: as planned)
+			// (2.1.0: a van put down mid-match never boxes anyone in; tried again in a second)
+			if (!level.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class, new net.minecraft.world.phys.AABB(at).inflate(3, 2, 3).expandTowards(0, 1, 0)).isEmpty()) {
+				v.notBefore = level.getGameTime() + 20;
+				continue;
+			}
 			v.x = at.getX() + 0.5;
 			v.z = at.getZ() + 0.5;
 			v.y = at.getY();

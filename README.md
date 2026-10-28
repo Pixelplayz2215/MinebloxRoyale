@@ -25,7 +25,7 @@ A Minecraft × Roblox × Fortnite mashup for **Minecraft: Java Edition 26.3** (F
 - **Matches of up to 100:** real players plus bots in every empty place, in Solo, Duos, Trios or Squads, with building or No Build.
 - **Fortnite's flow:**
   - ride the Battle Bus, skydive and open your glider;
-  - an 8-phase storm that hits your shield first;
+  - an 8-phase storm that hurts your health, not your shield, as in Fortnite;
   - the last player or team standing wins a Victory Royale.
 - **Loot:**
   - gold chests, and rare blue ones with the best guns: hold **F** to search, and the loot pops out;
