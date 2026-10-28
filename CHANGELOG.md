@@ -130,6 +130,17 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 - From 1.2.0 (players' Melty, 1.0.1.5: a crash inside NVIDIA's OpenGL driver, `nvoglv64.dll`, about 3 minutes in): after a crash, the next start says what the game was doing (where you were, the screen open, frames per second, entities, render distance, window size, OpenGL or Vulkan), in the log and melty.log line, so players' reports carry it; a second graphics driver crash in a row also suggests Minecraft's own other graphics API in the chat (Options > Video Settings > Graphics API > Prefer Vulkan (Experimental), or back to Default). The heaviest drawing (the storm on the maps, far-away models) was already made much lighter in 2.0.0.
 - From 1.0.1.5: no crash opening the Locker in a small window (Minecraft's own 854 x 480, or minimized), and graphics driver shader-compiler crashes get the update-your-driver line too.
 
+## v1.2.0.1 (2026-10-28)
+
+Fixes for what players' Melty reported on 1.2.0 (creator: "lets fix all 7 bugs on v1.2.0 from melty reports, upload as v1.2.0.1").
+
+- **Melty can start the game on PCs with Windows' Smart App Control** ("Windows' Smart App Control blocked this mashup's ffmpeg.exe because it isn't signed. Melty can't start it on this PC", and "Windows refused ffmpeg.exe"): the game no longer brings ffmpeg at all. The Roblox sounds from your own Roblox install are decoded inside the game instead: the OGG ones with the decoder Minecraft already has, the MP3 ones with Windows' own MP3 decoder. Checked against ffmpeg on all 7 Roblox sounds: the same sound. The ffmpeg an older version left in the game folder is removed, and the downloads are much smaller.
+- **A crash in the world ("Exception in server tick loop", ConcurrentModificationException):** vanilla items, mobs and old hub text that turn up as land loads were removed on the spot, while Minecraft was still going through that land's entities, which broke it. They're removed a moment later instead.
+- **Games on PCs with little memory closing by themselves** ("Closed right after starting": an 8 GB PC ran out of memory, Windows' page file down to 8 MB, while the first island was made): the island now waits while Windows is low on memory (the hub says "low on memory: close other programs"), and on PCs with 8 GB or less it makes fewer chunks at once.
+- **Less going on as the bus flies:** the search for the next island (about 17 seconds of reading the land) also waits until 2 minutes into the match now, like making it already did. A crash inside NVIDIA's graphics driver came just after a drop began.
+- **Crashes say more next time:** after Minecraft's own crash report (like "Loading native libraries"), the next start says what it was, and once a minute the game's log notes what it's doing (the menus, the hub or a match, the screen open, frames per second), so a crashed game's own log says what was happening.
+- Not changed in the game: "Waiting for the host's game to open" and "That game has ended" are Melty telling a friend that the host has closed their world or their game; the host's address is shared the whole time a world is open.
+
 ## v1.2.0 (2026-10-20)
 
 1.0.1.5 (every connection fix from 1.0.1.1 to 1.0.1.5) with Fortnite-style building, from a tester on 1.0.1 ("In Fortnite the building is grid snapped so no matter where you try to place builds the builds will never be uneven or go into each other").
