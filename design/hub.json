@@ -133,7 +133,7 @@
    "height": 12,
    "facing": "west",
    "block": "minecraft:black_concrete",
-   "label": "WHAT'S NEW IN V2 | NO BUILD: 4 new portals, just fight | Earn gold, spend it in the Locker Shop | Cars: F get in, SPACE boost, SHIFT out | Rockets and grenades blow up builds | 4 bosses a match drop Boss guns | Gliders, contrails and emote music | New HUD, sounds and Victory screen | Flags show what country players are in | Hide yours: /flag off (show: /flag on)"
+   "label": "WHAT'S NEW IN V2.1 | Storm hurts health, not shield | Boost a car into enemies to hit them | In a car? Shots hit the car, not you | 2+ reboot vans in every safe zone | Facial expressions in the Locker | Gun stats above your materials | Gas stations, campsites and barns | New skydive, glider and storm sounds | Held reboot cards show by your hotbar"
   },
   {
    "id": "portal_solo",
