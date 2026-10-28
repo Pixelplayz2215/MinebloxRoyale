@@ -20,10 +20,6 @@ e4mc's relay libraries  (minebloxroyale\e4mc: netty_quiche_windows_x86_64_74.dll
   with Cloudflare's quiche (BSD-2-Clause) and Google's BoringSSL (OpenSSL/ISC licences); iroh by n0 (MIT or Apache-2.0,
   https://github.com/n0-computer/iroh) in e4mc's binding (MIT, https://github.com/vgskye/e4mc-minecraft-architectury).
 
-FFmpeg 9.0, LGPL shared build  (minebloxroyale\ffmpeg)
-  Licence: LGPL-2.1 or later (see LICENSE.txt in that folder). Source: https://ffmpeg.org
-  Used only to decode Roblox sounds from your own Roblox install.
-
 Downloaded by your launcher (not included): Minecraft 26.3 (Mojang), Fabric Loader 0.19.5 and Intermediary 26.3
 (FabricMC, Apache-2.0), and a Java 25 runtime if you don't have one. The Modrinth-format (.mrpack) downloads fetch
 Fabric API and e4mc from Modrinth instead of carrying them.

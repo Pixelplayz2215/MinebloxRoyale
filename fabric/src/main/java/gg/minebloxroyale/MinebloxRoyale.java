@@ -36,6 +36,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.storage.LevelResource;
 import org.slf4j.Logger;
@@ -43,6 +44,8 @@ import org.slf4j.LoggerFactory;
 
 /** Mineblox Royale: a Minecraft battle royale with a Roblox-style hub, Roblox avatars/sounds and Fortnite's rules. */
 public final class MinebloxRoyale implements ModInitializer {
+	/** Entities that loaded in but don't belong (vanilla items, mobs, old hub text): removed at the end of the tick. */
+	private static final java.util.Queue<Entity> DISCARD = new java.util.concurrent.ConcurrentLinkedQueue<>();
 	public static final String MOD_ID = "minebloxroyale";
 	public static final Logger LOG = LoggerFactory.getLogger("MinebloxRoyale");
 	private static long stoppingAt;
@@ -148,14 +151,18 @@ public final class MinebloxRoyale implements ModInitializer {
 		// How long closing the world took (leaving it with /rc waits for this).
 		ServerLifecycleEvents.SERVER_STOPPED.register(server -> LOG.info("BR: world saved and closed in {} ms", System.currentTimeMillis() - stoppingAt));
 		// No vanilla item ever drops (blocks, mobs, players, chests): any vanilla item entity is removed as it appears.
+		// (1.2.0.1, players' Melty: a server crash, ConcurrentModificationException in
+		// PersistentEntitySectionManager.updateChunkStatus) Minecraft can call this while it goes through a chunk's
+		// entities, and removing one right then broke that loop: they're removed at the end of the tick instead.
 		ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
-			if (entity instanceof ItemEntity item && Loadout.isVanilla(item.getItem())) entity.discard();
-			if (HubBuilder.isStaleText(entity)) entity.discard(); // hub text from an older hub build
+			if (entity instanceof ItemEntity item && Loadout.isVanilla(item.getItem())) DISCARD.add(entity);
+			if (HubBuilder.isStaleText(entity)) DISCARD.add(entity); // hub text from an older hub build
 			// No mobs at all (creator): animals, bees, wolves, villagers, golems, monsters... are removed as they load
 			// (world generation still makes some). Only Mineblox Royale's own bots stay.
-			if (entity instanceof Mob && !(entity instanceof BotEntity)) entity.discard();
+			if (entity instanceof Mob && !(entity instanceof BotEntity)) DISCARD.add(entity);
 		});
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
+			for (Entity e; (e = DISCARD.poll()) != null;) if (!e.isRemoved()) e.discard(); // (removed as they loaded, above)
 			MatchManager.get().tick(server);
 			// Always midday (creator): if anything moves the clock, it's put back.
 			if (server.getTickCount() % 600 == 0)

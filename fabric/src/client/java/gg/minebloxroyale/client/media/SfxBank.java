@@ -18,7 +18,10 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 
-/** Plays sounds-sheet sounds. Roblox ones are decoded once from the player's Roblox install into memory. */
+/**
+ * Plays sounds-sheet sounds. Roblox ones are decoded once from the player's Roblox install into memory (AudioDecode;
+ * 1.2.0.1: no bundled ffmpeg any more).
+ */
 public final class SfxBank {
 	static final int RATE = 44100;
 	private static final Map<String, byte[]> PCM = new ConcurrentHashMap<>();
@@ -40,10 +43,13 @@ public final class SfxBank {
 				MinebloxRoyale.LOG.warn("BR media: Roblox sound {} not found ({})", s.id(), s.file());
 				return;
 			}
-			byte[] pcm = Ffmpeg.decodePcm(content.resolve(s.file()), 1, RATE);
+			byte[] pcm = AudioDecode.pcm(content.resolve(s.file()), 1, RATE);
 			if (pcm != null) {
 				PCM.put(s.id(), pcm);
 				MinebloxRoyale.LOG.info("BR media: Roblox sound {} ready ({} ms)", s.id(), pcm.length * 1000L / 2 / RATE);
+			} else {
+				// (one plain line: the sound is simply off, everything else works)
+				MinebloxRoyale.LOG.info("BR media: Roblox sound {} off ({})", s.id(), AudioDecode.lastProblem());
 			}
 		});
 	}
