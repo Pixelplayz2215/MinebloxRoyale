@@ -212,8 +212,8 @@ public class LockerScreen extends Screen {
 			}
 			default -> {
 				String worn = outfit.get(tab);
-				// (2.1.0: in Expressions, none is your own Roblox face)
-				String none = tab.equals("expression") ? "Your Roblox Face" : "None";
+				// (2.1.0: in Expressions, none is your own Roblox face; creator: it "should be 'default'")
+				String none = tab.equals("expression") ? "Default" : "None";
 				out.add(new Tile(worn == null ? "> " + none + " <" : none, true, () -> send("locker:" + tab + ":none")));
 				for (CosmeticDef c : Sheets.COSMETICS) {
 					if (!c.slot().equals(tab)) continue;
