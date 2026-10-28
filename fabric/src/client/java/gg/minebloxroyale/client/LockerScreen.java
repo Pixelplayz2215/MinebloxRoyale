@@ -45,7 +45,7 @@ import org.joml.Vector3f;
  */
 public class LockerScreen extends Screen {
 	private static final String[][] TABS = { { "shop", "Shop" }, { "preset", "Presets" }, { "hat", "Hats" }, { "hair", "Hair" }, { "face", "Face" },
-		{ "back", "Back" }, { "shirt", "Shirts" }, { "pants", "Pants" }, { "shoes", "Shoes" }, { "particle", "Particles" }, { "pickaxe", "Pickaxes" }, { "contrail", "Contrails" },
+		{ "expression", "Expressions" }, { "back", "Back" }, { "shirt", "Shirts" }, { "pants", "Pants" }, { "shoes", "Shoes" }, { "particle", "Particles" }, { "pickaxe", "Pickaxes" }, { "contrail", "Contrails" },
 		{ "boosttrail", "Boost Trails" }, { "emote", "Emotes" }, { "glider", "Gliders" } };
 	private static final int COLS = 3;
 	/**
@@ -56,7 +56,7 @@ public class LockerScreen extends Screen {
 	private float k = 1;
 	private int panel = 350, tileW = 80, tileH = 18, rowH = 21, gx = 98, tabW = 82, top = 40;
 	/** Tabs where hovering one of your items shows it on you, like the emotes (2.0.0-test3): in your hand, or skydiving. */
-	private static final List<String> HOVER_TRY = List.of("pickaxe", "contrail", "boosttrail");
+	private static final List<String> HOVER_TRY = List.of("pickaxe", "contrail", "boosttrail", "expression");
 	/** True only while the Locker draws its preview of you (the in-world you is hidden while the Locker is open). */
 	public static boolean previewing;
 	static String tab = "preset";
@@ -212,7 +212,9 @@ public class LockerScreen extends Screen {
 			}
 			default -> {
 				String worn = outfit.get(tab);
-				out.add(new Tile(worn == null ? "> None <" : "None", true, () -> send("locker:" + tab + ":none")));
+				// (2.1.0: in Expressions, none is your own Roblox face)
+				String none = tab.equals("expression") ? "Your Roblox Face" : "None";
+				out.add(new Tile(worn == null ? "> " + none + " <" : none, true, () -> send("locker:" + tab + ":none")));
 				for (CosmeticDef c : Sheets.COSMETICS) {
 					if (!c.slot().equals(tab)) continue;
 					boolean on = c.id().equals(worn), has = ClientState.unlocked(c);

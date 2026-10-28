@@ -367,6 +367,10 @@ public class BotEntity extends PathfinderMob {
 				if (!items.isEmpty()) o.put(slot, items.get(rnd.nextInt(items.size())).id());
 			}
 		}
+		if (rnd.nextFloat() < 0.5F) { // (2.1.0: half the bots wear a facial expression)
+			var faces = Sheets.COSMETICS.stream().filter(c -> c.slot().equals("expression")).toList();
+			if (!faces.isEmpty()) o.put("expression", faces.get(rnd.nextInt(faces.size())).id());
+		}
 		if (roll < 0.7F && rnd.nextFloat() < 0.25F) {
 			var fx = Sheets.COSMETICS.stream().filter(c -> c.slot().equals("particle")).toList();
 			if (!fx.isEmpty()) o.put("particle", fx.get(rnd.nextInt(fx.size())).id());
