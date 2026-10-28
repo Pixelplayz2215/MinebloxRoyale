@@ -66,9 +66,45 @@ public final class LootChests {
 	static boolean place(ServerLevel level, BlockPos at, boolean rare, RandomSource rnd) {
 		if (at.getY() <= level.getMinY() + 1 || !level.getBlockState(at).canBeReplaced() || !level.getFluidState(at).isEmpty()) return false;
 		BlockState chest = (rare ? ModBlocks.RARE_CHEST : ModBlocks.LOOT_CHEST).defaultBlockState()
-			.setValue(LootChestBlock.FACING, Direction.Plane.HORIZONTAL.getRandomDirection(rnd));
+			.setValue(LootChestBlock.FACING, openFacing(level, at, Direction.Plane.HORIZONTAL.getRandomDirection(rnd)));
 		level.setBlock(at, chest, 3);
 		return true;
+	}
+
+	/**
+	 * (2.0.0, creator: "in some buildings, chests face the wall so some items glitch outside of building. can we ensure
+	 * chests never face walls?") Which way a chest at `at` faces: the side with the most open room in front of it (up
+	 * to 3 blocks out, at the chest's height and the one above), keeping `prefer` when nothing is more open.
+	 */
+	static Direction openFacing(ServerLevel level, BlockPos at, Direction prefer) {
+		Direction best = prefer;
+		int most = room(level, at, prefer);
+		for (Direction d : Direction.Plane.HORIZONTAL) {
+			int r = room(level, at, d);
+			if (r > most) {
+				best = d;
+				most = r;
+			}
+		}
+		return best;
+	}
+
+	/** How many blocks straight out of the chest's side d are open (0 to 3; the first blocked one stops it). */
+	private static int room(ServerLevel level, BlockPos at, Direction d) {
+		int n = 0;
+		for (int i = 1; i <= 3; i++) {
+			BlockPos p = at.relative(d, i);
+			if (!open(level, p) || !open(level, p.above())) break;
+			n++;
+		}
+		return n;
+	}
+
+	/** Nothing solid or wet here (grass and flowers are fine); land not loaded yet counts as open. */
+	private static boolean open(ServerLevel level, BlockPos p) {
+		if (!level.isLoaded(p)) return true;
+		BlockState s = level.getBlockState(p);
+		return s.getCollisionShape(level, p).isEmpty() && s.getFluidState().isEmpty();
 	}
 
 	/**
@@ -105,12 +141,15 @@ public final class LootChests {
 		level.setBlock(pos, state.setValue(LootChestBlock.OPEN, true), 3);
 		RandomSource rnd = level.getRandom();
 		List<ItemStack> loot = rare ? Loot.enderContents(rnd) : Loot.chestContents(rnd);
-		Direction front = state.getValue(LootChestBlock.FACING);
+		// Out of the front; if something was built against it since, out of its most open side; boxed in on every
+		// side, straight up (2.0.0: loot never goes into a wall and out the other side).
+		Direction front = openFacing(level, pos, state.getValue(LootChestBlock.FACING));
+		boolean up = room(level, pos, front) == 0;
 		double side = -(loot.size() - 1) / 2.0;
 		for (ItemStack s : loot) {
 			// Out over the front edge, fanned from side to side.
-			double fx = front.getStepX(), fz = front.getStepZ(), sx = -fz, sz = fx;
-			ItemEntity item = new ItemEntity(level, pos.getX() + 0.5 + fx * 0.45, pos.getY() + 0.85, pos.getZ() + 0.5 + fz * 0.45, s);
+			double fx = up ? 0 : front.getStepX(), fz = up ? 0 : front.getStepZ(), sx = up ? 1 : -fz, sz = up ? 0 : fx;
+			ItemEntity item = new ItemEntity(level, pos.getX() + 0.5 + fx * 0.45, pos.getY() + (up ? 1.05 : 0.85), pos.getZ() + 0.5 + fz * 0.45, s);
 			double spread = side++ * 0.07 + (rnd.nextDouble() - 0.5) * 0.04, out = 0.14 + rnd.nextDouble() * 0.08;
 			item.setDeltaMovement(new Vec3(fx * out + sx * spread, 0.26 + rnd.nextDouble() * 0.06, fz * out + sz * spread));
 			item.setPickUpDelay(8);
@@ -214,7 +253,7 @@ public final class LootChests {
 		}
 		boolean rare = s.getBlock() instanceof EnderChestBlock;
 		level.setBlock(pos, (rare ? ModBlocks.RARE_CHEST : ModBlocks.LOOT_CHEST).defaultBlockState()
-			.setValue(LootChestBlock.FACING, s.getValue(HorizontalDirectionalBlock.FACING)), 2);
+			.setValue(LootChestBlock.FACING, openFacing(level, pos, s.getValue(HorizontalDirectionalBlock.FACING))), 2); // (2.0.0: never into a wall)
 		// The other half of a double chest becomes a chest of its own (half a vanilla double chest would look broken).
 		if (s.hasProperty(ChestBlock.TYPE) && s.getValue(ChestBlock.TYPE) != ChestType.SINGLE) convert(level, pos.relative(ChestBlock.getConnectedDirection(s)));
 	}
