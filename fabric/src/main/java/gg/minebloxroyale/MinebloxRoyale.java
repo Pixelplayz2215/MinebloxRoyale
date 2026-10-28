@@ -5,8 +5,8 @@ import gg.minebloxroyale.hub.HubBuilder;
 import gg.minebloxroyale.hub.HubFun;
 import gg.minebloxroyale.hub.Obby;
 import gg.minebloxroyale.match.BattleBusEntity;
-import gg.minebloxroyale.match.CarEntity;
 import gg.minebloxroyale.match.Builds;
+import gg.minebloxroyale.match.CarEntity;
 import gg.minebloxroyale.match.Combat;
 import gg.minebloxroyale.match.GrenadeEntity;
 import gg.minebloxroyale.match.Harvest;
@@ -16,12 +16,13 @@ import gg.minebloxroyale.match.Knocked;
 import gg.minebloxroyale.match.Loadout;
 import gg.minebloxroyale.match.Loot;
 import gg.minebloxroyale.match.LootChests;
-import gg.minebloxroyale.match.RocketEntity;
 import gg.minebloxroyale.match.MatchManager;
 import gg.minebloxroyale.match.OldIslands;
+import gg.minebloxroyale.match.RocketEntity;
 import gg.minebloxroyale.net.Net;
 import gg.minebloxroyale.sheets.Sheets;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
@@ -34,12 +35,16 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.storage.LevelResource;
 import org.slf4j.Logger;
@@ -108,6 +113,24 @@ public final class MinebloxRoyale implements ModInitializer {
 		int test = v.indexOf("-test");
 		if (test < 0) return "v" + v;
 		return (v.startsWith("0.") ? "PRE-ALPHA" : "v" + v.substring(0, test)) + " - TEST " + v.substring(test + 5);
+	}
+
+	/** The site with the full changelog (creator: "full changelog at https://minebloxroyale.com"). */
+	static final String SITE = "https://minebloxroyale.com";
+
+	/**
+	 * (2.0.0, creator: "in chat, players get a message upon joining 'v2.0.0 is here, full changelog at
+	 * https://minebloxroyale.com' and that should be a hyperlink") Said to each player as they join: this build's version
+	 * (a test build's without its test number) and the site, its address a link that opens it.
+	 */
+	static void welcome(ServerPlayer p) {
+		String v = version(), base = v.contains("-") ? v.substring(0, v.indexOf('-')) : v;
+		Component link = Component.literal(SITE).withStyle(st -> st
+			.withColor(ChatFormatting.AQUA).withUnderlined(true)
+			.withClickEvent(new ClickEvent.OpenUrl(URI.create(SITE)))
+			.withHoverEvent(new HoverEvent.ShowText(Component.literal("Open minebloxroyale.com"))));
+		p.sendSystemMessage(Component.literal("v" + base + " is here, full changelog at ").withStyle(ChatFormatting.GOLD)
+			.append(link));
 	}
 
 	/** A number from the match sheet. */
@@ -189,6 +212,7 @@ public final class MinebloxRoyale implements ModInitializer {
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
 			MatchManager.get().onJoin(handler.player);
 			gg.minebloxroyale.net.Launchers.onJoin(handler.player); // (everyone's launcher badge so far, 2.0.0-test6.2)
+			welcome(handler.player);
 		});
 		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
 			MatchManager.get().onLeave(handler.player);
