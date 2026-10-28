@@ -120,6 +120,6 @@ Scope too fast? Options > Controls > Mouse Settings > **Scoped Sensitivity**.
 
 ## Credits and licences
 
-- Mineblox Royale is released under the MIT licence (see `LICENSE`).
+- Mineblox Royale: copyright (c) 2026 Pixelplayz2215, all rights reserved (see `LICENSE`). Versions up to 1.2.0.1 were released under the MIT licence.
 - The downloads also include Fabric API (Apache-2.0) and e4mc (MIT). Roblox sounds from your own install are decoded with what Minecraft and Windows already have (1.2.0.1: no FFmpeg any more). The Prism download also includes Prism Launcher (GPL-3.0), Microsoft's Visual C++ runtime, which Prism needs, and Java 25 (Mojang's Java runtime for Minecraft, the Microsoft Build of OpenJDK, GPL-2.0 with the Classpath Exception), so the game starts without downloading Java first. Details are in `THIRD-PARTY NOTICES.txt` inside each download.
 - Not affiliated with Mojang, Microsoft, Roblox Corporation or Epic Games. Minecraft, Roblox and Fortnite are trademarks of their owners.

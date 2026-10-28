@@ -27,7 +27,7 @@ Fabric API and e4mc from Modrinth instead of carrying them.
 Room codes are looked up through ntfy.sh, a free public message service; each room's address is stored there
 scrambled with its code, so only someone who has the code can read it.
 
-Mineblox Royale itself: MIT licence. Not affiliated with Mojang, Microsoft, Roblox Corporation or Epic Games.
+Mineblox Royale itself: copyright (c) 2026 Pixelplayz2215, all rights reserved. Not affiliated with Mojang, Microsoft, Roblox Corporation or Epic Games.
 Roblox and Fortnite content is read from the player's own installed copies and is never included or copied.
 
 Java runtime (only in the "Prism Launcher, ready to play" package: Prism Launcher/java/java-runtime-epsilon): Mojang's Java 25
