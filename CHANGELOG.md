@@ -10,6 +10,20 @@
 - **At least 2 reboot vans inside every safe circle:** each new circle is picked to hold at least two vans if it can, and any still missing are put inside it (never on top of anyone). Every circle gets them except the very last one, which closes to nothing.
 - Only teammates can get into a car with you (already the rule in 2.0.0).
 
+### Sounds (2.1.0-test2)
+- **Skydiving:** the wind rushes past as you fall, louder and higher the faster you go and louder still diving head down, and softer under the glider. A whoosh as you jump out of the bus, and as you close the glider to dive again. All made from scratch for Mineblox Royale (Fortnite's own sounds stay in its encrypted files, which we never open).
+- **The glider** has its own sounds: it snaps open with a flutter of cloth, and folds away when you close it or land. It used to use Minecraft's elytra sound.
+- **Car tyres** roll on the ground with a low rumble that rises with speed and a little more round turns. No more squealing.
+- **The storm closing in** has a new, more urgent sound: a throbbing pulse, a wailing tone and crackling static, only while it's closing in. It's quiet deep inside the circle and loudest near its edge and outside it. The sound for each new storm phase is the same as before.
+
+### Looks (2.1.0-test2)
+- **The reboot card you're holding** sits at the bottom of the screen in its own blue tile to the right of the hotbar. "Holding <name>'s reboot card" shows just above the hotbar, not in the middle of the screen.
+- **Gun stats** (from Ultraslayerz: "Gun stats (reload time, fire rate, damage)"): hover a gun in your inventory or a chest to see its damage (for its rarity, a shotgun's per pellet, and a headshot's), shots a second, reload time and magazine.
+- **Facial expressions:** a new Expressions page in the Locker, right after Face. There are 15 of our own: 6 free (Big Grin, Wink, Happy, Surprised, Smirk, Angry), 6 unlocked by playing (Determined: 10 kills; Tongue Out: finish the obby; Worried: 10 bullseyes; Laughing: score 30 at the range; Victory Smile: a win; Too Cool: 3 wins) and 3 for gold (Sleepy 300, Heart Eyes 350, Starstruck 400). Each one replaces your Roblox face, and every face accessory (glasses, masks, beards...) sits on it the same way. Hover one to see it on you. Half the bots wear one too.
+
+### More buildings (2.1.0-test2)
+- **More buildings on every island:** 36, up from 26. There are three new kinds, each at least twice an island: a **gas station** (a canopy over two pumps, often a car filling up that breaks for metal, and a little shop), a **campsite** (two tents round a campfire) and a **barn** (with hay and a hayloft up a ladder). The gas station and the barn have two chests each.
+
 ## v2.0.0 (2026-11-11)
 
 A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and a new look and sound.

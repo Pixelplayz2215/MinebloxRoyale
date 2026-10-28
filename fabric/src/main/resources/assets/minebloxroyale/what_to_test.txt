@@ -1,3 +1,11 @@
+Test 2.1-2 - Skydive: wind rising as you fall (louder looking down), softer under the glider; a whoosh out of the bus and closing the glider
+Test 2.1-2 - The glider's own open and close sounds (and closing as you land)
+Test 2.1-2 - Cars: tyres rumble with speed, no squeal
+Test 2.1-2 - Storm closing in: the new urgent sound, only while it shrinks, louder near the edge; the new-phase sound as before
+Test 2.1-2 - Holding a teammate's reboot card: its blue tile right of the hotbar, 'Holding <name>'s reboot card' just above the hotbar
+Test 2.1-2 - Hover a gun in your inventory or a chest: damage, fire rate, reload, magazine
+Test 2.1-2 - Locker > Expressions: hover and wear them, with glasses, masks and beards on; the gold ones in the Shop; bots wearing them
+Test 2.1-2 - New buildings: gas stations, campsites, barns (/br tp gas_station, campsite, barn), with their chests
 Test 2.1-1 - Storm: stand in it with a full shield: only your health goes down, the shield stays
 Test 2.1-1 - Boost a car into a bot: it's hurt (damage number) and thrown forwards; just driving into it does nothing; teammates never hurt
 Test 2.1-1 - In a car: shots, pickaxe hits and grenades wear the car down, not you; wrecked, you're thrown out unhurt
