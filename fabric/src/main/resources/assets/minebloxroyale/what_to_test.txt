@@ -1,3 +1,9 @@
+Test 2.1-1 - Storm: stand in it with a full shield: only your health goes down, the shield stays
+Test 2.1-1 - Boost a car into a bot: it's hurt (damage number) and thrown forwards; just driving into it does nothing; teammates never hurt
+Test 2.1-1 - In a car: shots, pickaxe hits and grenades wear the car down, not you; wrecked, you're thrown out unhurt
+Test 2.1-1 - Boosting: hills, dirt paths and rock don't break; trees, builds and buildings still do
+Test 2.1-1 - Each new storm circle has at least 2 reboot vans inside it on the map (Tab); never one put down on top of anyone
+Test 2.1-1 - An enemy can't get into your car
 Test 6.2 - Bosses: no more one-shots from full shield and health; they aim at your chest (the odd headshot), no hit over 90
 Test 6.2 - Ordinary bots aim at your chest too, and no bot shot does over 120: a bot sniper can't one-tap you from full (your own shots aren't capped)
 Test 6.2 - A badge in front of every player's name for their launcher (Dev: a gold wrench; Melty, Prism, Modrinth, Lunar, CurseForge...), seen by everyone
