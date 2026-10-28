@@ -213,11 +213,27 @@
   },
   {
    "id": "glider",
-   "game": "minecraft",
-   "file": "item.elytra.flying",
-   "volume": 0.4,
-   "pitch": 1.2,
-   "use": "glider deploys during the drop"
+   "game": "mod",
+   "file": "sky.glider_open",
+   "volume": 0.9,
+   "pitch": 1.0,
+   "use": "the glider snapping open during the drop (2.1.0, its own sound: it was Minecraft's elytra)"
+  },
+  {
+   "id": "glider_close",
+   "game": "mod",
+   "file": "sky.glider_close",
+   "volume": 0.8,
+   "pitch": 1.0,
+   "use": "the glider folding away: closed with Space, or on landing (2.1.0)"
+  },
+  {
+   "id": "skydive_whoosh",
+   "game": "mod",
+   "file": "sky.whoosh",
+   "volume": 0.9,
+   "pitch": 1.0,
+   "use": "a whoosh out of the bus door, and on closing the glider into a dive (2.1.0; the wind while falling is AmbientSounds' sky.wind loop, the storm closing in its storm.closing loop)"
   },
   {
    "id": "chest_open",

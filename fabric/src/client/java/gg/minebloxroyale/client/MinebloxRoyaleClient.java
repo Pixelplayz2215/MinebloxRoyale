@@ -209,6 +209,7 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 			SettingsLock.tick(mc);
 			RobloxSfx.tick(mc);
 			CarSounds.tick(mc);
+			AmbientSounds.tick(mc); // (2.1.0: the wind skydiving, the storm closing in)
 			LockerAudit.tick(mc);
 			WhatToTest.tick(mc);
 			FirstTips.tick(mc);
