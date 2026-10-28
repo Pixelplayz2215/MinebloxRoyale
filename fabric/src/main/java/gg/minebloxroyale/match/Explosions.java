@@ -94,7 +94,10 @@ public final class Explosions {
 		if (st.isAir() || !st.getFluidState().isEmpty() || st.getBlock().defaultDestroyTime() < 0) return false;
 		if (st.getBlock() instanceof LootChestBlock || st.getBlock() instanceof CarBlock) return false;
 		if (BuiltInRegistries.BLOCK.getKey(st.getBlock()).getPath().endsWith("_ore")) return false; // (ores are ground too)
-		return !(st.is(BlockTags.DIRT) || st.is(BlockTags.SAND) || st.is(BlockTags.BASE_STONE_OVERWORLD) || st.is(BlockTags.TERRACOTTA)
+		// (SUBSTRATE_OVERWORLD: in Minecraft 26.3 the dirt tag is only dirt, coarse and rooted dirt; grass blocks, podzol,
+		// mycelium, mud and moss are in this one, so without it a boosting car or a blast broke the grass, creator:
+		// "it still breaks ground")
+		return !(st.is(BlockTags.SUBSTRATE_OVERWORLD) || st.is(BlockTags.DIRT) || st.is(BlockTags.SAND) || st.is(BlockTags.BASE_STONE_OVERWORLD) || st.is(BlockTags.TERRACOTTA)
 			|| st.is(BlockTags.SNOW) || st.is(BlockTags.ICE) || st.is(Blocks.GRAVEL) || st.is(Blocks.CLAY) || st.is(Blocks.BEDROCK) || st.is(Blocks.SANDSTONE)
 			|| st.is(Blocks.RED_SANDSTONE) || st.is(Blocks.MUD) || st.is(Blocks.PACKED_MUD) || st.is(Blocks.MOSS_BLOCK));
 	}
