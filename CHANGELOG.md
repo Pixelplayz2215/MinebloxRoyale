@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.1.0 (in progress)
+## v2.1.0 (2026-12-25)
 
 ### Storm, cars and reboot vans (2.1.0-test1)
 - **The storm hurts your health, not your shield** (from Ultraslayerz: "Storm does health damage not shield (like fortinte)"), as in Fortnite. It used to take the shield first. Shots, blasts and the pickaxe still hit the shield first.
