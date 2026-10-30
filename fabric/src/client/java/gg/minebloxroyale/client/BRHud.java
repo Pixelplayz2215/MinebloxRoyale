@@ -53,8 +53,7 @@ public final class BRHud {
 			scaled(g, "bus_hint", g.guiWidth() / 2F, g.guiHeight(), () -> busHint(g, mc));
 			scaled(g, "tip", g.guiWidth() / 2F, g.guiHeight(), () -> FirstTips.draw(g, mc)); // (2.0.0-test6.3: first-time control tips)
 		} else {
-			scaled(g, "hub_hint", g.guiWidth() / 2F, 0, () -> hubHint(g, mc));
-			scaled(g, "obby_timer", g.guiWidth() / 2F, 0, () -> ObbyTimerHud.draw(g)); // (2.0.0: the obby timer)
+			scaled(g, "hub_hint", g.guiWidth() / 2F, 0, () -> hubHint(g, mc)); // (the obby timer too, at its bottom)
 		}
 		if (!mc.player.isSpectator()) scaled(g, "health_shield", 0, g.guiHeight(), () -> healthShield(g, mc));
 	}
@@ -504,7 +503,9 @@ public final class BRHud {
 		HudElementDef d = Sheets.HUD_BY_ID.get("hub_hint");
 		String line1 = switch (hud.phase()) {
 			case "COUNTDOWN" -> hud.label().replace(" - Bus boarding", "") + ": Battle Bus boarding in " + hud.secondsLeft() + "s - stay on the portal!";
-			case "LIVE", "ENDED" -> "Match in progress - " + hud.alive() + " left";
+			case "LIVE" -> "Match in progress - " + hud.alive() + " left";
+			// (2.1.0-test4: over, someone else still on the results; it said "Match in progress")
+			case "ENDED" -> hud.label() + " - back to the hub in " + hud.secondsLeft() + "s";
 			default -> "Everyone on the same portal starts the match (" + hud.onPortal() + "/" + hud.hubCount() + ")";
 		};
 		// (No counts per mode portal any more, 2.0.0-test3, creator: "remove the game mode numbers": the first line says
@@ -517,10 +518,12 @@ public final class BRHud {
 		String code = RoomCodes.current(), label = "Room Code: ";
 		float size = 9;
 		float codeW = code == null ? 0 : Smooth.width(label, size) + Smooth.width(code, size);
-		float w = Math.max(Math.max(Smooth.width(line1, size), Smooth.width(line2, size)), codeW);
+		// The obby timer while you run (2.1.0-test4): the bottom of this panel, under a gold line.
+		boolean obby = ObbyTimerHud.showing();
+		float w = Math.max(Math.max(Smooth.width(line1, size), Smooth.width(line2, size)), Math.max(codeW, obby ? ObbyTimerHud.width() : 0));
 		int cx = g.guiWidth() / 2 + d.x();
 		int y = d.y(), rows = 2 + (code == null ? 0 : 1);
-		Smooth.panel(g, cx - w / 2 - 8, y - 5, w + 16, rows * 11 + 6, 6, 0xA0182030, 0xC00C1018);
+		Smooth.panel(g, cx - w / 2 - 8, y - 5, w + 16, rows * 11 + 6 + (obby ? ObbyTimerHud.HEIGHT : 0), 6, 0xA0182030, 0xC00C1018);
 		Smooth.text(g, line1, cx, y - 0.5F, size, 0xFFFFFFFF, Smooth.CENTER, true);
 		y += 11;
 		Smooth.text(g, line2, cx, y - 0.5F, size, 0xFFB8C4D6, Smooth.CENTER, true);
@@ -530,6 +533,10 @@ public final class BRHud {
 			x += Smooth.text(g, label, x, y - 0.5F, size, 0xFFA0A0A0, Smooth.LEFT, true);
 			Smooth.text(g, code, x, y - 0.5F, size, 0xFFFF9A1F, Smooth.LEFT, true);
 			y += 11;
+		}
+		if (obby) {
+			ObbyTimerHud.draw(g, cx, y, w + 6);
+			y += ObbyTimerHud.HEIGHT;
 		}
 		// Your party under the banner (creator: parties of up to 4).
 		SquadHud.party(g, mc, y + 6);

@@ -260,9 +260,19 @@ public final class IslandPregen {
 		next(server);
 	}
 
+	/**
+	 * The match is over with no real player standing (2.1.0-test4, creator: "that's like 6 minutes of waiting"): the
+	 * next island stops waiting out the match's busy start (pregenQuiet) and is found and made now, while they look at
+	 * their results. It used to wait for the hub, then two minutes into an early death.
+	 */
+	public static void playersOut() {
+		quietUntil = 0;
+	}
+
 	/** Back to the hub: the next island's map is shown, and whatever is left of it is made at full speed. */
 	public static void matchOver(MinecraftServer server) {
 		inMatch = false;
+		gentleUntil = 0; // (2.1.0-test4: the players are in the hub waiting for it)
 		PROGRESS.clear(); // a fresh countdown at the new speed
 		finishGuess = 0;
 		IslandMap.release(server);
@@ -356,7 +366,8 @@ public final class IslandPregen {
 			// A gentle start: one chunk at a time for the first minute, then six (three while a match is played).
 			// Someone who leaves straight away (/rc to a friend, the usual thing right after opening the game) then has
 			// little half-made work for the world to finish and save before it can close (it took 25 s at full speed).
-			gentleUntil = System.currentTimeMillis() + GENTLE_START_MS;
+			// (2.1.0-test4: not for a next island begun after its match, in the hub: the players are waiting for it.)
+			gentleUntil = inMatch || !canDrop ? System.currentTimeMillis() + GENTLE_START_MS : 0;
 			// Each chunk is held loaded by a ticket (from the server thread) until it is completely generated; the old
 			// short-lived request often ran out on a busy server, leaving gaps in the map. Failures are asked for
 			// again.

@@ -26,6 +26,10 @@
 ### More buildings (2.1.0-test2)
 - **More buildings on every island:** 36, up from 26. There are three new kinds, each at least twice an island: a **gas station** (a canopy over two pumps, often a car filling up that breaks for metal, and a little shop), a **campsite** (two tents round a campfire) and a **barn** (with hay and a hayloft up a ladder). The gas station and the barn have two chests each.
 
+### The hub (2.1.0-test4)
+- **The obby timer is part of the hub panel:** it's at the bottom of the panel at the top of the screen, under a gold line, instead of floating over the middle of the screen in front of the jumps.
+- **No more waiting once you're out:** when every real player is out of the match and back in the hub (H or Back to hub), the round finishes straight away. The hub used to say "Match in progress" until the end screen ran out. The next island also starts the moment the last real player is out, instead of waiting for the hub and for the match's first 2 minutes, and it's made at full speed once you're back in the hub.
+
 ## v2.0.0 (2026-11-11)
 
 A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and a new look and sound.

@@ -1037,6 +1037,8 @@ public final class MatchManager {
 		}
 		if (!names.isEmpty())
 			broadcast(server, Component.literal((names.size() > 1 ? "Winners: " : "Winner: ") + String.join(", ", names)).withStyle(ChatFormatting.GOLD));
+		// No real player standing (2.1.0-test4): the next island starts now, while they look at their results.
+		if (alivePlayers.isEmpty()) IslandPregen.playersOut();
 		MinebloxRoyale.LOG.info("BR: match {} ({}) over, winner: {}", matchIndex, mode.name(), winnerName.isEmpty() ? "none (all players out)" : winnerName);
 	}
 
@@ -1349,7 +1351,9 @@ public final class MatchManager {
 					Net.emoteAll(server, b, pick.id());
 					nextEmote.put(b, now + 100 + level.getRandom().nextInt(60));
 				}
-				if (--timer <= 0) backToHub(server);
+				// Everyone gone back to the hub already (H or Back to hub; 2.1.0-test4, creator: "when all real players
+				// are eliminated and they go back to the hub, that round finishes immediately"): no waiting out the end.
+				if (--timer <= 0 || players.isEmpty()) backToHub(server);
 			}
 		}
 		if (level.getGameTime() % 10 == 0) sendHud(server);
