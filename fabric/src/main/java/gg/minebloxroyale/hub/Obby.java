@@ -75,7 +75,10 @@ public final class Obby {
 		if (loadedFor != server) load(server);
 		if (MatchManager.get().state() == MatchManager.State.LIVE && server.getPlayerList().getPlayers().stream().allMatch(MatchManager.get()::isAlive)) return;
 		for (ServerPlayer p : server.getPlayerList().getPlayers()) {
-			if (p.gameMode() != GameType.ADVENTURE) continue;
+			// Only players in the hub: one still in the match (the winner once it's over, a teammate on the victory stage)
+			// is below the obby's fall line out on the island, and was sent to the hub spawn as if they'd fallen off the
+			// obby, still holding the match's inventory (2.1.0-test5, creator's screenshot after a win).
+			if (p.gameMode() != GameType.ADVENTURE || !MatchManager.get().inHub(p)) continue;
 			if (p.getY() < MinebloxRoyale.setting("obbyFallY") && p.getY() > MinebloxRoyale.setting("obbyFallY") - 120) {
 				respawnAtCheckpoint(p);
 				continue;
