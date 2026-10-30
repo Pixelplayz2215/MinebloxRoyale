@@ -54,8 +54,10 @@ public final class Obby {
 	/**
 	 * The obby timer (2.0.0, creator: "Add a timer to the Obby that starts as soon as you touch the first red Obby Jump"):
 	 * the server tick each player's run started on (touching the first stage), and each player's best time in this world
-	 * (ticks, minebloxroyale_obby_times.txt). A fall back to a checkpoint keeps it running; back to the blue start, or
-	 * onto the hub's floor, stops it without a time (it starts again at the first red jump).
+	 * (ticks, minebloxroyale_obby_times.txt). A fall keeps it running, back to a checkpoint or, before checkpoint 1, back
+	 * to the blue start (2.1.0-test5, creator: "if I fall off before CP1, the timer clears. let it keep running"); only
+	 * leaving the blue start for the hub's floor stops it without a time ("Only stop the timer early if player leaves the
+	 * blue square AFTER making the first jump"), and it starts again at the first red jump.
 	 */
 	private static final Map<UUID, Long> RUN = new HashMap<>();
 	private static final Map<UUID, Integer> BEST = new HashMap<>();
@@ -81,18 +83,18 @@ public final class Obby {
 				continue;
 			}
 			if (!p.onGround()) continue;
-			// The blue start: checkpoint 0 (said once a run). Anywhere else on the hub's floor clears it.
+			// The blue start: checkpoint 0 (said once a run). Anywhere else on the hub's floor clears it, and stops a
+			// running timer (walked off the course), after the same moment's grace.
 			if (HubBuilder.onObbyStart(p.getX(), p.getY(), p.getZ())) {
 				ON_FLOOR.remove(p.getUUID());
 				if (AT_START.add(p.getUUID()) && CHECKPOINT.getOrDefault(p.getUUID(), 0) == 0)
 					p.sendSystemMessage(Component.literal("Obby start: fall before checkpoint 1 and you're back here").withStyle(ChatFormatting.AQUA), true);
-			} else if (AT_START.contains(p.getUUID()) && HubBuilder.onHubFloor(p.getX(), p.getY(), p.getZ())
+			} else if ((AT_START.contains(p.getUUID()) || RUN.containsKey(p.getUUID())) && HubBuilder.onHubFloor(p.getX(), p.getY(), p.getZ())
 				&& ON_FLOOR.merge(p.getUUID(), 1, Integer::sum) >= FLOOR_TICKS) {
 				AT_START.remove(p.getUUID());
 				ON_FLOOR.remove(p.getUUID());
 				stopTimer(p);
 			}
-			if (RUN.containsKey(p.getUUID()) && HubBuilder.onHubFloor(p.getX(), p.getY(), p.getZ())) stopTimer(p); // (walked off the course)
 			for (HubBuilder.Platform pl : HubBuilder.platforms()) {
 				if (!pl.contains(p.getX(), p.getY(), p.getZ())) continue;
 				int idx = pl.stage().index();
@@ -123,7 +125,7 @@ public final class Obby {
 		return first;
 	}
 
-	/** A run that ends without a time (back to the blue start, onto the hub's floor): the timer goes from their screen. */
+	/** A run that ends without a time (off the course onto the hub's floor, a match): the timer goes from their screen. */
 	private static void stopTimer(ServerPlayer p) {
 		if (RUN.remove(p.getUUID()) != null) ServerPlayNetworking.send(p, new Net.ObbyTimer(0, 0, 0, ""));
 	}
@@ -201,7 +203,7 @@ public final class Obby {
 	public static void respawnAtCheckpoint(ServerPlayer p) {
 		int cp = CHECKPOINT.getOrDefault(p.getUUID(), 0);
 		boolean start = cp == 0 && AT_START.contains(p.getUUID());
-		if (cp == 0) stopTimer(p); // (back to the start: the next run's timer starts at the first red jump again)
+		if (cp == 0 && !start) stopTimer(p); // (to the hub spawn: off the course; back on the blue start it keeps running)
 		Vec3 at = start ? HubBuilder.obbyStartPos() : cp == 0 ? HubBuilder.spawnPos()
 			: HubBuilder.platforms().stream().filter(pl -> pl.stage().index() == cp).findFirst().map(HubBuilder.Platform::top).orElse(HubBuilder.spawnPos());
 		p.fallDistance = 0;
