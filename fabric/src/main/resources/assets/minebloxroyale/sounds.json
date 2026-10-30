@@ -591,11 +591,6 @@
       "minebloxroyale:sky/glider_close"
     ]
   },
-  "storm.closing": {
-    "sounds": [
-      "minebloxroyale:storm/closing"
-    ]
-  },
   "car.tires": {
     "sounds": [
       "minebloxroyale:car/tires"

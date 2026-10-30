@@ -14,7 +14,7 @@
 - **Skydiving:** the wind rushes past as you fall, louder and higher the faster you go and louder still diving head down, and softer under the glider. A whoosh as you jump out of the bus, and as you close the glider to dive again. All made from scratch for Mineblox Royale (Fortnite's own sounds stay in its encrypted files, which we never open).
 - **The glider** has its own sounds: it snaps open with a flutter of cloth, and folds away when you close it or land. It used to use Minecraft's elytra sound.
 - **Car tires** roll on the ground with a low rumble that rises with speed and a little more round turns. No more squealing.
-- **The storm closing in** has a new, more urgent sound: a throbbing pulse, a wailing tone and crackling static, only while it's closing in. It's quiet deep inside the circle and loudest near its edge and outside it. The sound for each new storm phase is the same as before.
+- **A more urgent storm warning** each time the storm starts to close in: a deep hit, then a two-tone alarm pulsing faster over a siren that rises with the wind. The storm makes no sound of its own while it closes in (2.1.0-test5; test2's whirling loop while it shrank is gone).
 
 ### Looks (2.1.0-test2)
 - **The reboot card you're holding** sits at the bottom of the screen in its own blue tile to the right of the hotbar. "Holding <name>'s reboot card" shows just above the hotbar, not in the middle of the screen.
@@ -29,6 +29,7 @@
 ### The hub (2.1.0-test4)
 - **The obby timer is part of the hub panel:** it's at the bottom of the panel at the top of the screen, under a gold line, instead of floating over the middle of the screen in front of the jumps.
 - **No more waiting once you're out:** when every real player is out of the match and back in the hub (H or Back to hub), the round finishes straight away. The hub used to say "Match in progress" until the end screen ran out. The next island also starts the moment the last real player is out, instead of waiting for the hub and for the match's first 2 minutes, and it's made at full speed once you're back in the hub.
+- **After a win you stay put until you go back to the hub:** the winner (or a teammate on the victory stage) was sometimes sent to the hub as if they'd fallen off the obby, still holding the match's inventory and HUD (2.1.0-test5).
 - **The obby timer keeps running when you fall before checkpoint 1** (2.1.0-test5): you're back on the blue start and it carries on until you finish. It only stops early if you step off the blue start into the hub.
 
 ## v2.0.0 (2026-11-11)

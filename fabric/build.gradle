@@ -18,13 +18,14 @@ loom {
 			vmArgs "--enable-native-access=ALL-UNNAMED"
 		}
 		// Second copy for the local multiplayer test: its own folder (run2) and name; joins the address in
-		// run2/minebloxroyale/melty.properties.
+		// run2/minebloxroyale/melty.properties. It shows Japan's flag after its name (2.1.0-test5, creator: "make BRFriend
+		// run2 another country to check"): CountryFlag reads minebloxroyale.devFlag in the development run only.
 		client2 {
 			client()
 			configName = "Minecraft Client 2"
 			runDir "run2"
 			programArgs "--username", "BRFriend"
-			vmArgs "--enable-native-access=ALL-UNNAMED"
+			vmArgs "--enable-native-access=ALL-UNNAMED", "-Dminebloxroyale.devFlag=JP"
 		}
 		// A brand-new player (2.0.0, creator: "a 3rd Build that has nothing unlocked"): its own folder (run3) and a name
 		// never used, so no unlocks, no gold and no first-time tips seen. runClient3.

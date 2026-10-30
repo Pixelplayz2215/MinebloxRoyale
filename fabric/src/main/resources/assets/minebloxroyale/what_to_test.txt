@@ -1,3 +1,7 @@
+Test 2.1-5 - Win a match: you stay where you won (fireworks) until you press H or Back to hub; then the hub with nothing in your hands
+Test 2.1-5 - The storm warning as each circle starts to shrink: a deep hit, a two-tone alarm and a rising siren; no whirling while it closes in
+Test 2.1-5 - Harvesting in a Build match (survival, out of build mode): trees, walls and cars add to your materials
+Test 2.1-5 - With Client 2 (BRFriend): Japan's flag after its name, for you and for it
 Test 2.1-5 - Obby: fall before checkpoint 1: back on the blue start with the timer still running; jump on and it carries on; step off the blue start onto the hub floor: the timer goes
 Test 2.1-4 - Obby: the timer is the bottom of the hub panel at the top of the screen (under a gold line), not over the middle; FINISHED and New best! there too
 Test 2.1-4 - Out of a match on your own: press H (or Back to hub): the hub at once, no 'Match in progress'; the next island's countdown starts straight away
@@ -6,7 +10,6 @@ Test 2.1-3 - Hold a gun: one slim line above the materials with its damage, shot
 Test 2.1-2 - Skydive: wind rising as you fall (louder looking down), softer under the glider; a whoosh out of the bus and closing the glider
 Test 2.1-2 - The glider's own open and close sounds (and closing as you land)
 Test 2.1-2 - Cars: tires rumble with speed, no squeal
-Test 2.1-2 - Storm closing in: the new urgent sound, only while it shrinks, louder near the edge; the new-phase sound as before
 Test 2.1-2 - Holding a teammate's reboot card: its blue tile right of the hotbar, 'Holding <name>'s reboot card' just above the hotbar
 Test 2.1-2 - Hover a gun in your inventory or a chest: damage, fire rate, reload, magazine
 Test 2.1-2 - Locker > Expressions: hover and wear them, with glasses, masks and beards on; the gold ones in the Shop; bots wearing them

@@ -193,7 +193,7 @@
    "file": "storm.warning",
    "volume": 1.0,
    "pitch": 1.0,
-   "use": "plays once each time the storm starts shrinking: rising wind, an uneasy tone and falling chimes (no storm music)"
+   "use": "plays once each time the storm starts shrinking: an alarm, a deep hit, a two-tone klaxon pulsing faster and a siren rising with the wind (2.1.0-test5, creator: \"just make the warning out urgent\"; no storm music, and no sound of its own while it closes in)"
   },
   {
    "id": "hit_marker",
@@ -233,7 +233,7 @@
    "file": "sky.whoosh",
    "volume": 0.9,
    "pitch": 1.0,
-   "use": "a whoosh out of the bus door, and on closing the glider into a dive (2.1.0; the wind while falling is AmbientSounds' sky.wind loop, the storm closing in its storm.closing loop)"
+   "use": "a whoosh out of the bus door, and on closing the glider into a dive (2.1.0; the wind while falling is AmbientSounds' sky.wind loop)"
   },
   {
    "id": "chest_open",

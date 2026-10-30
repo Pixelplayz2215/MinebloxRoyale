@@ -22,6 +22,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallba
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -62,6 +63,16 @@ public final class CountryFlag {
 	}
 
 	private static void lookUp() {
+		// The development run's second client stands in for a friend abroad (2.1.0-test5, creator: "maybe make BRFriend
+		// run2 another country to check"): build.gradle's client2 sets minebloxroyale.devFlag. Never read in a real game.
+		String dev = FabricLoader.getInstance().isDevelopmentEnvironment() ? System.getProperty("minebloxroyale.devFlag", "") : "";
+		if (dev.matches("[A-Za-z]{2}")) {
+			mine = dev.toUpperCase(Locale.ROOT);
+			MinebloxRoyale.LOG.info("BR: country flag: {} (development run's stand-in)", mine);
+			looked = true;
+			Minecraft.getInstance().execute(CountryFlag::send);
+			return;
+		}
 		try {
 			HttpClient http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(6)).build();
 			HttpResponse<String> r = http.send(HttpRequest.newBuilder(URI.create(TRACE)).timeout(Duration.ofSeconds(10)).GET().build(),
