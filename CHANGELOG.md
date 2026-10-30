@@ -30,6 +30,7 @@
 - **The obby timer is part of the hub panel:** it's at the bottom of the panel at the top of the screen, under a gold line, instead of floating over the middle of the screen in front of the jumps.
 - **No more waiting once you're out:** when every real player is out of the match and back in the hub (H or Back to hub), the round finishes straight away. The hub used to say "Match in progress" until the end screen ran out. The next island also starts the moment the last real player is out, instead of waiting for the hub and for the match's first 2 minutes, and it's made at full speed once you're back in the hub.
 - **After a win you stay put until you go back to the hub:** the winner (or a teammate on the victory stage) was sometimes sent to the hub as if they'd fallen off the obby, still holding the match's inventory and HUD (2.1.0-test5).
+- **Room codes stay your own:** a copy of someone's world (say, a folder passed between two PCs) used to have the same room code as the original, so /rc couldn't tell them apart. Now a copy opened under another player's name while the original is open gets a new code by itself (2.1.0-test6).
 - **The obby timer keeps running when you fall before checkpoint 1** (2.1.0-test5): you're back on the blue start and it carries on until you finish. It only stops early if you step off the blue start into the hub.
 
 ## v2.0.0 (2026-11-11)

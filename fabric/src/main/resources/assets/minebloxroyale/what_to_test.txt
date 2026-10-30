@@ -1,3 +1,4 @@
+Test 2.1-6 - Room codes: /rc on Dev and on Client 2 shows two different codes; Client 2 types /rc <Dev's code> and joins Dev; /leave goes back
 Test 2.1-5 - Win a match: you stay where you won (fireworks) until you press H or Back to hub; then the hub with nothing in your hands
 Test 2.1-5 - The storm warning as each circle starts to shrink: a deep hit, a two-tone alarm and a rising siren; no whirling while it closes in
 Test 2.1-5 - Harvesting in a Build match (survival, out of build mode): trees, walls and cars add to your materials
