@@ -42,6 +42,16 @@ ITEM_DISPLAY = {
     "head": {"rotation": [0, 180, 0], "translation": [0, 13, 7], "scale": [1, 1, 1]},
     "gui": {"rotation": [0, 0, 0], "scale": [1, 1, 1]},
 }
+# (creator, testing 3.0.0: "all the pickaxes are updside-down in players hand, they don't match the correct orientation
+# of the pickaxe icons") Minecraft's handheld hold faces a flat item's front into the body in the right hand: the same
+# from both sides for a flat picture, but our pickaxes are models, so the right hand showed their backs, the head the
+# other way up from its icon. Turned over along the handle (180 about it: rotation [0, -90, 55] becomes [0, 90, 35]),
+# the front faces out, as the icon; the left hand (Minecraft turns its hold back the right hand's way) already shows
+# the front, kept as handheld's so it isn't taken from the right hand's.
+PICK_HOLD = {
+    "thirdperson_righthand": {"rotation": [0, 90, 35], "translation": [0, 4, 0.5], "scale": [0.85, 0.85, 0.85]},
+    "thirdperson_lefthand": {"rotation": [0, 90, -55], "translation": [0, 4, 0.5], "scale": [0.85, 0.85, 0.85]},
+}
 COMMON = 0xB0B0B0  # a gun's rarity colour when it has none (common)
 # How items.py's icon camera looked at each kind (turned yaw, tilted pitch): a slot shows the model the same way.
 GUN_VIEW, ITEM_VIEW, PICKAXE_VIEW = (24, 12), (-28, 18), (0, 0)
@@ -144,7 +154,7 @@ def write_files(res, iid, lo, hi):
         mesh["model"]["tint"] = COMMON
     if pick:
         write_json(os.path.join(assets, "models/item/pickaxe.json"),
-                   {"parent": "minecraft:item/handheld", "textures": {"layer0": "minebloxroyale:item/pickaxe"}, "display": {"gui": gui}})
+                   {"parent": "minecraft:item/handheld", "textures": {"layer0": "minebloxroyale:item/pickaxe"}, "display": {**PICK_HOLD, "gui": gui}})
         write_json(os.path.join(res, "assets", "minecraft", "items", "iron_pickaxe.json"), {"model": mesh})
     else:
         write_json(os.path.join(assets, "models/item", iid + ".json"),
