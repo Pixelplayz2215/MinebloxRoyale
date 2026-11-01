@@ -309,7 +309,10 @@ public class CarEntity extends Entity {
 			double k = MinebloxRoyale.setting("carBoostKnockback");
 			Vec3 v = e.getDeltaMovement();
 			e.setDeltaMovement(v.x * 0.5 + fx * k, Math.max(v.y, 0.4), v.z * 0.5 + fz * k);
-			e.needsSync = true; // (a player's own game moves them, so it's told)
+			// (a player's own game moves them, so it's told: syncVelocity sends the push to them; needsSync alone only moved
+			// them for everyone else. Creator, testing 3.0.0's launch pads, the same fault: the fix wanted in 2.0.0 and 2.1.0.)
+			e.needsSync = true;
+			e.syncVelocity = true;
 		}
 	}
 
