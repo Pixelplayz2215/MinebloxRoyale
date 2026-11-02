@@ -96,9 +96,13 @@ public final class DropControl {
 		}
 	}
 
-	/** (2.1.0) The glider's own sounds: snapping open; folding away, with a whoosh as you dive again. */
+	/**
+	 * (2.1.0) The glider's own sounds: snapping open; folding away, with a whoosh as you dive again. The server told, as
+	 * only an open glider saves you the fall (MatchManager.setGliding).
+	 */
 	private static void setGlider(Minecraft mc, boolean open) {
 		if (open == gliderOpen) return;
+		ClientPlayNetworking.send(new Net.Action("glider:" + (open ? 1 : 0)));
 		gliderOpen = open;
 		SfxBank.play(open ? "glider" : "glider_close", mc.player.position());
 		if (!open) SfxBank.play("skydive_whoosh", mc.player.position());

@@ -416,6 +416,8 @@ public final class Net {
 				case "waypoint" -> MatchManager.get().setWaypoint(player, arg);
 				case "hub" -> MatchManager.get().leaveToHub(player);
 				case "bus_jump" -> MatchManager.get().jumpFromBus(player);
+				// glider:1|0 - their glider opened or closed (DropControl)
+				case "glider" -> MatchManager.get().setGliding(player, arg.equals("1"));
 				case "locker" -> {
 					// locker:<slot>:<cosmetic id or none> - outside matches only; locker:buy:<item id> - the shop (v2.0.0, gold)
 					String[] a = arg.split(":");
