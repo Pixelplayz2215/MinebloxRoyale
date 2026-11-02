@@ -89,7 +89,9 @@ public final class DropControl {
 		}
 	}
 
+	/** The glider opened or closed; the server told, as only an open glider saves you the fall (MatchManager.setGliding). */
 	private static void setGlider(Minecraft mc, boolean open) {
+		if (open != gliderOpen) ClientPlayNetworking.send(new Net.Action("glider:" + (open ? 1 : 0)));
 		gliderOpen = open;
 		if (open) SfxBank.play("glider", mc.player.position());
 	}

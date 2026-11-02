@@ -112,7 +112,7 @@ public final class Knocked {
 		if (!mm.hasStandingTeammate(victim)) return false;
 		int n = KNOCKS.merge(victim.getUUID(), 1, Integer::sum);
 		float seconds = MinebloxRoyale.setting("knockBleedSeconds") / (1F + MinebloxRoyale.setting("knockBleedFaster") * (n - 1));
-		String by = attacker == null ? "the storm" : attacker.getName().getString();
+		String by = attacker == null ? MatchManager.cause() : attacker.getName().getString();
 		down(victim, MinebloxRoyale.setting("maxHealth") / seconds, attacker == null ? null : attacker.getUUID(), by);
 		victim.setHealth(victim.getMaxHealth());
 		MinecraftServer server = victim.level().getServer();

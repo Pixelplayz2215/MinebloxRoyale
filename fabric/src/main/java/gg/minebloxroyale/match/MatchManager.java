@@ -615,9 +615,19 @@ public final class MatchManager {
 		startDrop(p);
 	}
 
+	/**
+	 * Their game opened or closed their glider (DropControl): while it's open they take no fall damage; skydiving, they
+	 * do (tickDrops).
+	 */
+	public void setGliding(ServerPlayer p, boolean open) {
+		if (open && dropping.contains(p.getUUID())) gliding.add(p.getUUID());
+		else gliding.remove(p.getUUID());
+	}
+
 	private void startDrop(ServerPlayer p) {
 		if (!leftBus.add(p.getUUID())) return;
 		dropping.add(p.getUUID());
+		gliding.remove(p.getUUID());
 		Net.sfxTo(p, "falling", p.position());
 		MinebloxRoyale.LOG.info("BR: {} jumped from the bus at y={}", p.getName().getString(), (int) p.getY());
 		MeltyTest.pass("bus-drop");
@@ -742,6 +752,27 @@ public final class MatchManager {
 
 	// ---- eliminations ----
 
+	/**
+	 * What took out someone nobody eliminated, for "was eliminated by ..." (creator, testing 4.0.0: "says I was
+	 * eliminated by the storm. that should be Fall Damage"): Combat names it from the damage just before
+	 * (cause(DamageSource)); the storm unless it says otherwise.
+	 */
+	private static String cause = "the storm";
+
+	static void cause(net.minecraft.world.damagesource.DamageSource source) {
+		cause = source.is(net.minecraft.tags.DamageTypeTags.IS_FALL) ? "fall damage"
+			: source.is(net.minecraft.world.damagesource.DamageTypes.LAVA) ? "lava"
+			: source.is(net.minecraft.tags.DamageTypeTags.IS_FIRE) ? "fire"
+			: source.is(net.minecraft.tags.DamageTypeTags.IS_DROWNING) ? "drowning"
+			: source.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION) ? "an explosion"
+			: source.is(net.minecraft.world.damagesource.DamageTypes.FELL_OUT_OF_WORLD) ? "the void" : "the storm";
+	}
+
+	/** (cause) What to say took them out, when no one did. */
+	static String cause() {
+		return cause;
+	}
+
 	public void eliminate(ServerPlayer victim, Entity killer) {
 		eliminate(victim, killer, null);
 	}
@@ -765,7 +796,7 @@ public final class MatchManager {
 		Reboot.dropCardFor(victim, victim.getUUID().toString()); // their own card, if a teammate still stands
 		victim.setGameMode(GameType.SPECTATOR);
 		Combat.reset(victim);
-		String by = byName != null ? byName : killer == null ? "the storm" : killer.getName().getString();
+		String by = byName != null ? byName : killer == null ? cause : killer.getName().getString();
 		broadcast(server, Component.empty().append(who(victim)).append(" was eliminated by ").append(killer == null ? Component.literal(by) : who(killer)).withStyle(ChatFormatting.RED));
 		int team = Teams.teamOfPlayer(victim.getUUID());
 		if (Teams.teamMode() && teamAlive(team)) {
@@ -812,7 +843,7 @@ public final class MatchManager {
 		roster.onEntityDied(bot);
 		if (!(killer != null && Teams.sameTeam(killer, bot))) countKill(killer, byName);
 		Net.sfxAll(server, "oof", bot.position());
-		String by = byName != null ? byName : killer == null ? "the storm" : killer.getName().getString();
+		String by = byName != null ? byName : killer == null ? cause : killer.getName().getString();
 		broadcast(server, Component.empty().append(who(bot)).append(" was eliminated by ").append(killer == null ? Component.literal(by) : who(killer)).withStyle(ChatFormatting.GRAY));
 		MinebloxRoyale.LOG.info("BR: bot {} eliminated by {}", bot.getName().getString(), by);
 		MeltyTest.pass("eliminations");
@@ -844,6 +875,7 @@ public final class MatchManager {
 		p.setGameMode(GameType.SURVIVAL);
 		p.teleportTo(level, van.x + rnd.nextInt(7) - 3, y, van.z + rnd.nextInt(7) - 3, Set.of(), p.getYRot(), 10F, true);
 		dropping.add(id); // a fresh drop: skydive and glider again
+		gliding.remove(id);
 		Net.sfxTo(p, "falling", p.position());
 		title(p, Component.literal("REBOOTED").withStyle(ChatFormatting.AQUA), Component.literal("Back in - SPACE opens your glider"), 5, 40, 10);
 		MinebloxRoyale.LOG.info("BR: {} rebooted", p.getName().getString());
@@ -1367,8 +1399,8 @@ public final class MatchManager {
 	}
 
 	/**
-	 * Skydive and glider physics run on the player's own client (smooth); the server tracks landing and cancels fall
-	 * damage.
+	 * Skydive and glider physics run on the player's own client (smooth); the server tracks landing, and cancels fall
+	 * damage while the glider is open.
 	 */
 	private void tickDrops(MinecraftServer server) {
 		ServerLevel level = server.overworld();
@@ -1378,7 +1410,10 @@ public final class MatchManager {
 				dropping.remove(id);
 				continue;
 			}
-			p.fallDistance = 0;
+			// (creator, testing 4.0.0: "After skydiving, if the glider isn't deployed, fall damage should be taken") only an
+			// open glider saves them the fall; skydiving, it counts as any fall does, from where they left the bus (or a
+			// reboot van) or closed the glider
+			if (gliding.contains(id)) p.fallDistance = 0;
 			int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, p.getBlockX(), p.getBlockZ());
 			double above = p.getY() - ground;
 			if ((p.onGround() || p.isInWater()) && above < 2.5) {

@@ -84,6 +84,7 @@ public final class Combat {
 		});
 		ServerLivingEntityEvents.ALLOW_DEATH.register((entity, source, amount) -> {
 			Entity killer = source.getEntity();
+			MatchManager.cause(source); // (what to say took them out if no one did)
 			if (entity instanceof ServerPlayer player) {
 				entity.setHealth(entity.getMaxHealth());
 				if (MatchManager.get().isAlive(player)) {
