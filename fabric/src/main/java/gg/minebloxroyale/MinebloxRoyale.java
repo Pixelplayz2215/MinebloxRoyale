@@ -149,6 +149,7 @@ public final class MinebloxRoyale implements ModInitializer {
 		CarEntity.init(); // (v2.0.0) cars being driven
 		GrenadeEntity.init();
 		Net.init();
+		gg.minebloxroyale.net.VersionCheck.init(); // (2.0.0: only the same version plays together)
 		Combat.init();
 		Loot.initStructureLoot();
 		Loot.initContainers();

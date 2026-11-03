@@ -203,6 +203,17 @@ public final class AutoWorld {
 				return;
 			} else return;
 		}
+		// (2.0.0) Turned away for a different version: no trying again (it can't work), back to your own world once the
+		// message has been up a while (or at once on Back); UpdateCheck's popup there says why, with where to update.
+		if (mc.gui.screen() instanceof DisconnectedScreen && mc.level == null && attempted && UpdateCheck.refused()) {
+			if (roomTarget == null || roomTarget.equals(missedFriend)) {
+				homeOnly = true;
+				missedFriend = null;
+			}
+			roomTarget = null;
+			homeAt = System.currentTimeMillis() + 15000;
+			return;
+		}
 		if (mc.gui.screen() instanceof DisconnectedScreen d && mc.level == null && attempted) {
 			// Joining a friend failed: try again a few times, 5 s apart, then back to your own world once the message has
 			// been up a moment. (1.0.1.2) Melty's join link too, which used to leave the player on the message for good;
@@ -345,7 +356,7 @@ public final class AutoWorld {
 			inRoom = false;
 			roomTarget = null;
 			homeOnly = true;
-			homeAt = System.currentTimeMillis() + 4000;
+			homeAt = System.currentTimeMillis() + (UpdateCheck.refused() ? 15000 : 4000); // (2.0.0: a version message stays longer)
 		}
 	}
 
