@@ -203,8 +203,10 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 			}
 		});
 
+		UpdateCheck.init(); // (2.0.0: the version check when joining, and the update popup)
 		ClientTickEvents.END_CLIENT_TICK.register(mc -> {
 			AutoWorld.tick(mc);
+			UpdateCheck.tick(mc);
 			VictoryClient.tick(mc);
 			RoomCodes.tick(mc);
 			SettingsLock.tick(mc);
@@ -253,6 +255,7 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 			Tracers.tick(mc);
 		});
 		ClientPlayConnectionEvents.JOIN.register((handler, sender, mc) -> {
+			UpdateCheck.onJoinWorld(handler, mc);
 			SfxBank.preload();
 			AutoWorld.onJoinWorld(mc);
 			ClientState.kills = ClientState.wins = ClientState.rangeBest = ClientState.bullseyes = 0; // this world's stats arrive next (Unlocks); the last world's are in MyUnlocks
@@ -296,6 +299,7 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 		});
 		// Always start borderless fullscreen (fullscreen on, exclusive off), or a maximised window for a test copy.
 		ClientLifecycleEvents.CLIENT_STARTED.register(mc -> {
+			UpdateCheck.checkGitHub(); // (2.0.0: a newer release on GitHub)
 			mc.options.exclusiveFullscreen().set(false);
 			if (mc.options.fullscreen().get() == WINDOWED) mc.options.fullscreen().set(!WINDOWED);
 			mc.options.save();
