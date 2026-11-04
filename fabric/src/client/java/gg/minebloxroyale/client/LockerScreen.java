@@ -429,17 +429,18 @@ public class LockerScreen extends Screen {
 	@Override
 	public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float a) {
 		super.extractRenderState(g, mouseX, mouseY, a);
-		// The header: LOCKER and the tab, your gold in a chip on the right (or what's picked for the wheel), one hint line.
+		// The header: LOCKER and the tab, your gold in a chip on the right, one hint line. (creator, 2026-11-04: "Even if
+		// everything is unlocked, still show the amount of gold for everybody. (including Dev, and players I told can have
+		// all unlocked)") Always your gold, on every tab: what's on the emote wheel went to the Emotes tab's hint.
 		float lw = Smooth.text(g, "LOCKER", 10, 8 * k, 13 * k, GOLD, Smooth.LEFT, true);
 		Smooth.text(g, tabName(tab), 10 + lw + 8 * k, 11 * k, 9 * k, WHITE, Smooth.LEFT, false);
-		String chip = tab.equals("emote") ? ClientState.myEmotes().size() + " / 8 on your wheel" : ClientState.all ? "All unlocked" : ClientState.career().gold() + "";
-		boolean coin = !tab.equals("emote") && !ClientState.all;
-		float cw = Smooth.width(chip, 7 * k) + (coin ? 22 : 12) * k;
+		String chip = ClientState.career().gold() + "";
+		float cw = Smooth.width(chip, 7 * k) + 22 * k;
 		Smooth.panel(g, panel - 10 - cw, 7 * k, cw, 15 * k, 7 * k, 0xFF2C3340);
-		if (coin) Smooth.icon(g, "gold", panel - 10 - cw + 5 * k, 9.5F * k, 10 * k, -1);
+		Smooth.icon(g, "gold", panel - 10 - cw + 5 * k, 9.5F * k, 10 * k, -1);
 		Smooth.text(g, chip, panel - 10 - 6 * k, 10.5F * k, 7 * k, GOLD, Smooth.RIGHT, false);
 		String info = switch (tab) {
-			case "emote" -> "Click to put an emote on your wheel (B), or take it off; hover to see it";
+			case "emote" -> "Click to put an emote on your wheel (B), or take it off; hover to see it  -  " + ClientState.myEmotes().size() + " / 8 on your wheel";
 			case "glider" -> {
 				UnlockRule.Stats c = ClientState.career();
 				yield "Yours: " + c.kills() + " kills, " + c.wins() + " wins, range best " + c.rangeBest() + ", " + c.bullseyes() + " bullseyes";
