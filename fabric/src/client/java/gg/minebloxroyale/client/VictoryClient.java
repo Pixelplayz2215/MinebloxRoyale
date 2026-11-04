@@ -28,6 +28,8 @@ public final class VictoryClient {
 	private static @Nullable JsonObject data;
 	private static long startNanos, receivedNanos;
 	private static boolean opened;
+	/** The card was put away on purpose (Spectate, or Back to hub on its way): it doesn't come back by itself. */
+	private static boolean putAway;
 	/**
 	 * The winners' moment can start: at once in Solo; in a team mode once the team's stage is there to see (2.0.0-test6,
 	 * creator: "the camera doesn't show us on a podium": the team is moved across the island to it as the results come,
@@ -45,6 +47,7 @@ public final class VictoryClient {
 		data = JsonParser.parseString(json).getAsJsonObject();
 		receivedNanos = startNanos = System.nanoTime();
 		opened = false;
+		putAway = false;
 		ready = false;
 		startYaw = mc.player == null ? 0 : mc.player.getYRot();
 		if (!won() || stage() == null) begin(mc);
@@ -119,7 +122,17 @@ public final class VictoryClient {
 		if (!opened && mc.gui.screen() == null && (won() ? t >= introSeconds() : t >= 1.5F)) {
 			opened = true;
 			mc.gui.setScreen(new VictoryScreen(data));
+		} else if (opened && !putAway && mc.gui.screen() == null) {
+			// (creator: "when on Elim Screen or Victory screen, ESC should NOT close the menu and show the overworld. ESC
+			// should do nothing at that point until brought back to hub again") The card ignores Esc (VictoryScreen), and
+			// whatever else closed it (the emote wheel opened over it with B, then closed) brings it straight back
+			mc.gui.setScreen(new VictoryScreen(data));
 		}
+	}
+
+	/** (VictoryScreen's Spectate and Back to hub) The card goes away and stays away until the next match's results. */
+	static void putAway() {
+		putAway = true;
 	}
 
 	/**
