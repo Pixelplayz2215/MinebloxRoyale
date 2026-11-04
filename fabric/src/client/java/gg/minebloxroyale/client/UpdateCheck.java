@@ -151,7 +151,9 @@ public final class UpdateCheck {
 			int y = this.height / 2 + 22, x = this.width / 2 - W / 2 + 10, bw = (W - 20 - 8) / 3;
 			this.addRenderableWidget(new SmoothButton(x, y, bw, 20, "Melty", SmoothButton.Look.MAIN, b -> ConfirmLinkScreen.confirmLinkNow(this, URI.create(VersionCheck.MELTY))));
 			this.addRenderableWidget(new SmoothButton(x + bw + 4, y, bw, 20, "GitHub", SmoothButton.Look.MAIN, b -> ConfirmLinkScreen.confirmLinkNow(this, URI.create(VersionCheck.GITHUB))));
-			this.addRenderableWidget(new SmoothButton(x + 2 * (bw + 4), y, bw, 20, refused ? "OK" : "Later", SmoothButton.Look.TILE, b -> this.onClose()));
+			SmoothButton ok = new SmoothButton(x + 2 * (bw + 4), y, bw, 20, refused ? "OK" : "Later", SmoothButton.Look.TILE, b -> this.onClose());
+			ok.center = true; // (creator: "The "ok" box should be centered like the other 2")
+			this.addRenderableWidget(ok);
 		}
 
 		@Override
