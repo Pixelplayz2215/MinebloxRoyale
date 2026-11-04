@@ -117,20 +117,30 @@ public final class MinebloxRoyale implements ModInitializer {
 
 	/** The site with the full changelog (creator: "full changelog at https://minebloxroyale.com"). */
 	static final String SITE = "https://minebloxroyale.com";
+	/** The Mineblox Royale Discord server's invite (creator, 2026-11-04). */
+	static final String DISCORD = "https://discord.gg/7y2z4eB3SH";
 
 	/**
 	 * (2.0.0, creator: "in chat, players get a message upon joining 'v2.0.0 is here, full changelog at
 	 * https://minebloxroyale.com' and that should be a hyperlink") Said to each player as they join: this build's version
-	 * (a test build's without its test number) and the site, its address a link that opens it.
+	 * (a test build's without its test number) and the site, its address a link that opens it; then (creator,
+	 * 2026-11-04: "after the changelog link, since we removed the yellow/gold test/dev list, let's add a 'Join the
+	 * discord'") the Discord server's invite, a link too.
 	 */
 	static void welcome(ServerPlayer p) {
 		String v = version(), base = v.contains("-") ? v.substring(0, v.indexOf('-')) : v;
-		Component link = Component.literal(SITE).withStyle(st -> st
-			.withColor(ChatFormatting.AQUA).withUnderlined(true)
-			.withClickEvent(new ClickEvent.OpenUrl(URI.create(SITE)))
-			.withHoverEvent(new HoverEvent.ShowText(Component.literal("Open minebloxroyale.com"))));
 		p.sendSystemMessage(Component.literal("v" + base + " is here, full changelog at ").withStyle(ChatFormatting.GOLD)
-			.append(link));
+			.append(link(SITE, "Open minebloxroyale.com")));
+		p.sendSystemMessage(Component.literal("Join the Discord: ").withStyle(ChatFormatting.GOLD)
+			.append(link(DISCORD, "Open the Mineblox Royale Discord")));
+	}
+
+	/** (welcome) An address as a link that opens it. */
+	private static Component link(String url, String hover) {
+		return Component.literal(url).withStyle(st -> st
+			.withColor(ChatFormatting.AQUA).withUnderlined(true)
+			.withClickEvent(new ClickEvent.OpenUrl(URI.create(url)))
+			.withHoverEvent(new HoverEvent.ShowText(Component.literal(hover))));
 	}
 
 	/** A number from the match sheet. */
