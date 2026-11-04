@@ -192,9 +192,13 @@ public class VictoryScreen extends Screen {
 		float by = y + EMOTES + 14;
 		button(g, W / 2 - 110, by, 104, BUTTONS, "Back to hub", true, mx, my, () -> {
 			ClientPlayNetworking.send(new Net.Action("hub"));
+			VictoryClient.putAway();
 			this.onClose();
 		});
-		button(g, W / 2 + 6, by, 104, BUTTONS, "Spectate", false, mx, my, this::onClose);
+		button(g, W / 2 + 6, by, 104, BUTTONS, "Spectate", false, mx, my, () -> {
+			VictoryClient.putAway();
+			this.onClose();
+		});
 	}
 
 	/** The gold earned, each reason on its own line, and what it goes towards in the Shop. */
@@ -252,6 +256,12 @@ public class VictoryScreen extends Screen {
 				}
 			}
 		return super.mouseClicked(event, doubleClick);
+	}
+
+	/** Esc does nothing here: the card stays until Back to hub, Spectate, or being back in the hub (VictoryClient). */
+	@Override
+	public boolean shouldCloseOnEsc() {
+		return false;
 	}
 
 	/** The emote key (B) still opens the emote wheel over it. */

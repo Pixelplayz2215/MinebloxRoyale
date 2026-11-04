@@ -88,6 +88,7 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 - **Winners stand still:** after a Victory Royale you can't move, shoot, build or use items, but you can emote as much as you like, and bot teammates emote too.
 - **The team's podium:** in Duos, Trios and Squads the winners stand on a stepped podium with gold trim, each on a pad of their own colour, with lights and a backdrop. The screen stays black for a moment while the podium loads, then the camera sweeps across the team. When the results card comes up, it sits on the right with the team still in view. The podium always goes up high over the island, even when the match ends just after the bus leaves.
 - **The results card fits:** it's laid out from what's on it, so the emote row and the buttons never overlap, and it closes by itself when you're back in the hub.
+- **The results card stays up:** Esc doesn't close the Eliminated or Victory Royale card and drop you back into the island; it stays until you press Back to hub or Spectate, or you're back in the hub. Picking an emote with B brings it straight back.
 - **Bots move like players:** they walk and sprint at a player's speeds, sprint-jump across open ground, crouch now and then, turn their aim smoothly, look around, and climb out of water.
 
 ### Look and sound
