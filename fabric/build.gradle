@@ -89,6 +89,12 @@ processResources {
 	filesMatching("fabric.mod.json") { expand "version": version }
 }
 
+// (2.0.0, creator: "The yellow changelog/test text is for DEV builds only. Official Public releases should NOT have it")
+// a release's jar leaves the test list out altogether (WhatToTest shows it only for "-test" versions anyway)
+jar {
+	if (!project.version.toString().contains("-test")) exclude "assets/minebloxroyale/what_to_test.txt"
+}
+
 tasks.withType(JavaCompile).configureEach { it.options.release = 25 }
 
 java {
