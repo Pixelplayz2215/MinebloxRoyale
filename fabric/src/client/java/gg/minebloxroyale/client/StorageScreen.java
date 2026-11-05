@@ -59,15 +59,18 @@ final class StorageScreen extends Screen {
 		List<String> l = new ArrayList<>();
 		switch (mode) {
 			case PICK -> {
-				l.add("Your world and its islands (" + WorldStorage.gb(size) + ") are kept on " + WorldStorage.name(WorldStorage.folder()) + ".");
+				l.add("Your world and its islands (" + WorldStorage.gb(size) + ") are kept " + WorldStorage.where(WorldStorage.folder()) + ".");
 				l.add("Islands take more room while the next one is built.");
 				l.add("Pick where to keep them:");
 			}
 			case CONFIRM -> {
 				WorldStorage.Place p = chosen;
 				int friends = this.minecraft.getSingleplayerServer() == null ? 0 : Math.max(0, this.minecraft.getSingleplayerServer().getPlayerCount() - 1);
-				l.add("Your world (" + WorldStorage.gb(size) + ") moves to " + (p == null ? "" : p.name()) + ":");
-				if (p != null) l.add(p.folder().toString());
+				if (p != null && WorldStorage.isGameFolder(p.folder())) l.add("Your world (" + WorldStorage.gb(size) + ") moves back to " + p.name() + ".");
+				else {
+					l.add("Your world (" + WorldStorage.gb(size) + ") moves to:");
+					if (p != null) l.add(p.folder().toString());
+				}
 				l.add("");
 				l.add("It saves and closes, moves, then opens again. This takes");
 				l.add("from a few seconds to a minute.");
