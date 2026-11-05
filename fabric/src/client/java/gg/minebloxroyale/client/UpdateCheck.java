@@ -53,7 +53,7 @@ public final class UpdateCheck {
 			hostAsked = true;
 			String mine = MinebloxRoyale.version();
 			if (!p.version().equals(mine)) {
-				refusedBy = p.version();
+				refusedBy = p.version(); // (a VR room's "VR 1.0.0" never equals this base game's version)
 				MinebloxRoyale.LOG.info("BR: this room is on Mineblox Royale {}, this game {}: not joining", p.version(), mine);
 			}
 			ctx.responseSender().sendPacket(new VersionCheck.Hello(mine));
@@ -133,7 +133,13 @@ public final class UpdateCheck {
 			super(Component.literal(refused ? "Couldn't join" : "Update available"));
 			this.refused = refused;
 			String mine = MinebloxRoyale.version();
-			if (refused) {
+			if (refused && VersionCheck.vr(version)) {
+				// (creator: "Base cannot join VR, VR cannot join base")
+				heading = "COULDN'T JOIN THAT ROOM";
+				lines.add("That room is on Mineblox Royale VR.");
+				lines.add("You have Mineblox Royale v" + mine + ", not VR.");
+				lines.add("Only VR players can join VR rooms.");
+			} else if (refused) {
 				heading = "COULDN'T JOIN THAT ROOM";
 				lines.add(version.isEmpty() ? "That room is on an older version of Mineblox Royale." : "That room is on Mineblox Royale v" + version + ".");
 				lines.add("You have v" + mine + ". Only the same version can play together.");
