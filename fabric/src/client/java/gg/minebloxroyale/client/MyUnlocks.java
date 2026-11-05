@@ -193,6 +193,7 @@ public final class MyUnlocks {
 		String me = PlayerFiles.account();
 		// gold.txt first, so the gold is kept before unlocks.txt drops it from the lines older test builds wrote
 		List<String> gold = new ArrayList<>();
+		boolean goldSaved = true;
 		try {
 			for (String line : Files.readAllLines(goldFile(), StandardCharsets.UTF_8)) if (!line.startsWith(me + " ")) gold.add(line); // other accounts on this PC
 		} catch (IOException ignored) {
@@ -204,7 +205,7 @@ public final class MyUnlocks {
 			Files.createDirectories(goldFile().getParent());
 			Files.write(goldFile(), gold, StandardCharsets.UTF_8);
 		} catch (IOException ignored) {
-			return; // (unlocks.txt keeps its gold until gold.txt can be written)
+			goldSaved = false; // (then unlocks.txt keeps its gold until gold.txt can be written)
 		}
 		List<String> lines = new ArrayList<>();
 		try {
@@ -213,7 +214,7 @@ public final class MyUnlocks {
 		}
 		// (1.2.0.1's own format: "account worldId kills wins obby rangeBest bullseyes")
 		WORLDS.forEach((id, s) -> lines.add(me + " " + id + " " + s[0] + " " + s[1] + " " + s[2] + " " + s[3] + " " + s[4]));
-		try {
+		if (goldSaved) try {
 			Files.write(file(), lines, StandardCharsets.UTF_8);
 		} catch (IOException ignored) {
 		}
