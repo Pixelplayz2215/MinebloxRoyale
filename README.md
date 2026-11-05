@@ -8,6 +8,7 @@ A Minecraft × Roblox × Fortnite mashup for **Minecraft: Java Edition 26.3** (F
 
 **Play on Melty:** [Mineblox Royale on Melty](https://melty.gg/m/mineblox-royale) installs and starts it in one click.  
 **Download:** or pick your launcher's file from the [latest release](../../releases/latest) (see *Install* below).  
+**Join the Discord:** [discord.gg/7y2z4eB3SH](https://discord.gg/7y2z4eB3SH)  
 **More from me:** [YouTube @Pixelplayz2215](https://www.youtube.com/@Pixelplayz2215)
 
 ![The hub](screenshots/hub.jpg)
