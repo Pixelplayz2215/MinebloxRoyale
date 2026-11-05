@@ -71,6 +71,11 @@ public final class VersionCheck {
 		ServerConfigurationNetworking.registerGlobalReceiver(Hello.TYPE, (p, ctx) -> {
 			ServerConfigurationPacketListenerImpl handler = ctx.packetListener();
 			String mine = MinebloxRoyale.version();
+			if (vr(p.version())) {
+				MinebloxRoyale.LOG.info("BR: turned away a Mineblox Royale VR player ({}): this room isn't VR ({})", p.version(), mine);
+				handler.disconnect(vrMessage(mine));
+				return;
+			}
 			if (!p.version().equals(mine)) {
 				MinebloxRoyale.LOG.info("BR: turned away a player with Mineblox Royale {} (this room: {})", p.version(), mine);
 				handler.disconnect(message(mine, "v" + p.version(), newer(mine, p.version())));
@@ -90,6 +95,24 @@ public final class VersionCheck {
 		m.append(Component.literal(playerUpdates ? "Update your game to v" + room + " to join.\n\n" : "Ask your friend to update to the newest version.\n\n")
 			.withStyle(ChatFormatting.YELLOW));
 		m.append(Component.literal("Get the newest version on Melty or GitHub:\n" + MELTY + "\n" + GITHUB).withStyle(ChatFormatting.GRAY));
+		return m;
+	}
+
+	/**
+	 * (creator, 2026-11-05: "no cross compatibility. Base cannot join VR, VR cannot join base. Base>Base only, VR>VR
+	 * only") Mineblox Royale VR, made in its own code, says its version starting with "VR" ("VR 1.0.0"); this game, the
+	 * base one, says just the number ("2.0.0"). A VR player is turned away from a base room whatever the numbers, and a
+	 * base player from a VR room (UpdateCheck, and the VR room itself).
+	 */
+	public static boolean vr(String version) {
+		return version.regionMatches(true, 0, "VR", 0, 2);
+	}
+
+	/** Why a VR player can't join this (base) room. */
+	public static MutableComponent vrMessage(String room) {
+		MutableComponent m = Component.literal("Can't join: this room isn't VR\n\n").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD);
+		m.append(Component.literal("This room is on Mineblox Royale v" + room + ", not VR. You have Mineblox Royale VR.\n").withStyle(ChatFormatting.WHITE));
+		m.append(Component.literal("VR players can only play with VR players.").withStyle(ChatFormatting.YELLOW));
 		return m;
 	}
 
