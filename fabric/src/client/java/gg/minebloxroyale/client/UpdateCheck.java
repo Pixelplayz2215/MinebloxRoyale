@@ -106,10 +106,17 @@ public final class UpdateCheck {
 		return refusedBy != null;
 	}
 
-	/** Each tick: a popup to show, once in your own world (not in a match, nothing else on screen, settled a moment). */
+	/**
+	 * Each tick: a popup to show, once in a world (not in a match, nothing else on screen, settled a moment): the last
+	 * game ran out of memory (MemoryPopup), a room turned us away (in your own world), or a newer version is out.
+	 */
 	public static void tick(Minecraft mc) {
 		if (mc.level == null || mc.player == null || mc.gui.screen() != null || ClientState.inMatch()) return;
 		if (System.currentTimeMillis() - inWorldSince < 3000) return;
+		if (LastRun.takeOutOfMemory()) { // (2.0.0: the last game ran out of memory)
+			mc.gui.setScreen(new MemoryPopup());
+			return;
+		}
 		if (refusedBy != null && mc.getSingleplayerServer() != null) {
 			String room = refusedBy;
 			refusedBy = null;

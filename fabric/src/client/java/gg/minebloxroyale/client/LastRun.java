@@ -25,11 +25,22 @@ import org.apache.logging.log4j.Logger;
  * screen.) Every few seconds the game notes what it's doing (doing.txt: where, the screen open, fps, entities, render
  * distance, window, OpenGL or Vulkan), and that goes in the line after a crash. Driver crashes in a row are counted
  * (driver-crashes.txt); from the second, the chat line also points to Minecraft's own other graphics API.
+ *
+ * (2.0.0, players' Melty, 1.2.0 and 1.2.0.1: games that closed because Windows had no memory left to give, its page
+ * file used up, and were told as "no crash report found") The JVM's crash file for that says so; the next game puts up a
+ * popup saying what happened and what to do (creator: "Rather than in the chat, make a popup on screen so they can't
+ * ignore it"; MemoryPopup).
  */
 public final class LastRun {
 	private static final Logger LOG = LogManager.getLogger("MinebloxRoyale");
 	private static final Pattern FRAME = Pattern.compile("^#\\s+[A-Za-z]\\s+\\[([^+\\]]+)");
 	private static final Pattern EXCEPTION = Pattern.compile("#\\s+(EXCEPTION_[A-Z_]+|SIG[A-Z]+)\\s*\\((0x[0-9a-fA-F]+)\\)");
+	/** What Windows had left to give, in an hs_err file ("TotalPageFile size 12314M (AvailPageFile size 8M)"). */
+	private static final Pattern PAGE_FILE = Pattern.compile("AvailPageFile size (\\d+)M");
+	/** The "module" of a crash because Windows had no memory left to give the game (2.0.0). */
+	static final String OUT_OF_MEMORY = "out of memory";
+	/** The last game ran out of memory: a popup to show, once (MemoryPopup). */
+	private static volatile boolean outOfMemory;
 	/** The words for the chat, once the player is in a world (null: nothing to say). */
 	private static volatile String chat;
 	/** The cause found at start, for melty.log (null: the last game ended normally, or this is the first). */
@@ -55,7 +66,10 @@ public final class LastRun {
 				String[] found = fromHsErr(gameDir, brDir, started);
 				if (found == null) found = fromWer(started);
 				String report = found == null ? fromCrashReport(gameDir, started) : null;
-				String what = found != null ? "crashed in " + found[0] + (found[1].isEmpty() ? "" : " (" + found[1] + ")")
+				boolean memory = found != null && found[0].equals(OUT_OF_MEMORY);
+				outOfMemory = memory;
+				String what = memory ? "ran out of memory (Windows had none left to give)"
+					: found != null ? "crashed in " + found[0] + (found[1].isEmpty() ? "" : " (" + found[1] + ")")
 					: report != null ? "Minecraft stopped with an error: " + report
 					: "no crash report found (a crash Windows didn't record, or the game was closed by force)";
 				String driver = found == null ? null : driver(found[0]);
@@ -135,6 +149,13 @@ public final class LastRun {
 		return cause;
 	}
 
+	/** Whether the last game ran out of memory, once (then MemoryPopup says so). */
+	static boolean takeOutOfMemory() {
+		boolean m = outOfMemory;
+		outOfMemory = false;
+		return m;
+	}
+
 	/** The chat line about a graphics driver crash, once (null: nothing to say). */
 	static String takeChat() {
 		String c = chat;
@@ -204,8 +225,13 @@ public final class LastRun {
 		return null;
 	}
 
-	/** The faulting module and the exception from an hs_err file ({module, code}), or null. */
+	/**
+	 * The faulting module and the exception from an hs_err file ({module, code}), or null. A game that ran out of memory
+	 * is {OUT_OF_MEMORY, ""}: the JVM says so at the top, or (no other cause found) Windows had under 256 MB left to give.
+	 */
 	static String[] parseHsErr(String text) {
+		if (text.contains("There is insufficient memory for the Java Runtime Environment") || text.contains("Out of Memory Error ("))
+			return new String[] { OUT_OF_MEMORY, "" };
 		String code = "", module = null;
 		String[] lines = text.split("\\r?\\n");
 		for (int i = 0; i < lines.length && i < 60; i++) {
@@ -216,7 +242,11 @@ public final class LastRun {
 				module = m.find() ? m.group(1).trim() : lines[i + 1].replaceFirst("^#\\s*", "").trim();
 			}
 		}
-		return module == null && code.isEmpty() ? null : new String[] { module == null ? "unknown" : module, code };
+		if (module == null && code.isEmpty()) {
+			Matcher p = PAGE_FILE.matcher(text);
+			return p.find() && Long.parseLong(p.group(1)) < 256 ? new String[] { OUT_OF_MEMORY, "" } : null;
+		}
+		return new String[] { module == null ? "unknown" : module, code };
 	}
 
 	/** Windows' crash report for javaw.exe / java.exe since that game started: {module, code}, or null. */
