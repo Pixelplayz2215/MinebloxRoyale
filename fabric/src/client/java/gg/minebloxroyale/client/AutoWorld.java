@@ -360,6 +360,20 @@ public final class AutoWorld {
 		}
 	}
 
+	/** (2.0.0, WorldStorage) Don't open the world for now (it's moving, or its drive can't be found). */
+	static void hold() {
+		attempted = true;
+	}
+
+	/** (2.0.0, WorldStorage) Open the world again, from the title screen (after a move). */
+	static void reopen(Minecraft mc) {
+		attempted = false;
+		joining = null;
+		failedJoins = 0;
+		retryAt = 0;
+		mc.gui.setScreen(new TitleScreen());
+	}
+
 	/** In a world: host -> open to friends; guest -> report that we got in. */
 	public static void onJoinWorld(Minecraft mc) {
 		// (1.0.1.4) The last game crashed inside a graphics driver: say how to fix it, once

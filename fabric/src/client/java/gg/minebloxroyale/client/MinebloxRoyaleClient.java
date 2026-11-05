@@ -204,6 +204,7 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 		});
 
 		UpdateCheck.init(); // (2.0.0: the version check when joining, and the update popup)
+		WorldStorage.init(); // (2.0.0: Options > World storage, the world on another drive)
 		ClientTickEvents.END_CLIENT_TICK.register(mc -> {
 			AutoWorld.tick(mc);
 			UpdateCheck.tick(mc);

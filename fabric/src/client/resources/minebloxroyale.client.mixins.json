@@ -24,7 +24,8 @@
     "SpecialModelRenderersAccessor",
     "GuiGraphicsAccessor",
     "EntityRendererMixin",
-    "ItemCountMixin"
+    "ItemCountMixin",
+    "MinecraftLevelSourceAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
