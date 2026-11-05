@@ -96,6 +96,11 @@ public final class WorldStorage {
 		return isGameFolder(folder) ? "the game folder (" + drive + ")" : drive;
 	}
 
+	/** "in the game folder (C:)" or "on D:", for a sentence. */
+	static String where(Path folder) {
+		return (isGameFolder(folder) ? "in " : "on ") + name(folder);
+	}
+
 	static String drive(Path folder) {
 		Path root = folder.toAbsolutePath().getRoot();
 		return root == null ? folder.toString() : root.toString().replaceAll("[\\\\/]+$", "");
@@ -313,7 +318,7 @@ public final class WorldStorage {
 					}
 				}
 				if (moveError == null) {
-					tell = "Your world is kept on " + name(to) + " now (Options > World storage).";
+					tell = "Your world is kept " + where(to) + " now (Options > World storage).";
 					AutoWorld.reopen(mc);
 				}
 				// (failed: StorageScreen says why, and OK opens the world from where it was)
