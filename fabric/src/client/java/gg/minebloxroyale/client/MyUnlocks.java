@@ -45,6 +45,16 @@ public final class MyUnlocks {
 		return PlayerFiles.dir().resolve("unlocks.txt");
 	}
 
+	/**
+	 * Gold earned and spent and the shop items bought, per world (v2.0.0), in gold.txt beside unlocks.txt (creator:
+	 * "all gold, unlocks, and equipped cosmetics to carry over between versions"). 1.2.0.1 and older read only their
+	 * own line format in unlocks.txt and write back only what they read, so gold kept on those lines (as 2.0.0's test
+	 * builds did) was lost whenever an older build was opened again; unlocks.txt keeps the format they know.
+	 */
+	private static Path goldFile() {
+		return PlayerFiles.dir().resolve("gold.txt");
+	}
+
 	private static void load() {
 		String me = PlayerFiles.account();
 		if (me.equals(loadedFor)) return;
@@ -61,6 +71,22 @@ public final class MyUnlocks {
 					for (int i = 0; i < 7 && i + 2 < Math.min(a.length, 9); i++) s[i] = Integer.parseInt(a[i + 2]);
 					WORLDS.put(a[1], s);
 					if (a.length == 10 && !a[9].equals("-")) OWNED.put(a[1], new LinkedHashSet<>(Arrays.asList(a[9].split("[+]"))));
+				}
+			}
+		} catch (IOException | RuntimeException ignored) {
+		}
+		try {
+			// "account worldId goldEarned goldSpent item+item" (2.0.0); the higher of this and what unlocks.txt had
+			for (String line : Files.readAllLines(goldFile(), StandardCharsets.UTF_8)) {
+				String[] a = line.trim().split("\\s+");
+				if (a.length != 5 || !a[0].equals(me)) continue;
+				try {
+					int earned = Integer.parseInt(a[2]), spent = Integer.parseInt(a[3]);
+					int[] s = WORLDS.computeIfAbsent(a[1], k -> new int[7]);
+					s[5] = Math.max(s[5], earned);
+					s[6] = Math.max(s[6], spent);
+					if (!a[4].equals("-")) OWNED.computeIfAbsent(a[1], k -> new LinkedHashSet<>()).addAll(Arrays.asList(a[4].split("[+]")));
+				} catch (RuntimeException ignored) {
 				}
 			}
 		} catch (IOException | RuntimeException ignored) {
@@ -165,14 +191,29 @@ public final class MyUnlocks {
 
 	private static void save() {
 		String me = PlayerFiles.account();
+		// gold.txt first, so the gold is kept before unlocks.txt drops it from the lines older test builds wrote
+		List<String> gold = new ArrayList<>();
+		try {
+			for (String line : Files.readAllLines(goldFile(), StandardCharsets.UTF_8)) if (!line.startsWith(me + " ")) gold.add(line); // other accounts on this PC
+		} catch (IOException ignored) {
+		}
+		WORLDS.forEach((id, s) -> {
+			if (s[5] > 0 || s[6] > 0 || OWNED.containsKey(id)) gold.add(me + " " + id + " " + s[5] + " " + s[6] + " " + owned(id));
+		});
+		try {
+			Files.createDirectories(goldFile().getParent());
+			Files.write(goldFile(), gold, StandardCharsets.UTF_8);
+		} catch (IOException ignored) {
+			return; // (unlocks.txt keeps its gold until gold.txt can be written)
+		}
 		List<String> lines = new ArrayList<>();
 		try {
 			for (String line : Files.readAllLines(file(), StandardCharsets.UTF_8)) if (!line.startsWith(me + " ")) lines.add(line); // other accounts on this PC
 		} catch (IOException ignored) {
 		}
-		WORLDS.forEach((id, s) -> lines.add(me + " " + id + " " + s[0] + " " + s[1] + " " + s[2] + " " + s[3] + " " + s[4] + " " + s[5] + " " + s[6] + " " + owned(id)));
+		// (1.2.0.1's own format: "account worldId kills wins obby rangeBest bullseyes")
+		WORLDS.forEach((id, s) -> lines.add(me + " " + id + " " + s[0] + " " + s[1] + " " + s[2] + " " + s[3] + " " + s[4]));
 		try {
-			Files.createDirectories(file().getParent());
 			Files.write(file(), lines, StandardCharsets.UTF_8);
 		} catch (IOException ignored) {
 		}
