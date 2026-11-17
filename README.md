@@ -4,7 +4,7 @@
 
 A battle royale in Minecraft with a Roblox-style hub and Fortnite's rules. Drop from the Battle Bus with up to 100 fighters, loot gold and rare blue chests, build walls and ramps (or play No Build), drive cars, take on bosses, and outlast the storm. Bots fill every empty place, and they loot, farm, build and fight like players. If Roblox is installed on your PC, everyone gets the Roblox avatar look, outfits, emotes and sounds.
 
-**New in v2.0.0:** No Build modes, gold and a Locker Shop, drivable cars, rockets and grenades, bosses, animated gliders and contrails, music for every emote, a new HUD, a roomier hub and more. Everything is in the [v2.0.0 release notes](../../releases/tag/v2.0.0).
+**New in v2.1.0:** the Christmas update. The storm hurts your health, not your shield, cars only hurt enemies when you boost into them, there are more Reboot Vans, and there are three new kinds of buildings, gun stats, facial expressions and new sounds. Everything is in the [v2.1.0 release notes](../../releases/tag/v2.1.0).
 
 A Minecraft × Roblox × Fortnite mashup for **Minecraft: Java Edition 26.3** (Fabric).
 
