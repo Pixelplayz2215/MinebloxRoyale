@@ -95,11 +95,6 @@
       "minebloxroyale:car/engine"
     ]
   },
-  "car.skid": {
-    "sounds": [
-      "minebloxroyale:car/skid"
-    ]
-  },
   "car.boost": {
     "sounds": [
       "minebloxroyale:car/boost"
@@ -574,6 +569,31 @@
         "stream": true,
         "attenuation_distance": 24
       }
+    ]
+  },
+  "sky.wind": {
+    "sounds": [
+      "minebloxroyale:sky/wind"
+    ]
+  },
+  "sky.whoosh": {
+    "sounds": [
+      "minebloxroyale:sky/whoosh"
+    ]
+  },
+  "sky.glider_open": {
+    "sounds": [
+      "minebloxroyale:sky/glider_open"
+    ]
+  },
+  "sky.glider_close": {
+    "sounds": [
+      "minebloxroyale:sky/glider_close"
+    ]
+  },
+  "car.tires": {
+    "sounds": [
+      "minebloxroyale:car/tires"
     ]
   }
 }

@@ -4,8 +4,8 @@ shapes of the gliders sheet (wing, umbrella, parachute, kite, delta, bat, hot-ai
 each glider's own decoration (its "deco"), every canopy SCALE times the old size over the same frame.
 
 Roblox root space (studs, y up from the hips, the avatar facing -z), as RobloxAvatarRenderer draws it: the grips sit in
-the raised hands, the crossbar over the head; the canopy above. Tint channel 1 is the glider's colour, channel 2 its
-second colour (gliders sheet color / color2); a darker shade of either is that channel on a grey.
+the raised hands, the crossbar over the head; the canopy above. Tint channel 1 is the glider's color, channel 2 its
+second color (gliders sheet color / color2); a darker shade of either is that channel on a grey.
 """
 import math
 
@@ -24,10 +24,10 @@ C = Matrix(((1, 0, 0, 0), (0, 0, -1, 0), (0, 1, 0, 0), (0, 0, 0, 1)))  # Minecra
 CI = C.inverted()
 
 
-# ---------------------------------------------------------------- colours
+# ---------------------------------------------------------------- colors
 
 def col(c):
-    """'a' / 'b' (the glider's colours), ('a', k) a shade of one, '#rrggbb', or a FIXED name."""
+    """'a' / 'b' (the glider's colors), ('a', k) a shade of one, '#rrggbb', or a FIXED name."""
     if isinstance(c, tuple):
         ch, k = c
         g = max(0, min(255, round(255 * k)))
@@ -43,7 +43,7 @@ def glow(h):
 
 
 def tint_glow(ch):
-    """One of the glider's own colours, glowing (neon)."""
+    """One of the glider's own colors, glowing (neon)."""
     return mat(ch + "_glow", "#FFFFFF", ch=1 if ch == "a" else 2, glow=True)
 
 

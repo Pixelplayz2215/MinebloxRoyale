@@ -157,7 +157,7 @@ def lollipop():
     stick = mat("pk_lolly_stick", "#F4F1EA", rough=0.5)
     _handle(stick, mat("pk_lolly_grip", "#FF8FC8", rough=0.5), bands=3)
     cols = [mat(f"pk_lolly{i}", c, rough=0.15) for i, c in enumerate(("#FF4FA3", "#FFD23F", "#4FD1FF", "#9B5DE5"))]
-    # a big swirl on the head (rings of colour), a little blade the other way
+    # a big swirl on the head (rings of color), a little blade the other way
     cyl(HX - 2.2, HY + 2.2, Z, 3.0, 1.2, "z", cols[0], verts=32, bevel=0.35)
     for i in range(4):
         torus(HX - 2.2, HY + 2.2, Z + 0.62, 0.6 + i * 0.62, 0.17, "z", cols[(i + 1) % 4], segs=28, rsegs=6)
@@ -303,7 +303,7 @@ def boom():
 
 
 def storm():
-    """Storm Splitter: a forked lightning bolt for a blade, crackling purple in dark iron, the storm's colours."""
+    """Storm Splitter: a forked lightning bolt for a blade, crackling purple in dark iron, the storm's colors."""
     iron = mat("pk_storm_iron", "#2B2638", rough=0.4, metal=0.8)
     bolt = mat("pk_storm_bolt", "#C9A2FF", glow=True)
     purple = mat("pk_storm_purple", "#6A2FD8", rough=0.35)
@@ -354,7 +354,7 @@ def bone():
 
 def bullseye():
     """Bullseye Breaker: a target for a hammer face, red and white rings, and a steel arrowhead for the blade, the
-    shooting range's own colours."""
+    shooting range's own colors."""
     red = mat("pk_eye_red", "#E0262F", rough=0.4)
     white = mat("pk_eye_white", "#F6F4EE", rough=0.4)
     steel = mat("pk_eye_steel", "#C6CCD6", rough=0.18, metal=1.0)

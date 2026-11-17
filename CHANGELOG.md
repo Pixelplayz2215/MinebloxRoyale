@@ -1,5 +1,38 @@
 # Changelog
 
+## v2.1.0 (2026-11-17)
+
+### Storm, cars and reboot vans (2.1.0-test1)
+- **The storm hurts your health, not your shield** (from Ultraslayerz: "Storm does health damage not shield (like fortinte)"), as in Fortnite. It used to take the shield first. Shots, blasts and the pickaxe still hit the shield first.
+- **Boosting into an enemy hurts them** (30 damage, credited to the driver, shield first) **and throws them** a few blocks forwards and up. It only counts while boosting, never for teammates, and hits each person once a second at most. Just driving into someone still does nothing.
+- **Whoever is in a car can't be shot, hit or blown up.** Shots, pickaxe hits and blasts on the people inside go to the car instead and wear it down (a pickaxe hit still gives metal). When the car is wrecked, everyone inside is thrown out unhurt, as before.
+- **Boosting cars don't break the ground:** paths, farmland and the mountains' rock (calcite, dripstone, basalt and the like) were added to the ground they leave alone. Trees, builds, walls and the island's buildings still break.
+- **At least 2 reboot vans inside every safe circle:** each new circle is picked to hold at least two vans if it can, and any still missing are put inside it (never on top of anyone). Every circle gets them except the very last one, which closes to nothing.
+- Only teammates can get into a car with you (already the rule in 2.0.0).
+
+### Sounds (2.1.0-test2)
+- **Skydiving:** the wind rushes past as you fall, louder and higher the faster you go and louder still diving head down, and softer under the glider. A whoosh as you jump out of the bus, and as you close the glider to dive again. All made from scratch for Mineblox Royale (Fortnite's own sounds stay in its encrypted files, which we never open).
+- **The glider** has its own sounds: it snaps open with a flutter of cloth, and folds away when you close it or land. It used to use Minecraft's elytra sound.
+- **Car tires** roll on the ground with a low rumble that rises with speed and a little more round turns. No more squealing.
+- **A more urgent storm warning** each time the storm starts to close in: a deep hit, then a two-tone alarm pulsing faster over a siren that rises with the wind. The storm makes no sound of its own while it closes in (2.1.0-test5; test2's whirling loop while it shrank is gone).
+
+### Looks (2.1.0-test2)
+- **The reboot card you're holding** sits at the bottom of the screen in its own blue tile to the right of the hotbar. "Holding <name>'s reboot card" shows just above the hotbar, not in the middle of the screen.
+- **Gun stats** (from Ultraslayerz: "Gun stats (reload time, fire rate, damage)"): hover a gun in your inventory or a chest to see its damage (for its rarity, a shotgun's per pellet, and a headshot's), shots a second, reload time and magazine.
+- **The hub's What's New board** lists what's new in 2.1 (2.1.0-test3).
+- **Gun stats on screen** (2.1.0-test3, creator's pick C of four mockups): while you hold a gun, one slim line just above your materials shows its damage, shots a second and reload time, each with its own icon.
+- **Facial expressions:** a new Expressions page in the Locker, right after Face. There are 15 of our own: 6 free (Big Grin, Wink, Happy, Surprised, Smirk, Angry), 6 unlocked by playing (Determined: 10 kills; Tongue Out: finish the obby; Worried: 10 bullseyes; Laughing: score 30 at the range; Victory Smile: a win; Too Cool: 3 wins) and 3 for gold (Sleepy 300, Heart Eyes 350, Starstruck 400). Each one replaces your Roblox face, and every face accessory (glasses, masks, beards...) sits on it the same way. Hover one to see it on you. Half the bots wear one too.
+
+### More buildings (2.1.0-test2)
+- **More buildings on every island:** 36, up from 26. There are three new kinds, each at least twice an island: a **gas station** (a canopy over two pumps, often a car filling up that breaks for metal, and a little shop), a **campsite** (two tents round a campfire) and a **barn** (with hay and a hayloft up a ladder). The gas station and the barn have two chests each.
+
+### The hub (2.1.0-test4)
+- **The obby timer is part of the hub panel:** it's at the bottom of the panel at the top of the screen, under a gold line, instead of floating over the middle of the screen in front of the jumps.
+- **No more waiting once you're out:** when every real player is out of the match and back in the hub (H or Back to hub), the round finishes straight away. The hub used to say "Match in progress" until the end screen ran out. The next island also starts the moment the last real player is out, instead of waiting for the hub and for the match's first 2 minutes, and it's made at full speed once you're back in the hub.
+- **After a win you stay put until you go back to the hub:** the winner (or a teammate on the victory stage) was sometimes sent to the hub as if they'd fallen off the obby, still holding the match's inventory and HUD (2.1.0-test5).
+- **Room codes stay your own:** a copy of someone's world (say, a folder passed between two PCs) used to have the same room code as the original, so /rc couldn't tell them apart. Now a copy opened under another player's name while the original is open gets a new code by itself (2.1.0-test6).
+- **The obby timer keeps running when you fall before checkpoint 1** (2.1.0-test5): you're back on the blue start and it carries on until you finish. It only stops early if you step off the blue start into the hub.
+
 ## v2.0.0 (2026-11-11)
 
 A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and a new look and sound.
@@ -61,7 +94,7 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 - **Cars come alive:** the wheels turn with the speed and the front ones steer, and the body leans out of turns and dips when braking. Getting in, the door swings open, you climb in and it shuts behind you. This works for parked cars too.
 - **Riders sit inside every car:** players and bots sit at the same height, and each kind of car has its own seats. A Roblox avatar sitting down is taller than most cars, so riders are drawn a little smaller once they're in, and nothing pokes through the roof. In a pickup truck, the two in the back ride in the open bed.
 - **The camera pulls back while you drive,** so you can see your whole car and its boost trail.
-- **Car sounds:** an engine that revs with your speed, squealing tyres in fast turns, a boost of its own, and doors opening and shutting.
+- **Car sounds:** an engine that revs with your speed, squealing tires in fast turns, a boost of its own, and doors opening and shutting.
 - **Boost trails:** a new Locker tab, all for gold. Your trail streams from the back of any car you drive while it boosts: Nitro Flame, Blue Blaze, Rainbow Rocket, Neon Streak, Gold Rush, Thunder Road, Candy Rush and Toxic Fumes. The tab shows a car from behind and the side with the trail you hover.
 
 - **Nothing in your hands in a car:** no held item poking through the roof, no aiming, and no heals or shields while you ride.
@@ -86,7 +119,7 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 
 - **A new Victory Royale screen.** Solo: a slanted gold #1 VICTORY ROYALE banner over the game, with light rays and confetti while the camera circles you, then a results card: eliminations, total damage, time survived and placement, the gold you earned counting up, and how close you are to the next Shop item. Duos, Trios and Squads: movie bars and your whole team on a stage with name plates, then the results with a row for each teammate (eliminations, damage, revives, reboots) and the team's totals. With a victory fanfare of our own.
 - **Winners stand still:** after a Victory Royale you can't move, shoot, build or use items, but you can emote as much as you like, and bot teammates emote too.
-- **The team's podium:** in Duos, Trios and Squads the winners stand on a stepped podium with gold trim, each on a pad of their own colour, with lights and a backdrop. The screen stays black for a moment while the podium loads, then the camera sweeps across the team. When the results card comes up, it sits on the right with the team still in view. The podium always goes up high over the island, even when the match ends just after the bus leaves.
+- **The team's podium:** in Duos, Trios and Squads the winners stand on a stepped podium with gold trim, each on a pad of their own color, with lights and a backdrop. The screen stays black for a moment while the podium loads, then the camera sweeps across the team. When the results card comes up, it sits on the right with the team still in view. The podium always goes up high over the island, even when the match ends just after the bus leaves.
 - **The results card fits:** it's laid out from what's on it, so the emote row and the buttons never overlap, and it closes by itself when you're back in the hub.
 - **The results card stays up:** Esc doesn't close the Eliminated or Victory Royale card and drop you back into the island; it stays until you press Back to hub or Spectate, or you're back in the hub. Picking an emote with B brings it straight back.
 - **Bots move like players:** they walk and sprint at a player's speeds, sprint-jump across open ground, crouch now and then, turn their aim smoothly, look around, and climb out of water.
@@ -95,12 +128,12 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 - **A cleaner, smoother HUD in Fortnite's style:** rounded panels, icons made in Blender, smooth lettering, and a Fortnite-style hotbar in matches. Fortnite's own HUD is locked in its encrypted files, so all of this is ours.
 - **A bigger HUD:** every panel is about 15% bigger: health and shield, the hotbar, ammo and materials, the minimap, the compass, the storm banner, the teammate list and the "Hold F" prompts. On a screen narrower than 1920x1080 it shrinks just enough that nothing overlaps.
 - **The bar under the minimap is exactly the minimap's width** in every mode, team modes too.
-- **Launcher badges:** a small badge in front of every player's name shows the launcher they play from, for everyone to see: Melty, Prism Launcher, MultiMC, Modrinth App, Lunar Client, CurseForge, ATLauncher, GDLauncher or the Minecraft Launcher. The badges are our own designs in each launcher's colours.
+- **Launcher badges:** a small badge in front of every player's name shows the launcher they play from, for everyone to see: Melty, Prism Launcher, MultiMC, Modrinth App, Lunar Client, CurseForge, ATLauncher, GDLauncher or the Minecraft Launcher. The badges are our own designs in each launcher's colors.
 - **Owner and Beta Tester badges:** a gold OWNER badge with a crown floats over Pixel2215YT's name tag, and a purple BETA TESTER badge with a flask over creaper89O1's and ultraslayerz's, on a line of their own, for everyone to see. They go by Minecraft account, so nobody gets one by taking the name.
 - **Country flags:** a small flag after each player's name shows the country they're playing from. When the game starts it asks Cloudflare which country its internet connection is in, and only the country is shared, never the address. `/flag off` hides yours and `/flag on` shows it again; the first time yours shows, the chat says how, and the hub's What's New and Commands boards say so too. The flags are flag-icons' (MIT), every country's.
 - **The hub panel is simpler:** no more player counts for each mode's portal.
 - **Less lag:** models far away are drawn from lighter copies (made in Blender), models send half as many points to the graphics card, the HUD is drawn in a few pieces instead of hundreds, and the next island isn't built while the Battle Bus is flying and everyone is dropping in.
-- **3D items in the hotbar and inventory:** every gun, heal, shield, grenade and pickaxe shows as its own 3D model, guns in their rarity colour, instead of a flat pixel picture. The hub's Gun Rarity and Heals & Shields boards show the 3D models too.
+- **3D items in the hotbar and inventory:** every gun, heal, shield, grenade and pickaxe shows as its own 3D model, guns in their rarity color, instead of a flat pixel picture. The hub's Gun Rarity and Heals & Shields boards show the 3D models too.
 - **3D ammo, materials and reboot card, made in Blender:** open ammo boxes with their rounds standing in them (Light, Medium and Heavy Bullets), three shotgun shells, a rocket lying across its slot with its fins and a pointed red warhead, a crossed stack of planks, a pile of bricks, riveted steel plates with an I-beam, and the reboot card with its portrait and gold chip. The HUD's rocket icon is the new rocket too.
 - **Our own sounds:** a shot sound for each gun type (rarities sound the same), a new storm warning, rocket and grenade blasts, and two battle music tracks in matches. The harder track plays in the last circles.
 - **Heal and shield sounds:** a bandage rustling while you heal and a fizzing gulp while you drink a shield (instead of Minecraft's eating and drinking), then a warm chime as your health goes up or a bright shimmer as your shield charges. You hear bots and other players heal too.
@@ -109,7 +142,7 @@ A big update on top of v1.0.1: new modes, new weapons, cars, bosses, a shop, and
 - **A cleaner Locker:** it's drawn in the HUD's smooth style. The tabs are a clean list with the open one lit. Items are rounded tiles with their names in full, never cut off. What you have on (or picked for your wheel) gets a gold edge, locked items are dimmed with a lock, and the Shop shows prices with the coin. The match HUD stays out of the way while it's open, and the emote wheel (B) matches, its names centred and bigger. It grows with your window, up to about a third bigger, so the lettering is easy to read on a big screen.
 - **Your gold in the Locker:** the gold you have shows at the top right of the Locker on every tab, even with everything unlocked.
 - **NEW on what you've just unlocked:** an item you unlock by playing (eliminations, wins, the obby, the range) has a red NEW badge in the Locker until you hover it, its tab a red dot, and the hub's hint says "K: Locker (NEW)". Things bought with gold don't, as the Shop already shows them.
-- **The Soldier preset redone:** a real woodland camo with big patches in four colours, the same size on the shirt, its sleeves, the pants and the helmet, and a plain webbed army pack.
+- **The Soldier preset redone:** a real woodland camo with big patches in four colors, the same size on the shirt, its sleeves, the pants and the helmet, and a plain webbed army pack.
 - **Every hat fits every haircut:** all 1,176 hat and haircut pairs were checked from four sides, and nothing pokes through any more. Hair no longer shows on top of the Fire Helmet's and Explorer Hat's brims or the Top Hat's. The Party Hat is wider, so there's no bald ring round it. With an afro, the Top Hat, Traffic Cone, Fedora and Party Hat sit on top of it. Headphones go over curly hair and pigtails (the pigtails are tied behind the ear cups). The Halo floats higher over spikes and a mohawk. A mohawk's crest stays under hats and crowns, and its middle no longer shows the scalp. The bunny and cat ears' headband follows the head with no loose ends. The Tiara shows along the sides and ends neatly, also on an afro. The Storm Hood's trim lies flush. The Dominus wings fan out from a brooch, with no dent in the hood. And surfaces that flickered where a hat, haircut or face piece overlapped (Beanie, Viking, Pirate Hat, crowns, Knight Helmet with beards, the domino mask) are apart.
 
 ### Fixes
@@ -216,7 +249,7 @@ Fixes for the problems players' Melty reported on 1.0.1.
 A graphics update: almost everything you see in a match was remade in Blender.
 
 ### New models
-- **Guns:** all 5 remade. The whole body of a gun is now in its rarity colour, not a thin stripe: Common grey, Uncommon green, Rare blue, Epic purple, Legendary gold. This shows in your hand, on the ground and in the hotbar.
+- **Guns:** all 5 remade. The whole body of a gun is now in its rarity color, not a thin stripe: Common grey, Uncommon green, Rare blue, Epic purple, Legendary gold. This shows in your hand, on the ground and in the hotbar.
 - **Heals and shields:** all 6 remade.
 - **Pickaxe:** a Fortnite-style pickaxe replaces the iron pickaxe look.
 - **Cars:** all 7 kinds remade, each with 4 damage stages: dents, scratches, cracked and then smashed glass, a hanging bumper, a lost hubcap and an open door.

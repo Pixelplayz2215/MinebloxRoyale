@@ -6,7 +6,7 @@ Add-Type -AssemblyName System.Drawing
 function C([string]$hex) { [System.Drawing.ColorTranslator]::FromHtml($hex) }
 function Shade($c, [double]$f) { [System.Drawing.Color]::FromArgb(255, [Math]::Min(255, [int]($c.R * $f)), [Math]::Min(255, [int]($c.G * $f)), [Math]::Min(255, [int]($c.B * $f))) }
 
-# A part: x y w h colour [slant] - slant shifts each row right by 1 every 'slant' rows (for angled grips/mags).
+# A part: x y w h color [slant] - slant shifts each row right by 1 every 'slant' rows (for angled grips/mags).
 function Draw-Parts([int]$size, $parts) {
     $bmp = New-Object System.Drawing.Bitmap $size, $size
     foreach ($p in $parts) {

@@ -134,8 +134,13 @@ public final class Harvest {
 
 	static void collapse(ServerLevel level, ServerPlayer player, BlockPos start, BlockState state, HarvestRuleDef r) {
 		Map<String, Float> mats = fell(level, start, r);
-		for (var e : mats.entrySet()) give(player, e.getKey(), Math.round(e.getValue()));
-		MinebloxRoyale.LOG.debug("BR: {} broke a {} {}", player.getName().getString(), r.collapse(), mats);
+		Map<String, Integer> now = new HashMap<>();
+		for (var e : mats.entrySet()) {
+			give(player, e.getKey(), Math.round(e.getValue()));
+			now.put(e.getKey(), Builds.materialCount(player, e.getKey()));
+		}
+		// (what reached their slots too: 2.1.0-test5, creator: "when breaking in survival mode I don't gain mats")
+		MinebloxRoyale.LOG.debug("BR: {} broke a {} {}, now carrying {}", player.getName().getString(), r.collapse(), mats, now);
 	}
 
 	/** Bots harvest too: breaks what the pickaxe would at pos and returns the materials it gives (or null). */

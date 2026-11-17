@@ -68,7 +68,7 @@ public final class Guns {
 		stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
 		stack.set(DataComponents.CUSTOM_NAME, Component.literal(r.name() + " " + w.name())
 			.withStyle(Style.EMPTY.withColor(TextColor.fromRgb(r.color())).withItalic(false)));
-		// The model's accent parts (and the icon's stripe) are drawn in the rarity colour (items/gun_*.json tints).
+		// The model's accent parts (and the icon's stripe) are drawn in the rarity color (items/gun_*.json tints).
 		stack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(List.of(), List.of(), List.of(), List.of(r.color())));
 		return stack;
 	}
@@ -222,8 +222,9 @@ public final class Guns {
 			if (block.getType() != HitResult.Type.MISS) end = block.getLocation();
 			// Outside a match (the hub's shooting range) bullets pass through other players: no damage, no hit markers.
 			boolean hubShot = shooter instanceof ServerPlayer hs && !MatchManager.get().isAlive(hs);
+			// (2.1.0) someone in a car can't be shot: the car takes the shot (carHit below) and wears down instead
 			java.util.function.Predicate<Entity> fighter = e -> e instanceof LivingEntity le && le.isAlive() && !e.isSpectator() && e != shooter
-				&& !(hubShot && e instanceof Player) && !Teams.sameTeam(shooter, e);
+				&& !(hubShot && e instanceof Player) && !Teams.sameTeam(shooter, e) && !(e.getVehicle() instanceof CarEntity);
 			Hitboxes.Hit body = crosshair ? Hitboxes.pick(level, (ServerPlayer) shooter, from, end, fighter) : null;
 			EntityHitResult hit = crosshair ? (body == null ? null : new EntityHitResult(body.entity(), body.at()))
 				: ProjectileUtil.getEntityHitResult(shooter, eye, end, new AABB(eye, end).inflate(1.0), fighter, eye.distanceToSqr(end));

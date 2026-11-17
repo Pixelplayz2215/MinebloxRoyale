@@ -123,7 +123,7 @@ public class BotEntity extends PathfinderMob {
 	private final Map<BlockPos, Integer> unreachable = new HashMap<>();
 	private BotBuilder builder;
 	private BotMovement movement;
-	/** Team modes: its team and slot (teammate colour), the real player it sticks with (null: a bot team). */
+	/** Team modes: its team and slot (teammate color), the real player it sticks with (null: a bot team). */
 	private int team = -1, slot;
 	private UUID leader;
 	private LivingEntity follow, reviving;
@@ -366,6 +366,10 @@ public class BotEntity extends PathfinderMob {
 				var items = Sheets.COSMETICS.stream().filter(c -> c.slot().equals(slot)).toList();
 				if (!items.isEmpty()) o.put(slot, items.get(rnd.nextInt(items.size())).id());
 			}
+		}
+		if (rnd.nextFloat() < 0.5F) { // (2.1.0: half the bots wear a facial expression)
+			var faces = Sheets.COSMETICS.stream().filter(c -> c.slot().equals("expression")).toList();
+			if (!faces.isEmpty()) o.put("expression", faces.get(rnd.nextInt(faces.size())).id());
 		}
 		if (roll < 0.7F && rnd.nextFloat() < 0.25F) {
 			var fx = Sheets.COSMETICS.stream().filter(c -> c.slot().equals("particle")).toList();

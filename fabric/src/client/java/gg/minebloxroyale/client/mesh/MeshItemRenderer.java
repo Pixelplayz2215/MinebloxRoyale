@@ -20,7 +20,7 @@ import org.joml.Vector3fc;
 /**
  * An item drawn from a Blender mesh (items/*.json: {"type": "minecraft:special", "model": {"type":
  * "minebloxroyale:mesh", "mesh": "gun_smg"}, "base": ...}; the base model gives the hold in each hand). Tint channel 1
- * takes the stack's custom model data colour (a gun's rarity, Guns.make), or the given default. A model name in the
+ * takes the stack's custom model data color (a gun's rarity, Guns.make), or the given default. A model name in the
  * stack's custom model data draws that model instead (v2.0.0: a pickaxe skin, Loadout.pickaxe(skin)). In the world, its
  * lighter copies further away (Mesh.lod; 2.0.0-test3, lag).
  */

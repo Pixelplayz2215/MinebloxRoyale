@@ -2,7 +2,7 @@
 The Java Smooth (gg.minebloxroyale.client.avatar.Smooth) in Blender: the same calls (at, move, rotX/Y/Z, scale, align,
 color, then lathe, sphere, blob, lens, panel, cone, ellipsoid, torus, tube, surface) with the same conventions
 (Minecraft-style space, y up; angles from +x towards +z; profiles listed bottom to top), so the cosmetics and back bling
-port line for line and keep their exact sizes. Colours: an int 0xRRGGBB, 'a' / 'b' (the item's own colours, tint
+port line for line and keep their exact sizes. Colors: an int 0xRRGGBB, 'a' / 'b' (the item's own colors, tint
 channels 1 / 2), ('a', 0.8) a shade of one, or a material.
 """
 import math
@@ -34,7 +34,7 @@ def material(c, glow=False):
 
 
 def shade(c, k):
-    """A shade of a colour: of the item's own ('a', 'b'), or of a fixed one."""
+    """A shade of a color: of the item's own ('a', 'b'), or of a fixed one."""
     if c in ("a", "b"):
         return (c, k)
     if isinstance(c, tuple):
@@ -70,7 +70,7 @@ def seg(n):
 
 
 class S:
-    """One Smooth: a current placement and colour; shapes are made at the placement."""
+    """One Smooth: a current placement and color; shapes are made at the placement."""
 
     def __init__(self):
         self.local = Matrix.Identity(4)

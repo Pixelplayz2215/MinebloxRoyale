@@ -27,7 +27,7 @@ import net.minecraft.resources.Identifier;
 /**
  * Shirt and pants designs (creator: detailed, nothing blocky): painted once per item as a smooth, anti-aliased picture
  * and wrapped round the torso or each leg (Cosmetics.submitClothes). The body part underneath already has the item's
- * main colour; the picture adds the design on a transparent background: collars, hems and stitching, pockets with
+ * main color; the picture adds the design on a transparent background: collars, hems and stitching, pockets with
  * flaps, stripes, lapels and a tie, buckles, badges, camo, plaid, soft shading.
  * <p>
  * Layout, 48 pixels per stud, faces side by side as seen from outside: front | +X side | back | -X side. Torso:
@@ -143,8 +143,8 @@ final class ClothingTextures {
 
 	/**
 	 * Woodland camo (2.0.0-test5, creator: "the camo print is too smushed together"; it was 78 small ovals in shades
-	 * close to the green under them, piled on each other): big patches in three clear colours (a lighter green, a
-	 * brown, a near-black) on the item's own colour, each a few joined rounded lobes about a third of a face across,
+	 * close to the green under them, piled on each other): big patches in three clear colors (a lighter green, a
+	 * brown, a near-black) on the item's own color, each a few joined rounded lobes about a third of a face across,
 	 * spread out so the base shows between them; neighbours differ. The same size on a shirt, its sleeves and pants.
 	 */
 	private static void camo(Graphics2D g, Random r, int w, int h, int base, int dark) {

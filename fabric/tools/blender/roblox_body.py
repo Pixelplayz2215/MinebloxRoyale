@@ -1,7 +1,7 @@
 """
 The real Roblox R6 body for the renders (never exported, never copied anywhere): the same files the game reads from
 the player's Roblox install (RobloxAssets, avatar parts sheet: avatar/meshes/*.mesh and the face picture), read like
-RobloxMesh.java, each part placed and coloured as RobloxAvatarRenderer draws it, the face on the front of the head as
+RobloxMesh.java, each part placed and colored as RobloxAvatarRenderer draws it, the face on the front of the head as
 the game projects it. content(): the install's content folder (MINEBLOXROYALE_ROBLOX, or Roblox's own folder), or
 None, and the renders keep the stand-in.
 """
@@ -77,7 +77,7 @@ def _mat(name, color, face=None):
     lin = (*to_linear(hexrgb(color)), 1)
     if face is None:
         bsdf.inputs["Base Color"].default_value = lin
-    else:  # the face picture over white, times the head colour (the game's one texture, tinted)
+    else:  # the face picture over white, times the head color (the game's one texture, tinted)
         tex = nt.nodes.new("ShaderNodeTexImage")
         tex.image = bpy.data.images.load(face, check_existing=True)
         tex.extension = "CLIP"

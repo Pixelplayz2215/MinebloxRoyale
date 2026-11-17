@@ -111,12 +111,12 @@ public final class ClientState {
 		return inMatch() && squad != null && hud.teamSize() > 1;
 	}
 
-	/** A teammate slot's colour (team_colors sheet). */
+	/** A teammate slot's color (team_colors sheet). */
 	public static int teamColor(int slot) {
 		return Teams.color(slot) | 0xFF000000;
 	}
 
-	/** My own colour in a team match (my map arrow), or the classic yellow. */
+	/** My own color in a team match (my map arrow), or the classic yellow. */
 	public static int myColor() {
 		return teamMatch() ? teamColor(squad.mySlot()) : 0xFFFFD21F;
 	}
@@ -129,8 +129,8 @@ public final class ClientState {
 	}
 
 	/**
-	 * Names to colour on my screen (chat, name tags): my teammates in a team match, my party in the hub (each in their
-	 * slot colour). Never myself (my own name is purple).
+	 * Names to color on my screen (chat, name tags): my teammates in a team match, my party in the hub (each in their
+	 * slot color). Never myself (my own name is purple).
 	 */
 	public static Map<String, Integer> teammateColors() {
 		Map<String, Integer> out = new LinkedHashMap<>();

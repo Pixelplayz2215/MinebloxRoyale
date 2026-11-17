@@ -14,7 +14,7 @@ import net.minecraft.world.entity.Entity;
 
 /**
  * The teams of the match being played (modes sheet: Solo, Duos, Trios, Squads). Every fighter has a team number and a
- * slot in it (teammate colours, team_colors sheet). In Solo everyone is a team of one, so nobody is a teammate.
+ * slot in it (teammate colors, team_colors sheet). In Solo everyone is a team of one, so nobody is a teammate.
  * Real players' teams are made from their parties at the bus (Parties.teamsFor); bots keep theirs on the roster.
  */
 public final class Teams {
@@ -81,7 +81,7 @@ public final class Teams {
 		return NAMES.getOrDefault(player, "?");
 	}
 
-	/** A teammate slot's colour (team_colors sheet: slot 1 is the first). */
+	/** A teammate slot's color (team_colors sheet: slot 1 is the first). */
 	public static int color(int slot) {
 		var c = Sheets.TEAM_COLORS;
 		return c.get(Math.floorMod(slot, c.size())).color();

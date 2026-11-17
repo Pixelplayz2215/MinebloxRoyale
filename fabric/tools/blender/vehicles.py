@@ -27,7 +27,7 @@ YELLOW = lambda: mat("yellow", "#F5C629", rough=0.4)
 
 
 def wheel(x, y, z, r, w, s):
-    """A chunky wheel with its outer face at x + s * w: rounded tyre, a white-walled hub, five nuts."""
+    """A chunky wheel with its outer face at x + s * w: rounded tire, a white-walled hub, five nuts."""
     lathe([(0.0, -w), (r * 0.6, -w), (r * 0.92, -w), (r, -w * 0.5), (r, w * 0.5), (r * 0.92, w), (r * 0.6, w), (0.0, w)], x, y, z, TIRE(), segs=24, axis="x")
     cyl(x + s * w, y, z, r * 0.58, 0.04, "x", WHITE(), verts=20)
     cyl(x + s * (w + 0.02), y, z, r * 0.4, 0.04, "x", HUB(), verts=18)

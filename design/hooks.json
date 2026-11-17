@@ -14,7 +14,7 @@
     { "id": "h_lan", "system": "Open to LAN on load (e4mc link), Melty join/host log lines", "side": "client", "hook": "ClientPlayConnectionEvents.JOIN", "owner": "client.AutoWorld" },
     { "id": "h_hub", "system": "Hub + obby build, spawn point, game rules", "side": "server", "hook": "ServerLifecycleEvents.SERVER_STARTED", "owner": "hub.HubBuilder" },
     { "id": "h_match", "system": "Match state machine, storm, bots fill, victory", "side": "server", "hook": "ServerTickEvents.END_SERVER_TICK", "owner": "match.MatchManager" },
-    { "id": "h_damage", "system": "Shield absorbs damage; storm damage", "side": "server", "hook": "ServerLivingEntityEvents.ALLOW_DAMAGE", "owner": "match.Combat" },
+    { "id": "h_damage", "system": "Shield absorbs damage (not the storm's or a fall's); car passengers safe", "side": "server", "hook": "ServerLivingEntityEvents.ALLOW_DAMAGE", "owner": "match.Combat" },
     { "id": "h_death", "system": "Elimination instead of death in a match / hub", "side": "server", "hook": "ServerLivingEntityEvents.ALLOW_DEATH", "owner": "match.Combat" },
     { "id": "h_items", "system": "Guns and consumables", "side": "both", "hook": "Item.use / onUseTick / finishUsingItem", "owner": "item.WeaponItem, item.ConsumableItem" },
     { "id": "h_bot", "system": "Bot entity and AI", "side": "server", "hook": "EntityType registration + goals", "owner": "bot.BotEntity" },

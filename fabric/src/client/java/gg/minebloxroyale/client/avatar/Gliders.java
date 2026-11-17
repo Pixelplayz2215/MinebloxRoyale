@@ -21,7 +21,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * The 46 gliders (gliders sheet), each a Blender model (fabric/tools/blender/gliders.py: nine shapes, each glider's own
  * decoration, bigger than before), drawn above a gliding player in Roblox root space on the frame its raised hands hold
- * (RobloxAvatarRenderer), in the glider's two colours; the lighter copy far away. v2.0.0 (creator: "glider animations.
+ * (RobloxAvatarRenderer), in the glider's two colors; the lighter copy far away. v2.0.0 (creator: "glider animations.
  * Deploy annimation, actual gliding ... as well as putting gliders away"): it pops open out of the back, sways as it
  * rides the air, banks into turns, and folds back into the back on landing, as keyframed in Blender (glider_keys sheet,
  * fabric/tools/blender/glider_video.py).

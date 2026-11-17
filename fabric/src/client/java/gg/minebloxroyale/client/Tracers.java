@@ -27,7 +27,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Bullets you can see (v2.0.0, creator: "the bullets when they shoot should be better"): every shot (Net.Shot) is a
- * bright streak flying from the gun's muzzle to where it hit, in its gun's tracer colour and length (weapons sheet),
+ * bright streak flying from the gun's muzzle to where it hit, in its gun's tracer color and length (weapons sheet),
  * with a muzzle flash, sparks and dust where it lands (a puff of red on a hit) and, for the sniper, a thin trail of
  * smoke hanging in the air behind it. Every shot also kicks: its shooter's recoil animation, and your view when it's
  * yours (Aim).

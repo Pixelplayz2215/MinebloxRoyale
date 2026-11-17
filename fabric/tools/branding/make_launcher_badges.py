@@ -1,6 +1,6 @@
 """The launcher badges by players' names (2.0.0-test6.2, creator: "Icons next to players names based on the launcher
 they're using ... If launched via Melty's prism then show Melty icon"): one small badge per launcher, drawn here (our own
-designs in each launcher's colours, each a symbol for its name, none of them the launchers' logos: 2.0.0-test6.2, creator:
+designs in each launcher's colors, each a symbol for its name, none of them the launchers' logos: 2.0.0-test6.2, creator:
 "create your own icon for each where players can easily notice what launcher it is without being confused OR infringing
 copywrite"), as a bitmap font so
 the name tag can carry one as a character (assets/minebloxroyale/font/launchers.json: U+E000 on, in BADGES' order;
@@ -21,7 +21,7 @@ CELL = 32  # (each badge in the font's picture)
 F = lambda n: ImageFont.truetype("C:/Windows/Fonts/bahnschrift.ttf", n)
 WHITE, INK = (255, 255, 255, 255), (24, 20, 32, 255)
 
-# id, name shown in the preview, the badge's colours
+# id, name shown in the preview, the badge's colors
 BADGES = [
     ("melty", "Melty", (40, 156, 255), (1, 120, 232)),  # (Melty's own blue, 2.0.0-test6.2)
     ("prism", "Prism Launcher", (44, 48, 60), (30, 32, 42)),
@@ -214,7 +214,7 @@ def preview(pics, out):
     im = Image.new("RGB", (W, 820), (24, 27, 34))
     d = ImageDraw.Draw(im)
     d.text((30, 24), "Launcher badges by players' names", font=F(42), fill=(255, 200, 61))
-    d.text((30, 76), "Our own icons in each launcher's style: its colours and main shape, drawn simply (not copied). Shown in everyone's name tag.", font=F(20), fill=(154, 163, 178))
+    d.text((30, 76), "Our own icons in each launcher's style: its colors and main shape, drawn simply (not copied). Shown in everyone's name tag.", font=F(20), fill=(154, 163, 178))
     for i, (p, b) in enumerate(zip(pics, BADGES)):
         x, y = 30 + (i % 5) * 292, 124 + (i // 5) * 230
         d.rounded_rectangle((x, y, x + 272, y + 210), radius=14, fill=(44, 49, 61))

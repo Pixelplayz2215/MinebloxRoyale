@@ -169,8 +169,8 @@ FACE_GEOM = {"down": (1, 0, -1), "up": (1, 1, 1), "north": (2, 0, -1), "south": 
 TEX_CACHE = {}
 
 
-def colours(tref, uv):
-    """The distinct colours a face shows: the pixels of its UV box in the texture."""
+def colors(tref, uv):
+    """The distinct colors a face shows: the pixels of its UV box in the texture."""
     if tref is None or not uv:
         return None
     ns, p = split(tref)
@@ -219,7 +219,7 @@ def zfight(ref, elements, resolve):
             if area <= 0:
                 continue
             fd = e["faces"][fn]
-            faces.append((i, fn, np.array(corners), n, colours(resolve(fd.get("texture")), fd.get("uv"))))
+            faces.append((i, fn, np.array(corners), n, colors(resolve(fd.get("texture")), fd.get("uv"))))
     for (i, fa, ca, na, ta), (j, fb, cb, nb, tb) in itertools.combinations(faces, 2):
         if i == j or abs(na @ nb) < 0.9999:
             continue
@@ -237,7 +237,7 @@ def zfight(ref, elements, resolve):
         oy = min(pa[:, 1].max(), pb[:, 1].max()) - max(pa[:, 1].min(), pb[:, 1].min())
         if ox > 0.01 and oy > 0.01:
             same = ta is not None and ta == tb and len(ta) == 1
-            what = "both one identical colour, so the flicker can't be seen" if same else "different colours: visible flicker"
+            what = "both one identical color, so the flicker can't be seen" if same else "different colors: visible flicker"
             (notes.append if same else bad)(f"{ref}: element {i} {fa} face and element {j} {fb} face on the same plane over each other, {ox:.2f} x {oy:.2f} px ({what})")
 
 

@@ -14,7 +14,7 @@ import net.minecraft.network.chat.MutableComponent;
  * The badge by each player's name for the launcher they play from (2.0.0-test6.2, creator: "Icons next to players names
  * based on the launcher they're using. PLayer using modrinth launcher should show the modringth logo in the nametag (shows
  * for everybody), Lunar will show Lunar icon, If launched Prism standalone shows Prism icon, etc. If launched via Melty's
- * prism then show Melty icon"). Our own badges in each launcher's colours (fabric/tools/branding/make_launcher_badges.py),
+ * prism then show Melty icon"). Our own badges in each launcher's colors (fabric/tools/branding/make_launcher_badges.py),
  * one character each in the font minebloxroyale:launchers (U+E000 on, in IDS' order). Your game works out its launcher
  * when it starts and tells the world on joining ("launcher:<id>"); the world tells everyone (Net.Launchers).
  */

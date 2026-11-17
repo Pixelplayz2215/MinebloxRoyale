@@ -1,7 +1,7 @@
 {
   "sheet": "weapons",
   "class": "WeaponDef",
-  "about": "Guns with Fortnite (Chapter 1) numbers: common damage, fire rate, magazine and reload time converted to ticks. Damage is per bullet (or per pellet) at Common rarity; rarity multiplies it. Health is Fortnite's 100 HP + 100 shield. Fortnite controls: left mouse fires, right mouse aims down sights (adsZoom = FOV zoom, adsSpreadMult = spread while aiming; scope = full-screen sniper scope). v2.0.0: recoilDeg = how far each shot kicks your view up (it settles back; only the view moves, not your aim); kick = how hard the avatar's Blender recoil animation plays (1 = as made); tracer = the colour of its bullets' streaks, tracerLength their length (blocks); projectile: rocket = it fires a slow rocket that explodes where it hits (match sheet rocket*: blast radius, damage to players, builds and cars) instead of a bullet.",
+  "about": "Guns with Fortnite (Chapter 1) numbers: common damage, fire rate, magazine and reload time converted to ticks. Damage is per bullet (or per pellet) at Common rarity; rarity multiplies it. Health is Fortnite's 100 HP + 100 shield. Fortnite controls: left mouse fires, right mouse aims down sights (adsZoom = FOV zoom, adsSpreadMult = spread while aiming; scope = full-screen sniper scope). v2.0.0: recoilDeg = how far each shot kicks your view up (it settles back; only the view moves, not your aim); kick = how hard the avatar's Blender recoil animation plays (1 = as made); tracer = the color of its bullets' streaks, tracerLength their length (blocks); projectile: rocket = it fires a slow rocket that explodes where it hits (match sheet rocket*: blast radius, damage to players, builds and cars) instead of a bullet.",
   "columns": {
     "id": "string",
     "name": "string",

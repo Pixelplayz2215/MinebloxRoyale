@@ -10,7 +10,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 
 /**
- * The Locker preview's particle effect, drawn with the same Minecraft particle textures and colours you see around
+ * The Locker preview's particle effect, drawn with the same Minecraft particle textures and colors you see around
  * players in the world (CosmeticParticles), spawned the same way: one every 'rate' ticks, 0.45-0.7 blocks out and
  * 0.4-1.9 blocks up, drifting up 0.015 blocks a tick (drips fall). Ones behind the avatar are drawn before it.
  */
@@ -51,7 +51,7 @@ final class LockerParticles {
 			case "cherry_leaves" -> new Look(seq("cherry_", 0, 11), false, false, 0.2F, true);
 			case "electric_spark", "glow", "wax_on" -> new Look(new String[] { "glow" }, false, true, 0.12F);
 			case "enchant" -> new Look(letters(), false, true, 0.12F);
-			case "happy_villager" -> new Look(new String[] { "glint" }, false, false, 0.12F); // the world's own colours
+			case "happy_villager" -> new Look(new String[] { "glint" }, false, false, 0.12F); // the world's own colors
 			case "bubble_pop" -> new Look(seq("bubble_pop_", 0, 4), true, false, 0.15F);
 			case "crit" -> new Look(new String[] { "critical_hit" }, false, true, 0.15F);
 			case "enchanted_hit" -> new Look(new String[] { "enchanted_hit" }, false, true, 0.15F);

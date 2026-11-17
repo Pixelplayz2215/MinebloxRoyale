@@ -10,7 +10,7 @@ Each piece sits exactly over its painted part: the designs are 48 pixels a stud,
 -x edge (left of the picture) to its +x edge and from its top down (ClothingTextures, Cosmetics.wrap), so a design
 pixel (px, py) on the torso's front is x = -1 + px / 48, y = 1 - py / 48.
 
-Models (all in the item's two colours, tint channels 1 and 2):
+Models (all in the item's two colors, tint channels 1 and 2):
   shirt_<shape>_torso (torso joint space: x +-1, y -1 .. 1, z +-0.5, the front -z), shirt_<shape>_rarm / _larm (arm
   joint space: x +-0.5, y -1.5 .. 0.5), pants_<shape>_hips (torso), pants_<shape>_rleg / _lleg (leg joint space:
   x +-0.5, y -2 .. 0).

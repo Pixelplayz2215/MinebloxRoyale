@@ -17,7 +17,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Draws a parked car on its core block, nose the way the car faces: the Blender model of its kind and damage stage
- * (fabric/tools/blender/cars.py), in its paint and trim colours; the lighter copies further away (Mesh.lod).
+ * (fabric/tools/blender/cars.py), in its paint and trim colors; the lighter copies further away (Mesh.lod).
  */
 public class CarRenderer implements BlockEntityRenderer<CarBlockEntity, CarRenderer.State> {
 

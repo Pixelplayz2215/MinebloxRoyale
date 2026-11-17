@@ -8,10 +8,13 @@ assets' sounds.json:
   music/battle_1, music/battle_2   two seamless battle loops (A minor, 140 bpm; the second harder, for the endgame)
   gun/<gun>_1..3                   each gun's shot, three takes so repeats don't sound copied (the rocket launcher too)
   boom/explosion_1..3              a rocket or grenade going off; boom/grenade_bounce, a grenade knocking on the ground
-  storm/warning                    the storm starting to close in
-  car/engine, car/skid             a car's engine and its tyres squealing round a turn: seamless loops the game pitches
-                                   and fades with how fast the car goes and turns (2.0.0-test3, creator: "Cars should have
-                                   a driving animation (also sounds)")
+  storm/warning                    the storm starting to close in (2.1.0-test5, creator: "just make the warning out
+                                   urgent, remove the whirling sound the storm makes": an alarm now, a deep hit, a
+                                   two-tone klaxon and a rising siren over the wind; the storm/closing loop is gone)
+  car/engine, car/tires            a car's engine and its tires on the ground: seamless loops the game pitches and fades
+                                   with how fast the car goes and turns (2.0.0-test3, creator: "Cars should have a driving
+                                   animation (also sounds)"; 2.1.0, creator: the tires "sound very odd; no screeching": a
+                                   rolling rumble and a little grit, no squeal; it was car/skid)
   car/boost, car/door_open, car/door_close
                                    a boost kicking in, a car door opening and shutting
   use/heal_1..3, use/shield_1..3   using a heal (a bandage wrapping, cloth rustling) and drinking a shield (a gulp of
@@ -22,8 +25,13 @@ assets' sounds.json:
                                    (2.0.0-test5, the new Victory Royale screen)
   emote/<emote>                    each emote's own music, a seamless loop in a style that suits it, in step with it
                                    (2.0.0-test5, creator: "Add emote music!": emote_music.py)
+  sky/wind, sky/whoosh             (2.1.0, creator: skydiving sounds) the wind rushing past while skydiving and gliding (a
+                                   seamless loop the game fades and pitches with how fast you fall), and a whoosh as you
+                                   jump out of the bus or close the glider and dive
+  sky/glider_open, sky/glider_close  (2.1.0) the glider snapping open with a flutter of cloth, and folding away
 
-python fabric/tools/audio/make_audio.py [cars|use|emotes]      (cars, use, emotes: just those sounds)
+python fabric/tools/audio/make_audio.py [cars|use|emotes|sky|storm]
+                                   (just those sounds; sky: the 2.1.0 ones and the tires too; storm: the warning)
 """
 import json
 import os
@@ -38,7 +46,8 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(HERE, "..", "..", ".."))
 ASSETS = os.path.join(ROOT, "fabric", "src", "main", "resources", "assets", "minebloxroyale")
-FFMPEG = os.path.join(ROOT, ".tools", "ffmpeg", "ffmpeg-n9.0-latest-win64-lgpl-shared-9.0", "bin", "ffmpeg.exe")
+# (the project's .tools; a worktree of it uses the main checkout's, MINEBLOXROYALE_TOOLS)
+FFMPEG = os.path.join(os.environ.get("MINEBLOXROYALE_TOOLS", os.path.join(ROOT, ".tools")), "ffmpeg", "ffmpeg-n9.0-latest-win64-lgpl-shared-9.0", "bin", "ffmpeg.exe")
 SR = 44100
 RNG = np.random.default_rng(2026)
 
@@ -63,6 +72,19 @@ def filt(x, lo=None, hi=None, order=2.0):
     if hi:
         g *= 1 / np.sqrt(1 + (f / hi) ** (2 * order))
     return np.fft.irfft(X * g, m)[:n]
+
+
+def filt_loop(x, lo=None, hi=None, order=2.0):
+    """As filt, but round the loop (circular): a filtered loop wraps without a seam."""
+    n = len(x)
+    X = np.fft.rfft(x)
+    f = np.fft.rfftfreq(n, 1 / SR)
+    g = np.ones_like(f)
+    if lo:
+        g *= 1 / np.sqrt(1 + (lo / np.maximum(f, 1e-3)) ** (2 * order))
+    if hi:
+        g *= 1 / np.sqrt(1 + (f / hi) ** (2 * order))
+    return np.fft.irfft(X * g, n)
 
 
 def env(n, attack, decay, curve=4.0):
@@ -250,63 +272,62 @@ def grenade_bounce():
 # ------------------------------------------------------------------------------------------------- storm
 
 def storm_warning():
-    sec = 3.2
+    """(2.1.0-test5, creator: "just make the warning out urgent") Played once as each storm phase starts to shrink: a
+    deep hit, then a two-tone klaxon pulsing faster and higher over a siren that rises with the wind, and a short tail."""
+    sec = 3.0
     n = int(sec * SR)
     t = t_of(sec)
-    # a swell of wind, its filter opening as it rises
+    out = np.zeros(n)
+    # the hit: a sub drop and a burst of dark noise
+    hit = sweep(90, 34, 0.7, shape=4) * env(int(0.7 * SR), 0.003, 0.5, curve=3)
+    hit += filt(noise(0.7), lo=40, hi=400) * env(int(0.7 * SR), 0.002, 0.18) * 0.5
+    out[:len(hit)] += soft(hit, 1.8) * 0.75
+    # the klaxon: two tones a fourth apart, square-ish, each pulse a little sooner and brighter than the last
+    at, k = 0.12, 0
+    while at < 2.35:
+        f = (932.3, 698.5)[k % 2] * (1 + 0.04 * at / 2.35)
+        ln = max(0.09, 0.2 - 0.016 * k)
+        m = int(ln * SR)
+        tt = t_of(ln)
+        tone = np.sin(2 * np.pi * f * tt) + 0.45 * np.sin(2 * np.pi * 3 * f * tt) + 0.2 * np.sin(2 * np.pi * 5 * f * tt)
+        tone += 0.5 * np.sin(2 * np.pi * f * 1.004 * tt)  # (a slight beat: harsher)
+        shape = np.clip(tt / 0.006, 0, 1) * np.clip((ln - tt) / 0.025, 0, 1)
+        a = int(at * SR)
+        out[a:a + m] += tone[:n - a] * shape[:n - a] * (0.2 + 0.1 * at / 2.35)
+        at += ln + 0.05
+        k += 1
+    # the siren, rising under it, wavering
+    f = 240 + 520 * (t / sec) ** 1.3
+    ph = 2 * np.pi * np.cumsum(f) / SR
+    siren = (np.sin(ph) + 0.3 * np.sin(2 * ph)) * (0.7 + 0.3 * np.sin(2 * np.pi * 9 * t)) * env(n, 0.6, 0.9, curve=3) * 0.28
+    # the wind swelling
     w = noise(sec)
     parts = []
     blocks = 16
-    for k in range(blocks):
-        a, b = k * n // blocks, (k + 1) * n // blocks
-        parts.append(filt(w[a:b], lo=120, hi=300 + 3200 * (k / blocks) ** 1.5))
-    wind = np.concatenate(parts) * env(n, 1.6, 1.2, curve=3)
-    # an uneasy pair of tones a semitone apart, shimmering
-    tone = np.zeros(n)
-    for f, a in ((440.0, 0.5), (466.16, 0.45), (220.0, 0.35), (880.0, 0.15)):
-        tone += a * np.sin(2 * np.pi * f * t + 0.6 * np.sin(2 * np.pi * 5.5 * t))
-    tone *= (0.65 + 0.35 * np.sin(2 * np.pi * 7 * t)) * env(n, 0.5, 1.8, curve=2.5)
-    # three falling chimes on top
-    chimes = np.zeros(n)
-    for k, f in enumerate((1318.5, 1174.7, 987.8)):
-        i = int((0.25 + 0.42 * k) * SR)
-        c = np.sin(2 * np.pi * f * t[:n - i]) * env(n - i, 0.002, 0.7)
-        chimes[i:] += c * 0.35
-    out = wind * 0.55 + tone * 0.45 + chimes
-    out = room(out, 1.0, 0.45)
-    fade = np.ones(n)
-    fade[-int(0.3 * SR):] = np.linspace(1, 0, int(0.3 * SR))
-    return norm(out * fade, 0.85)
+    for b in range(blocks):
+        a, c = b * n // blocks, (b + 1) * n // blocks
+        parts.append(filt(w[a:c], lo=120, hi=400 + 3600 * (b / blocks) ** 1.4))
+    wind = np.concatenate(parts) * env(n, 2.0, 0.9, curve=3) * 0.35
+    out += siren + wind
+    out *= np.clip((sec - t) / 0.35, 0, 1)  # (a quick fade at the very end)
+    return norm(room(out, 0.8, 0.35), 0.88)
 
 
-# ------------------------------------------------------------------------------------------------- cars
-
-def car_engine():
-    """An engine running, 2 s that loop without a seam: every part repeats a whole number of times in the 2 s (the noise is
-    filtered round the loop, so it wraps too). The game raises its pitch with the car's speed."""
+def car_tires():
+    """(2.1.0, creator: the tires "sound very odd; no screeching") Tires rolling over the ground: a low rumble of road
+    noise and a little grit, no squeal; 2 s that loop (the noise filtered round the loop, the wobble whole cycles)."""
     sec = 2.0
     n = int(sec * SR)
     t = t_of(sec)
-    f0 = 40.0  # (the firing: 80 times in the loop)
-    out = np.zeros(n)
-    for k, a in ((1, 1.0), (2, 0.62), (3, 0.42), (4, 0.3), (5, 0.18), (6, 0.12), (8, 0.07)):
-        out += a * np.sin(2 * np.pi * f0 * k * t + k * 0.7)
-    out *= 0.78 + 0.22 * np.sin(2 * np.pi * 12.5 * t)  # (each cylinder's pulse)
-    out += filt(noise(sec), lo=60, hi=420) * 0.55  # (the rumble)
-    out += filt(noise(sec), lo=900, hi=2600) * 0.06 * (0.6 + 0.4 * np.sin(2 * np.pi * 25 * t))  # (a little valve chatter)
-    return norm(soft(out, 1.5), 0.8)
-
-
-def car_skid():
-    """Tyres squealing: a screech over hiss, 1 s that loops (a whole number of cycles of everything)."""
-    sec = 1.0
-    n = int(sec * SR)
-    t = t_of(sec)
-    squeal = np.sin(2 * np.pi * 1250 * t + 9 * np.sin(2 * np.pi * 6 * t)) * 0.5
-    squeal += np.sin(2 * np.pi * 2500 * t + 18 * np.sin(2 * np.pi * 6 * t)) * 0.18
-    hiss = filt(noise(sec), lo=1400, hi=4200) * 0.6
-    out = (squeal + hiss) * (0.85 + 0.15 * np.sin(2 * np.pi * 9 * t))
-    return norm(out, 0.7)
+    rumble = filt_loop(noise(sec), lo=45, hi=320) * (0.85 + 0.15 * np.sin(2 * np.pi * 3 * t))
+    road = filt_loop(noise(sec), lo=300, hi=1400) * 0.22 * (0.8 + 0.2 * np.sin(2 * np.pi * 7 * t + 1.0))
+    grit = np.zeros(n)
+    for _ in range(70):  # (small stones and bumps: soft ticks, wrapped round the loop)
+        at = int(RNG.random() * n)
+        k = filt(noise(0.012), lo=900, hi=3200) * env(int(0.012 * SR), 0.0005, 0.004)
+        idx = (at + np.arange(len(k))) % n
+        grit[idx] += k * (0.08 + RNG.random() * 0.12)
+    return norm(rumble + road + grit, 0.75)
 
 
 def car_boost():
@@ -358,12 +379,95 @@ def car_door(close):
 
 
 def cars(snd, reg):
-    for name, make in (("engine", car_engine), ("skid", car_skid), ("boost", car_boost), ("door_open", lambda: car_door(False)),
+    for name, make in (("engine", car_engine), ("tires", car_tires), ("boost", car_boost), ("door_open", lambda: car_door(False)),
                        ("door_close", lambda: car_door(True))):
         seeded(f"car/{name}")
         write_ogg(os.path.join(snd, "car", f"{name}.ogg"), make())
         reg[f"car.{name}"] = {"sounds": [f"minebloxroyale:car/{name}"]}
     print("car sounds")
+
+
+# ------------------------------------------------------------------------------------------------- skydiving and the glider (2.1.0)
+
+def sky_wind():
+    """The wind rushing past as you fall: 4 s that loop. Broad roaring air with slow gusts and a faint high whistle; the
+    game raises its volume and pitch with how fast you fall (AmbientSounds)."""
+    sec = 4.0
+    t = t_of(sec)
+    roar = filt_loop(noise(sec), lo=90, hi=900) * (0.75 + 0.25 * np.sin(2 * np.pi * 0.5 * t) * np.sin(2 * np.pi * 1.25 * t + 0.4))
+    air = filt_loop(noise(sec), lo=700, hi=3800) * 0.45 * (0.7 + 0.3 * np.sin(2 * np.pi * 0.75 * t + 2.0))
+    whistle = filt_loop(noise(sec), lo=2600, hi=3000, order=6) * 0.5 * (0.5 + 0.5 * np.sin(2 * np.pi * 0.25 * t + 1.0))
+    return norm(roar + air + whistle, 0.8)
+
+
+def sky_whoosh():
+    """A whoosh: air rushing up past you and falling away (out of the bus, or closing the glider into a dive)."""
+    sec = 1.3
+    n = int(sec * SR)
+    w = noise(sec)
+    parts = []
+    blocks = 26
+    for b in range(blocks):  # (the band sweeps up, then back down as it passes)
+        a_, b_ = b * n // blocks, (b + 1) * n // blocks
+        x = b / blocks
+        centre = 400 + 2600 * np.sin(np.pi * min(1.0, x * 1.4)) ** 2
+        parts.append(filt(w[a_:b_], lo=centre * 0.45, hi=centre * 1.6))
+    out = np.concatenate(parts) * env(n, 0.28, 0.75, curve=3.2)
+    thump = sweep(110, 50, 0.3) * env(int(0.3 * SR), 0.01, 0.12)
+    out[:len(thump)] += thump * 0.35
+    return norm(room(out, 0.5, 0.2), 0.85)
+
+
+def glider_open():
+    """The glider snapping open: a soft whump as it catches the air, cloth rustling and a flutter that settles."""
+    sec = 0.9
+    n = int(sec * SR)
+    t = t_of(sec)
+    out = np.zeros(n)
+    whump = sweep(160, 60, 0.3, shape=4) * env(int(0.3 * SR), 0.004, 0.1)
+    out[:len(whump)] += whump * 0.8
+    snap = filt(noise(0.06), lo=600, hi=5000) * env(int(0.06 * SR), 0.001, 0.02)
+    out[:len(snap)] += snap * 0.7
+    flutter = filt(noise(sec), lo=300, hi=2600) * (0.55 + 0.45 * np.sign(np.sin(2 * np.pi * (22 - 8 * t) * t)))
+    out += flutter * env(n, 0.03, 0.45, curve=3) * 0.55
+    return norm(room(out, 0.4, 0.2), 0.85)
+
+
+def glider_close():
+    """The glider folding away: a quick flutter of cloth and a soft fold."""
+    sec = 0.55
+    n = int(sec * SR)
+    t = t_of(sec)
+    out = filt(noise(sec), lo=400, hi=3000) * (0.5 + 0.5 * np.sign(np.sin(2 * np.pi * (14 + 18 * t) * t))) * env(n, 0.02, 0.25, curve=3) * 0.6
+    fold = sweep(130, 70, 0.18, shape=3) * env(int(0.18 * SR), 0.004, 0.06)
+    i = int(0.3 * SR)
+    out[i:i + len(fold)] += fold * 0.6
+    return norm(room(out, 0.35, 0.15), 0.8)
+
+
+def storm(snd, reg):
+    """The storm warning on its own (2.1.0-test5); the old closing loop (storm/closing) is taken out."""
+    seeded("storm/warning")
+    write_ogg(os.path.join(snd, "storm", "warning.ogg"), storm_warning())
+    reg["storm.warning"] = {"sounds": ["minebloxroyale:storm/warning"]}
+    reg.pop("storm.closing", None)
+    old = os.path.join(snd, "storm", "closing.ogg")
+    if os.path.exists(old):
+        os.remove(old)
+    print("storm warning")
+
+
+def sky(snd, reg):
+    for name, make, folder in (("wind", sky_wind, "sky"), ("whoosh", sky_whoosh, "sky"), ("glider_open", glider_open, "sky"),
+                               ("glider_close", glider_close, "sky"), ("tires", car_tires, "car")):
+        seeded(f"{folder}/{name}")
+        write_ogg(os.path.join(snd, folder, f"{name}.ogg"), make())
+        reg[f"{folder}.{name}"] = {"sounds": [f"minebloxroyale:{folder}/{name}"]}
+    reg.pop("car.skid", None)
+    old = os.path.join(snd, "car", "skid.ogg")
+    if os.path.exists(old):
+        os.remove(old)
+    print("sky, glider and tire sounds")
 
 
 # ------------------------------------------------------------------------------------------------- heals and shields
@@ -688,10 +792,10 @@ def seeded(name):
 
 def main():
     snd = os.path.join(ASSETS, "sounds")
-    if len(sys.argv) > 1 and sys.argv[1] in ("cars", "use", "emotes"):  # (just the cars' sounds, the heals' and shields', or the emotes' music)
+    if len(sys.argv) > 1 and sys.argv[1] in ("cars", "use", "emotes", "sky", "storm"):  # (just the cars' sounds, the heals' and shields', the emotes' music, 2.1.0's, or the storm's)
         p = os.path.join(ASSETS, "sounds.json")
         reg = json.load(open(p, encoding="utf-8"))
-        {"cars": cars, "use": uses, "emotes": emotes}[sys.argv[1]](snd, reg)
+        {"cars": cars, "use": uses, "emotes": emotes, "sky": sky, "storm": storm}[sys.argv[1]](snd, reg)
         json.dump(reg, open(p, "w", encoding="utf-8", newline="\n"), indent=2)
         return
     for name in GUNS:
@@ -726,6 +830,7 @@ def main():
     for i in (1, 2):
         reg[f"music.battle_{i}"] = {"sounds": [{"name": f"minebloxroyale:music/battle_{i}", "stream": True}]}
     cars(snd, reg)
+    sky(snd, reg)
     uses(snd, reg)
     emotes(snd, reg)
     json.dump(reg, open(p, "w", encoding="utf-8", newline="\n"), indent=2)

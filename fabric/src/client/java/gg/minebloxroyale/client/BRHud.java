@@ -6,6 +6,7 @@ import gg.minebloxroyale.item.Guns;
 import gg.minebloxroyale.item.MaterialStacks;
 import gg.minebloxroyale.item.WeaponItem;
 import gg.minebloxroyale.match.CarEntity;
+import gg.minebloxroyale.match.Reboot;
 import gg.minebloxroyale.sheets.HudElementDef;
 import gg.minebloxroyale.sheets.LoadoutDef;
 import gg.minebloxroyale.sheets.RarityDef;
@@ -48,11 +49,11 @@ public final class BRHud {
 			scaled(g, "ammo", g.guiWidth(), g.guiHeight(), () -> ammo(g, mc));
 			reloadingText(g, mc);
 			scaled(g, "materials", g.guiWidth(), g.guiHeight(), () -> materials(g, mc));
+			scaled(g, "gun_stats", g.guiWidth(), g.guiHeight(), () -> gunStats(g, mc)); // (2.1.0)
 			scaled(g, "bus_hint", g.guiWidth() / 2F, g.guiHeight(), () -> busHint(g, mc));
 			scaled(g, "tip", g.guiWidth() / 2F, g.guiHeight(), () -> FirstTips.draw(g, mc)); // (2.0.0-test6.3: first-time control tips)
 		} else {
-			scaled(g, "hub_hint", g.guiWidth() / 2F, 0, () -> hubHint(g, mc));
-			scaled(g, "obby_timer", g.guiWidth() / 2F, 0, () -> ObbyTimerHud.draw(g)); // (2.0.0: the obby timer)
+			scaled(g, "hub_hint", g.guiWidth() / 2F, 0, () -> hubHint(g, mc)); // (the obby timer too, at its bottom)
 		}
 		if (!mc.player.isSpectator()) scaled(g, "health_shield", 0, g.guiHeight(), () -> healthShield(g, mc));
 	}
@@ -97,7 +98,7 @@ public final class BRHud {
 
 	/**
 	 * The match's hotbar, Fortnite-style (v2.0.0, creator: "Cleaner UI"): the pickaxe and the five item slots as rounded
-	 * tiles, a gun's in its rarity's colour with its magazine count, a stack's count, each slot's number; the one in hand
+	 * tiles, a gun's in its rarity's color with its magazine count, a stack's count, each slot's number; the one in hand
 	 * raised and outlined in white. (Minecraft's three slots after them are locked in a match: not shown.)
 	 */
 	private static void matchHotbar(GuiGraphicsExtractor g, Minecraft mc) {
@@ -125,6 +126,23 @@ public final class BRHud {
 				else if (MaterialStacks.amount(st) > 1) Smooth.text(g, MaterialStacks.amount(st) + "", x + tile - 1.4F, y + tile - 7.6F, 6.5F, 0xFFFFFFFF, Smooth.RIGHT, true);
 			}
 			Smooth.text(g, (i + 1) + "", x + 1.6F, y + 0.8F, 5F, on ? 0xFFFFFFFF : 0xA0FFFFFF, Smooth.LEFT, false);
+		}
+		// (2.1.0, creator: a teammate's reboot card you're holding "shown at the bottom of the HUD by the hotbar, and the
+		// line 'Holding <name>'s reboot card' just above the hotbar, not in the middle of the screen") its own tile after
+		// the slots, in the cards' cyan-blue, and the line over the slots
+		ItemStack card = mc.player.getOffhandItem();
+		if (Reboot.isCard(card)) {
+			int c = Waypoint.CARD;
+			float x = x0 + total + gap * 3;
+			Smooth.panel(g, x - 1.3F, y0 - 1.3F, tile + 2.6F, tile + 2.6F, 4.6F, c);
+			Smooth.panel(g, x, y0, tile, tile, 3.6F, 0xF0000000 | Smooth.mix(c, 0xFF000000, 0.35F) & 0xFFFFFF, 0xF0000000 | Smooth.mix(c, 0xFF000000, 0.7F) & 0xFFFFFF);
+			g.item(card, Math.round(x + 2), Math.round(y0 + 2));
+			java.util.List<String> names = new java.util.ArrayList<>();
+			for (Reboot.Owner o : Reboot.owners(card)) names.add(o.name() + "'s");
+			String who = names.size() < 2 ? String.join("", names)
+				: String.join(", ", names.subList(0, names.size() - 1)) + " and " + names.get(names.size() - 1);
+			String line = "Holding " + who + (names.size() > 1 ? " reboot cards" : " reboot card");
+			Smooth.text(g, line, g.guiWidth() / 2F, y0 - 12.5F, 7.5F, c, Smooth.CENTER, true);
 		}
 	}
 
@@ -196,7 +214,7 @@ public final class BRHud {
 			}
 	}
 
-	/** A colour with its alpha scaled by f (0 to 1). */
+	/** A color with its alpha scaled by f (0 to 1). */
 	private static int faded(int argb, float f) {
 		return Math.round((argb >>> 24) * f) << 24 | argb & 0xFFFFFF;
 	}
@@ -250,7 +268,7 @@ public final class BRHud {
 				Smooth.panel(g, x - 0.4F, y + 4.5F, 0.8F, 5, 0.4F, (alpha / 2 << 24) | 0xFFFFFF);
 			}
 		}
-		// Teammates' waypoints in their colours (team modes), then yours in red on top: a mark at its bearing (held at
+		// Teammates' waypoints in their colors (team modes), then yours in red on top: a mark at its bearing (held at
 		// the bar's end when it's outside the bar).
 		for (double[] t : Waypoint.teammates()) compassMark(g, cx, y, w, span, heading, Waypoint.bearingTo(mc, t[0], t[1]), (int) t[2]);
 		for (double[] c : Waypoint.cards()) compassMark(g, cx, y, w, span, heading, Waypoint.bearingTo(mc, c[0], c[1]), (int) c[2]);
@@ -305,7 +323,7 @@ public final class BRHud {
 		g.pose().pushMatrix();
 		g.pose().translate(g.guiWidth() + d.x() - d.size() - 3, d.y());
 		g.pose().scale(s, s);
-		Smooth.panel(g, 0, 0, natural + 6, 16, 3, 0xE0101420, 0xE0080B12); // the minimap frame's colour, hanging from it
+		Smooth.panel(g, 0, 0, natural + 6, 16, 3, 0xE0101420, 0xE0080B12); // the minimap frame's color, hanging from it
 		// The storm's clock, players left, your eliminations, then (team match) your whole team's, you included.
 		int total = hud.kills();
 		if (team) for (var m : ClientState.squad.mates()) total += m.kills();
@@ -378,7 +396,7 @@ public final class BRHud {
 		float x = g.guiWidth() + d.x(), y = g.guiHeight() + d.y();
 		float width = Math.max(d.size(), Smooth.width(name, 7.5F) + 12);
 		int rc = 0xFF000000 | r.color();
-		// The plate: the gun's name on its rarity's colour, then its ammo type's icon, the magazine big and what's left.
+		// The plate: the gun's name on its rarity's color, then its ammo type's icon, the magazine big and what's left.
 		Smooth.panel(g, x - width, y - 6, width + 2, 30, 5, 0x9010141E, 0xB0080B12);
 		Smooth.panel(g, x - width, y - 6, width + 2, 11.5F, 5, Smooth.lighter(rc, 0.2F), Smooth.mix(rc, 0xFF000000, 0.25F));
 		Smooth.text(g, name, x - 4, y - 4.6F, 7.5F, 0xFFFFFFFF, Smooth.RIGHT, true);
@@ -440,6 +458,31 @@ public final class BRHud {
 		}
 	}
 
+	/**
+	 * (2.1.0, creator's pick C of four mockups: "C build into test3") The gun in your hand's stats in one slim line just
+	 * above the materials row and as wide as it (hud sheet "gun_stats"): three chips, each a Blender icon and a number,
+	 * damage a shot, shots a second and the reload, for its rarity (GunTooltip.chips, the numbers the guns use). Not in a
+	 * car (its fuel plate is where the ammo goes).
+	 */
+	private static void gunStats(GuiGraphicsExtractor g, Minecraft mc) {
+		if (mc.player.getVehicle() instanceof CarEntity) return;
+		ItemStack stack = mc.player.getMainHandItem();
+		if (!(stack.getItem() instanceof WeaponItem)) return;
+		HudElementDef d = Sheets.HUD_BY_ID.get("gun_stats");
+		String[] values = GunTooltip.chips(stack);
+		String[] icons = { "stat_damage", "stat_rate", "stat_reload" };
+		float x = g.guiWidth() + d.x() - d.size() - 4, y = g.guiHeight() + d.y(), gap = 2, h = 13;
+		float cw = (d.size() + 6 - gap * 2) / 3F;
+		for (int i = 0; i < 3; i++) {
+			float cx = x + i * (cw + gap);
+			Smooth.panel(g, cx, y, cw, h, 4.5F, 0x9610141E, 0xB6080B12);
+			Smooth.icon(g, icons[i], cx + 1.5F, y + 1.5F, 10, -1);
+			// (a long number shrinks to fit beside its icon)
+			float room = cw - 15, size = Math.min(7.5F, 7.5F * room / Math.max(1, Smooth.width(values[i], 7.5F)));
+			Smooth.text(g, values[i], cx + cw - 2.5F, y + (h - size) / 2F - 0.3F, size, 0xFFFFFFFF, Smooth.RIGHT, true);
+		}
+	}
+
 	private static void busHint(GuiGraphicsExtractor g, Minecraft mc) {
 		HudElementDef d = Sheets.HUD_BY_ID.get("bus_hint");
 		String text = switch (DropControl.phase()) {
@@ -460,7 +503,9 @@ public final class BRHud {
 		HudElementDef d = Sheets.HUD_BY_ID.get("hub_hint");
 		String line1 = switch (hud.phase()) {
 			case "COUNTDOWN" -> hud.label().replace(" - Bus boarding", "") + ": Battle Bus boarding in " + hud.secondsLeft() + "s - stay on the portal!";
-			case "LIVE", "ENDED" -> "Match in progress - " + hud.alive() + " left";
+			case "LIVE" -> "Match in progress - " + hud.alive() + " left";
+			// (2.1.0-test4: over, someone else still on the results; it said "Match in progress")
+			case "ENDED" -> hud.label() + " - back to the hub in " + hud.secondsLeft() + "s";
 			default -> "Everyone on the same portal starts the match (" + hud.onPortal() + "/" + hud.hubCount() + ")";
 		};
 		// (No counts per mode portal any more, 2.0.0-test3, creator: "remove the game mode numbers": the first line says
@@ -473,10 +518,12 @@ public final class BRHud {
 		String code = RoomCodes.current(), label = "Room Code: ";
 		float size = 9;
 		float codeW = code == null ? 0 : Smooth.width(label, size) + Smooth.width(code, size);
-		float w = Math.max(Math.max(Smooth.width(line1, size), Smooth.width(line2, size)), codeW);
+		// The obby timer while you run (2.1.0-test4): the bottom of this panel, under a gold line.
+		boolean obby = ObbyTimerHud.showing();
+		float w = Math.max(Math.max(Smooth.width(line1, size), Smooth.width(line2, size)), Math.max(codeW, obby ? ObbyTimerHud.width() : 0));
 		int cx = g.guiWidth() / 2 + d.x();
 		int y = d.y(), rows = 2 + (code == null ? 0 : 1);
-		Smooth.panel(g, cx - w / 2 - 8, y - 5, w + 16, rows * 11 + 6, 6, 0xA0182030, 0xC00C1018);
+		Smooth.panel(g, cx - w / 2 - 8, y - 5, w + 16, rows * 11 + 6 + (obby ? ObbyTimerHud.HEIGHT : 0), 6, 0xA0182030, 0xC00C1018);
 		Smooth.text(g, line1, cx, y - 0.5F, size, 0xFFFFFFFF, Smooth.CENTER, true);
 		y += 11;
 		Smooth.text(g, line2, cx, y - 0.5F, size, 0xFFB8C4D6, Smooth.CENTER, true);
@@ -486,6 +533,10 @@ public final class BRHud {
 			x += Smooth.text(g, label, x, y - 0.5F, size, 0xFFA0A0A0, Smooth.LEFT, true);
 			Smooth.text(g, code, x, y - 0.5F, size, 0xFFFF9A1F, Smooth.LEFT, true);
 			y += 11;
+		}
+		if (obby) {
+			ObbyTimerHud.draw(g, cx, y, w + 6);
+			y += ObbyTimerHud.HEIGHT;
 		}
 		// Your party under the banner (creator: parties of up to 4).
 		SquadHud.party(g, mc, y + 6);

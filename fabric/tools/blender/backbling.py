@@ -1,7 +1,7 @@
 """
 Back bling, made in Blender (v1.0.1): ported line for line from the code-drawn BackBling (shapes.S is the Java Smooth),
 in the torso's joint space (studs, y up, the front towards -z; the default torso spans x +-1, y -1 .. 1, z +-0.5). One
-model per item (capes and packs differ by item, not only by shape), in its two colours (tint channels 1 and 2).
+model per item (capes and packs differ by item, not only by shape), in its two colors (tint channels 1 and 2).
 """
 import math
 
@@ -710,8 +710,8 @@ def skateboard(s, t, a, b):
 
 
 def banner(s, t, a, b):
-    """(2.0.0-test3, the Victory Royale preset) A banner on a pole slung across the back: the flag in the first colour,
-    waving from a gold cross-bar, a crown on it in the second colour, a gold finial on top."""
+    """(2.0.0-test3, the Victory Royale preset) A banner on a pole slung across the back: the flag in the first color,
+    waving from a gold cross-bar, a crown on it in the second color, a gold finial on top."""
     sling(s, t, LEATHER, GOLD)
     l = Line.of(t.cx - 0.45, t.cy - 1.05, t.cx + 0.3, t.cy + 1.45, t.bk + 0.2)
     s.at(0, 0, 0).color(0x6B4A2B).tube([l.at(0), l.at(l.len)], [0.045, 0.045])
@@ -735,8 +735,8 @@ def banner(s, t, a, b):
 
 
 def hoverboard(s, t, a, b):
-    """(2.0.0-test3, the Neon Rider preset) A hoverboard slung on the back: a rounded deck in the first colour, glowing
-    strips down its edges and two glowing thrusters in the second colour."""
+    """(2.0.0-test3, the Neon Rider preset) A hoverboard slung on the back: a rounded deck in the first color, glowing
+    strips down its edges and two glowing thrusters in the second color."""
     sling(s, t, DARK, METAL)
     z = t.bk + 0.16
 

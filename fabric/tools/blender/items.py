@@ -4,7 +4,7 @@ be remade using Blender"; "Iron Pickaxe should look like a Fortnite Pickaxe").
 
 Units are an item model's (0..16 = one block), x along the barrel towards the muzzle, y up, z across (8 = the middle),
 the same space the old box models used, so the item sits in the hand where it did. A gun's body is tint channel 1:
-drawn in its rarity colour (creator: rarity should stand out more than a stripe).
+drawn in its rarity color (creator: rarity should stand out more than a stripe).
 """
 import math
 
@@ -52,7 +52,7 @@ def trigger(x, y):
 
 def gun_pistol():
     z0, z1 = zr(1.6)
-    # Slide in the rarity colour, with grip serrations at the back and a dark ejection port.
+    # Slide in the rarity color, with grip serrations at the back and a dark ejection port.
     prism([(4.2, 9.8), (12.3, 9.8), (12.3, 11.4), (4.6, 11.4), (4.2, 11.0)], z0, z1, PAINT(), bevel=0.18, seg=3)
     for x in (4.7, 5.15, 5.6, 6.05):
         box(x, 10.1, z0 - 0.03, x + 0.22, 11.1, z1 + 0.03, DARK(), bevel=0.03)
@@ -76,7 +76,7 @@ def gun_pistol():
 
 def gun_smg():
     z0, z1 = zr(2.2)
-    # Boxy receiver in the rarity colour.
+    # Boxy receiver in the rarity color.
     prism([(4.4, 7.9), (11.4, 7.9), (11.4, 10.4), (5.0, 10.4), (4.4, 9.8)], z0, z1, PAINT(), bevel=0.22, seg=3)
     box(5.2, 10.4, z0 + 0.3, 10.8, 10.75, z1 - 0.3, DARK(), bevel=0.1)
     rail(5.6, 10.4, 10.75, 7.35, 8.65, teeth=6)
@@ -106,7 +106,7 @@ def gun_smg():
 
 def gun_assault_rifle():
     z0, z1 = zr(2.5)
-    # Receiver: the main body in the rarity colour, a little taller at the back.
+    # Receiver: the main body in the rarity color, a little taller at the back.
     prism([(3.4, 8.4), (10.6, 8.4), (10.6, 10.9), (4.2, 10.9), (3.4, 10.4)], z0, z1, PAINT(), bevel=0.22, seg=3)
     # Upper: a darker top cover with the rail.
     box(4.0, 10.9, z0 + 0.25, 10.6, 11.3, z1 - 0.25, DARK(), bevel=0.12)
@@ -122,7 +122,7 @@ def gun_assault_rifle():
     prism([(13.3, 10.7), (13.9, 10.7), (13.7, 11.9), (13.45, 11.9)], 7.55, 8.45, DARK(), bevel=0.06)
     box(4.9, 11.6, 7.45, 5.9, 12.4, 8.55, DARK(), bevel=0.1)
     cyl(5.4, 12.05, 8, 0.18, 1.2, "z", BORE(), verts=12)
-    # Stock: an angled skeleton in the rarity colour with a rubber butt pad.
+    # Stock: an angled skeleton in the rarity color with a rubber butt pad.
     s0, s1 = zr(2.0)
     prism([(0.5, 7.4), (3.6, 8.6), (3.6, 10.6), (0.5, 10.4)], s0, s1, PAINT(), bevel=0.25, seg=3)
     box(1.3, 8.4, s0 - 0.02, 2.8, 9.7, s1 + 0.02, POLY(), bevel=0.1)
@@ -144,7 +144,7 @@ def gun_assault_rifle():
 
 def gun_pump_shotgun():
     z0, z1 = zr(2.2)
-    # Receiver in the rarity colour.
+    # Receiver in the rarity color.
     prism([(5.0, 7.9), (9.6, 7.9), (9.6, 10.3), (5.4, 10.3), (5.0, 9.9)], z0, z1, PAINT(), bevel=0.22, seg=3)
     box(6.2, 8.7, z1 - 0.02, 8.4, 9.6, z1 + 0.02, BORE(), bevel=0.05)
     # Barrel over the tube magazine, with a bead sight.
@@ -167,7 +167,7 @@ def gun_pump_shotgun():
 
 def gun_sniper():
     s0, s1 = zr(2.0)
-    # Stock and fore-end in the rarity colour, the thumbhole showing through the stock.
+    # Stock and fore-end in the rarity color, the thumbhole showing through the stock.
     prism([(0.4, 6.4), (1.6, 6.2), (4.0, 7.4), (6.0, 7.6), (6.0, 9.4), (0.4, 9.6)], s0, s1, PAINT(), bevel=0.3, seg=3)
     box(2.3, 7.6, s0 - 0.05, 3.6, 8.5, s1 + 0.05, BORE(), bevel=0.25)
     box(-0.05, 6.1, s0 - 0.08, 0.5, 9.7, s1 + 0.08, RUBBER(), bevel=0.15)
@@ -202,7 +202,7 @@ def gun_sniper():
 
 
 def gun_rocket_launcher():
-    """v2.0.0 (creator: "Rocket launcher"): a long tube in the rarity colour over the shoulder, a flared exhaust behind,
+    """v2.0.0 (creator: "Rocket launcher"): a long tube in the rarity color over the shoulder, a flared exhaust behind,
     a red warhead showing at the muzzle, two grips, a sight with a glowing lens."""
     # The tube, its end rings and the bell at the muzzle.
     cyl(8.2, 10.2, 8, 1.25, 12.6, "x", PAINT(), verts=28)
@@ -346,14 +346,14 @@ BRASS = lambda: mat("brass", "#E3B04B", rough=0.25, metal=0.85)
 
 
 def bullet(x, y0, z, r, case_len, tip_len, case, tip, segs=12):
-    """A cartridge standing up from y0: its case (the rim, a groove, the body) and the bullet's point in its own colour,
+    """A cartridge standing up from y0: its case (the rim, a groove, the body) and the bullet's point in its own color,
     sunk a little into the case so the two never share a face."""
     lathe([(0, 0), (r * 1.06, 0), (r * 1.06, 0.2), (r * 0.9, 0.32), (r, 0.45), (r, case_len), (0, case_len)], x, y0, z, case, segs=segs)
     lathe([(0, 0), (r * 0.96, 0), (r * 0.86, tip_len * 0.45), (r * 0.5, tip_len * 0.82), (0, tip_len)], x, y0 + case_len - 0.05, z, tip, segs=segs)
 
 
 def ammo_box(color, rows, r, case_len, tip_len, case, tip, z0=4.6, z1=11.4):
-    """An open ammo box in its type's colour (the colours the flat pictures had), a label and two latches on the front,
+    """An open ammo box in its type's color (the colors the flat pictures had), a label and two latches on the front,
     its rounds standing in it and sticking out of the top: rows = [(x, z), ...]."""
     body = mat("ammo_box", color, rough=0.5)
     shade = mat("ammo_box_dark", "#1E232B", rough=0.8)
@@ -362,7 +362,7 @@ def ammo_box(color, rows, r, case_len, tip_len, case, tip, z0=4.6, z1=11.4):
     cut(b, box(3.7, top - 1.6, z0 + 0.7, 12.3, top + 1, z1 - 0.7, body))
     box(3.75, top - 1.65, z0 + 0.75, 12.25, top - 1.5, z1 - 0.75, shade)  # (the inside's floor, dark)
     box(4.6, 2.5, z1 - 0.05, 11.4, 4.6, z1 + 0.12, mat("ammo_label", "#F2F4F8", rough=0.6), bevel=0.08)
-    for x0, y0, x1 in ((5.3, 3.75, 10.7), (5.3, 3.05, 8.6)):  # (its print, in the box's colour)
+    for x0, y0, x1 in ((5.3, 3.75, 10.7), (5.3, 3.05, 8.6)):  # (its print, in the box's color)
         box(x0, y0, z1 + 0.08, x1, y0 + 0.36, z1 + 0.17, body)
     for x in (4.0, 11.2):
         box(x, top - 1.0, z1 - 0.05, x + 0.8, top + 0.15, z1 + 0.2, MID(), bevel=0.08)

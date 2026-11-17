@@ -30,6 +30,8 @@ public final class DropControl {
 	private static boolean landed;
 	/** The server's drop state last tick: a new drop (rebooted at a van) gives the skydive and glider back. */
 	private static int lastDrop;
+	/** On the bus last tick: the next skydive is out of its door (its whoosh). */
+	private static boolean wasBus;
 
 	private DropControl() {
 	}
@@ -55,6 +57,7 @@ public final class DropControl {
 		boolean jumpDown = mc.options.keyJump.isDown() || mc.player.input.keyPresses.jump();
 		if (p.getVehicle() instanceof BattleBusEntity) {
 			phase = Phase.BUS;
+			wasBus = true;
 			landed = false;
 			if (jumpDown && !jumpWasDown) ClientPlayNetworking.send(new Net.Action("bus_jump"));
 		} else if (!ClientState.inMatch()) {
@@ -62,6 +65,8 @@ public final class DropControl {
 			landed = false;
 		} else if ((p.onGround() || p.isInWater()) && (phase == Phase.SKYDIVE || phase == Phase.GLIDE)) {
 			landed = true; // down: the glider is put away for good
+			if (gliderOpen) SfxBank.play("glider_close", p.position());
+			gliderOpen = false;
 			phase = Phase.NONE;
 		} else if (!landed && ClientState.hud.drop() == 2 && !p.onGround() && !p.isInWater()) {
 			int ground = mc.level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, p.getBlockX(), p.getBlockZ());
@@ -69,7 +74,9 @@ public final class DropControl {
 			if (phase != Phase.SKYDIVE && phase != Phase.GLIDE) {
 				gliderOpen = false; // just left the bus
 				autoOpened = false;
+				if (wasBus) SfxBank.play("skydive_whoosh", p.position()); // (2.1.0: out into the air)
 			}
+			wasBus = false;
 			if (jumpDown && !jumpWasDown) setGlider(mc, !gliderOpen);
 			if (!autoOpened && heightAboveGround < MinebloxRoyale.setting("gliderHeight")) {
 				autoOpened = true;
@@ -89,11 +96,16 @@ public final class DropControl {
 		}
 	}
 
-	/** The glider opened or closed; the server told, as only an open glider saves you the fall (MatchManager.setGliding). */
+	/**
+	 * (2.1.0) The glider's own sounds: snapping open; folding away, with a whoosh as you dive again. The server told, as
+	 * only an open glider saves you the fall (MatchManager.setGliding).
+	 */
 	private static void setGlider(Minecraft mc, boolean open) {
-		if (open != gliderOpen) ClientPlayNetworking.send(new Net.Action("glider:" + (open ? 1 : 0)));
+		if (open == gliderOpen) return;
+		ClientPlayNetworking.send(new Net.Action("glider:" + (open ? 1 : 0)));
 		gliderOpen = open;
-		if (open) SfxBank.play("glider", mc.player.position());
+		SfxBank.play(open ? "glider" : "glider_close", mc.player.position());
+		if (!open) SfxBank.play("skydive_whoosh", mc.player.position());
 	}
 
 	private static void steer(Minecraft mc, Player p, boolean glide) {

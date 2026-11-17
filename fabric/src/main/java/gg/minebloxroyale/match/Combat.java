@@ -57,6 +57,13 @@ public final class Combat {
 				if (entity instanceof ServerPlayer && Teams.teamMode() && MatchManager.get().state() == MatchManager.State.LIVE) BotEntity.alertTeam(entity, attacker);
 				// A real player shooting someone: their bot teammates close by join in on the same enemy.
 				if (attacker instanceof ServerPlayer && Teams.teamMode() && MatchManager.get().state() == MatchManager.State.LIVE) BotEntity.assist(attacker, entity);
+				// (2.1.0, creator: "Shooting or pickaxing a car with someone in it damages the car, not whoever is inside")
+				// a pickaxe hit (or a punch) on someone in a car hits the car; anything else (shots, blasts) the car has
+				// taken already
+				if (entity.getVehicle() instanceof CarEntity car && !car.hasPassenger(attacker) && !BYPASS.get()) {
+					if (!GUN_HIT.get() && source.getDirectEntity() == attacker && entity.level() instanceof ServerLevel level) car.hurtServer(level, source, amount);
+					return false;
+				}
 			}
 			// No PvP in the hub: players only hurt each other in a match.
 			if (entity instanceof ServerPlayer victim && source.getEntity() instanceof Player && !MatchManager.get().isAlive(victim)) return false;
@@ -163,10 +170,12 @@ public final class Combat {
 		}
 	}
 
-	/** Storm damage: the shield takes it first, then health (creator), like any other hit. */
+	/**
+	 * Storm damage comes off health, never the shield, as in Fortnite (2.1.0, creator's v2.1.0 list from Ultraslayerz:
+	 * "Storm does health damage not shield"; before, the shield took it first).
+	 */
 	public static void hurtStorm(ServerLevel level, LivingEntity target, DamageSource source, float amount) {
-		target.setInvulnerableTime(0);
-		target.hurtServer(level, source, amount);
+		hurtBypassingShield(level, target, source, amount);
 	}
 
 	/** Damage that ignores shields: the rest of a hit after the shield broke. */

@@ -69,7 +69,7 @@ public abstract class LivingEntityRendererMixin {
 			state.setData(RobloxAvatarRenderer.IS_PLAYER, entity instanceof Player);
 			state.setData(RobloxAvatarRenderer.MOTION, minebloxroyale$motion(entity));
 			state.setData(RobloxAvatarRenderer.POSE, new RobloxAvatarRenderer.Pose[1]); // (worked out when first drawn this frame)
-			// Teammates' name tags in their teammate colour (team modes; your party in the hub), on your screen only.
+			// Teammates' name tags in their teammate color (team modes; your party in the hub), on your screen only.
 			if (state.nameTag != null) {
 				Net.Mate mate = ClientState.mateByEntity(entity.getId());
 				Integer color = mate != null ? Integer.valueOf(ClientState.teamColor(mate.slot())) : null;

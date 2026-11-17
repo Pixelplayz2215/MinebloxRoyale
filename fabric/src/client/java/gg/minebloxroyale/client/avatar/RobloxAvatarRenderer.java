@@ -228,6 +228,7 @@ public final class RobloxAvatarRenderer {
 			outfit.putAll(tryOn);
 		}
 		CosmeticDef shirt = Cosmetics.worn(outfit, "shirt"), pants = Cosmetics.worn(outfit, "pants");
+		int face = RobloxAssets.expressionCell(Cosmetics.worn(outfit, "expression")); // (2.1.0: a facial expression, else your Roblox face)
 		pose = restOnHat(pose, state, outfit);
 		Pose posed = pose;
 		collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(RobloxAssets.TEXTURE), (ps, vc) -> {
@@ -240,7 +241,7 @@ public final class RobloxAvatarRenderer {
 					case "arms" -> shirt != null ? shirt.color() : colors.arms();
 					default -> pants != null ? pants.color() : colors.legs();
 				};
-				drawMesh(vc, ps, jointMatrix(part, state, posed), part, bend(part, posed), mesh, color, light, overlay);
+				drawMesh(vc, ps, jointMatrix(part, state, posed), part, bend(part, posed), mesh, color, light, overlay, face);
 			}
 		});
 		// Hats, hair, face accessories, back bling and shoes (Blender models; the lighter copies further away, so lots of
@@ -364,7 +365,8 @@ public final class RobloxAvatarRenderer {
 	}
 
 	private static void drawMesh(VertexConsumer vc, PoseStack.Pose pose, Matrix4f joint, AvatarPartDef part, Bend.Of bend, RobloxMesh mesh, int color, int light,
-		int overlay) {
+		int overlay, int faceCell) {
+		float cu = faceCell % RobloxAssets.CELLS, cv = faceCell / RobloxAssets.CELLS, cells = RobloxAssets.CELLS, white = 0.01F / RobloxAssets.CELLS;
 		float ox = part.centerX() - part.pivotX(), oy = part.centerY() - part.pivotY(), oz = part.centerZ() - part.pivotZ();
 		boolean face = part.faceDecal();
 		// Each corner bent, through its joint, from studs (y up, root at hips) to model space (y down, origin 1.501 above
@@ -391,10 +393,12 @@ public final class RobloxAvatarRenderer {
 				ny /= l;
 				nz /= l;
 			}
-			// Face decal: front-facing head triangles get a planar projection of the face; everything else samples white.
+			// Face decal: front-facing head triangles get a planar projection of the face (in its cell of the faces
+			// texture); everything else samples white.
 			vc.addVertex(m.m00() * p.x + m.m10() * p.y + m.m20() * p.z + m.m30(), m.m01() * p.x + m.m11() * p.y + m.m21() * p.z + m.m31(),
 				m.m02() * p.x + m.m12() * p.y + m.m22() * p.z + m.m32()).setColor(color)
-				.setUv(front ? 0.5F + vx / 1.2F * -1F * 0.92F : 0.01F, front ? 0.5F - vy / 1.2F * 0.92F : 0.01F).setOverlay(overlay).setLight(light).setNormal(nx, ny, nz);
+				.setUv(front ? (cu + 0.5F + vx / 1.2F * -1F * 0.92F) / cells : white, front ? (cv + 0.5F - vy / 1.2F * 0.92F) / cells : white)
+				.setOverlay(overlay).setLight(light).setNormal(nx, ny, nz);
 		}
 	}
 

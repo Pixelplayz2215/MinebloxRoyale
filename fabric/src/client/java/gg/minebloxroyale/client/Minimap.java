@@ -164,7 +164,7 @@ public final class Minimap {
 		vanMarks(g, S, k, px - half / k, pz - half / k, gs);
 		teamMarks(g, S, k, px - half / k, pz - half / k, gs);
 		bossMarks(g, S, k, px - half / k, pz - half / k, gs, true);
-		// Player arrow: smooth arrowhead with a dark outline, pointing where you face (yellow; your teammate colour in
+		// Player arrow: smooth arrowhead with a dark outline, pointing where you face (yellow; your teammate color in
 		// a team mode, as your teammates see you).
 		double yaw = Math.toRadians(mc.player.getYRot());
 		arrow(g, half, half, -Math.sin(yaw), Math.cos(yaw), gs, ClientState.myColor());
@@ -197,7 +197,7 @@ public final class Minimap {
 
 	/**
 	 * Team-mode marks on a map drawn in screen pixels (as vanMarks): your team's reboot cards on the ground, teammates'
-	 * waypoints (rings in their colours) and teammates (dots in their colours; knocked ones blink red).
+	 * waypoints (rings in their colors) and teammates (dots in their colors; knocked ones blink red).
 	 */
 	static void teamMarks(GuiGraphicsExtractor g, int S, double k, double ox, double oz, int gs) {
 		if (!ClientState.teamMatch()) return;

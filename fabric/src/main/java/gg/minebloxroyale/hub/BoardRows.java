@@ -15,7 +15,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Hub boards filled from the design sheets, one row per entry with the item's picture beside its name (creator):
- * rarity_board: each gun rarity (rarities sheet) with an assault rifle in that rarity's colour, how much more damage it
+ * rarity_board: each gun rarity (rarities sheet) with an assault rifle in that rarity's color, how much more damage it
  * does and how much faster it reloads; heals_board: each heal and shield (consumables sheet) with the item itself,
  * what it gives and how long it takes. Label: title | line above the rows | notes under the rows...
  */
@@ -25,7 +25,7 @@ final class BoardRows {
 	private static final String GUN_PICTURE = "minebloxroyale:gun_assault_rifle";
 
 	/**
-	 * One row: the item shown beside it (with a rarity colour, or -1), the name in its colour, then the rest in white.
+	 * One row: the item shown beside it (with a rarity color, or -1), the name in its color, then the rest in white.
 	 */
 	private record Row(String item, int tint, int nameColor, String name, String rest) {
 	}
@@ -125,7 +125,7 @@ final class BoardRows {
 		rich(server, t[0], y, t[2], parts, scale, p.facing());
 	}
 
-	/** A line of text made of parts, each in its own colour ({text, colour}), on the board's face. */
+	/** A line of text made of parts, each in its own color ({text, color}), on the board's face. */
 	private static void rich(MinecraftServer server, double x, double y, double z, List<String[]> parts, float scale, String facing) {
 		server.overworld().getChunk(Mth.floor(x) >> 4, Mth.floor(z) >> 4);
 		StringBuilder extra = new StringBuilder();
@@ -141,7 +141,7 @@ final class BoardRows {
 	/**
 	 * The row's item as the hotbar shows it (an item display in "gui" view, full bright), facing the reader: since
 	 * 2.0.0-test2 the Blender model itself, posed and fitted as in a slot (creator: "show the 3d in game models rather
-	 * than the icons"; make_items.py). A gun gets its rarity colour (custom model data, as Guns.make does).
+	 * than the icons"; make_items.py). A gun gets its rarity color (custom model data, as Guns.make does).
 	 */
 	private static void item(MinecraftServer server, double x, double y, double z, Row r, String facing, float size) {
 		server.overworld().getChunk(Mth.floor(x) >> 4, Mth.floor(z) >> 4);

@@ -40,7 +40,7 @@ public final class Explosions {
 		if (!real(owner)) return;
 		// people and bots: falling off from the middle; a wall between doesn't save you (as Fortnite's splash)
 		for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(radius), e -> e.isAlive() && !e.isSpectator())) {
-			if (e == owner) continue;
+			if (e == owner || e.getVehicle() instanceof CarEntity) continue; // (2.1.0: those in a car are safe; the car takes it below)
 			double d = e.getBoundingBox().distanceToSqr(at);
 			d = Math.sqrt(d);
 			if (d > radius) continue;
@@ -87,18 +87,29 @@ public final class Explosions {
 	}
 
 	/**
-	 * What a blast knocks out: the island's buildings, trees and things in them; never the ground (dirt, sand, stone,
-	 * ores, snow, clay, gravel), water, chests, nor anything that can't be broken.
+	 * What a blast (or a boosting car) knocks out: the island's buildings, trees and things in them; never the ground,
+	 * water, chests, nor anything that can't be broken.
 	 */
 	static boolean breakable(BlockState st) {
 		if (st.isAir() || !st.getFluidState().isEmpty() || st.getBlock().defaultDestroyTime() < 0) return false;
 		if (st.getBlock() instanceof LootChestBlock || st.getBlock() instanceof CarBlock) return false;
-		if (BuiltInRegistries.BLOCK.getKey(st.getBlock()).getPath().endsWith("_ore")) return false; // (ores are ground too)
-		// (SUBSTRATE_OVERWORLD: in Minecraft 26.3 the dirt tag is only dirt, coarse and rooted dirt; grass blocks, podzol,
-		// mycelium, mud and moss are in this one, so without it a boosting car or a blast broke the grass, creator:
-		// "it still breaks ground")
-		return !(st.is(BlockTags.SUBSTRATE_OVERWORLD) || st.is(BlockTags.DIRT) || st.is(BlockTags.SAND) || st.is(BlockTags.BASE_STONE_OVERWORLD) || st.is(BlockTags.TERRACOTTA)
-			|| st.is(BlockTags.SNOW) || st.is(BlockTags.ICE) || st.is(Blocks.GRAVEL) || st.is(Blocks.CLAY) || st.is(Blocks.BEDROCK) || st.is(Blocks.SANDSTONE)
-			|| st.is(Blocks.RED_SANDSTONE) || st.is(Blocks.MUD) || st.is(Blocks.PACKED_MUD) || st.is(Blocks.MOSS_BLOCK));
+		return !ground(st);
+	}
+
+	/**
+	 * The island's ground: dirt, sand, stone, ores, snow, clay, gravel and the like (2.1.0, creator: "Cars don't break the
+	 * ground: only trees, walls, ramps, buildings and structures"; paths, farmland and the mountains' rock added).
+	 * SUBSTRATE_OVERWORLD: in Minecraft 26.3 the dirt tag is only dirt, coarse and rooted dirt; grass blocks, podzol,
+	 * mycelium, mud and moss are in this one, so without it a boosting car or a blast broke the grass (creator: "it still
+	 * breaks ground").
+	 */
+	static boolean ground(BlockState st) {
+		if (BuiltInRegistries.BLOCK.getKey(st.getBlock()).getPath().endsWith("_ore")) return true;
+		return st.is(BlockTags.SUBSTRATE_OVERWORLD) || st.is(BlockTags.DIRT) || st.is(BlockTags.SAND) || st.is(BlockTags.BASE_STONE_OVERWORLD) || st.is(BlockTags.TERRACOTTA)
+			|| st.is(BlockTags.SNOW) || st.is(BlockTags.ICE) || st.is(Blocks.GRAVEL) || st.is(Blocks.SUSPICIOUS_GRAVEL) || st.is(Blocks.CLAY)
+			|| st.is(Blocks.BEDROCK) || st.is(Blocks.SANDSTONE) || st.is(Blocks.RED_SANDSTONE) || st.is(Blocks.MUD) || st.is(Blocks.PACKED_MUD)
+			|| st.is(Blocks.MOSS_BLOCK) || st.is(Blocks.DIRT_PATH) || st.is(Blocks.FARMLAND) || st.is(Blocks.CALCITE) || st.is(Blocks.DRIPSTONE_BLOCK)
+			|| st.is(Blocks.SMOOTH_BASALT) || st.is(Blocks.BASALT) || st.is(Blocks.OBSIDIAN) || st.is(Blocks.MAGMA_BLOCK)
+			|| st.is(Blocks.AMETHYST_BLOCK) || st.is(Blocks.BUDDING_AMETHYST);
 	}
 }

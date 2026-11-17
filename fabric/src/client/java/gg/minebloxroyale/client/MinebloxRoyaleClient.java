@@ -67,6 +67,7 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
+		GunTooltip.init(); // (2.1.0: a gun's damage, fire rate and reload when hovered)
 		// Items drawn from Blender meshes (items/*.json "minebloxroyale:mesh"), registered before the item models load.
 		SpecialModelRenderersAccessor.minebloxroyale$types().put(MinebloxRoyale.id("mesh"), MeshItemRenderer.Unbaked.MAP_CODEC);
 		// Renamed from Block Royale: the game folder's files, the world and the account record come across first.
@@ -213,6 +214,7 @@ public final class MinebloxRoyaleClient implements ClientModInitializer {
 			SettingsLock.tick(mc);
 			RobloxSfx.tick(mc);
 			CarSounds.tick(mc);
+			AmbientSounds.tick(mc); // (2.1.0: the wind skydiving, the storm closing in)
 			LockerAudit.tick(mc);
 			WhatToTest.tick(mc);
 			FirstTips.tick(mc);

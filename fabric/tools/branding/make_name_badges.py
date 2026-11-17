@@ -58,7 +58,7 @@ def flask(s, col, liquid=(140, 255, 190, 255)):
     return im
 
 
-# id, the word, its icon, the badge's colours top and bottom, the ink for the word and icon
+# id, the word, its icon, the badge's colors top and bottom, the ink for the word and icon
 BADGES = [
     ("owner", "OWNER", crown, (255, 214, 92), (226, 150, 22), (54, 32, 0, 255)),
     ("beta_tester", "BETA TESTER", flask, (170, 112, 255), (112, 52, 214), (255, 255, 255, 255)),

@@ -83,7 +83,7 @@ public final class StormVisuals {
 				}
 			}
 		});
-		// Plain colours (white texture): the glowing seam along the ground, bright at the land and fading upwards, and
+		// Plain colors (white texture): the glowing seam along the ground, bright at the land and fading upwards, and
 		// the lightning. Both a little on your side of the wall, so the clouds don't dim them.
 		double front = inside ? -0.3 : 0.3;
 		out.submitCustomGeometry(ps, RenderTypes.entityTranslucentEmissive(WorldVisuals.white()), (pose, vc) -> {
@@ -127,7 +127,7 @@ public final class StormVisuals {
 			.setOverlay(OverlayTexture.NO_OVERLAY).setLight(FULL_BRIGHT).setNormal(pose, nx, 0, nz);
 	}
 
-	/** Vertex colour: white tinted by brightness (the texture has the colours), alpha scaled. */
+	/** Vertex color: white tinted by brightness (the texture has the colors), alpha scaled. */
 	private static int color(float bright, float alpha) {
 		int c = Math.max(0, Math.min(255, Math.round(255 * Math.min(1F, bright))));
 		int a = Math.max(0, Math.min(255, Math.round(255 * alpha * Math.min(1F, 0.55F + 0.45F * bright))));

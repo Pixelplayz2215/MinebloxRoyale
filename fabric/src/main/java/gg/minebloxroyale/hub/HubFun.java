@@ -42,7 +42,7 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class HubFun {
 	/**
-	 * The hub's theme (creator: clean and tidy; v2.0.0: "not too colourful, but with some variety"): soft blue, muted
+	 * The hub's theme (creator: clean and tidy; v2.0.0: "not too colorful, but with some variety"): soft blue, muted
 	 * teal and white.
 	 */
 	private static final String[] THEME = { "minecraft:light_blue_concrete", "minecraft:cyan_terracotta", "minecraft:white_concrete" };
@@ -52,7 +52,7 @@ public final class HubFun {
 	private HubFun() {
 	}
 
-	/** A block by id (26.3 keeps coloured blocks in colour collections, not as named fields). */
+	/** A block by id (26.3 keeps colored blocks in color collections, not as named fields). */
 	private static Block b(String id) {
 		return HubBuilder.block(id);
 	}
@@ -77,8 +77,8 @@ public final class HubFun {
 	}
 
 	/** One small sign for an area: a single line, low, readable from anywhere (it turns to face you). */
-	private static void sign(ServerLevel level, double x, double y, double z, String text, String colour) {
-		HubBuilder.label(level.getServer(), x, y, z, text, colour, 1.1F, "center", "north", true);
+	private static void sign(ServerLevel level, double x, double y, double z, String text, String color) {
+		HubBuilder.label(level.getServer(), x, y, z, text, color, 1.1F, "center", "north", true);
 	}
 
 	/**

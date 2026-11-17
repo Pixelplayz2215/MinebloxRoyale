@@ -261,7 +261,7 @@ def details(s, shape, h, a="a", b="b"):
             rnd = random.Random("army")
             spots = []
             # 2.0.0-test5 (creator: "the camo print is too smushed together"): the shirt's woodland camo, the same
-            # three clear colours (a lighter green, a brown, a near-black) and bigger patches, apart from each other
+            # three clear colors (a lighter green, a brown, a near-black) and bigger patches, apart from each other
             # (overlapping decals flicker)
             camo = (shade(a, 1.42), 0x6B4E2E, 0x1E2318)
             for _ in range(600):

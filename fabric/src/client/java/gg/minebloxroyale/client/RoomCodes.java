@@ -198,8 +198,10 @@ public final class RoomCodes {
 		posting = true;
 		online = false;
 		problem = "";
-		// Another world that drew the same code and is open right now: this world takes a new code.
-		CompletableFuture<Boolean> clash = checkClash ? latest(c.code()).thenApply(p -> p != null && p.open() && !p.owner().equals(c.owner()))
+		// Another world that drew the same code and is open right now: this world takes a new code. A copy of this world
+		// open under someone else's name counts too (2.1.0-test5, creator: "you made both run1 and run2 the same room
+		// code. neither can join eachother": the dev run's second client had a copy of the first one's world).
+		CompletableFuture<Boolean> clash = checkClash ? latest(c.code()).thenApply(p -> p != null && p.open() && (!p.owner().equals(c.owner()) || !p.host().equals(name)))
 			: CompletableFuture.completedFuture(false);
 		clash.exceptionally(e -> false).thenCompose(taken -> {
 			RoomCode.Code use = taken ? RoomCode.renew(server) : c;

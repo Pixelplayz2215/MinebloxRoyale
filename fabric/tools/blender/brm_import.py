@@ -1,6 +1,6 @@
 """
 The game's own model files in Blender, for renders that show exactly what the game draws: the .brm's triangles, normals
-and colours (with their baked shadows), the tint channels coloured as the game colours them (the colour times the
+and colors (with their baked shadows), the tint channels colored as the game colors them (the color times the
 tint), glowing corners lit. Faces seen from behind are left out: that changes nothing for a sound model (each side of
 a sheet has its own copy) and shows any part made inside out.
 """

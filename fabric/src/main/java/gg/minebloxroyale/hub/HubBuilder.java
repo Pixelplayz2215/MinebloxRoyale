@@ -233,7 +233,7 @@ public final class HubBuilder {
 						set(level, x, hubY, z, block);
 			}
 			case "portal" -> {
-				// Exactly one floor square (7 x 7 between the grid lines), rimmed and glazed in its mode's colour, the
+				// Exactly one floor square (7 x 7 between the grid lines), rimmed and glazed in its mode's color, the
 				// same as its floating name (creator).
 				ModeDef mode = Sheets.MODES.stream().filter(m -> m.portal().equals(p.id())).findFirst().orElse(null);
 				BlockState rim = mode == null ? Blocks.AMETHYST_BLOCK.defaultBlockState() : block(mode.edge()).defaultBlockState();
@@ -289,7 +289,7 @@ public final class HubBuilder {
 					}
 			}
 			case "zone" -> {
-				// v2.0.0: the grid lines round a group of portals in the zone's colour, its name floating over its north
+				// v2.0.0: the grid lines round a group of portals in the zone's color, its name floating over its north
 				// edge, facing the spawn.
 				int x0 = cx - Math.round(p.width() / 2F), x1 = cx + Math.round(p.width() / 2F);
 				int z0 = cz - Math.round(p.height() / 2F), z1 = cz + Math.round(p.height() / 2F);

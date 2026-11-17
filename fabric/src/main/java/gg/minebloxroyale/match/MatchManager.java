@@ -694,13 +694,25 @@ public final class MatchManager {
 		fromX = toX;
 		fromZ = toZ;
 		fromR = radius;
-		// Fortnite: the next circle lies somewhere inside the current one.
+		// Fortnite: the next circle lies somewhere inside the current one. (2.1.0, creator: "Reboot vans: at least 2 inside
+		// every storm circle's safe zone, at every phase") Of up to 30 such circles, the first with enough reboot vans in
+		// it (else the one with the most); any still missing are put inside it. (Not the last circles, too small for one.)
 		RandomSource rnd = level.getRandom();
 		float slack = Math.max(0, radius - def.endRadius());
-		double a = rnd.nextDouble() * Math.PI * 2, d = rnd.nextDouble() * slack;
-		toX = fromX + Math.cos(a) * d;
-		toZ = fromZ + Math.sin(a) * d;
 		toR = def.endRadius();
+		int want = toR >= MinebloxRoyale.setting("rebootVanMinCircle") ? Math.round(MinebloxRoyale.setting("rebootVansPerCircle")) : 0;
+		int most = -1;
+		for (int i = 0; i < 30 && most < want; i++) {
+			double a = rnd.nextDouble() * Math.PI * 2, d = rnd.nextDouble() * slack;
+			double x = fromX + Math.cos(a) * d, z = fromZ + Math.sin(a) * d;
+			int n = Reboot.inside(x, z, toR);
+			if (n > most) {
+				most = n;
+				toX = x;
+				toZ = z;
+			}
+		}
+		Reboot.fillCircle(toX, toZ, toR, want, rnd);
 		broadcast(level.getServer(), Component.literal("Storm eye forming! Shrinks in " + def.waitSeconds() + "s").withStyle(ChatFormatting.LIGHT_PURPLE));
 		MinebloxRoyale.LOG.info("BR: storm phase {} -> radius {}", phase + 1, toR);
 	}
@@ -1057,6 +1069,8 @@ public final class MatchManager {
 		}
 		if (!names.isEmpty())
 			broadcast(server, Component.literal((names.size() > 1 ? "Winners: " : "Winner: ") + String.join(", ", names)).withStyle(ChatFormatting.GOLD));
+		// No real player standing (2.1.0-test4): the next island starts now, while they look at their results.
+		if (alivePlayers.isEmpty()) IslandPregen.playersOut();
 		MinebloxRoyale.LOG.info("BR: match {} ({}) over, winner: {}", matchIndex, mode.name(), winnerName.isEmpty() ? "none (all players out)" : winnerName);
 	}
 
@@ -1098,7 +1112,7 @@ public final class MatchManager {
 	 * everything, with the whole team on it facing south: its players (those eliminated earlier too) in the middle,
 	 * its bots either side (an eliminated or far-off one stood up again for it). Its blocks go with the island.
 	 * 2.0.0-test6 (creator: "the camera doesn't show us on a podium"): a real podium, not a flat slab: three stepped
-	 * tiers with gold trim, each teammate on a pad of their own colour, lights along the front step, and a tall backdrop
+	 * tiers with gold trim, each teammate on a pad of their own color, lights along the front step, and a tall backdrop
 	 * behind them, blue with a gold frame and lights, so it reads from the camera in front.
 	 */
 	private double[] victoryStage(MinecraftServer server, int team, Set<UUID> winners) {
@@ -1147,7 +1161,7 @@ public final class MatchManager {
 		}
 		for (int i = 0; i < line.size(); i++) {
 			double x = c.getX() + 0.5 + (i - (line.size() - 1) / 2.0) * 3, z = c.getZ() + 0.5;
-			// (a pad in the teammate's own colour under them)
+			// (a pad in the teammate's own color under them)
 			int slot = line.get(i) instanceof ServerPlayer sp ? Teams.slotOfPlayer(sp.getUUID()) : ((BotRoster.Sim) line.get(i)).slot;
 			put(level, BlockPos.containing(x, y - 1, z), concrete(Teams.color(slot)));
 			if (line.get(i) instanceof ServerPlayer p) {
@@ -1181,7 +1195,7 @@ public final class MatchManager {
 		level.setBlock(b, state, 2 | 16);
 	}
 
-	/** The concrete nearest a colour (0xRRGGBB): a teammate's pad on the podium. */
+	/** The concrete nearest a color (0xRRGGBB): a teammate's pad on the podium. */
 	private static BlockState concrete(int rgb) {
 		DyeColor best = DyeColor.WHITE;
 		double bestD = Double.MAX_VALUE;
@@ -1369,7 +1383,9 @@ public final class MatchManager {
 					Net.emoteAll(server, b, pick.id());
 					nextEmote.put(b, now + 100 + level.getRandom().nextInt(60));
 				}
-				if (--timer <= 0) backToHub(server);
+				// Everyone gone back to the hub already (H or Back to hub; 2.1.0-test4, creator: "when all real players
+				// are eliminated and they go back to the hub, that round finishes immediately"): no waiting out the end.
+				if (--timer <= 0 || players.isEmpty()) backToHub(server);
 			}
 		}
 		if (level.getGameTime() % 10 == 0) sendHud(server);

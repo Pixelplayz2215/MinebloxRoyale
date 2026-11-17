@@ -193,7 +193,7 @@
    "file": "storm.warning",
    "volume": 1.0,
    "pitch": 1.0,
-   "use": "plays once each time the storm starts shrinking: rising wind, an uneasy tone and falling chimes (no storm music)"
+   "use": "plays once each time the storm starts shrinking: an alarm, a deep hit, a two-tone klaxon pulsing faster and a siren rising with the wind (2.1.0-test5, creator: \"just make the warning out urgent\"; no storm music, and no sound of its own while it closes in)"
   },
   {
    "id": "hit_marker",
@@ -213,11 +213,27 @@
   },
   {
    "id": "glider",
-   "game": "minecraft",
-   "file": "item.elytra.flying",
-   "volume": 0.4,
-   "pitch": 1.2,
-   "use": "glider deploys during the drop"
+   "game": "mod",
+   "file": "sky.glider_open",
+   "volume": 0.9,
+   "pitch": 1.0,
+   "use": "the glider snapping open during the drop (2.1.0, its own sound: it was Minecraft's elytra)"
+  },
+  {
+   "id": "glider_close",
+   "game": "mod",
+   "file": "sky.glider_close",
+   "volume": 0.8,
+   "pitch": 1.0,
+   "use": "the glider folding away: closed with Space, or on landing (2.1.0)"
+  },
+  {
+   "id": "skydive_whoosh",
+   "game": "mod",
+   "file": "sky.whoosh",
+   "volume": 0.9,
+   "pitch": 1.0,
+   "use": "a whoosh out of the bus door, and on closing the glider into a dive (2.1.0; the wind while falling is AmbientSounds' sky.wind loop)"
   },
   {
    "id": "chest_open",
@@ -281,7 +297,7 @@
    "file": "car.boost",
    "volume": 1.0,
    "pitch": 1.0,
-   "use": "a car's boost kicking in (2.0.0-test3; its engine and tyres are CarSounds' loops, car.engine and car.skid)"
+   "use": "a car's boost kicking in (2.0.0-test3; its engine and tires are CarSounds' loops, car.engine and car.skid)"
   },
   {
    "id": "emote_wave",

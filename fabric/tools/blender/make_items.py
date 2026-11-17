@@ -52,7 +52,7 @@ PICK_HOLD = {
     "thirdperson_righthand": {"rotation": [0, 90, 35], "translation": [0, 4, 0.5], "scale": [0.85, 0.85, 0.85]},
     "thirdperson_lefthand": {"rotation": [0, 90, -55], "translation": [0, 4, 0.5], "scale": [0.85, 0.85, 0.85]},
 }
-COMMON = 0xB0B0B0  # a gun's rarity colour when it has none (common)
+COMMON = 0xB0B0B0  # a gun's rarity color when it has none (common)
 # How items.py's icon camera looked at each kind (turned yaw, tilted pitch): a slot shows the model the same way.
 GUN_VIEW, ITEM_VIEW, PICKAXE_VIEW = (24, 12), (-28, 18), (0, 0)
 

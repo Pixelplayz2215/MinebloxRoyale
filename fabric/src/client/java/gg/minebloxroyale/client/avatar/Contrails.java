@@ -20,7 +20,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Contrails (v2.0.0, creator: "actual gliding (with a contrail (also unlockable and purchaseBle contrails))"): light
- * trails behind a player in the air, the cosmetics sheet's contrail slot (shape = the look, colour into colour2): from
+ * trails behind a player in the air, the cosmetics sheet's contrail slot (shape = the look, color into color2): from
  * the hands while skydiving (the body falls upright here, so trails from the feet would rise through it) and from the
  * glider's wingtips while riding it. A trail is where the hand or wingtip went in the world over the last part of a
  * second, drawn as a band facing the camera, tapering and fading to its end, the same as the Blender renders
@@ -261,9 +261,9 @@ public final class Contrails {
 	/**
 	 * One trail as a band (p newest first, u along it): facing the camera (at the origin) or, given, across a fixed
 	 * direction; neon a white core in a wide glow, wave weaving side to side, sparkle with bright sparks, dots just
-	 * bubbles; bands cut at every stripe's edge (each piece one colour); zigzag a jagged bolt flickering into a new shape
-	 * twelve times a second (a core in the first colour in a glow of the second); ribbon twisting over and over, one colour a side; pixel
-	 * square blocks in the two colours by turns; hearts beating. glider_video.ribbons draws them the same.
+	 * bubbles; bands cut at every stripe's edge (each piece one color); zigzag a jagged bolt flickering into a new shape
+	 * twelve times a second (a core in the first color in a glow of the second); ribbon twisting over and over, one color a side; pixel
+	 * square blocks in the two colors by turns; hearts beating. glider_video.ribbons draws them the same.
 	 */
 	private static void band(VertexConsumer vc, PoseStack.Pose pose, Vector3f[] p, float[] u, CosmeticDef look, float width, float time,
 		@Nullable Vector3f across) {
@@ -299,7 +299,7 @@ public final class Contrails {
 					float h0 = width * lk[k][4] * wk / 2, h1 = width * lk[k + 1][4] * wk / 2;
 					if (bands) {
 						// Cut where a stripe ends between the two points (the stripe count runs up along the trail): each
-						// piece one colour, so its edges are sharp and slide smoothly as the stripes move.
+						// piece one color, so its edges are sharp and slide smoothly as the stripes move.
 						float s0 = u[k] * STRIPES - time * STRIPE_SPEED, s1 = u[k + 1] * STRIPES - time * STRIPE_SPEED;
 						int stripe = (int) Math.floor(s0);
 						for (float from = 0; from < 1;) {
@@ -359,7 +359,7 @@ public final class Contrails {
 
 	/**
 	 * A ribbon twisting over and over as it streams back: its width turns through the trail's plane (cos of the twist,
-	 * so it crosses itself where the twist is edge-on), the first colour on one face and the second on the other.
+	 * so it crosses itself where the twist is edge-on), the first color on one face and the second on the other.
 	 */
 	private static void ribbon(VertexConsumer vc, PoseStack.Pose pose, Vector3f[] p, float[] u, Vector3f[] side, float[][] lk, CosmeticDef look, float width,
 		float time) {
@@ -392,7 +392,7 @@ public final class Contrails {
 			if (up.lengthSquared() < 1e-12F) up.set(side[k]).cross(view);
 			up.normalize();
 			Vector3f right = new Vector3f(up).cross(view).normalize();
-			if (!hearts) { // a square block, the two colours by turns
+			if (!hearts) { // a square block, the two colors by turns
 				float r = width * 0.5F * (1 - u[k] * 0.5F);
 				int c = argb((k / 3) % 2 == 0 ? a : b, Math.min(1, lk[k][3] * 1.3F));
 				Vector3f o = new Vector3f(p[k]);
@@ -417,7 +417,7 @@ public final class Contrails {
 	/** How many slices a heart is drawn with. */
 	private static final int HEART = 14;
 
-	/** The band between points p0 and p1 (sides s0, s1, half widths h0, h1) from fraction from to fraction to, coloured c0 to c1. */
+	/** The band between points p0 and p1 (sides s0, s1, half widths h0, h1) from fraction from to fraction to, colored c0 to c1. */
 	private static void piece(VertexConsumer vc, PoseStack.Pose pose, Vector3f p0, Vector3f p1, Vector3f s0, Vector3f s1, float h0, float h1, float from, float to,
 		int c0, int c1) {
 		Vector3f a = new Vector3f(p0).lerp(p1, from), b = new Vector3f(p0).lerp(p1, to);
@@ -433,7 +433,7 @@ public final class Contrails {
 	}
 
 	/**
-	 * The colour (r, g, b 0..1), opacity and width factor at u along a trail (0 at the hand, 1 at its end), at time
+	 * The color (r, g, b 0..1), opacity and width factor at u along a trail (0 at the hand, 1 at its end), at time
 	 * (seconds): glider_video.look_at, line for line.
 	 */
 	static float[] look(String style, int c1, int c2, float u, float time) {
@@ -455,7 +455,7 @@ public final class Contrails {
 				fade *= 0.45F;
 			}
 			case "ribbon" -> {
-				c = a; // (ribbon() colours each face)
+				c = a; // (ribbon() colors each face)
 				fade *= 0.9F;
 			}
 			default -> c = mix(a, b, u);

@@ -13,7 +13,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 /**
- * Team modes on the HUD: the teammate panel (hud sheet "squad": names in their colours with shield and health bars,
+ * Team modes on the HUD: the teammate panel (hud sheet "squad": names in their colors with shield and health bars,
  * KNOCKED, reboot card time, OUT), the interact prompts and progress ("interact": hold F to revive or reboot), the
  * knocked banner, and in the hub your party ("party") and how many stand on each mode portal.
  */
@@ -45,7 +45,7 @@ public final class SquadHud {
 			boolean out = m.status() == 3;
 			Smooth.panel(g, x, y + 1, 6, 6, 2, out ? 0xFF555555 : color);
 			String name = m.name();
-			// Just the name in their colour, then the shield and health bars (creator: no distance), and their eliminations.
+			// Just the name in their color, then the shield and health bars (creator: no distance), and their eliminations.
 			float nameW = Smooth.text(g, name, x + 9, y - 0.5F, 8.5F, out ? 0xFF8A8A8A : color, Smooth.LEFT, true);
 			// Their eliminations at the row's right end (creator).
 			String k = String.valueOf(m.kills());
@@ -120,10 +120,7 @@ public final class SquadHud {
 			if (van == null) prompt = null;
 			else if (van.readyIn() > 0) prompt = "Reboot van recharging - " + clock(van.readyIn());
 			else prompt = "Hold " + key() + " to reboot " + String.join(", ", cards);
-			if (van == null) {
-				String carry = "Carrying " + String.join(", ", cards) + "'s reboot card - take it to a reboot van (on the map)";
-				Smooth.text(g, carry, cx, y + 14, 8.5F, 0xFF5CE1FF, Smooth.CENTER, true);
-			}
+			// (2.1.0: the card you're holding shows by the hotbar now, BRHud, not here in the middle of the screen)
 		}
 		if (prompt == null) return false;
 		prompt(g, mc, cx, y, prompt);
@@ -154,7 +151,7 @@ public final class SquadHud {
 	// ---- in the hub ----
 
 	/**
-	 * Under the hub banner: your party, each name in its teammate colour. Nothing when you're not in one (creator: the
+	 * Under the hub banner: your party, each name in its teammate color. Nothing when you're not in one (creator: the
 	 * commands board already explains /party).
 	 */
 	static void party(GuiGraphicsExtractor g, Minecraft mc, int top) {

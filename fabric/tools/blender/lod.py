@@ -5,12 +5,12 @@ where it has none (the items), cut down in Blender (Decimate, collapse) from the
 of its triangles, at most a number for its kind. The renderer picks the copy by how big the model looks (Mesh.lod).
 
 - Each tint channel and the glowing parts are cut down on their own, so they keep their edges; within one, each
-  material (told apart by its hue: baked shadows only darken a colour) keeps its own colour, and the corners where two
+  material (told apart by its hue: baked shadows only darken a color) keeps its own color, and the corners where two
   materials meet are kept where they are (a stripe stays a stripe).
 - Thin sheets (a side with its other side a hair behind it, brlib.export) are cut down by one side alone and given the
   other again after, so the two can't cross.
 - Each new corner takes its normal from the old corner nearby facing most nearly its triangle's way (shaded as before:
-  smooth where it was smooth, edges kept sharp), and its colour, baked shadows and all, from the brightest old corner
+  smooth where it was smooth, edges kept sharp), and its color, baked shadows and all, from the brightest old corner
   of its material nearby facing its way (a cut-down surface sits partly down in the old one's shaded creases: their
   dark corners would darken it); a vertex's corners of one material facing within SMOOTH of each other share their
   mean, so the new edges don't show.
@@ -105,7 +105,7 @@ def decimate(corners, ratio):
 
 
 class Reference:
-    """The old corners of a part, to shade new triangles like the old surface: for normals all of them, for colours
+    """The old corners of a part, to shade new triangles like the old surface: for normals all of them, for colors
     those of each material."""
 
     def __init__(self, tris):

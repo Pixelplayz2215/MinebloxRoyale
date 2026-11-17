@@ -1,7 +1,7 @@
 {
   "sheet": "avatar_parts",
   "class": "AvatarPartDef",
-  "about": "The classic blocky Roblox (R6) body, built at runtime from the mesh files in the player's own Roblox install (content/<mesh>). Positions in Roblox studs, Y up, character facing -Z, root at the hips. colorSlot picks the player's colour for that part (bots vary torso/legs).",
+  "about": "The classic blocky Roblox (R6) body, built at runtime from the mesh files in the player's own Roblox install (content/<mesh>). Positions in Roblox studs, Y up, character facing -Z, root at the hips. colorSlot picks the player's color for that part (bots vary torso/legs).",
   "columns": {
     "id": "string",
     "mesh": "string",

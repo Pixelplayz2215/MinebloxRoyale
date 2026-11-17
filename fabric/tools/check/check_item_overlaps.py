@@ -2,7 +2,7 @@
 
 Builds every face exactly as Minecraft bakes it (FaceInfo corner order, CuboidFace UV corners, element rotation about
 its origin), then draws each model from 60 directions with a depth buffer twice: once letting the first of two
-surfaces at the same depth win, once the last. A pixel that changes colour between the two is a place where two
+surfaces at the same depth win, once the last. A pixel that changes color between the two is a place where two
 textures lie on top of each other (in the game it flickers as the camera moves, like the first open chest lid did).
 Writes a picture of every model that has any, with those pixels in magenta.
 
@@ -104,7 +104,7 @@ def views():
 
 
 def draw(qs, yaw, pitch, size, first_wins):
-    """Orthographic view; returns the colour of every pixel (texel RGBA + tint flag), -1 where empty."""
+    """Orthographic view; returns the color of every pixel (texel RGBA + tint flag), -1 where empty."""
     cy, sy, cp, sp = math.cos(math.radians(yaw)), math.sin(math.radians(yaw)), math.cos(math.radians(pitch)), math.sin(math.radians(pitch))
     V = np.array([[cy, 0, sy], [0, 1, 0], [-sy, 0, cy]])
     V = np.array([[1, 0, 0], [0, cp, -sp], [0, sp, cp]]) @ V
