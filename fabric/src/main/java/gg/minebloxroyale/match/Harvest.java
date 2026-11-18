@@ -30,6 +30,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CocoaBlock;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.MultifaceBlock;
+import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
 import net.minecraft.world.level.block.VineBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -106,6 +107,12 @@ public final class Harvest {
 		if (s.is(Blocks.BARRIER)) return null;
 		HarvestRuleDef r = rule(s, false);
 		if (r != null && !r.collapse().equals("single")) return r;
+		// (2.1.0.1) A desert pyramid's coloured terracotta never breaks (its floor over the treasure shaft, and its stripes): under the floor is the treasure shaft, an 11-block
+		// drop into a room walled in sandstone, which can't be broken since 2.1.0.1, so anyone who opened it was stuck
+		// (creator's pick: "Floor never breaks"). Terracotta anywhere else is as it was.
+		if (BuiltInRegistries.BLOCK.getKey(s.getBlock()).getPath().contains("terracotta")
+			&& level.structureManager().getStructureWithPieceAt(pos, h -> h.is(BuiltinStructures.DESERT_PYRAMID)).isValid())
+			return null;
 		// In a building: its own rows (a stone wall falls as a wall, not one block at a time).
 		HarvestRuleDef in = inStructure(level, pos) ? rule(s, true) : null;
 		return in != null ? in : r;
