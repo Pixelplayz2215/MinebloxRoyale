@@ -89,6 +89,16 @@ public final class Combat {
 			else entity.hurtTime = entity.hurtDuration = 10;
 			return false;
 		});
+		// (2.1.0.1, reported by Ultaslayerz: after fall damage a friend was left on 0 health and 0 shield but didn't go
+		// down) Health is a fraction underneath: a fall could leave 0.3, which the HUD rounds to 0 while the fighter lives
+		// on. Whatever a hit leaves that shows as 0 (under half a point) now counts as going down: the rest is dealt, so
+		// it's the usual knock or elimination (ALLOW_DEATH below).
+		ServerLivingEntityEvents.AFTER_DAMAGE.register((entity, source, baseDamage, damageTaken, blocked) -> {
+			if (!isFighter(entity) || !entity.isAlive() || !(entity.level() instanceof ServerLevel level)) return;
+			if (entity instanceof ServerPlayer player && !MatchManager.get().isAlive(player)) return;
+			float hp = entity.getHealth();
+			if (hp > 0 && hp < 0.5F) hurtBypassingShield(level, entity, source, hp + 1);
+		});
 		ServerLivingEntityEvents.ALLOW_DEATH.register((entity, source, amount) -> {
 			Entity killer = source.getEntity();
 			MatchManager.cause(source); // (what to say took them out if no one did)
