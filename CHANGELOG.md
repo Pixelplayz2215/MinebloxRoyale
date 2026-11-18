@@ -2,7 +2,7 @@
 
 ## v2.1.0.1 (2026-11-17)
 
-Two fixes for 2.1.0. Reported by Ultaslayerz.
+Two fixes for 2.1.0. Reported by Ultraslayerz.
 
 - **Sand and sandstone can't be broken any more:** a friend dug into the sand with the pickaxe and got stuck in the hole. Sand (and red sand) never breaks now, not even in buildings, and neither does any sandstone block (sandstone, red sandstone, cut, chiseled and smooth, and their stairs, slabs and walls). Before, sandstone counted as stone, which breaks anywhere, and sand inside a desert building broke like a wall. Desert buildings made of sandstone can't be broken either now, and neither can a desert pyramid's coloured terracotta (its floor and its stripes), so nobody can drop into its treasure shaft (an 11-block pit walled in sandstone) and get stuck there.
 - **0 health means down:** after fall damage a friend was left on 0 health and 0 shield but didn't go down. Health underneath is a fraction, so a fall could leave a bit under half a point, which the health number rounds to 0. A hit that leaves health showing 0 now knocks you (team modes) or eliminates you, the same as any other hit that takes your last health. The same goes for bots.
